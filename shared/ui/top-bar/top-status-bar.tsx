@@ -1,34 +1,49 @@
-"use client"
+"use client";
 
-import { LogOut } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
+import React from "react";
+import { useGameStore } from "@/core/model/game-store";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { SectionSeparator } from "@/shared/ui/section-separator";
+import {
+  Heart, Brain, DollarSign, User, Plus, Star, Target, Baby, Dog,
+  Search, X, Check, Zap, Activity, ChevronRight, LogOut, Users
+} from "lucide-react";
+import { Progress } from "@/shared/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog"
+} from "@/shared/ui/alert-dialog";
 
-import { MoneyIndicator } from "./money-indicator"
-import { HappinessIndicator } from "./happiness-indicator"
-import { EnergyIndicator } from "./energy-indicator"
-import { HealthIndicator } from "./health-indicator"
-import { SanityIndicator } from "./sanity-indicator"
-import { IntelligenceIndicator } from "./intelligence-indicator"
-import { NotificationsMenu } from "./notifications-menu"
+import { MoneyIndicator } from "./money-indicator";
+import { HappinessIndicator } from "./happiness-indicator";
+import { EnergyIndicator } from "./energy-indicator";
+import { HealthIndicator } from "./health-indicator";
+import { SanityIndicator } from "./sanity-indicator";
+import { IntelligenceIndicator } from "./intelligence-indicator";
+import { NotificationsMenu } from "./notifications-menu";
+import { initMultiplayer } from "@/core/lib/multiplayer";
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
+import { MultiplayerHud } from "@/features/multiplayer/MultiplayerHub";
 
 export function TopStatusBar() {
-  const { player, turn, year, resetGame, countries } = useGameStore()
+  const { player, turn, year, resetGame, countries } = useGameStore();
 
-  if (!player) return null
+  if (!player) return null;
 
-  const currentCountry = countries[player.countryId]
+  const currentCountry = countries[player.countryId];
+
+  // Функция создания комнаты
+  const createRoom = () => {
+    initMultiplayer(); // генерирует ID и меняет URL
+    alert("Комната создана! Скопируй ссылку и отправь друзьям!");
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-4 py-2 md:px-6 md:py-3">
@@ -47,25 +62,31 @@ export function TopStatusBar() {
           <div className="hidden lg:flex items-center gap-4">
             <MoneyIndicator />
             <div className="h-8 w-[1px] bg-white/10" />
-
             <HappinessIndicator />
             <div className="h-8 w-[1px] bg-white/10" />
-
             <EnergyIndicator />
             <div className="h-8 w-[1px] bg-white/10" />
-
             <HealthIndicator />
             <div className="h-8 w-[1px] bg-white/10" />
-
             <SanityIndicator />
             <div className="h-8 w-[1px] bg-white/10" />
-
             <IntelligenceIndicator />
           </div>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
             <NotificationsMenu />
+
+            <div className="h-8 w-[1px] bg-white/10" />
+
+            {/* КНОПКА СОЗДАТЬ КОМНАТУ */}
+            <Button
+              onClick={createRoom}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              <span className="hidden md:inline">Кооп</span>
+            </Button>
 
             <div className="h-8 w-[1px] bg-white/10" />
 
@@ -104,6 +125,9 @@ export function TopStatusBar() {
           </div>
         </div>
       </div>
+
+      {/* HUD показывается только когда есть комната */}
+      <MultiplayerHud />
     </div>
-  )
+  );
 }

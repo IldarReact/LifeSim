@@ -44,7 +44,7 @@ export default function Page() {
       <EventModal />
 
       {/* Multiplayer */}
-      <MultiplayerHud />
+      {/* <MultiplayerHud /> */}
     </div>
   )
 }

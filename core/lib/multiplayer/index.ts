@@ -1,191 +1,165 @@
-// src/lib/multiplayer/index.ts
-import * as Y from "yjs";
-import { WebrtcProvider } from "y-webrtc";
-import { v4 as uuidv4 } from "uuid";
+// core/lib/multiplayer/index.ts
+import { createClient } from "@liveblocks/client";
 
-let doc: Y.Doc | null = null;
-let provider: WebrtcProvider | null = null;
-let roomId = "";
-let localClientId: number | null = null;
+type Presence = {
+  name: string;
+  isReady: boolean;
+  color: string;
+};
 
-export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: string } {
-  roomId = inputRoomId || uuidv4().slice(0, 8);
+type Storage = {
+  game?: any;
+  turnAdvance?: boolean;
+  timestamp?: number;
+};
 
-  // Меняем URL
-  const url = new URL(window.location.href);
-  url.searchParams.set("room", roomId);
-  window.history.replaceState({}, "", url);
+const client = createClient({
+  publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
+});
 
-  doc = new Y.Doc();
-  provider = new WebrtcProvider(roomId, doc, {
-    signaling: [
-      "wss://signaling.yjs.dev",
-      "wss://y-webrtc-signaling.herokuapp.com",
-      "wss://y-webrtc-signal.fly.dev"
-    ],
-  });
+let roomInstance: any = null;
 
-  // Сохраняем ID локального клиента
-  localClientId = provider.awareness.clientID;
+// ---------- инициализация ----------
+export function initMultiplayer(inputRoomId?: string): string {
+  const id = inputRoomId || Math.random().toString(36).slice(2, 10);
 
-  // Генерируем случайный цвет
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href);
+    url.searchParams.set("room", id);
+    window.history.replaceState({}, "", url.toString());
+  }
+
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
 
-  // Инициализируем awareness с дефолтными данными
-  // ВАЖНО: используем setLocalState, а не setLocalStateField
-  provider.awareness.setLocalState({
-    user: {
+  const { room } = client.enterRoom<Presence, Storage, any, any>(id, {
+    initialPresence: {
       name: randomName,
+      isReady: false,
       color: randomColor,
     },
-    isReady: false,
   });
 
-  // Логируем для дебага
-  console.log(`[Multiplayer] Подключено к комнате: ${roomId}`);
-  console.log(`[Multiplayer] Локальный клиент ID: ${localClientId}`);
-  console.log(`[Multiplayer] Имя: ${randomName}, Цвет: ${randomColor}`);
+  roomInstance = room;
 
-  // Слушаем изменения awareness для дебага
-  const currentProvider = provider;
-  provider.awareness.on("change", () => {
-    if (!currentProvider) return;
-    const states = Array.from(currentProvider.awareness.getStates().entries());
-    console.log(`[Multiplayer] Awareness изменён. Всего клиентов: ${states.length}`);
-    states.forEach(([id, state]: any) => {
-      console.log(`  - Клиент ${id}: ${state.user?.name || 'без имени'}`);
-    });
-  });
+  console.log(`[Multiplayer] Connected to Liveblocks room: ${id}`);
 
-  return { doc, roomId };
+  return id;
 }
 
-// Получить общий стейт игры
 export function getSharedGameState() {
-  if (!doc) throw new Error("Multiplayer not initialized");
-  return doc.getMap("game");
+  if (!roomInstance) throw new Error("Multiplayer not initialized");
+  return roomInstance.getStorage();
 }
 
-// Получить ID локального клиента
-export function getLocalClientId() {
-  return localClientId;
-}
+export const isMultiplayerActive = () => !!roomInstance;
 
-// Кто онлайн (для HUD)
-export function getOnlinePlayers() {
-  if (!provider?.awareness) {
-    console.warn("[Multiplayer] Provider или awareness не инициализирован");
-    return [];
+// ---------- Функции для работы с игроками (Presence) ----------
+
+type Player = {
+  clientId: number;
+  name: string;
+  color: string;
+  isReady: boolean;
+  isLocal: boolean;
+};
+
+export function getOnlinePlayers(): Player[] {
+  if (!roomInstance) return [];
+
+  const others = roomInstance.getOthers();
+  const self = roomInstance.getSelf();
+
+  const players: Player[] = others.map((other: any) => ({
+    clientId: other.connectionId,
+    name: other.presence.name || "Игрок",
+    color: other.presence.color || "#94a3b8",
+    isReady: other.presence.isReady || false,
+    isLocal: false,
+  }));
+
+  if (self) {
+    players.unshift({
+      clientId: self.connectionId,
+      name: self.presence.name || "Игрок",
+      color: self.presence.color || "#94a3b8",
+      isReady: self.presence.isReady || false,
+      isLocal: true,
+    });
   }
 
-  const states = Array.from(provider.awareness.getStates().entries());
-
-  console.log(`[Multiplayer] getOnlinePlayers: ${states.length} клиентов`);
-
-  return states.map(([id, state]: any) => {
-    const player = {
-      clientId: id,
-      name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
-      color: state.user?.color || "#94a3b8",
-      isReady: state.isReady || false,
-      isLocal: id === localClientId,
-    };
-
-    console.log(`  - Игрок ${id}: ${player.name} (local: ${player.isLocal})`);
-
-    return player;
-  });
+  return players;
 }
 
-// Установить имя игрока
 export function setPlayerName(name: string) {
-  if (!provider?.awareness) return;
-
-  const currentState = provider.awareness.getLocalState() || {};
-  provider.awareness.setLocalState({
-    ...currentState,
-    user: {
-      ...(currentState.user || {}),
-      name,
-    },
-  });
-
-  console.log(`[Multiplayer] Имя изменено на: ${name}`);
+  if (!roomInstance) return;
+  roomInstance.updatePresence({ name });
 }
 
-// Установить статус готовности текущего игрока
-export function setPlayerReady(isReady: boolean) {
-  if (!provider?.awareness) return;
-
-  const currentState = provider.awareness.getLocalState() || {};
-  provider.awareness.setLocalState({
-    ...currentState,
-    isReady,
-  });
-
-  console.log(`[Multiplayer] Статус готовности: ${isReady}`);
+export function setPlayerReady(ready: boolean) {
+  if (!roomInstance) return;
+  roomInstance.updatePresence({ isReady: ready });
 }
 
-// Подписка на изменения статуса игроков
-export function subscribeToReadyStatus(callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void) {
-  if (!provider?.awareness) return () => { };
+export function subscribeToReadyStatus(
+  callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void
+) {
+  if (!roomInstance) return () => { };
 
   const handler = () => {
     const players = getOnlinePlayers();
-    const readyCount = players.filter(p => p.isReady).length;
+    const readyCount = players.filter((p: Player) => p.isReady).length;
     const totalPlayers = players.length;
     const allReady = totalPlayers > 1 && readyCount === totalPlayers;
-
-    console.log(`[Multiplayer] Ready status: ${readyCount}/${totalPlayers} (allReady: ${allReady})`);
 
     callback(readyCount, totalPlayers, allReady);
   };
 
-  provider.awareness.on("change", handler);
+  const unsubscribe = roomInstance.subscribe("others", handler);
+  handler(); // Вызываем сразу
 
-  // Вызываем сразу
-  handler();
-
-  return () => {
-    provider?.awareness.off("change", handler);
-  };
+  return unsubscribe;
 }
 
-// Синхронизировать переход хода
+// ---------- Функции синхронизации хода ----------
+
 export function syncTurnAdvance(callback: () => void) {
-  if (!doc) return () => { };
+  if (!roomInstance) return () => { };
 
-  const turnMap = doc.getMap("turnSync");
-
-  const observer = () => {
-    const shouldAdvance = turnMap.get("advance");
-    if (shouldAdvance) {
-      console.log("[Multiplayer] Получен сигнал перехода хода");
-      callback();
-      // Сбрасываем флаг
-      turnMap.set("advance", false);
-    }
+  const handler = () => {
+    roomInstance.getStorage().then((storage: any) => {
+      const shouldAdvance = storage.get("turnAdvance");
+      if (shouldAdvance) {
+        callback();
+        // Сбрасываем флаг
+        if (isMultiplayerActive()) {
+          storage.set("turnAdvance", false);
+        }
+      }
+    });
   };
 
-  turnMap.observe(observer);
-
-  return () => {
-    turnMap.unobserve(observer);
-  };
+  const unsubscribe = roomInstance.subscribe("storage", handler);
+  return unsubscribe;
 }
 
-// Триггер перехода хода для всех
 export function triggerTurnAdvance() {
-  if (!doc) return;
-
-  console.log("[Multiplayer] Триггерим переход хода для всех");
-
-  const turnMap = doc.getMap("turnSync");
-  turnMap.set("advance", true);
-  turnMap.set("timestamp", Date.now());
+  if (!roomInstance) return;
+  roomInstance.getStorage().then((storage: any) => {
+    storage.set("turnAdvance", true);
+    storage.set("timestamp", Date.now());
+  });
 }
 
-export function isMultiplayerActive() {
-  return !!provider && !!localClientId;
-}
+// Вспомогательная функция для game-store.ts
+export const getSharedState = () => ({
+  storage: roomInstance?.getStorage(),
+  subscribeToPresenceChanges: (cb: () => void) => {
+    if (!roomInstance) return () => { };
+    return roomInstance.subscribe("others", cb);
+  },
+  subscribeToStorageChanges: (cb: () => void) => {
+    if (!roomInstance) return () => { };
+    return roomInstance.subscribe("storage", cb);
+  },
+});

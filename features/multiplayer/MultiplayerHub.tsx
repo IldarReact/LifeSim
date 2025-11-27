@@ -8,8 +8,16 @@ import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2,
 import { useEffect, useState } from "react";
 import { subscribeToReadyStatus } from "@/core/lib/multiplayer";
 
+type Player = {
+  clientId: number;
+  name: string;
+  color: string;
+  isReady: boolean;
+  isLocal: boolean;
+};
+
 export function MultiplayerHud() {
-  const [players, setPlayers] = useState(getOnlinePlayers());
+  const [players, setPlayers] = useState<Player[]>(getOnlinePlayers());
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState("");
@@ -147,7 +155,7 @@ export function MultiplayerHud() {
 
               {/* Список игроков */}
               <div className="space-y-2">
-                {players.map(p => (
+                {players.map((p: Player) => (
                   <div key={p.clientId} className="flex items-center justify-between text-sm group">
                     <div className="flex items-center gap-2 text-white/80 group-hover:text-white transition-colors">
                       <div

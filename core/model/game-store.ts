@@ -9,6 +9,38 @@
  * - slices/education-slice.ts - Education system (courses, university)
  * - slices/job-slice.ts - Job applications and management
  * - slices/notification-slice.ts - Notification system
+
+/**
+ * @deprecated This file is kept for backward compatibility.
+ * Please import from './store' instead.
+ * 
+ * The store has been refactored following FBA (Feature-Based Architecture) principles:
+ * - slices/game-slice.ts - Core game logic (turn, year, status)
+ * - slices/player-slice.ts - Player state management
+ * - slices/education-slice.ts - Education system (courses, university)
+ * - slices/job-slice.ts - Job applications and management
+ * - slices/notification-slice.ts - Notification system
+/**
+ * @deprecated This file is kept for backward compatibility.
+ * Please import from './store' instead.
+ * 
+ * The store has been refactored following FBA (Feature-Based Architecture) principles:
+ * - slices/game-slice.ts - Core game logic (turn, year, status)
+ * - slices/player-slice.ts - Player state management
+ * - slices/education-slice.ts - Education system (courses, university)
+ * - slices/job-slice.ts - Job applications and management
+ * - slices/notification-slice.ts - Notification system
+
+/**
+ * @deprecated This file is kept for backward compatibility.
+ * Please import from './store' instead.
+ * 
+ * The store has been refactored following FBA (Feature-Based Architecture) principles:
+ * - slices/game-slice.ts - Core game logic (turn, year, status)
+ * - slices/player-slice.ts - Player state management
+ * - slices/education-slice.ts - Education system (courses, university)
+ * - slices/job-slice.ts - Job applications and management
+ * - slices/notification-slice.ts - Notification system
  * - logic/turn-logic.ts - Business logic for turn processing
  */
 
@@ -17,13 +49,11 @@ export { useGameStore } from './store'
 
 // Multiplayer
 
-import { getSharedGameState, initMultiplayer } from '../lib/multiplayer';
-import * as Y from "yjs";
-import { useGameStore } from "./store";
-import type { GameState } from "@/core/types";
+import { initMultiplayer, getSharedState } from '../lib/multiplayer';
+import { useGameStore } from './store';
+import type { GameState } from '../types';
 
 let multiplayerSynced = false;
-let doc: Y.Doc | null = null; // ← нужно хранить doc
 
 export function enableMultiplayerSync() {
   if (multiplayerSynced) return;
@@ -33,43 +63,28 @@ export function enableMultiplayerSync() {
   const room = urlParams.get("room");
   if (!room) return;
 
-  // Инициализируем и сохраняем doc
-  const { doc: yDoc } = initMultiplayer(room);
-  doc = yDoc;
+  // Инициализируем Liveblocks
+  const roomId = initMultiplayer(room);
+  console.log("Мультиплеер: подключено к комнате", roomId);
 
-  console.log("Мультиплеер: подключено к комнате", room);
+  const shared = getSharedState();
+  const { setState, subscribe } = useGameStore;
 
-  const shared = getSharedGameState();
-  const { getState, setState, subscribe } = useGameStore;
-
-  // Y.js → Zustand
-  shared.observeDeep(() => {
-    const remoteData = shared.toJSON() as Partial<GameState>;
-
-    setState((prev) => ({
-      ...prev,
-      ...remoteData,
-      player: remoteData.player ?? prev.player,
-      turn: remoteData.turn ?? prev.turn,
-      gameStatus: remoteData.gameStatus ?? prev.gameStatus,
-      // Добавь остальные поля по необходимости
-    }));
+  // Liveblocks → Zustand (presence)
+  shared.subscribeToPresenceChanges(() => {
+    // Можно обновлять список онлайн-игроков, если нужно
   });
 
-  // Zustand → Y.js (правильно — через doc.transact())
-  const unsubscribe = subscribe((state: GameState) => {
-    if (!doc) return;
-
-    doc.transact(() => {
-      shared.set("player", state.player);
-      shared.set("turn", state.turn);
-      shared.set("gameStatus", state.gameStatus);
-      // Добавь нужные поля:
-      // shared.set("businesses", state.player.businesses);
-      // shared.set("familyMembers", state.player.personal.familyMembers);
-    });
+  // Liveblocks → Zustand (storage)
+  shared.subscribeToStorageChanges(() => {
+    const data = shared.storage?.get("game");
+    if (data) {
+      setState(data as Partial<GameState>);
+    }
   });
 
-  // Сохраняем отписку
-  (window as any).__mp_unsubscribe = unsubscribe;
+  // Zustand → Liveblocks (синхронизация состояния)
+  subscribe((state: GameState) => {
+    shared.storage?.set("game", state);
+  });
 }

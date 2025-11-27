@@ -71,7 +71,7 @@ export interface FreelanceApplication {
 }
 
 // Employee types for business management
-export type EmployeeRole = 
+export type EmployeeRole =
   | 'manager'      // Управляющий - увеличивает общую эффективность
   | 'salesperson'  // Продавец - увеличивает доход
   | 'accountant'   // Бухгалтер - снижает расходы
@@ -102,7 +102,7 @@ export interface Employee {
   avatar?: string;
 }
 
-export type BusinessType = 
+export type BusinessType =
   | 'retail'        // Магазин
   | 'service'       // Сервис (автомойка, салон)
   | 'cafe'          // Кафе/ресторан
@@ -114,26 +114,26 @@ export interface Business {
   name: string;
   type: BusinessType;
   description: string;
-  
+
   // Финансы
   initialCost: number;      // Стартовый капитал
   quarterlyIncome: number;    // Базовый доход за квартал
   quarterlyExpenses: number;  // Базовые расходы за квартал
   currentValue: number;     // Текущая стоимость бизнеса
-  
+
   // Сотрудники
   employees: Employee[];
   maxEmployees: number;     // Максимум сотрудников
-  
+
   // Характеристики
   reputation: number;       // 0-100 - репутация
   efficiency: number;       // 0-100 - эффективность работы
   customerSatisfaction: number; // 0-100 - удовлетворенность клиентов
-  
+
   // Игровая механика
   energyCostPerTurn: number; // Сколько энергии требует управление
   stressImpact: number;      // Влияние на рассудок
-  
+
   // Метаданные
   foundedTurn: number;       // Когда был открыт
   imageUrl?: string;
@@ -171,23 +171,52 @@ export interface Debt {
   id: string;
   name: string;
   type: DebtType;
-  amount: number;
-  interestRate: number;
-  quarterlyPayment: number;
-  termMonths: number; // Still months or quarters? Let's keep term in quarters for consistency or convert. Let's say termTurns.
+  principalAmount: number; // Основная сумма кредита
+  remainingAmount: number; // Остаток долга
+  interestRate: number; // Процентная ставка (годовая)
+  quarterlyPayment: number; // Платеж за квартал
+  termQuarters: number; // Срок в кварталах (всегда кратно 1, т.е. 3 месяца)
+  remainingQuarters: number; // Осталось кварталов
+  startTurn: number; // Когда взят кредит
+}
+
+export type EconomicEventType =
+  | 'crisis' // Кризис
+  | 'boom' // Экономический рост
+  | 'recession' // Рецессия
+  | 'inflation_spike' // Скачок инфляции
+  | 'rate_hike' // Повышение ставки
+  | 'rate_cut'; // Снижение ставки
+
+export interface EconomicEvent {
+  id: string;
+  type: EconomicEventType;
+  title: string;
+  description: string;
+  turn: number; // Когда произошло
+  duration: number; // Длительность в кварталах
+  effects: {
+    inflationChange?: number; // Изменение инфляции (%)
+    keyRateChange?: number; // Изменение ключевой ставки (%)
+    gdpGrowthChange?: number; // Изменение роста ВВП (%)
+    unemploymentChange?: number; // Изменение безработицы (%)
+    salaryModifierChange?: number; // Изменение зарплат (множитель)
+  };
 }
 
 export interface CountryEconomy {
   id: string;
   name: string;
   archetype: CountryArchetype;
-  gdpGrowth: number;
-  inflation: number;
-  interestRate: number;
-  unemployment: number;
-  taxRate: number;
-  salaryModifier: number;
-  costOfLivingModifier: number;
+  gdpGrowth: number; // Рост ВВП (%)
+  inflation: number; // Инфляция (% годовых)
+  keyRate: number; // Ключевая ставка ЦБ (% годовых)
+  interestRate: number; // Базовая процентная ставка (deprecated, используем keyRate)
+  unemployment: number; // Безработица (%)
+  taxRate: number; // Налоговая ставка (%)
+  salaryModifier: number; // Модификатор зарплат
+  costOfLivingModifier: number; // Модификатор стоимости жизни
+  activeEvents: EconomicEvent[]; // Активные экономические события
 }
 
 export type Country = CountryEconomy;
@@ -251,11 +280,11 @@ export interface PersonalLife {
   activeCourses: ActiveCourse[]; // Courses currently being studied
   activeUniversity: ActiveUniversity[]; // University programs currently enrolled
   buffs: TimedBuff[]; // Temporary buffs/debuffs
-  
+
   // New Family & Goals System
   familyMembers: FamilyMember[];
   lifeGoals: LifeGoal[];
-  
+
   // Relationship System
   isDating: boolean;
   potentialPartner: PotentialPartner | null;

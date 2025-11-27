@@ -145,7 +145,10 @@ export function MultiplayerHud() {
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: p.color }}
                       />
-                      <span className="truncate max-w-[120px]">{p.name}</span>
+                      <span className="truncate max-w-[120px]">
+                        {p.name}
+                        {p.isLocal && <span className="text-white/40 ml-1">(вы)</span>}
+                      </span>
                     </div>
 
                     {p.isReady ? (

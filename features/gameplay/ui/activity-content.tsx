@@ -11,9 +11,15 @@ import { RestActivity } from "@/features/activities/rest-activity"
 import { EventsActivity } from "@/features/activities/events-activity"
 import { EducationActivity } from "@/features/activities/education-activity"
 import { Button } from "@/shared/ui/button"
-import { ArrowRight, Loader2, Users } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import type { GameState } from "@/core/types"
-import { isMultiplayerActive, setPlayerReady, subscribeToReadyStatus } from "@/core/lib/multiplayer"
+import {
+  isMultiplayerActive,
+  setPlayerReady,
+  subscribeToReadyStatus,
+  syncTurnAdvance,
+  triggerTurnAdvance
+} from "@/core/lib/multiplayer"
 
 // Helper type to exclude null from keys
 type ActivityType = NonNullable<GameState["activeActivity"]> | "education"
@@ -33,49 +39,60 @@ export function ActivityContent(): React.JSX.Element | null {
   const { activeActivity, nextTurn, isProcessingTurn, gameStatus, player } = useGameStore()
 
   // Multiplayer state
-  const [isWaiting, setIsWaiting] = useState(false)
-  const [readyStats, setReadyStats] = useState({ ready: 0, total: 1 })
+  const [readyStats, setReadyStats] = useState({ ready: 0, total: 1, allReady: false })
+  const [localIsReady, setLocalIsReady] = useState(false)
 
+  // Подписка на статус готовности
   useEffect(() => {
     if (!isMultiplayerActive()) return
 
-    const unsubscribe = subscribeToReadyStatus((ready, total) => {
-      setReadyStats({ ready, total })
+    const unsubscribe = subscribeToReadyStatus((ready, total, allReady) => {
+      setReadyStats({ ready, total, allReady })
 
-      // Если мы ждем и все готовы — переходим ход
-      // Важно: переходим только если мы сами нажали "готов" (isWaiting) и есть минимум 2 игрока
-      if (isWaiting && ready === total && total > 1) {
-        // Небольшая задержка для визуального эффекта
-        setTimeout(() => {
-          nextTurn()
-          setPlayerReady(false)
-          setIsWaiting(false)
-        }, 500)
+      // Если все готовы и мы тоже - триггерим переход хода
+      if (allReady && localIsReady) {
+        triggerTurnAdvance()
       }
     })
 
     return () => unsubscribe()
-  }, [nextTurn, isWaiting])
+  }, [localIsReady])
+
+  // Подписка на синхронизацию хода
+  useEffect(() => {
+    if (!isMultiplayerActive()) return
+
+    const unsubscribe = syncTurnAdvance(() => {
+      // Все игроки переходят ход одновременно
+      nextTurn()
+
+      // Сбрасываем статус готовности
+      setPlayerReady(false)
+      setLocalIsReady(false)
+    })
+
+    return () => unsubscribe()
+  }, [nextTurn])
 
   if (gameStatus !== "playing" || !player) return null
 
   const currentActivity = (activeActivity || "family") as ActivityType
 
   const handleTurnClick = () => {
-    if (isMultiplayerActive()) {
-      if (isWaiting) {
-        // Отмена готовности
-        setPlayerReady(false)
-        setIsWaiting(false)
-      } else {
-        // Установка готовности
-        setPlayerReady(true)
-        setIsWaiting(true)
-      }
+    const isMultiplayer = isMultiplayerActive()
+
+    if (isMultiplayer && readyStats.total > 1) {
+      // Мультиплеер: переключаем статус готовности
+      const newReadyState = !localIsReady
+      setLocalIsReady(newReadyState)
+      setPlayerReady(newReadyState)
     } else {
+      // Одиночная игра: сразу переходим ход
       nextTurn()
     }
   }
+
+  const isWaiting = isMultiplayerActive() && readyStats.total > 1 && localIsReady
 
   return (
     <div className="relative min-h-screen pt-24">

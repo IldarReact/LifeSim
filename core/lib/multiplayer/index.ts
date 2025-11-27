@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 let doc: Y.Doc | null = null;
 let provider: WebrtcProvider | null = null;
 let roomId = "";
+let localClientId: number | null = null;
 
 export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: string } {
   roomId = inputRoomId || uuidv4().slice(0, 8);
@@ -19,6 +20,9 @@ export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: str
   provider = new WebrtcProvider(roomId, doc, {
     signaling: ["wss://y-webrtc-signal.fly.dev"],
   });
+
+  // Сохраняем ID локального клиента
+  localClientId = provider.awareness.clientID;
 
   // Инициализируем awareness с дефолтными данными
   provider.awareness.setLocalState({
@@ -38,14 +42,23 @@ export function getSharedGameState() {
   return doc.getMap("game");
 }
 
+// Получить ID локального клиента
+export function getLocalClientId() {
+  return localClientId;
+}
+
 // Кто онлайн (для HUD)
 export function getOnlinePlayers() {
   if (!provider?.awareness) return [];
-  return Array.from(provider.awareness.getStates().entries()).map(([id, state]: any) => ({
+
+  const states = Array.from(provider.awareness.getStates().entries());
+
+  return states.map(([id, state]: any) => ({
     clientId: id,
     name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
     color: state.user?.color || "#94a3b8",
     isReady: state.isReady || false,
+    isLocal: id === localClientId,
   }));
 }
 
@@ -67,18 +80,24 @@ export function setPlayerName(name: string) {
 export function setPlayerReady(isReady: boolean) {
   if (!provider?.awareness) return;
 
-  provider.awareness.setLocalStateField("isReady", isReady);
+  const currentState = provider.awareness.getLocalState() || {};
+  provider.awareness.setLocalState({
+    ...currentState,
+    isReady,
+  });
 }
 
 // Подписка на изменения статуса игроков
-export function subscribeToReadyStatus(callback: (readyCount: number, totalPlayers: number) => void) {
+export function subscribeToReadyStatus(callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void) {
   if (!provider?.awareness) return () => { };
 
   const handler = () => {
     const players = getOnlinePlayers();
     const readyCount = players.filter(p => p.isReady).length;
     const totalPlayers = players.length;
-    callback(readyCount, totalPlayers);
+    const allReady = totalPlayers > 1 && readyCount === totalPlayers;
+
+    callback(readyCount, totalPlayers, allReady);
   };
 
   provider.awareness.on("change", handler);
@@ -91,6 +110,37 @@ export function subscribeToReadyStatus(callback: (readyCount: number, totalPlaye
   };
 }
 
+// Синхронизировать переход хода
+export function syncTurnAdvance(callback: () => void) {
+  if (!doc) return () => { };
+
+  const turnMap = doc.getMap("turnSync");
+
+  const observer = () => {
+    const shouldAdvance = turnMap.get("advance");
+    if (shouldAdvance) {
+      callback();
+      // Сбрасываем флаг
+      turnMap.set("advance", false);
+    }
+  };
+
+  turnMap.observe(observer);
+
+  return () => {
+    turnMap.unobserve(observer);
+  };
+}
+
+// Триггер перехода хода для всех
+export function triggerTurnAdvance() {
+  if (!doc) return;
+
+  const turnMap = doc.getMap("turnSync");
+  turnMap.set("advance", true);
+  turnMap.set("timestamp", Date.now());
+}
+
 export function isMultiplayerActive() {
-  return !!provider;
+  return !!provider && !!localClientId;
 }

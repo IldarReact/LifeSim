@@ -19,7 +19,16 @@ export function MultiplayerHud() {
     const unsubscribe = subscribeToReadyStatus(() => {
       setPlayers(getOnlinePlayers());
     });
-    return () => unsubscribe();
+
+    // Дополнительно: обновляем список каждую секунду
+    const interval = setInterval(() => {
+      setPlayers(getOnlinePlayers());
+    }, 1000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   // Если никто не в комнате — показываем кнопку создания

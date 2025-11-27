@@ -48,15 +48,10 @@ export function ActivityContent(): React.JSX.Element | null {
 
     const unsubscribe = subscribeToReadyStatus((ready, total, allReady) => {
       setReadyStats({ ready, total, allReady })
-
-      // Если все готовы и мы тоже - триггерим переход хода
-      if (allReady && localIsReady) {
-        triggerTurnAdvance()
-      }
     })
 
     return () => unsubscribe()
-  }, [localIsReady])
+  }, [])
 
   // Подписка на синхронизацию хода
   useEffect(() => {
@@ -86,6 +81,18 @@ export function ActivityContent(): React.JSX.Element | null {
       const newReadyState = !localIsReady
       setLocalIsReady(newReadyState)
       setPlayerReady(newReadyState)
+
+      // Если мы становимся готовыми и это делает всех готовыми - триггерим переход
+      if (newReadyState) {
+        // Проверяем: мы последние кто стал готов?
+        // ready + 1 (мы) === total
+        if (readyStats.ready + 1 === readyStats.total) {
+          // Небольшая задержка чтобы awareness успел обновиться
+          setTimeout(() => {
+            triggerTurnAdvance()
+          }, 100)
+        }
+      }
     } else {
       // Одиночная игра: сразу переходим ход
       nextTurn()

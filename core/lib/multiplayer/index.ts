@@ -24,13 +24,32 @@ export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: str
   // Сохраняем ID локального клиента
   localClientId = provider.awareness.clientID;
 
+  // Генерируем случайный цвет
+  const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+  const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
+
   // Инициализируем awareness с дефолтными данными
+  // ВАЖНО: используем setLocalState, а не setLocalStateField
   provider.awareness.setLocalState({
     user: {
-      name: `Игрок ${Date.now().toString().slice(-4)}`,
-      color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+      name: randomName,
+      color: randomColor,
     },
     isReady: false,
+  });
+
+  // Логируем для дебага
+  console.log(`[Multiplayer] Подключено к комнате: ${roomId}`);
+  console.log(`[Multiplayer] Локальный клиент ID: ${localClientId}`);
+  console.log(`[Multiplayer] Имя: ${randomName}, Цвет: ${randomColor}`);
+
+  // Слушаем изменения awareness для дебага
+  provider.awareness.on("change", () => {
+    const states = Array.from(provider.awareness.getStates().entries());
+    console.log(`[Multiplayer] Awareness изменён. Всего клиентов: ${states.length}`);
+    states.forEach(([id, state]: any) => {
+      console.log(`  - Клиент ${id}: ${state.user?.name || 'без имени'}`);
+    });
   });
 
   return { doc, roomId };
@@ -49,17 +68,28 @@ export function getLocalClientId() {
 
 // Кто онлайн (для HUD)
 export function getOnlinePlayers() {
-  if (!provider?.awareness) return [];
+  if (!provider?.awareness) {
+    console.warn("[Multiplayer] Provider или awareness не инициализирован");
+    return [];
+  }
 
   const states = Array.from(provider.awareness.getStates().entries());
 
-  return states.map(([id, state]: any) => ({
-    clientId: id,
-    name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
-    color: state.user?.color || "#94a3b8",
-    isReady: state.isReady || false,
-    isLocal: id === localClientId,
-  }));
+  console.log(`[Multiplayer] getOnlinePlayers: ${states.length} клиентов`);
+
+  return states.map(([id, state]: any) => {
+    const player = {
+      clientId: id,
+      name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
+      color: state.user?.color || "#94a3b8",
+      isReady: state.isReady || false,
+      isLocal: id === localClientId,
+    };
+
+    console.log(`  - Игрок ${id}: ${player.name} (local: ${player.isLocal})`);
+
+    return player;
+  });
 }
 
 // Установить имя игрока
@@ -74,6 +104,8 @@ export function setPlayerName(name: string) {
       name,
     },
   });
+
+  console.log(`[Multiplayer] Имя изменено на: ${name}`);
 }
 
 // Установить статус готовности текущего игрока
@@ -85,6 +117,8 @@ export function setPlayerReady(isReady: boolean) {
     ...currentState,
     isReady,
   });
+
+  console.log(`[Multiplayer] Статус готовности: ${isReady}`);
 }
 
 // Подписка на изменения статуса игроков
@@ -96,6 +130,8 @@ export function subscribeToReadyStatus(callback: (readyCount: number, totalPlaye
     const readyCount = players.filter(p => p.isReady).length;
     const totalPlayers = players.length;
     const allReady = totalPlayers > 1 && readyCount === totalPlayers;
+
+    console.log(`[Multiplayer] Ready status: ${readyCount}/${totalPlayers} (allReady: ${allReady})`);
 
     callback(readyCount, totalPlayers, allReady);
   };
@@ -119,6 +155,7 @@ export function syncTurnAdvance(callback: () => void) {
   const observer = () => {
     const shouldAdvance = turnMap.get("advance");
     if (shouldAdvance) {
+      console.log("[Multiplayer] Получен сигнал перехода хода");
       callback();
       // Сбрасываем флаг
       turnMap.set("advance", false);
@@ -135,6 +172,8 @@ export function syncTurnAdvance(callback: () => void) {
 // Триггер перехода хода для всех
 export function triggerTurnAdvance() {
   if (!doc) return;
+
+  console.log("[Multiplayer] Триггерим переход хода для всех");
 
   const turnMap = doc.getMap("turnSync");
   turnMap.set("advance", true);

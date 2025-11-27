@@ -18,7 +18,11 @@ export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: str
 
   doc = new Y.Doc();
   provider = new WebrtcProvider(roomId, doc, {
-    signaling: ["wss://y-webrtc-signal.fly.dev"],
+    signaling: [
+      "wss://signaling.yjs.dev",
+      "wss://y-webrtc-signaling.herokuapp.com",
+      "wss://y-webrtc-signal.fly.dev"
+    ],
   });
 
   // Сохраняем ID локального клиента

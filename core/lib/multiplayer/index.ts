@@ -20,6 +20,15 @@ export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: str
     signaling: ["wss://y-webrtc-signal.fly.dev"],
   });
 
+  // Инициализируем awareness с дефолтными данными
+  provider.awareness.setLocalState({
+    user: {
+      name: `Игрок ${Date.now().toString().slice(-4)}`,
+      color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+    },
+    isReady: false,
+  });
+
   return { doc, roomId };
 }
 
@@ -36,8 +45,22 @@ export function getOnlinePlayers() {
     clientId: id,
     name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
     color: state.user?.color || "#94a3b8",
-    isReady: state.isReady || false, // Добавили статус готовности
+    isReady: state.isReady || false,
   }));
+}
+
+// Установить имя игрока
+export function setPlayerName(name: string) {
+  if (!provider?.awareness) return;
+
+  const currentState = provider.awareness.getLocalState() || {};
+  provider.awareness.setLocalState({
+    ...currentState,
+    user: {
+      ...(currentState.user || {}),
+      name,
+    },
+  });
 }
 
 // Установить статус готовности текущего игрока

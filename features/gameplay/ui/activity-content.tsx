@@ -43,7 +43,8 @@ export function ActivityContent(): React.JSX.Element | null {
       setReadyStats({ ready, total })
 
       // Если мы ждем и все готовы — переходим ход
-      if (ready === total && total > 0) {
+      // Важно: переходим только если мы сами нажали "готов" (isWaiting) и есть минимум 2 игрока
+      if (isWaiting && ready === total && total > 1) {
         // Небольшая задержка для визуального эффекта
         setTimeout(() => {
           nextTurn()
@@ -54,7 +55,7 @@ export function ActivityContent(): React.JSX.Element | null {
     })
 
     return () => unsubscribe()
-  }, [nextTurn])
+  }, [nextTurn, isWaiting])
 
   if (gameStatus !== "playing" || !player) return null
 

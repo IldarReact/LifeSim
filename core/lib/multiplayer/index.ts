@@ -44,8 +44,10 @@ export function initMultiplayer(inputRoomId?: string): { doc: Y.Doc; roomId: str
   console.log(`[Multiplayer] Имя: ${randomName}, Цвет: ${randomColor}`);
 
   // Слушаем изменения awareness для дебага
+  const currentProvider = provider;
   provider.awareness.on("change", () => {
-    const states = Array.from(provider.awareness.getStates().entries());
+    if (!currentProvider) return;
+    const states = Array.from(currentProvider.awareness.getStates().entries());
     console.log(`[Multiplayer] Awareness изменён. Всего клиентов: ${states.length}`);
     states.forEach(([id, state]: any) => {
       console.log(`  - Клиент ${id}: ${state.user?.name || 'без имени'}`);

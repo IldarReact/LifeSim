@@ -98,10 +98,6 @@ export function WorkActivity(): React.JSX.Element | null {
         {player.businesses && player.businesses.length > 0 && (
           <div className="space-y-4">
             <SectionSeparator title="Мои бизнесы" />
-            <SectionSeparator title="Мои бизнесы" />
-            <SectionSeparator title="Мои бизнесы" />
-            <SectionSeparator title="Мои бизнесы" />
-            <SectionSeparator title="Мои бизнесы" />
             <div className="grid grid-cols-3 gap-4">
               {player.businesses.map((business) => (
                 <BusinessManagement

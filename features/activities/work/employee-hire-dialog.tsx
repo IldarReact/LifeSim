@@ -5,9 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/di
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import type { EmployeeCandidate, EmployeeRole } from "@/core/types"
+import { getOnlinePlayers } from "@/core/lib/multiplayer"
 import {
   User, TrendingUp, DollarSign, Star, CheckCircle,
-  XCircle, Briefcase, Target, Award, AlertCircle
+  XCircle, Briefcase, Target, Award, AlertCircle, Users, Globe
 } from "lucide-react"
 
 interface EmployeeHireDialogProps {
@@ -49,6 +50,17 @@ export function EmployeeHireDialog({
   availableBudget
 }: EmployeeHireDialogProps) {
   const [selectedCandidate, setSelectedCandidate] = React.useState<EmployeeCandidate | null>(null)
+  const [activeTab, setActiveTab] = React.useState<'npc' | 'players'>('npc')
+  const [onlinePlayers, setOnlinePlayers] = React.useState<any[]>([])
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (activeTab === 'players') {
+        setOnlinePlayers(getOnlinePlayers())
+      }
+      setSelectedCandidate(null)
+    }
+  }, [isOpen, activeTab])
 
   const getSkillStars = (value: number) => {
     const stars = Math.round(value / 20) // 0-100 -> 0-5 stars
@@ -61,6 +73,39 @@ export function EmployeeHireDialog({
   }
 
   const canAfford = (salary: number) => salary <= availableBudget
+
+  const createPlayerCandidate = (player: any): EmployeeCandidate => {
+    // Create a candidate profile for the online player
+    // In a real scenario, we might fetch their actual stats if they are shared
+    return {
+      id: `player_${player.clientId}`,
+      name: player.name,
+      role: candidates[0]?.role || 'worker',
+      level: 'middle',
+      experience: 24,
+      requestedSalary: 5000, // Players are expensive!
+      skills: {
+        efficiency: 80,
+        salesAbility: 70,
+        technical: 70,
+        management: 60,
+        creativity: 85
+      },
+      personality: {
+        loyalty: 90,
+        ambition: 100,
+        stressTolerance: 90,
+        teamwork: 95
+      },
+      strengths: ['Реальный игрок', 'Высокая мотивация'],
+      weaknesses: ['Высокие запросы'],
+      age: 25
+    }
+  }
+
+  const displayCandidates = activeTab === 'npc'
+    ? candidates
+    : onlinePlayers.map(createPlayerCandidate)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -75,8 +120,34 @@ export function EmployeeHireDialog({
           </p>
         </DialogHeader>
 
+        {/* Tabs */}
+        <div className="flex gap-2 mt-6 border-b border-white/10 pb-4">
+          <Button
+            variant={activeTab === 'npc' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('npc')}
+            className={activeTab === 'npc' ? 'bg-blue-600' : 'text-white/60 hover:text-white hover:bg-white/10'}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Рынок труда
+          </Button>
+          <Button
+            variant={activeTab === 'players' ? 'default' : 'ghost'}
+            onClick={() => setActiveTab('players')}
+            className={activeTab === 'players' ? 'bg-purple-600 hover:bg-purple-700' : 'text-white/60 hover:text-white hover:bg-white/10'}
+          >
+            <Globe className="w-4 h-4 mr-2" />
+            Онлайн игроки
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          {candidates.map((candidate) => {
+          {displayCandidates.length === 0 && (
+            <div className="col-span-3 text-center py-12 text-white/40">
+              {activeTab === 'players' ? 'Нет игроков онлайн' : 'Нет доступных кандидатов'}
+            </div>
+          )}
+
+          {displayCandidates.map((candidate) => {
             const affordable = canAfford(candidate.requestedSalary)
             const isSelected = selectedCandidate?.id === candidate.id
 

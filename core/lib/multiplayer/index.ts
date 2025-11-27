@@ -36,5 +36,38 @@ export function getOnlinePlayers() {
     clientId: id,
     name: state.user?.name || `Игрок ${id.toString().slice(0, 4)}`,
     color: state.user?.color || "#94a3b8",
+    isReady: state.isReady || false, // Добавили статус готовности
   }));
+}
+
+// Установить статус готовности текущего игрока
+export function setPlayerReady(isReady: boolean) {
+  if (!provider?.awareness) return;
+
+  provider.awareness.setLocalStateField("isReady", isReady);
+}
+
+// Подписка на изменения статуса игроков
+export function subscribeToReadyStatus(callback: (readyCount: number, totalPlayers: number) => void) {
+  if (!provider?.awareness) return () => { };
+
+  const handler = () => {
+    const players = getOnlinePlayers();
+    const readyCount = players.filter(p => p.isReady).length;
+    const totalPlayers = players.length;
+    callback(readyCount, totalPlayers);
+  };
+
+  provider.awareness.on("change", handler);
+
+  // Вызываем сразу
+  handler();
+
+  return () => {
+    provider?.awareness.off("change", handler);
+  };
+}
+
+export function isMultiplayerActive() {
+  return !!provider;
 }

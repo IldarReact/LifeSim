@@ -1,5 +1,6 @@
 "use client"
 
+import React, { useEffect, useState } from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { FamilyActivity } from "@/features/activities/family-activity"
 import { WorkActivity } from "@/features/activities/work/work-activity"
@@ -10,8 +11,9 @@ import { RestActivity } from "@/features/activities/rest-activity"
 import { EventsActivity } from "@/features/activities/events-activity"
 import { EducationActivity } from "@/features/activities/education-activity"
 import { Button } from "@/shared/ui/button"
-import { ArrowRight, Loader2 } from "lucide-react"
+import { ArrowRight, Loader2, Users } from "lucide-react"
 import type { GameState } from "@/core/types"
+import { isMultiplayerActive, setPlayerReady, subscribeToReadyStatus } from "@/core/lib/multiplayer"
 
 // Helper type to exclude null from keys
 type ActivityType = NonNullable<GameState["activeActivity"]> | "education"
@@ -30,9 +32,49 @@ const backgroundImages: Record<ActivityType, string> = {
 export function ActivityContent(): React.JSX.Element | null {
   const { activeActivity, nextTurn, isProcessingTurn, gameStatus, player } = useGameStore()
 
+  // Multiplayer state
+  const [isWaiting, setIsWaiting] = useState(false)
+  const [readyStats, setReadyStats] = useState({ ready: 0, total: 1 })
+
+  useEffect(() => {
+    if (!isMultiplayerActive()) return
+
+    const unsubscribe = subscribeToReadyStatus((ready, total) => {
+      setReadyStats({ ready, total })
+
+      // Если мы ждем и все готовы — переходим ход
+      if (ready === total && total > 0) {
+        // Небольшая задержка для визуального эффекта
+        setTimeout(() => {
+          nextTurn()
+          setPlayerReady(false)
+          setIsWaiting(false)
+        }, 500)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [nextTurn])
+
   if (gameStatus !== "playing" || !player) return null
 
   const currentActivity = (activeActivity || "family") as ActivityType
+
+  const handleTurnClick = () => {
+    if (isMultiplayerActive()) {
+      if (isWaiting) {
+        // Отмена готовности
+        setPlayerReady(false)
+        setIsWaiting(false)
+      } else {
+        // Установка готовности
+        setPlayerReady(true)
+        setIsWaiting(true)
+      }
+    } else {
+      nextTurn()
+    }
+  }
 
   return (
     <div className="relative min-h-screen pt-24">
@@ -58,19 +100,30 @@ export function ActivityContent(): React.JSX.Element | null {
       <div className="fixed bottom-4 sm:bottom-6 md:bottom-8 right-4 sm:right-6 md:right-8 z-50">
         <Button
           size="lg"
-          onClick={nextTurn}
+          onClick={handleTurnClick}
           disabled={isProcessingTurn}
-          className="bg-white/90 hover:bg-white text-black shadow-2xl 
-                     px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 
-                     text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl
-                     flex items-center gap-2 sm:gap-3 group backdrop-blur-sm
-                     hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all
-                     disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`
+            px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 
+            text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl
+            flex items-center gap-2 sm:gap-3 group backdrop-blur-md
+            transition-all shadow-2xl
+            disabled:opacity-50 disabled:cursor-not-allowed
+            ${isWaiting
+              ? "bg-white/10 text-white border border-white/20 hover:bg-white/20"
+              : "bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+            }
+          `}
         >
           {isProcessingTurn ? (
             <>
               <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
               <span className="hidden sm:inline">Обработка...</span>
+            </>
+          ) : isWaiting ? (
+            <>
+              <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-white/70" />
+              <span className="hidden sm:inline">Ожидание ({readyStats.ready}/{readyStats.total})</span>
+              <span className="sm:hidden">{readyStats.ready}/{readyStats.total}</span>
             </>
           ) : (
             <>

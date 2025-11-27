@@ -91,15 +91,8 @@ export function EmployeeHireDialog({
         management: 60,
         creativity: 85
       },
-      personality: {
-        loyalty: 90,
-        ambition: 100,
-        stressTolerance: 90,
-        teamwork: 95
-      },
       strengths: ['Реальный игрок', 'Высокая мотивация'],
-      weaknesses: ['Высокие запросы'],
-      age: 25
+      weaknesses: ['Высокие запросы']
     }
   }
 

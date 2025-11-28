@@ -168,20 +168,31 @@ export function subscribeToTurnReadyStatus(
 export function syncTurnAdvance(callback: () => void) {
   if (!roomInstance) return () => { };
 
-  const handler = () => {
+  // Используем интервал для проверки вместо подписки на storage
+  let lastTimestamp = 0;
+
+  const checkInterval = setInterval(() => {
     roomInstance.getStorage().then((storage: any) => {
       const shouldAdvance = storage.get("turnAdvance");
-      if (shouldAdvance) {
+      const timestamp = storage.get("timestamp") || 0;
+
+      if (shouldAdvance && timestamp > lastTimestamp) {
+        lastTimestamp = timestamp;
         callback();
+
+        // Сбрасываем флаг
         if (isMultiplayerActive()) {
           storage.set("turnAdvance", false);
         }
       }
+    }).catch(() => {
+      // Игнорируем ошибки storage
     });
-  };
+  }, 500); // Проверяем каждые 500мс
 
-  const unsubscribe = roomInstance.subscribe("storage", handler);
-  return unsubscribe;
+  return () => {
+    clearInterval(checkInterval);
+  };
 }
 
 export function triggerTurnAdvance() {

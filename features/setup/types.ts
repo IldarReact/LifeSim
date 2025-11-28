@@ -32,7 +32,7 @@ export interface Asset {
 
 export interface Debt {
   name: string
-  amount: number
+  remainingAmount: number
   rate: number
   minPayment: number
 }

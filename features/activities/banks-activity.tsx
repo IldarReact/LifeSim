@@ -14,7 +14,7 @@ export function BanksActivity(): React.JSX.Element | null {
   const debts = player.debts;
 
   const totalDeposits = deposits.reduce((s, d) => s + d.value, 0);
-  const totalDebt = debts.reduce((s, d) => s + d.amount, 0);
+  const totalDebt = debts.reduce((s, d) => s + d.remainingAmount, 0);
   const quarterlyPayment = debts.reduce((s, d) => s + (d.quarterlyPayment || 0), 0);
 
   const hasIncome = player.quarterlyReport?.income ? player.quarterlyReport.income > 0 : player.cash > 50000;
@@ -114,7 +114,7 @@ export function BanksActivity(): React.JSX.Element | null {
                     </div>
                     <div className="text-right">
                       <p className="text-3xl font-bold text-zinc-100">
-                        −${debt.amount.toLocaleString()}
+                        −${debt.remainingAmount.toLocaleString()}
                       </p>
                       {debt.quarterlyPayment && (
                         <p className="text-zinc-500 text-sm mt-1">

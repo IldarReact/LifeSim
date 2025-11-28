@@ -291,7 +291,7 @@ export function CharacterSelect(): React.JSX.Element | null {
                     <CategoryCard
                       title="Долги"
                       icon={<CreditCard className="w-8 h-8 text-red-400" />}
-                      count={`-${detailedInfo.debts.reduce((acc, d) => acc + d.amount, 0).toLocaleString()}$`}
+                      count={`-${detailedInfo.debts.reduce((acc, d) => acc + d.remainingAmount, 0).toLocaleString()}$`}
                       onClick={() => setModalView("debts")}
                       image="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2671&auto=format&fit=crop"
                     />

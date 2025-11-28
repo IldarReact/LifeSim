@@ -8,12 +8,6 @@ type Presence = {
   color: string;
 };
 
-type Storage = {
-  game?: any;
-  turnAdvance?: boolean;
-  timestamp?: number;
-};
-
 let client: ReturnType<typeof createClient> | null = null;
 let roomInstance: any = null;
 
@@ -44,7 +38,7 @@ export function initMultiplayer(inputRoomId?: string): string {
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
 
-  const { room } = getClient().enterRoom<Presence, Storage, any, any>(id, {
+  const { room } = getClient().enterRoom<Presence, any, any, any>(id, {
     initialPresence: {
       name: randomName,
       isReady: false,
@@ -59,11 +53,6 @@ export function initMultiplayer(inputRoomId?: string): string {
   console.log("Мультиплеер: подключено к комнате", id);
 
   return id;
-}
-
-export function getSharedGameState() {
-  if (!roomInstance) throw new Error("Multiplayer not initialized");
-  return roomInstance.getStorage();
 }
 
 export const isMultiplayerActive = () => !!roomInstance;
@@ -165,42 +154,16 @@ export function subscribeToTurnReadyStatus(
   };
 }
 
+// Упрощенная версия без storage - используем только presence
 export function syncTurnAdvance(callback: () => void) {
   if (!roomInstance) return () => { };
 
-  // Используем интервал для проверки вместо подписки на storage
-  let lastTimestamp = 0;
-
-  const checkInterval = setInterval(() => {
-    roomInstance.getStorage().then((storage: any) => {
-      const shouldAdvance = storage.get("turnAdvance");
-      const timestamp = storage.get("timestamp") || 0;
-
-      if (shouldAdvance && timestamp > lastTimestamp) {
-        lastTimestamp = timestamp;
-        callback();
-
-        // Сбрасываем флаг
-        if (isMultiplayerActive()) {
-          storage.set("turnAdvance", false);
-        }
-      }
-    }).catch(() => {
-      // Игнорируем ошибки storage
-    });
-  }, 500); // Проверяем каждые 500мс
-
-  return () => {
-    clearInterval(checkInterval);
-  };
+  // Просто возвращаем пустую функцию - синхронизация через turnReady
+  return () => { };
 }
 
 export function triggerTurnAdvance() {
-  if (!roomInstance) return;
-  roomInstance.getStorage().then((storage: any) => {
-    storage.set("turnAdvance", true);
-    storage.set("timestamp", Date.now());
-  });
+  // Не используем - синхронизация через turnReady
 }
 
 export const getSharedState = () => ({
@@ -213,13 +176,9 @@ export const getSharedState = () => ({
     return roomInstance.subscribe("others", cb);
   },
   getStorage: () => {
-    if (!roomInstance) return null;
-    return roomInstance.getStorage();
+    return null;
   },
-  setStorage: (key: string, value: any) => {
-    if (!roomInstance) return;
-    roomInstance.getStorage().then((storage: any) => {
-      storage.set(key, value);
-    });
+  setStorage: () => {
+    // Не используем storage
   },
 });

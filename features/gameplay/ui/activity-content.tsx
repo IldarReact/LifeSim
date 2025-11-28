@@ -17,8 +17,8 @@ import {
   isMultiplayerActive,
   setPlayerReady,
   subscribeToReadyStatus,
-  syncTurnAdvance,
-  triggerTurnAdvance
+  subscribeToTurnReadyStatus,
+  setTurnReady
 } from "@/core/lib/multiplayer"
 
 // Helper type to exclude null from keys
@@ -39,35 +39,29 @@ export function ActivityContent(): React.JSX.Element | null {
   const { activeActivity, nextTurn, isProcessingTurn, gameStatus, player } = useGameStore()
 
   // Multiplayer state
-  const [readyStats, setReadyStats] = useState({ ready: 0, total: 1, allReady: false })
-  const [localIsReady, setLocalIsReady] = useState(false)
+  const [turnReadyStats, setTurnReadyStats] = useState({ ready: 0, total: 1, allReady: false })
+  const [localTurnReady, setLocalTurnReady] = useState(false)
 
-  // Подписка на статус готовности
+  // Подписка на статус готовности к ходу
   useEffect(() => {
     if (!isMultiplayerActive()) return
 
-    const unsubscribe = subscribeToReadyStatus((ready, total, allReady) => {
-      setReadyStats({ ready, total, allReady })
+    const unsubscribe = subscribeToTurnReadyStatus((ready, total, allReady) => {
+      setTurnReadyStats({ ready, total, allReady })
+
+      // Если все готовы - переходим ход
+      if (allReady && localTurnReady) {
+        // Сбрасываем статусы
+        setTurnReady(false)
+        setLocalTurnReady(false)
+
+        // Переходим ход
+        nextTurn()
+      }
     })
 
     return () => unsubscribe()
-  }, [])
-
-  // Подписка на синхронизацию хода
-  useEffect(() => {
-    if (!isMultiplayerActive()) return
-
-    const unsubscribe = syncTurnAdvance(() => {
-      // Все игроки переходят ход одновременно
-      nextTurn()
-
-      // Сбрасываем статус готовности
-      setPlayerReady(false)
-      setLocalIsReady(false)
-    })
-
-    return () => unsubscribe()
-  }, [nextTurn])
+  }, [localTurnReady, nextTurn])
 
   if (gameStatus !== "playing" || !player) return null
 
@@ -76,30 +70,18 @@ export function ActivityContent(): React.JSX.Element | null {
   const handleTurnClick = () => {
     const isMultiplayer = isMultiplayerActive()
 
-    if (isMultiplayer && readyStats.total > 1) {
+    if (isMultiplayer && turnReadyStats.total > 1) {
       // Мультиплеер: переключаем статус готовности
-      const newReadyState = !localIsReady
-      setLocalIsReady(newReadyState)
-      setPlayerReady(newReadyState)
-
-      // Если мы становимся готовыми и это делает всех готовыми - триггерим переход
-      if (newReadyState) {
-        // Проверяем: мы последние кто стал готов?
-        // ready + 1 (мы) === total
-        if (readyStats.ready + 1 === readyStats.total) {
-          // Небольшая задержка чтобы awareness успел обновиться
-          setTimeout(() => {
-            triggerTurnAdvance()
-          }, 100)
-        }
-      }
+      const newReadyState = !localTurnReady
+      setLocalTurnReady(newReadyState)
+      setTurnReady(newReadyState)
     } else {
       // Одиночная игра: сразу переходим ход
       nextTurn()
     }
   }
 
-  const isWaiting = isMultiplayerActive() && readyStats.total > 1 && localIsReady
+  const isWaiting = isMultiplayerActive() && turnReadyStats.total > 1 && localTurnReady
 
   return (
     <div className="relative min-h-screen pt-24">
@@ -147,8 +129,8 @@ export function ActivityContent(): React.JSX.Element | null {
           ) : isWaiting ? (
             <>
               <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-white/70" />
-              <span className="hidden sm:inline">Ожидание ({readyStats.ready}/{readyStats.total})</span>
-              <span className="sm:hidden">{readyStats.ready}/{readyStats.total}</span>
+              <span className="hidden sm:inline">Ожидание ({turnReadyStats.ready}/{turnReadyStats.total})</span>
+              <span className="sm:hidden">{turnReadyStats.ready}/{turnReadyStats.total}</span>
             </>
           ) : (
             <>

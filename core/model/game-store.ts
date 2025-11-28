@@ -18,8 +18,6 @@ export { useGameStore } from './store'
 // Multiplayer
 
 import { initMultiplayer, getSharedState } from '../lib/multiplayer';
-import { useGameStore } from './store';
-import type { GameState } from '../types';
 
 let multiplayerSynced = false;
 
@@ -36,28 +34,11 @@ export function enableMultiplayerSync() {
   console.log("Мультиплеер: подключено к комнате", roomId);
 
   const shared = getSharedState();
-  const { setState, subscribe } = useGameStore;
 
   // Liveblocks → Zustand (presence)
   shared.subscribeToPresenceChanges(() => {
     // Можно обновлять список онлайн-игроков, если нужно
   });
 
-  // Liveblocks → Zustand (storage)
-  shared.subscribeToStorageChanges(() => {
-    const storagePromise = shared.getStorage();
-    if (storagePromise) {
-      storagePromise.then((storage: any) => {
-        const data = storage.get("game");
-        if (data) {
-          setState(data as Partial<GameState>);
-        }
-      });
-    }
-  });
-
-  // Zustand → Liveblocks (синхронизация состояния)
-  subscribe((state: GameState) => {
-    shared.setStorage("game", state);
-  });
+  // Не используем storage для синхронизации - только presence
 }

@@ -219,24 +219,25 @@ export function MultiplayerLobby() {
 
             {/* Действия */}
             <div className="space-y-3">
-              {!isHost() && (
-                <Button
-                  onClick={handleToggleReady}
-                  disabled={!canReady}
-                  className={`w-full h-12 text-base font-medium transition-all ${isReady
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : "bg-slate-800 hover:bg-slate-700 text-slate-200"
-                    }`}
-                >
-                  {isReady ? "Вы готовы" : "Готов к игре"}
-                </Button>
-              )}
+              <Button
+                onClick={handleToggleReady}
+                disabled={!canReady}
+                className={`w-full h-12 text-base font-medium transition-all ${isReady
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                  }`}
+              >
+                {isReady ? "Вы готовы" : "Готов к игре"}
+              </Button>
 
               {isHost() && (
                 <Button
                   onClick={handleStartGame}
                   disabled={!canStart}
-                  className="w-full h-14 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
+                  className={`w-full h-14 text-lg font-bold shadow-lg transition-all ${canStart
+                      ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse"
+                      : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    }`}
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Начать игру

@@ -241,10 +241,13 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
           id: "initial_debt",
           name: "Student Loan",
           type: "student_loan",
-          amount: 20000,
+          principalAmount: 20000,
+          remainingAmount: 20000,
           interestRate: 5,
           quarterlyPayment: 200 * 3,
-          termMonths: 120
+          termQuarters: 40, // 120 months = 40 quarters
+          remainingQuarters: 40,
+          startTurn: 0
         }]
       }
       break

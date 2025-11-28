@@ -2,7 +2,6 @@
 "use client";
 
 import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
-import { initMultiplayer } from "@/core/lib/multiplayer";
 import { Button } from "@/shared/ui/button";
 import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -44,8 +43,8 @@ export function MultiplayerHud() {
   const hasRoom = urlParams?.get("room");
 
   const createRoom = () => {
-    initMultiplayer(); // генерирует ID и меняет URL
-    alert("Комната создана! Скопируй ссылку и отправь друзьям!");
+    const roomId = Math.random().toString(36).slice(2, 10);
+    window.location.href = `/lobby?room=${roomId}`;
   };
 
   const copyLink = () => {

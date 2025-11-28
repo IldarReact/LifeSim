@@ -5,6 +5,9 @@ type Presence = {
   name: string;
   isReady: boolean;
   turnReady: boolean;
+  isHost: boolean;
+  gameStarted: boolean;
+  selectedArchetype: string | null;
   color: string;
 };
 
@@ -26,7 +29,7 @@ function getClient() {
   return client;
 }
 
-export function initMultiplayer(inputRoomId?: string): string {
+export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): string {
   const id = inputRoomId || Math.random().toString(36).slice(2, 10);
 
   if (typeof window !== 'undefined') {
@@ -43,6 +46,9 @@ export function initMultiplayer(inputRoomId?: string): string {
       name: randomName,
       isReady: false,
       turnReady: false,
+      isHost: isCreator, // Создатель комнаты = хост
+      gameStarted: false,
+      selectedArchetype: null,
       color: randomColor,
     },
   });
@@ -57,12 +63,21 @@ export function initMultiplayer(inputRoomId?: string): string {
 
 export const isMultiplayerActive = () => !!roomInstance;
 
+export const isHost = () => {
+  if (!roomInstance) return false;
+  const self = roomInstance.getSelf();
+  return self?.presence.isHost || false;
+};
+
 type Player = {
   clientId: number;
   name: string;
   color: string;
   isReady: boolean;
   turnReady: boolean;
+  isHost: boolean;
+  gameStarted: boolean;
+  selectedArchetype: string | null;
   isLocal: boolean;
 };
 
@@ -78,6 +93,9 @@ export function getOnlinePlayers(): Player[] {
     color: other.presence.color || "#94a3b8",
     isReady: other.presence.isReady || false,
     turnReady: other.presence.turnReady || false,
+    isHost: other.presence.isHost || false,
+    gameStarted: other.presence.gameStarted || false,
+    selectedArchetype: other.presence.selectedArchetype || null,
     isLocal: false,
   }));
 
@@ -88,6 +106,9 @@ export function getOnlinePlayers(): Player[] {
       color: self.presence.color || "#94a3b8",
       isReady: self.presence.isReady || false,
       turnReady: self.presence.turnReady || false,
+      isHost: self.presence.isHost || false,
+      gameStarted: self.presence.gameStarted || false,
+      selectedArchetype: self.presence.selectedArchetype || null,
       isLocal: true,
     });
   }
@@ -108,6 +129,20 @@ export function setPlayerReady(ready: boolean) {
 export function setTurnReady(ready: boolean) {
   if (!roomInstance) return;
   roomInstance.updatePresence({ turnReady: ready });
+}
+
+export function setSelectedArchetype(archetype: string | null) {
+  if (!roomInstance) return;
+  roomInstance.updatePresence({ selectedArchetype: archetype });
+}
+
+export function startGame() {
+  if (!roomInstance) return;
+  if (!isHost()) {
+    console.warn("Only host can start the game");
+    return;
+  }
+  roomInstance.updatePresence({ gameStarted: true });
 }
 
 export function subscribeToReadyStatus(
@@ -154,16 +189,34 @@ export function subscribeToTurnReadyStatus(
   };
 }
 
-// Упрощенная версия без storage - используем только presence
-export function syncTurnAdvance(callback: () => void) {
+export function subscribeToGameStart(callback: () => void) {
   if (!roomInstance) return () => { };
 
-  // Просто возвращаем пустую функцию - синхронизация через turnReady
+  const handler = () => {
+    const players = getOnlinePlayers();
+    const hostPlayer = players.find(p => p.isHost);
+
+    if (hostPlayer?.gameStarted) {
+      callback();
+    }
+  };
+
+  const unsubscribe = roomInstance.subscribe("others", handler);
+  const unsubscribeSelf = roomInstance.subscribe("my-presence", handler);
+
+  return () => {
+    unsubscribe();
+    unsubscribeSelf();
+  };
+}
+
+export function syncTurnAdvance(callback: () => void) {
+  if (!roomInstance) return () => { };
   return () => { };
 }
 
 export function triggerTurnAdvance() {
-  // Не используем - синхронизация через turnReady
+  // Не используем
 }
 
 export const getSharedState = () => ({

@@ -4,6 +4,7 @@ import { createClient } from "@liveblocks/client";
 type Presence = {
   name: string;
   isReady: boolean;
+  turnReady: boolean;
   color: string;
 };
 
@@ -31,7 +32,6 @@ function getClient() {
   return client;
 }
 
-// ---------- инициализация ----------
 export function initMultiplayer(inputRoomId?: string): string {
   const id = inputRoomId || Math.random().toString(36).slice(2, 10);
 
@@ -48,6 +48,7 @@ export function initMultiplayer(inputRoomId?: string): string {
     initialPresence: {
       name: randomName,
       isReady: false,
+      turnReady: false,
       color: randomColor,
     },
   });
@@ -55,6 +56,7 @@ export function initMultiplayer(inputRoomId?: string): string {
   roomInstance = room;
 
   console.log(`[Multiplayer] Connected to Liveblocks room: ${id}`);
+  console.log("Мультиплеер: подключено к комнате", id);
 
   return id;
 }
@@ -66,13 +68,12 @@ export function getSharedGameState() {
 
 export const isMultiplayerActive = () => !!roomInstance;
 
-// ---------- Функции для работы с игроками (Presence) ----------
-
 type Player = {
   clientId: number;
   name: string;
   color: string;
   isReady: boolean;
+  turnReady: boolean;
   isLocal: boolean;
 };
 
@@ -87,6 +88,7 @@ export function getOnlinePlayers(): Player[] {
     name: other.presence.name || "Игрок",
     color: other.presence.color || "#94a3b8",
     isReady: other.presence.isReady || false,
+    turnReady: other.presence.turnReady || false,
     isLocal: false,
   }));
 
@@ -96,6 +98,7 @@ export function getOnlinePlayers(): Player[] {
       name: self.presence.name || "Игрок",
       color: self.presence.color || "#94a3b8",
       isReady: self.presence.isReady || false,
+      turnReady: self.presence.turnReady || false,
       isLocal: true,
     });
   }
@@ -113,6 +116,11 @@ export function setPlayerReady(ready: boolean) {
   roomInstance.updatePresence({ isReady: ready });
 }
 
+export function setTurnReady(ready: boolean) {
+  if (!roomInstance) return;
+  roomInstance.updatePresence({ turnReady: ready });
+}
+
 export function subscribeToReadyStatus(
   callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void
 ) {
@@ -128,12 +136,34 @@ export function subscribeToReadyStatus(
   };
 
   const unsubscribe = roomInstance.subscribe("others", handler);
-  handler(); // Вызываем сразу
+  handler();
 
   return unsubscribe;
 }
 
-// ---------- Функции синхронизации хода ----------
+export function subscribeToTurnReadyStatus(
+  callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void
+) {
+  if (!roomInstance) return () => { };
+
+  const handler = () => {
+    const players = getOnlinePlayers();
+    const readyCount = players.filter((p: Player) => p.turnReady).length;
+    const totalPlayers = players.length;
+    const allReady = totalPlayers > 1 && readyCount === totalPlayers;
+
+    callback(readyCount, totalPlayers, allReady);
+  };
+
+  const unsubscribe = roomInstance.subscribe("others", handler);
+  const unsubscribeSelf = roomInstance.subscribe("my-presence", handler);
+  handler();
+
+  return () => {
+    unsubscribe();
+    unsubscribeSelf();
+  };
+}
 
 export function syncTurnAdvance(callback: () => void) {
   if (!roomInstance) return () => { };
@@ -143,7 +173,6 @@ export function syncTurnAdvance(callback: () => void) {
       const shouldAdvance = storage.get("turnAdvance");
       if (shouldAdvance) {
         callback();
-        // Сбрасываем флаг
         if (isMultiplayerActive()) {
           storage.set("turnAdvance", false);
         }
@@ -163,7 +192,6 @@ export function triggerTurnAdvance() {
   });
 }
 
-// Вспомогательная функция для game-store.ts
 export const getSharedState = () => ({
   subscribeToPresenceChanges: (cb: () => void) => {
     if (!roomInstance) return () => { };
@@ -171,7 +199,7 @@ export const getSharedState = () => ({
   },
   subscribeToStorageChanges: (cb: () => void) => {
     if (!roomInstance) return () => { };
-    return roomInstance.subscribe("storage", cb);
+    return roomInstance.subscribe("others", cb);
   },
   getStorage: () => {
     if (!roomInstance) return null;

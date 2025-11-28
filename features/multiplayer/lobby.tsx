@@ -48,6 +48,7 @@ export function MultiplayerLobby() {
   const [selectedCountry, setSelectedCountry] = useState<string>("usa");
   const [roomId, setRoomId] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
   const [isArchetypeModalOpen, setIsArchetypeModalOpen] = useState(false);
@@ -56,37 +57,28 @@ export function MultiplayerLobby() {
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room");
 
-    // Логирование для отладки
-    console.log("[Lobby] Checking room params:", room);
-
     if (!room) {
-      console.log("[Lobby] Creating new room...");
       const newRoomId = initMultiplayer(undefined, true);
       setRoomId(newRoomId);
-      // Сохраняем права хоста для этой комнаты
       sessionStorage.setItem(`life_sim_host_${newRoomId}`, 'true');
-      console.log("[Lobby] Host rights saved for room:", newRoomId);
+      setIsOwner(true);
     } else {
       setRoomId(room);
-      // Проверяем, были ли мы хостом этой комнаты
       const isStoredHost = sessionStorage.getItem(`life_sim_host_${room}`) === 'true';
-      console.log("[Lobby] Joining room:", room, "Is stored host:", isStoredHost);
+      setIsOwner(isStoredHost);
       initMultiplayer(room, isStoredHost);
     }
 
     const updatePlayers = () => {
-      const currentPlayers = getOnlinePlayers();
-      const amIHost = isHost();
-      console.log("[Lobby] Update players:", currentPlayers.length, "Am I host:", amIHost);
-      setPlayers(currentPlayers);
+      setPlayers(getOnlinePlayers());
     };
 
-    const interval = setInterval(updatePlayers, 1000); // Реже обновляем, чтобы не спамить, но достаточно часто
+    const interval = setInterval(updatePlayers, 1000);
     updatePlayers();
 
     const unsubscribeGameStart = subscribeToGameStart(() => {
-      // Хост сам обрабатывает свой редирект в handleStartGame
-      if (isHost()) return;
+      // Хост сам обрабатывает свой редирект
+      if (sessionStorage.getItem(`life_sim_host_${room || roomId}`) === 'true') return;
 
       const myPlayer = getOnlinePlayers().find(p => p.isLocal);
       if (myPlayer?.selectedArchetype) {
@@ -119,8 +111,7 @@ export function MultiplayerLobby() {
   };
 
   const handleStartGame = () => {
-    if (!isHost()) return;
-
+    // Убираем проверку isHost(), доверяем кнопке
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
       alert("Не все игроки готовы! Все игроки должны выбрать персонажа и нажать 'Готов'.");
@@ -141,7 +132,7 @@ export function MultiplayerLobby() {
     alert("Ссылка скопирована!");
   };
 
-  const canStart = isHost() && players.every(p => p.isReady && p.selectedArchetype) && players.length > 0;
+  const canStart = isOwner && players.every(p => p.isReady && p.selectedArchetype) && players.length > 0;
   const canReady = selectedArchetype !== null;
 
   const selectedCountryName = countryList.find(c => c.id === selectedCountry)?.name || "Не выбрано";
@@ -242,19 +233,19 @@ export function MultiplayerLobby() {
                 onClick={handleToggleReady}
                 disabled={!canReady}
                 className={`w-full h-12 text-base font-medium transition-all ${isReady
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-200"
                   }`}
               >
                 {isReady ? "Вы готовы" : "Готов к игре"}
               </Button>
 
-              {isHost() && (
+              {isOwner && (
                 <Button
                   onClick={handleStartGame}
                   className={`w-full h-14 text-lg font-bold shadow-lg transition-all ${canStart
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse"
-                    : "bg-slate-800 text-slate-500"
+                      ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse"
+                      : "bg-slate-800 text-slate-500"
                     }`}
                 >
                   <Play className="w-5 h-5 mr-2" />

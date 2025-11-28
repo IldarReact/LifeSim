@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { WorldMapCard } from "./world-map-card"
 import { ActivitiesPanel } from "./activities-panel"
 import { Button } from "@/shared/ui/button"
-import { isMultiplayerActive, setTurnReady, triggerTurnAdvance } from "@/core/lib/multiplayer"
+import { isMultiplayerActive, setTurnReady, subscribeToTurnReadyStatus } from "@/core/lib/multiplayer"
 import { TurnSyncModal } from "@/features/multiplayer/turn-sync-modal"
 import { TurnLockedModal } from "@/features/multiplayer/turn-locked-modal"
 import { Loader2 } from "lucide-react"
@@ -23,6 +23,20 @@ export function GameplayLayout() {
   const [isTurnSyncOpen, setIsTurnSyncOpen] = useState(false)
   const [isTurnLocked, setIsTurnLocked] = useState(false)
   const [showLockedModal, setShowLockedModal] = useState(false)
+
+  // Подписка на готовность всех игроков
+  useEffect(() => {
+    if (!isMultiplayerActive() || !isTurnLocked) return
+
+    const unsubscribe = subscribeToTurnReadyStatus((ready, total, allReady) => {
+      // Если все готовы - переходим ход
+      if (allReady) {
+        handleAllPlayersReady()
+      }
+    })
+
+    return () => unsubscribe()
+  }, [isTurnLocked])
 
   if (!player || gameStatus !== "playing") return null
 
@@ -52,21 +66,37 @@ export function GameplayLayout() {
     setIsTurnLocked(false)
     setTurnReady(false)
 
-    // Триггерим переход хода для всех
-    triggerTurnAdvance()
+    // Переходим ход
     nextTurn()
   }
 
-  const handleActionAttempt = () => {
-    if (isTurnLocked) {
+  const handleClick = (e: React.MouseEvent) => {
+    // Если ход заблокирован и клик не на кнопку отмены
+    if (isTurnLocked && !(e.target as HTMLElement).closest('[data-allow-when-locked]')) {
+      e.stopPropagation()
       setShowLockedModal(true)
     }
   }
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-6 py-8" onClick={handleActionAttempt}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div
+        className="max-w-7xl mx-auto px-6 py-8"
+        onClick={handleClick}
+        style={{ pointerEvents: isTurnLocked ? 'auto' : 'auto' }}
+      >
+        {/* Оверлей блокировки */}
+        {isTurnLocked && (
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-30 cursor-not-allowed"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowLockedModal(true)
+            }}
+          />
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
           <div className="lg:col-span-1">
             <WorldMapCard country={countries[player.countryId]} />
           </div>
@@ -76,7 +106,7 @@ export function GameplayLayout() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex justify-center relative z-10">
           <Button
             onClick={handleNextTurn}
             disabled={isProcessingTurn || isTurnLocked}
@@ -88,7 +118,10 @@ export function GameplayLayout() {
                 Обработка хода...
               </>
             ) : isTurnLocked ? (
-              "Ожидание других игроков..."
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Ожидание других игроков...
+              </>
             ) : (
               `ЗАВЕРШИТЬ ХОД (${turn}/40)`
             )}

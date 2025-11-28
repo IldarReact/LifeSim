@@ -48,8 +48,8 @@ export function PlayerCard() {
               <h2 className="text-2xl font-bold text-white">Финансы</h2>
             </div>
             <div className="text-right">
-              <p className={`text-2xl md:text-3xl font-bold tracking-tight ${player.quarterlyReport.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {player.quarterlyReport.profit > 0 ? '+' : ''}${player.quarterlyReport.profit.toLocaleString()}
+              <p className={`text-2xl md:text-3xl font-bold tracking-tight ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {player.quarterlyReport.netProfit > 0 ? '+' : ''}${player.quarterlyReport.netProfit.toLocaleString()}
               </p>
               <span className="text-sm text-white/50 font-medium">чистая прибыль / кв.</span>
             </div>
@@ -75,7 +75,7 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-white/60">Общий доход</span>
-                    <span className="text-emerald-400 font-bold text-xl">+${player.quarterlyReport.income.toLocaleString()}</span>
+                    <span className="text-emerald-400 font-bold text-xl">+${player.quarterlyReport.income.total.toLocaleString()}</span>
                   </div>
                   <div className="pl-4 border-l-2 border-white/10 space-y-1 text-sm">
                     <div className="flex justify-between text-white/40">
@@ -90,7 +90,7 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-white/60">Общие расходы</span>
-                    <span className="text-rose-400 font-bold text-xl">-${player.quarterlyReport.expenses.toLocaleString()}</span>
+                    <span className="text-rose-400 font-bold text-xl">-${player.quarterlyReport.expenses.total.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -98,15 +98,15 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white/60">Налоги</span>
-                    <span className="text-amber-400 font-bold text-xl">-${player.quarterlyReport.taxes.toLocaleString()}</span>
+                    <span className="text-amber-400 font-bold text-xl">-${player.quarterlyReport.taxes.total.toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Net Profit */}
                 <div className="border-t border-white/10 pt-4 flex justify-between items-center">
                   <span className="text-xl font-bold text-white">Чистая прибыль</span>
-                  <span className={`text-2xl font-bold ${player.quarterlyReport.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {player.quarterlyReport.profit > 0 ? '+' : ''}${player.quarterlyReport.profit.toLocaleString()}
+                  <span className={`text-2xl font-bold ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {player.quarterlyReport.netProfit > 0 ? '+' : ''}${player.quarterlyReport.netProfit.toLocaleString()}
                   </span>
                 </div>
 

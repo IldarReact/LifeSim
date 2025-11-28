@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { calculateQuarterlyIncome } from './calculateQuarterlyIncome'
 import { calculateQuarterlyExpenses } from './calculateQuarterlyExpenses'
 import { calculateQuarterlyTaxes } from './calculateQuarterlyTaxes'
+import { createEmptyQuarterlyReport } from './financial-helpers'
 import type { PlayerState } from '@/core/types/game.types'
 import type { CountryEconomy } from '@/core/types/economy.types'
 
-describe('Game Calculations', () => {
+describe('Quarterly Calculations', () => {
   const mockPlayer: PlayerState = {
     id: 'test',
     name: 'Test Player',
@@ -33,13 +34,7 @@ describe('Game Calculations', () => {
       pregnancy: null
     },
     happinessMultiplier: 1,
-    quarterlyReport: {
-      income: 0,
-      taxes: 0,
-      expenses: 0,
-      profit: 0,
-      warning: null
-    },
+    quarterlyReport: createEmptyQuarterlyReport(),
     age: 25,
     health: 100,
     energy: 100,

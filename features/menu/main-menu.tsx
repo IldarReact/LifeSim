@@ -9,8 +9,6 @@ export function MainMenu() {
 
   const handleCreateLobby = () => {
     const roomId = Math.random().toString(36).slice(2, 10);
-    // Сохраняем права хоста перед переходом
-    sessionStorage.setItem(`life_sim_host_${roomId}`, 'true');
     window.location.href = `/lobby?room=${roomId}`;
   }
 

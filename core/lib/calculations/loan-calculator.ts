@@ -77,6 +77,11 @@ export function createDebt(
 ): Debt {
   const quarterlyPayment = calculateQuarterlyPayment(principal, annualRate, quarters);
 
+  // Calculate initial payment breakdown
+  const quarterlyInterestRate = annualRate / 100 / 4;
+  const quarterlyInterest = Math.round(principal * quarterlyInterestRate);
+  const quarterlyPrincipal = Math.max(0, quarterlyPayment - quarterlyInterest);
+
   return {
     id: `debt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
     name,
@@ -85,6 +90,8 @@ export function createDebt(
     remainingAmount: principal,
     interestRate: annualRate,
     quarterlyPayment,
+    quarterlyPrincipal,
+    quarterlyInterest,
     termQuarters: quarters,
     remainingQuarters: quarters,
     startTurn: currentTurn,

@@ -2,6 +2,7 @@ import type { GameStore } from '../slices/types'
 import type { Notification, Skill, SkillLevel, JobApplication } from '@/core/types'
 import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -14,7 +15,7 @@ export function processTurn(get: GetState, set: SetState): void {
 
   const newNotifications: Notification[] = []
   let updatedSkills = [...prev.player.personal.skills]
-  
+
   // Track skills being studied/used to prevent decay
   const protectedSkills = new Set<string>()
 
@@ -26,13 +27,13 @@ export function processTurn(get: GetState, set: SetState): void {
     const course = { ...c }
     course.remainingDuration -= 1
     protectedSkills.add(course.skillName)
-    
+
     if (course.remainingDuration <= 0) {
       finishedCourses.push(course.id)
-      
+
       const levelsGained = Math.ceil(course.totalDuration)
       let skillIdx = updatedSkills.findIndex(s => s.name === course.skillName)
-      
+
       if (skillIdx === -1) {
         const newLevel = Math.min(5, levelsGained) as SkillLevel
         updatedSkills.push({
@@ -57,7 +58,7 @@ export function processTurn(get: GetState, set: SetState): void {
         skill.progress = 0
         skill.lastPracticedTurn = prev.turn
         updatedSkills[skillIdx] = skill
-        
+
         newNotifications.push({
           id: `course_end_${Date.now()}_${Math.random()}`,
           type: 'success',
@@ -68,7 +69,7 @@ export function processTurn(get: GetState, set: SetState): void {
         })
       }
     }
-    
+
     return course
   }).filter(c => !finishedCourses.includes(c.id))
 
@@ -80,13 +81,13 @@ export function processTurn(get: GetState, set: SetState): void {
     const uni = { ...u }
     uni.remainingDuration -= 1
     protectedSkills.add(uni.skillName)
-    
+
     if (uni.remainingDuration <= 0) {
       finishedUni.push(uni.id)
-      
+
       const levelsGained = Math.ceil(uni.totalDuration)
       let skillIdx = updatedSkills.findIndex(s => s.name === uni.skillName)
-      
+
       if (skillIdx === -1) {
         const newLevel = Math.min(5, levelsGained) as SkillLevel
         updatedSkills.push({
@@ -111,7 +112,7 @@ export function processTurn(get: GetState, set: SetState): void {
         skill.progress = 0
         skill.lastPracticedTurn = prev.turn
         updatedSkills[skillIdx] = skill
-        
+
         newNotifications.push({
           id: `uni_end_${Date.now()}_${Math.random()}`,
           type: 'success',
@@ -122,7 +123,7 @@ export function processTurn(get: GetState, set: SetState): void {
         })
       }
     }
-    
+
     return uni
   }).filter(u => !finishedUni.includes(u.id))
 
@@ -132,7 +133,7 @@ export function processTurn(get: GetState, set: SetState): void {
       job.requirements.forEach(req => {
         const skillName = req.split('(')[0].trim()
         protectedSkills.add(skillName)
-        
+
         let skillIdx = updatedSkills.findIndex(s => s.name === skillName)
         if (skillIdx !== -1) {
           const skill = { ...updatedSkills[skillIdx] }
@@ -141,7 +142,7 @@ export function processTurn(get: GetState, set: SetState): void {
             skill.progress += 15 // Moderate progress at work
             skill.lastPracticedTurn = prev.turn
             skill.isBeingUsedAtWork = true
-            
+
             if (skill.progress >= 100) {
               skill.level = (skill.level + 1) as SkillLevel
               skill.progress = 0
@@ -166,24 +167,24 @@ export function processTurn(get: GetState, set: SetState): void {
   prev.pendingApplications.forEach(app => {
     let skillsMatch = true
     let matchScore = 0
-    
+
     if (app.requirements && app.requirements.length > 0) {
       app.requirements.forEach(req => {
         let reqName = req
         let reqLevel = 1 // Default Intern (1 star)
-        
+
         if (req.includes("(")) {
           const parts = req.split("(")
           reqName = parts[0].trim()
-          const levelStr = parts[1].replace(")", "").trim() 
+          const levelStr = parts[1].replace(")", "").trim()
           // Map string levels to stars
           const levelMap: Record<string, number> = { "Intern": 1, "Junior": 2, "Middle": 3, "Senior": 4, "Lead": 5 }
           reqLevel = levelMap[levelStr] || 1
         }
-        
+
         const playerSkill = updatedSkills.find(s => s.name === reqName)
         const playerLevel = playerSkill ? playerSkill.level : 0
-        
+
         if (playerLevel < reqLevel) {
           skillsMatch = false
         } else {
@@ -196,7 +197,7 @@ export function processTurn(get: GetState, set: SetState): void {
     if (chance > 0.95) chance = 0.95
 
     const isOffer = Math.random() < chance
-    
+
     if (isOffer) {
       newNotifications.push({
         id: `offer_${Date.now()}_${Math.random()}`,
@@ -216,12 +217,12 @@ export function processTurn(get: GetState, set: SetState): void {
         }
       })
     } else {
-      const reason = !skillsMatch 
+      const reason = !skillsMatch
         ? 'Ваши навыки не соответствуют требованиям вакансии.'
         : matchScore === 0
           ? 'К сожалению, был выбран другой кандидат с большим опытом.'
           : 'Высокая конкуренция на эту позицию.'
-      
+
       newNotifications.push({
         id: `reject_${Date.now()}_${Math.random()}`,
         type: 'info',
@@ -241,11 +242,11 @@ export function processTurn(get: GetState, set: SetState): void {
     }
 
     const turnsSinceLastPractice = prev.turn - skill.lastPracticedTurn
-    
+
     if (turnsSinceLastPractice > 4) {
       const decayAmount = Math.floor((turnsSinceLastPractice - 4) * 5)
       const newProgress = Math.max(0, skill.progress - decayAmount)
-      
+
       if (newProgress === 0 && skill.progress > 0) {
         if (skill.level > 0) {
           return {
@@ -255,23 +256,23 @@ export function processTurn(get: GetState, set: SetState): void {
           }
         }
       }
-      
+
       return { ...skill, progress: newProgress }
     }
-    
+
     return skill
   })
 
   // 5. Dating Logic
   let potentialPartner = prev.player.personal.potentialPartner
   let isDating = prev.player.personal.isDating
-  
+
   if (isDating && !potentialPartner) {
     // 30% chance to find someone
     if (Math.random() < 0.3) {
       const names = ['Мария', 'Анна', 'Елена', 'Виктория', 'София', 'Алиса', 'Дарья', 'Полина']
       const occupations = ['Дизайнер', 'Врач', 'Учитель', 'Менеджер', 'Юрист', 'Программист']
-      
+
       potentialPartner = {
         id: `partner_${Date.now()}`,
         name: names[Math.floor(Math.random() * names.length)],
@@ -279,7 +280,7 @@ export function processTurn(get: GetState, set: SetState): void {
         occupation: occupations[Math.floor(Math.random() * occupations.length)],
         income: 1000 + Math.floor(Math.random() * 3000)
       }
-      
+
       newNotifications.push({
         id: `dating_success_${Date.now()}`,
         type: 'success',
@@ -288,10 +289,10 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
-      
+
       isDating = false // Stop searching automatically
     } else {
-       newNotifications.push({
+      newNotifications.push({
         id: `dating_fail_${Date.now()}`,
         type: 'info',
         title: 'Поиск партнера',
@@ -305,15 +306,15 @@ export function processTurn(get: GetState, set: SetState): void {
   // 6. Pregnancy Logic
   let pregnancy = prev.player.personal.pregnancy
   let familyMembers = [...prev.player.personal.familyMembers]
-  
+
   if (pregnancy) {
     pregnancy = { ...pregnancy, turnsLeft: pregnancy.turnsLeft - 1 }
-    
+
     if (pregnancy.turnsLeft <= 0) {
       // Childbirth
       const childCount = pregnancy.isTwins ? 2 : 1
       const names = ['Макс', 'Александр', 'Михаил', 'Артем', 'Иван', 'Дмитрий']
-      
+
       for (let i = 0; i < childCount; i++) {
         familyMembers.push({
           id: `child_${Date.now()}_${i}`,
@@ -328,7 +329,7 @@ export function processTurn(get: GetState, set: SetState): void {
           healthMod: 0
         })
       }
-      
+
       newNotifications.push({
         id: `birth_${Date.now()}`,
         type: 'success',
@@ -337,17 +338,17 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
-      
+
       pregnancy = null
     }
   }
 
   // 7. Calculate Energy for Next Turn
   const totalActiveEnergyCost = activeCourses.reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                                activeUniversity.reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                                prev.player.jobs.reduce((acc, j) => acc + j.energyCost, 0) +
-                                prev.player.businesses.reduce((acc, b) => acc + b.energyCostPerTurn, 0)
-  
+    activeUniversity.reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
+    prev.player.jobs.reduce((acc, j) => acc + j.energyCost, 0) +
+    prev.player.businesses.reduce((acc, b) => acc + b.energyCostPerTurn, 0)
+
   const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
 
   // Calculate business sanity impact
@@ -357,7 +358,7 @@ export function processTurn(get: GetState, set: SetState): void {
   // 8. Process Buffs
   let activeBuffs = [...(prev.player.personal.buffs || [])]
   const expiredBuffs: string[] = []
-  
+
   // Apply buff effects and decrement duration
   let buffHappinessMod = 0
   let buffHealthMod = 0
@@ -368,7 +369,7 @@ export function processTurn(get: GetState, set: SetState): void {
 
   activeBuffs = activeBuffs.map(buff => {
     const newBuff = { ...buff, duration: buff.duration - 1 }
-    
+
     // Accumulate modifiers
     switch (buff.type) {
       case 'happiness': buffHappinessMod += buff.value; break;
@@ -403,9 +404,9 @@ export function processTurn(get: GetState, set: SetState): void {
       activeUniversity
     }
   }
-  
+
   const statMods = calculateStatModifiers(tempPlayer)
-  
+
   // Apply modifiers to stats (Base + Buffs + Business)
   const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
   const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
@@ -414,35 +415,28 @@ export function processTurn(get: GetState, set: SetState): void {
 
 
   // 10. Financial Calculations (Quarterly)
-  const country = prev.countries[prev.player.countryId] || { taxRate: 0 }
-  
-  // Income
-  const jobIncome = prev.player.quarterlySalary
-  const businessFinancials = prev.player.businesses.reduce((acc, b) => {
-    const financials = calculateBusinessFinancials(b)
-    return {
-      income: acc.income + financials.income,
-      expenses: acc.expenses + financials.expenses
-    }
-  }, { income: 0, expenses: 0 })
-  
+  const country = prev.countries[prev.player.countryId] || { taxRate: 0, costOfLivingModifier: 1.0 }
+
+  // Gather financial data
   const familyIncome = familyMembers.reduce((acc, m) => acc + m.income, 0)
-  
-  // Apply Income Buffs
-  const grossIncome = (jobIncome + businessFinancials.income + familyIncome) * (1 + buffIncomeMod / 100)
-  
-  // Expenses
   const familyExpenses = familyMembers.reduce((acc, m) => acc + m.expenses, 0)
-  const debtPayments = prev.player.debts.reduce((acc, d) => acc + d.quarterlyPayment, 0)
-  const businessExpenses = businessFinancials.expenses
-  
-  const totalExpenses = familyExpenses + debtPayments + businessExpenses
-  
-  // Taxes
-  const taxAmount = grossIncome * (country.taxRate / 100)
-  
-  // Net Profit
-  const netProfit = grossIncome - totalExpenses - taxAmount
+  const assetIncome = prev.player.assets.reduce((acc, a) => acc + (a.income * 3), 0)
+  const assetMaintenance = prev.player.assets.reduce((acc, a) => acc + (a.expenses * 3), 0)
+  const debtInterest = prev.player.debts.reduce((acc, d) => acc + d.quarterlyInterest, 0)
+
+  // Calculate quarterly report using new system
+  const quarterlyReport = calculateQuarterlyReport({
+    player: prev.player,
+    country,
+    familyIncome,
+    familyExpenses,
+    assetIncome,
+    assetMaintenance,
+    debtInterest,
+    buffIncomeMod
+  })
+
+  const netProfit = quarterlyReport.netProfit
 
   const newTurn = prev.turn + 1
   const newYear = prev.year + Math.floor((newTurn - 1) / 4)
@@ -473,13 +467,7 @@ export function processTurn(get: GetState, set: SetState): void {
         },
         energy: Math.min(100, recoveredEnergy + buffEnergyMod),
         cash: state.player.cash + netProfit,
-        quarterlyReport: {
-          income: Math.round(grossIncome),
-          expenses: Math.round(totalExpenses),
-          taxes: Math.round(taxAmount),
-          profit: Math.round(netProfit),
-          warning: netProfit < 0 ? "Вы теряете деньги!" : null
-        }
+        quarterlyReport
       } : null,
       notifications: [...newNotifications, ...state.notifications],
       pendingApplications: remainingApplications

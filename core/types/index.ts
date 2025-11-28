@@ -37,6 +37,9 @@ export type {
   DebtType,
   Asset,
   Debt,
+  IncomeBreakdown,
+  ExpensesBreakdown,
+  TaxesBreakdown,
   QuarterlyReport
 } from './finance.types';
 

@@ -138,9 +138,11 @@ export function setSelectedArchetype(archetype: string | null) {
 
 export function startGame() {
   if (!roomInstance) return;
-  // Принудительно ставим себя хостом и запускаем игру
-  // Это решает проблему, если при перезагрузке статус хоста не успел синхронизироваться
-  roomInstance.updatePresence({ gameStarted: true, isHost: true });
+  if (!isHost()) {
+    console.warn("Only host can start the game");
+    return;
+  }
+  roomInstance.updatePresence({ gameStarted: true });
 }
 
 export function subscribeToReadyStatus(

@@ -2,6 +2,8 @@ import type { CountryEconomy } from "@/core/types/economy.types"
 import type { PlayerState } from "@/core/types/game.types"
 import type { CharacterArchetype, Job } from "@/core/types/job.types"
 import { JOB_INFO } from "@/core/lib/jobsData"
+import { createEmptyQuarterlyReport } from "@/core/lib/calculations/financial-helpers"
+import { createDebt } from "@/core/lib/calculations/debt-helpers"
 
 export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
   "us": {
@@ -113,13 +115,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
       potentialPartner: null,
       pregnancy: null
     },
-    quarterlyReport: {
-      income: 0,
-      taxes: 0,
-      expenses: 0,
-      profit: 0,
-      warning: null
-    },
+    quarterlyReport: createEmptyQuarterlyReport(),
     quarterlySalary: 0,
     happinessMultiplier: 1.0,
     health: 100,
@@ -239,7 +235,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
           ],
           familyMembers: [] // Alone
         },
-        debts: [{
+        debts: [createDebt({
           id: "initial_debt",
           name: "Student Loan",
           type: "student_loan",
@@ -250,7 +246,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
           termQuarters: 40, // 120 months = 40 quarters
           remainingQuarters: 40,
           startTurn: 0
-        }]
+        })]
       }
       break
   }

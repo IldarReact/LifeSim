@@ -17,7 +17,7 @@ export function BanksActivity(): React.JSX.Element | null {
   const totalDebt = debts.reduce((s, d) => s + d.remainingAmount, 0);
   const quarterlyPayment = debts.reduce((s, d) => s + (d.quarterlyPayment || 0), 0);
 
-  const hasIncome = player.quarterlyReport?.income ? player.quarterlyReport.income > 0 : player.cash > 50000;
+  const hasIncome = player.quarterlyReport?.income ? player.quarterlyReport.income.total > 0 : player.cash > 50000;
 
   return (
     <div className="min-h-screen bg-zinc-950">

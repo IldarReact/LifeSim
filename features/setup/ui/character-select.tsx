@@ -54,13 +54,16 @@ const getDetailedInfo = (archetypeId: string): CharacterDetailedInfo => {
   }
 }
 
-export function CharacterSelect(): React.JSX.Element | null {
-  const { gameStatus, initializeGame, setupCountryId } = useGameStore()
+export interface CharacterSelectUIProps {
+  setupCountryId: string
+  onSelect: (archetype: CharacterArchetype) => void
+  onBack?: () => void
+}
+
+export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: CharacterSelectUIProps): React.JSX.Element | null {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalView, setModalView] = useState<ModalView>("main")
-
-  if (gameStatus !== "select_character") return null
 
   const handleNext = (): void => {
     setCurrentIndex((prev) => (prev + 1) % ARCHETYPES.length)
@@ -83,9 +86,7 @@ export function CharacterSelect(): React.JSX.Element | null {
   const visibleIndices = getVisibleIndices()
 
   const handleSelect = (): void => {
-    if (setupCountryId) {
-      initializeGame(setupCountryId, currentArchetype)
-    }
+    onSelect(currentArchetype)
   }
 
   return (
@@ -95,6 +96,15 @@ export function CharacterSelect(): React.JSX.Element | null {
         className="absolute inset-0 bg-cover bg-center blur-md opacity-30 transition-all duration-700"
         style={{ backgroundImage: `url(${getCharacterImage(currentArchetype)})` }}
       />
+
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-8 left-8 z-50 p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all text-white"
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </button>
+      )}
 
       {/* Navigation Buttons */}
       <button
@@ -371,6 +381,23 @@ export function CharacterSelect(): React.JSX.Element | null {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+export function CharacterSelect(): React.JSX.Element | null {
+  const { gameStatus, initializeGame, setupCountryId } = useGameStore()
+
+  if (gameStatus !== "select_character") return null
+
+  return (
+    <CharacterSelectUI
+      setupCountryId={setupCountryId || 'us'}
+      onSelect={(archetype) => {
+        if (setupCountryId) {
+          initializeGame(setupCountryId, archetype)
+        }
+      }}
+    />
   )
 }
 

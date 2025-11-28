@@ -35,11 +35,14 @@ function Stat({ label, value }: StatProps): React.JSX.Element {
   )
 }
 
-export function WorldSelect(): React.JSX.Element | null {
-  const { countries: countriesRecord, gameStatus, setSetupCountry } = useGameStore()
+export interface WorldSelectUIProps {
+  countries: CountryEconomy[]
+  onSelect: (countryId: string) => void
+  onBack?: () => void
+}
+
+export function WorldSelectUI({ countries, onSelect, onBack }: WorldSelectUIProps): React.JSX.Element | null {
   const [index, setIndex] = useState(0)
-  
-  const countries = Object.values(countriesRecord)
 
   useEffect(() => {
     if (countries.length === 0) return
@@ -47,14 +50,11 @@ export function WorldSelect(): React.JSX.Element | null {
     const handler = (e: KeyboardEvent): void => {
       if (e.key === "ArrowRight") setIndex(i => (i + 1) % countries.length)
       if (e.key === "ArrowLeft") setIndex(i => (i - 1 + countries.length) % countries.length)
+      if (e.key === "Escape" && onBack) onBack()
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [countries.length])
-
-  if (gameStatus !== "setup") {
-    return null
-  }
+  }, [countries.length, onBack])
 
   if (countries.length === 0) {
     return (
@@ -72,7 +72,7 @@ export function WorldSelect(): React.JSX.Element | null {
   const prev = (): void => setIndex(i => (i - 1 + countries.length) % countries.length)
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden z-50">
       <AnimatePresence mode="wait">
         <motion.div
           key={bg + index}
@@ -87,6 +87,15 @@ export function WorldSelect(): React.JSX.Element | null {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-8 left-8 z-50 p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all text-white"
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </button>
+      )}
 
       <div className="relative h-screen flex items-center justify-end px-10 lg:px-20">
         <motion.div
@@ -112,7 +121,7 @@ export function WorldSelect(): React.JSX.Element | null {
 
             <div className="flex justify-end pt-8">
               <Button
-                onClick={() => setSetupCountry(country.id)}
+                onClick={() => onSelect(country.id)}
                 size="lg"
                 className="bg-white text-black hover:bg-white/90 font-bold text-xl px-16 py-8 rounded-2xl shadow-2xl transition-all hover:scale-105"
               >
@@ -141,4 +150,14 @@ export function WorldSelect(): React.JSX.Element | null {
       </div>
     </div>
   )
+}
+
+export function WorldSelect(): React.JSX.Element | null {
+  const { countries: countriesRecord, gameStatus, setSetupCountry } = useGameStore()
+
+  if (gameStatus !== "setup") {
+    return null
+  }
+
+  return <WorldSelectUI countries={Object.values(countriesRecord)} onSelect={setSetupCountry} />
 }

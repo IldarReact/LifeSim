@@ -16,8 +16,8 @@ import {
 import { useGameStore } from "@/core/model/game-store";
 import type { CharacterArchetype } from "@/core/types/job.types";
 import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { ExpandableCard } from "@/shared/ui/expandable-card";
+import { WorldSelectUI } from "@/features/setup/ui/world-select";
+import { CharacterSelectUI } from "@/features/setup/ui/character-select";
 import type { CountryEconomy } from "@/core/types";
 
 type Player = {
@@ -127,6 +127,27 @@ export function MultiplayerLobby() {
 
   const selectedCountryName = countryList.find(c => c.id === selectedCountry)?.name || "Не выбрано";
   const selectedArchetypeName = ARCHETYPES.find(a => a.id === selectedArchetype)?.name || "Не выбрано";
+
+  // Full screen modals
+  if (isCountryModalOpen) {
+    return (
+      <WorldSelectUI
+        countries={countryList}
+        onSelect={handleCountrySelect}
+        onBack={() => setIsCountryModalOpen(false)}
+      />
+    );
+  }
+
+  if (isArchetypeModalOpen) {
+    return (
+      <CharacterSelectUI
+        setupCountryId={selectedCountry}
+        onSelect={handleArchetypeSelect}
+        onBack={() => setIsArchetypeModalOpen(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 p-6 text-slate-200 font-sans">
@@ -286,87 +307,6 @@ export function MultiplayerLobby() {
           </div>
         </div>
       </div>
-
-      {/* Модалка выбора страны */}
-      <Dialog open={isCountryModalOpen} onOpenChange={setIsCountryModalOpen}>
-        <DialogContent className="max-w-4xl bg-slate-950 border-slate-800 text-slate-200 max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white mb-4">Выберите страну</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {countryList.map((country: CountryEconomy) => (
-              <ExpandableCard
-                key={country.id}
-                title={country.name}
-                description={`${country.archetype.replace(/_/g, " ")}`}
-                image={`/placeholder.svg?height=120&width=120&query=flag+${country.name}`}
-              >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-slate-500">GDP Growth</p>
-                      <p className="font-semibold text-white">{country.gdpGrowth}%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Inflation</p>
-                      <p className="font-semibold text-white">{country.inflation}%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Interest Rate</p>
-                      <p className="font-semibold text-white">{country.interestRate}%</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Tax Rate</p>
-                      <p className="font-semibold text-white">{country.taxRate}%</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleCountrySelect(country.id)}
-                    className="w-full px-4 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition font-semibold border border-slate-700"
-                  >
-                    Выбрать {country.name}
-                  </button>
-                </div>
-              </ExpandableCard>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Модалка выбора персонажа */}
-      <Dialog open={isArchetypeModalOpen} onOpenChange={setIsArchetypeModalOpen}>
-        <DialogContent className="max-w-2xl bg-slate-950 border-slate-800 text-slate-200">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white mb-4">Выберите персонажа</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            {ARCHETYPES.map((archetype) => (
-              <button
-                key={archetype.id}
-                onClick={() => handleArchetypeSelect(archetype.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${selectedArchetype === archetype.id
-                    ? "bg-slate-800 border-slate-600"
-                    : "bg-slate-900 border-slate-800 hover:bg-slate-800 hover:border-slate-700"
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-white font-bold text-lg">
-                      {archetype.name}
-                    </h3>
-                    <p className="text-slate-400 text-sm">
-                      {archetype.description}
-                    </p>
-                  </div>
-                  {selectedArchetype === archetype.id && (
-                    <Check className="w-6 h-6 text-emerald-500" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

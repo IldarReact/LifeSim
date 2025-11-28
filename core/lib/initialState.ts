@@ -8,11 +8,13 @@ export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
     archetype: "rich_stable",
     gdpGrowth: 3.0,
     inflation: 2.5,
+    keyRate: 3.0,
     interestRate: 3.0,
     unemployment: 4.0,
     taxRate: 30,
     salaryModifier: 1.0,
-    costOfLivingModifier: 1.0
+    costOfLivingModifier: 1.0,
+    activeEvents: []
   },
   "de": {
     id: "de",
@@ -20,11 +22,13 @@ export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
     archetype: "rich_stable",
     gdpGrowth: 1.5,
     inflation: 2.0,
+    keyRate: 2.5,
     interestRate: 2.5,
     unemployment: 3.5,
     taxRate: 40,
     salaryModifier: 0.9,
-    costOfLivingModifier: 0.9
+    costOfLivingModifier: 0.9,
+    activeEvents: []
   },
   "br": {
     id: "br",
@@ -32,17 +36,19 @@ export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
     archetype: "rich_resource",
     gdpGrowth: 10.0,
     inflation: 6.0,
+    keyRate: 12.0,
     interestRate: 12.0,
     unemployment: 3.0,
     taxRate: 13,
     salaryModifier: 0.4,
-    costOfLivingModifier: 0.5
+    costOfLivingModifier: 0.5,
+    activeEvents: []
   }
 }
 
 export function createInitialPlayer(archetype: CharacterArchetype, countryId: string): PlayerState {
   const jobInfo = JOB_INFO[archetype]
-  
+
   const initialJob: Job = {
     id: `job_${Date.now()}`,
     title: jobInfo.title,
@@ -126,25 +132,26 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
   switch (archetype) {
     case "investor":
       initialJob.salary = 2000 * 3
-      finalState = { 
-        ...base, 
-        cash: 50000, 
+      finalState = {
+        ...base,
+        cash: 50000,
         quarterlySalary: 2000 * 3,
-        personal: { ...base.personal, intelligence: 70, skills: [
-          { id: 'fin_1', name: 'Инвестиции', level: 2, progress: 40, lastPracticedTurn: 0 },
-          { id: 'eng_inv', name: 'English', level: 3, progress: 30, lastPracticedTurn: 0 }
-        ],
-        familyMembers: [
-            { 
-              id: 'wife_inv', 
-              name: 'Виктория', 
-              type: 'wife', 
-              age: 24, 
-              relationLevel: 80, 
-              income: 1500 * 3, 
-              expenses: 2000 * 3, 
-              happinessMod: 5, 
-              sanityMod: 2, 
+        personal: {
+          ...base.personal, intelligence: 70, skills: [
+            { id: 'fin_1', name: 'Инвестиции', level: 2, progress: 40, lastPracticedTurn: 0 },
+            { id: 'eng_inv', name: 'English', level: 3, progress: 30, lastPracticedTurn: 0 }
+          ],
+          familyMembers: [
+            {
+              id: 'wife_inv',
+              name: 'Виктория',
+              type: 'wife',
+              age: 24,
+              relationLevel: 80,
+              income: 1500 * 3,
+              expenses: 2000 * 3,
+              happinessMod: 5,
+              sanityMod: 2,
               healthMod: 0,
               goals: [
                 {
@@ -160,67 +167,75 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
                 }
               ]
             }
-        ] }
+          ]
+        }
       }
       break
     case "specialist":
       initialJob.salary = 4000 * 3
-      finalState = { 
-        ...base, 
-        cash: 10000, 
+      finalState = {
+        ...base,
+        cash: 10000,
         quarterlySalary: 4000 * 3,
-        personal: { ...base.personal, intelligence: 80, skills: [
-          { id: 'prog_1', name: 'Программирование', level: 2, progress: 45, lastPracticedTurn: 0 },
-          { id: 'eng_spec', name: 'English', level: 4, progress: 20, lastPracticedTurn: 0 }
-        ],
-        familyMembers: [
+        personal: {
+          ...base.personal, intelligence: 80, skills: [
+            { id: 'prog_1', name: 'Программирование', level: 2, progress: 45, lastPracticedTurn: 0 },
+            { id: 'eng_spec', name: 'English', level: 4, progress: 20, lastPracticedTurn: 0 }
+          ],
+          familyMembers: [
             { id: 'pet_spec', name: 'Пиксель', type: 'pet', age: 2, relationLevel: 90, income: 0, expenses: 100 * 3, happinessMod: 3, sanityMod: 5, healthMod: 0 }
-        ] }
+          ]
+        }
       }
       break
     case "entrepreneur":
       initialJob.salary = 1000 * 3
-      finalState = { 
-        ...base, 
-        cash: 5000, 
+      finalState = {
+        ...base,
+        cash: 5000,
         quarterlySalary: 1000 * 3,
-        personal: { ...base.personal, intelligence: 75, skills: [
-          { id: 'man_1', name: 'Менеджмент', level: 2, progress: 40, lastPracticedTurn: 0 },
-          { id: 'eng_ent', name: 'English', level: 2, progress: 60, lastPracticedTurn: 0 }
-        ],
-        familyMembers: [
+        personal: {
+          ...base.personal, intelligence: 75, skills: [
+            { id: 'man_1', name: 'Менеджмент', level: 2, progress: 40, lastPracticedTurn: 0 },
+            { id: 'eng_ent', name: 'English', level: 2, progress: 60, lastPracticedTurn: 0 }
+          ],
+          familyMembers: [
             { id: 'wife_ent', name: 'Елена', type: 'wife', age: 25, relationLevel: 70, income: 1000 * 3, expenses: 1500 * 3, happinessMod: 4, sanityMod: 1, healthMod: 0 },
             { id: 'child_ent', name: 'Макс', type: 'child', age: 3, relationLevel: 90, income: 0, expenses: 500 * 3, happinessMod: 10, sanityMod: -2, healthMod: 0 }
-        ] }
+          ]
+        }
       }
       break
     case "worker":
       initialJob.salary = 2500 * 3
-      finalState = { 
-        ...base, 
-        cash: 2000, 
-        quarterlySalary: 2500 * 3, 
-        personal: { ...base.personal, intelligence: 50, skills: [
-          { id: 'eng_work', name: 'English', level: 1, progress: 50, lastPracticedTurn: 0 }
-        ],
-        familyMembers: [
+      finalState = {
+        ...base,
+        cash: 2000,
+        quarterlySalary: 2500 * 3,
+        personal: {
+          ...base.personal, intelligence: 50, skills: [
+            { id: 'eng_work', name: 'English', level: 1, progress: 50, lastPracticedTurn: 0 }
+          ],
+          familyMembers: [
             { id: 'wife_work', name: 'Ольга', type: 'wife', age: 22, relationLevel: 60, income: 800 * 3, expenses: 1000 * 3, happinessMod: 3, sanityMod: 1, healthMod: 0 },
             { id: 'child_work_1', name: 'Аня', type: 'child', age: 4, relationLevel: 80, income: 0, expenses: 400 * 3, happinessMod: 8, sanityMod: -1, healthMod: 0 },
             { id: 'child_work_2', name: 'Ваня', type: 'child', age: 1, relationLevel: 90, income: 0, expenses: 400 * 3, happinessMod: 8, sanityMod: -2, healthMod: 0 }
-        ] }
+          ]
+        }
       }
       break
     case "indebted":
       initialJob.salary = 2000 * 3
-      finalState = { 
-        ...base, 
-        cash: 1000, 
-        quarterlySalary: 2000 * 3, 
-        personal: { ...base.personal, intelligence: 60, skills: [
-          { id: 'fin_2', name: 'Фин. грамотность', level: 1, progress: 20, lastPracticedTurn: 0 },
-          { id: 'eng_debt', name: 'English', level: 2, progress: 30, lastPracticedTurn: 0 }
-        ],
-        familyMembers: [] // Alone
+      finalState = {
+        ...base,
+        cash: 1000,
+        quarterlySalary: 2000 * 3,
+        personal: {
+          ...base.personal, intelligence: 60, skills: [
+            { id: 'fin_2', name: 'Фин. грамотность', level: 1, progress: 20, lastPracticedTurn: 0 },
+            { id: 'eng_debt', name: 'English', level: 2, progress: 30, lastPracticedTurn: 0 }
+          ],
+          familyMembers: [] // Alone
         },
         debts: [{
           id: "initial_debt",
@@ -230,7 +245,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
           interestRate: 5,
           quarterlyPayment: 200 * 3,
           termMonths: 120
-        }] 
+        }]
       }
       break
   }

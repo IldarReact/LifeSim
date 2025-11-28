@@ -1,4 +1,6 @@
-import type { Debt, CountryEconomy } from '@/core/types';
+import type { Debt, CountryEconomy, GameState } from '@/core/types';
+
+type Player = GameState['player'];
 
 /**
  * Рассчитывает квартальный платеж по кредиту (аннуитетный платеж)
@@ -12,11 +14,13 @@ export function calculateQuarterlyPayment(
   annualRate: number,
   quarters: number
 ): number {
+  if (principal <= 0 || quarters <= 0) return 0;
+
   // Квартальная ставка
   const quarterlyRate = annualRate / 4 / 100;
 
   if (quarterlyRate === 0) {
-    return principal / quarters;
+    return Math.round(principal / quarters);
   }
 
   // Аннуитетная формула: P * (r * (1 + r)^n) / ((1 + r)^n - 1)
@@ -74,7 +78,7 @@ export function createDebt(
   const quarterlyPayment = calculateQuarterlyPayment(principal, annualRate, quarters);
 
   return {
-    id: `debt_${Date.now()}`,
+    id: `debt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
     name,
     type,
     principalAmount: principal,
@@ -162,4 +166,133 @@ export function getAvailableLoanTerms(): number[] {
     84, 120, // 7-10 лет
     180, 240, 300, 360 // 15-30 лет (ипотека)
   ];
+}
+
+/**
+ * Рассчитывает кредитный рейтинг игрока (0-100)
+ * @param player - Игрок
+ * @returns Кредитный рейтинг
+ */
+export function calculateCreditRating(player: Player | null): number {
+  if (!player) return 0;
+
+  let rating = 70; // Базовый рейтинг
+
+  // Учитываем активные кредиты
+  const activeDebts = player.debts.filter((d: Debt) => d.remainingQuarters > 0);
+  rating -= activeDebts.length * 5; // -5 за каждый активный кредит
+
+  // Учитываем просрочки (если есть поле в Player)
+  // rating -= player.missedPayments * 10;
+
+  // Учитываем доход
+  const monthlyIncome = (player.quarterlySalary || 0) / 3;
+  const totalDebtPayment = activeDebts.reduce((sum: number, d: Debt) => sum + d.quarterlyPayment, 0) / 3;
+  const debtToIncomeRatio = monthlyIncome > 0 ? totalDebtPayment / monthlyIncome : 0;
+
+  if (debtToIncomeRatio > 0.5) {
+    rating -= 20; // Высокая долговая нагрузка
+  } else if (debtToIncomeRatio > 0.3) {
+    rating -= 10;
+  }
+
+  // Учитываем наличные
+  if (player.cash > 100000) {
+    rating += 10;
+  } else if (player.cash < 10000) {
+    rating -= 5;
+  }
+
+  return Math.max(0, Math.min(100, rating));
+}
+
+/**
+ * Рассчитывает максимальную сумму кредита для игрока
+ * @param player - Игрок
+ * @param debtType - Тип кредита
+ * @returns Максимальная сумма кредита
+ */
+export function calculateMaxLoanAmount(
+  player: Player | null,
+  debtType: Debt['type']
+): number {
+  if (!player) return 0;
+
+  const monthlyIncome = (player.quarterlySalary || 0) / 3;
+  const activeDebts = player.debts.filter((d: Debt) => d.remainingQuarters > 0);
+  const currentDebtPayment = activeDebts.reduce((sum: number, d: Debt) => sum + d.quarterlyPayment, 0) / 3;
+
+  // Максимальная долговая нагрузка: 50% от дохода
+  const maxMonthlyPayment = monthlyIncome * 0.5 - currentDebtPayment;
+
+  if (maxMonthlyPayment <= 0) return 0;
+
+  // Множители для разных типов кредитов
+  const multipliers: Record<Debt['type'], number> = {
+    mortgage: 120, // 10 лет
+    consumer_credit: 24, // 2 года
+    student_loan: 60, // 5 лет
+  };
+
+  return Math.floor(maxMonthlyPayment * multipliers[debtType]);
+}
+
+/**
+ * Рассчитывает сумму досрочного погашения
+ * @param debt - Кредит
+ * @returns Сумма для полного досрочного погашения
+ */
+export function calculateEarlyRepayment(debt: Debt): number {
+  return Math.round(debt.remainingAmount);
+}
+
+/**
+ * Обрабатывает досрочное погашение кредита
+ * @param debt - Кредит
+ * @param amount - Сумма досрочного погашения
+ * @returns Обновленный кредит
+ */
+export function processEarlyRepayment(debt: Debt, amount: number): Debt {
+  const newRemaining = Math.max(0, debt.remainingAmount - amount);
+
+  if (newRemaining === 0) {
+    return {
+      ...debt,
+      remainingAmount: 0,
+      remainingQuarters: 0,
+    };
+  }
+
+  // Пересчитываем квартальный платеж
+  const newQuarterlyPayment = calculateQuarterlyPayment(
+    newRemaining,
+    debt.interestRate,
+    debt.remainingQuarters
+  );
+
+  return {
+    ...debt,
+    remainingAmount: newRemaining,
+    quarterlyPayment: newQuarterlyPayment,
+  };
+}
+
+/**
+ * Проверяет, может ли игрок взять кредит
+ * @param player - Игрок
+ * @param amount - Сумма кредита
+ * @param debtType - Тип кредита
+ * @returns true если может взять кредит
+ */
+export function canTakeLoan(
+  player: Player | null,
+  amount: number,
+  debtType: Debt['type']
+): boolean {
+  if (!player) return false;
+
+  const maxAmount = calculateMaxLoanAmount(player, debtType);
+  const creditRating = calculateCreditRating(player);
+
+  return amount <= maxAmount && creditRating >= 30; // Минимальный рейтинг 30
 }

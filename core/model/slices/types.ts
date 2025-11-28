@@ -1,7 +1,7 @@
-import type { 
-  GameState, 
-  PlayerState, 
-  Notification, 
+import type {
+  GameState,
+  PlayerState,
+  Notification,
   JobApplication,
   FreelanceApplication,
   CharacterArchetype,
@@ -17,18 +17,19 @@ export interface GameSlice {
   setupCountryId: string | null
   endReason: string | null
   activeActivity: string | null
-  
+
   // Actions
   setSetupCountry: (id: string) => void
   initializeGame: (countryId: string, archetype: CharacterArchetype) => void
   resetGame: () => void
   setActiveActivity: (activity: string | null) => void
   nextTurn: () => void
+  startSinglePlayer: () => void
 }
 
 export interface PlayerSlice {
   player: PlayerState | null
-  
+
   // Actions
   spendEnergy: (amount: number) => void
   applyStatChanges: (changes: {
@@ -44,30 +45,30 @@ export interface PlayerSlice {
 export interface EducationSlice {
   // Actions
   studyCourse: (
-    courseName: string, 
-    cost: number, 
-    energyCost: number, 
-    skillBonus: string, 
+    courseName: string,
+    cost: number,
+    energyCost: number,
+    skillBonus: string,
     duration: number
   ) => void
   applyToUniversity: (
-    programName: string, 
-    cost: number, 
-    energyCost: number, 
-    skillBonus: string, 
+    programName: string,
+    cost: number,
+    energyCost: number,
+    skillBonus: string,
     duration: number
   ) => void
 }
 
 export interface JobSlice {
   pendingApplications: JobApplication[]
-  
+
   // Actions
   applyForJob: (
-    jobTitle: string, 
-    company: string, 
-    salary: number, 
-    energyCost: number, 
+    jobTitle: string,
+    company: string,
+    salary: number,
+    energyCost: number,
     requirements: string[]
   ) => void
   acceptJobOffer: (applicationId: string) => void
@@ -76,7 +77,7 @@ export interface JobSlice {
 
 export interface FreelanceSlice {
   pendingFreelanceApplications: FreelanceApplication[]
-  
+
   // Actions
   applyForFreelance: (
     gigId: string,
@@ -101,7 +102,7 @@ export interface FamilySlice {
   removeFamilyMember: (id: string) => void
   updateLifeGoal: (goalId: string, progress: number) => void
   completeLifeGoal: (goalId: string) => void
-  
+
   // Relationship Actions
   startDating: () => void
   acceptPartner: () => void
@@ -131,7 +132,7 @@ export interface BusinessSlice {
 export interface NotificationSlice {
   notifications: Notification[]
   pendingEventNotification: GameState['pendingEventNotification']
-  
+
   // Actions
   dismissNotification: (id: string) => void
   markNotificationAsRead: (id: string) => void
@@ -139,10 +140,10 @@ export interface NotificationSlice {
 }
 
 // Combined store type
-export type GameStore = GameSlice & 
-  PlayerSlice & 
-  EducationSlice & 
-  JobSlice & 
+export type GameStore = GameSlice &
+  PlayerSlice &
+  EducationSlice &
+  JobSlice &
   FreelanceSlice &
   FamilySlice &
   BusinessSlice &

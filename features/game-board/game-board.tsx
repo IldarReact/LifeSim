@@ -27,7 +27,10 @@ const GameEndScreenWrapper = () => (
   </div>
 )
 
+import { MainMenu } from "@/features/menu/main-menu"
+
 const SCREENS: Record<GameStatus, React.ComponentType> = {
+  menu: MainMenu,
   setup: WorldSelect,
   select_country: WorldSelect, // Alias keeping consistent with setup
   select_character: CharacterSelect,

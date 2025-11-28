@@ -13,7 +13,7 @@ export const createGameSlice: StateCreator<
   turn: 0,
   year: 2024,
   isProcessingTurn: false,
-  gameStatus: 'setup',
+  gameStatus: 'menu',
   setupCountryId: null,
   endReason: null,
   activeActivity: null,
@@ -21,6 +21,10 @@ export const createGameSlice: StateCreator<
   // Actions
   setSetupCountry: (id: string) => {
     set({ setupCountryId: id, gameStatus: 'select_character' })
+  },
+
+  startSinglePlayer: () => {
+    set({ gameStatus: 'setup' })
   },
 
   initializeGame: (countryId, archetype) => {
@@ -49,7 +53,7 @@ export const createGameSlice: StateCreator<
       countries: INITIAL_COUNTRIES,
       player: null,
       history: [],
-      gameStatus: 'setup',
+      gameStatus: 'menu',
       activeActivity: null,
       pendingEventNotification: null,
       setupCountryId: null,

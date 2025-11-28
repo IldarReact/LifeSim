@@ -10,8 +10,15 @@ import { MultiplayerHud } from "@/features/multiplayer/MultiplayerHub"
 import { useGameStore } from "@/core/model/store"
 
 
+import { MainMenu } from "@/features/menu/main-menu"
+
 export default function Page() {
   const { gameStatus } = useGameStore()
+
+  // Main Menu
+  if (gameStatus === "menu") {
+    return <MainMenu />
+  }
 
   // Setup Phase
   if (gameStatus === "setup") {

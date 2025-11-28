@@ -10,7 +10,7 @@ import type { Notification } from './notification.types';
 import type { JobApplication } from './job.types';
 import type { FreelanceApplication } from './freelance.types';
 
-export type GameStatus = "setup" | "select_country" | "select_character" | "playing" | "ended";
+export type GameStatus = "menu" | "setup" | "select_country" | "select_character" | "playing" | "ended";
 
 export interface PlayerState {
   id: string;

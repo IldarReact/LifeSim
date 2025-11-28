@@ -15,7 +15,10 @@ import {
 } from "@/core/lib/multiplayer";
 import { useGameStore } from "@/core/model/game-store";
 import type { CharacterArchetype } from "@/core/types/job.types";
-import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle } from "lucide-react";
+import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { ExpandableCard } from "@/shared/ui/expandable-card";
+import type { CountryEconomy } from "@/core/types";
 
 type Player = {
   clientId: number;
@@ -27,22 +30,33 @@ type Player = {
   isLocal: boolean;
 };
 
+const ARCHETYPES: { id: CharacterArchetype; name: string; description: string }[] = [
+  { id: "investor", name: "Инвестор", description: "Начальный капитал: $50,000" },
+  { id: "specialist", name: "Специалист", description: "Зарплата: $4,000/мес" },
+  { id: "entrepreneur", name: "Предприниматель", description: "Бонус к бизнесу" },
+  { id: "worker", name: "Рабочий", description: "Стабильный доход" },
+  { id: "indebted", name: "Должник", description: "Долг: $20,000" },
+];
+
 export function MultiplayerLobby() {
   const router = useRouter();
-  const { initializeGame } = useGameStore();
+  const { initializeGame, countries } = useGameStore();
+  const countryList: CountryEconomy[] = Object.values(countries);
+
   const [players, setPlayers] = useState<Player[]>([]);
   const [selectedArchetype, setSelectedArchetypeLocal] = useState<CharacterArchetype | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>("usa");
   const [roomId, setRoomId] = useState("");
   const [isReady, setIsReady] = useState(false);
 
+  const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
+  const [isArchetypeModalOpen, setIsArchetypeModalOpen] = useState(false);
+
   useEffect(() => {
-    // Получаем room из URL
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room");
 
     if (!room) {
-      // Если нет room, создаем новый
       const newRoomId = initMultiplayer(undefined, true);
       setRoomId(newRoomId);
     } else {
@@ -50,7 +64,6 @@ export function MultiplayerLobby() {
       initMultiplayer(room, false);
     }
 
-    // Обновляем список игроков
     const updatePlayers = () => {
       setPlayers(getOnlinePlayers());
     };
@@ -58,9 +71,7 @@ export function MultiplayerLobby() {
     const interval = setInterval(updatePlayers, 500);
     updatePlayers();
 
-    // Подписываемся на старт игры
     const unsubscribeGameStart = subscribeToGameStart(() => {
-      // Хост запустил игру - начинаем
       const myPlayer = getOnlinePlayers().find(p => p.isLocal);
       if (myPlayer?.selectedArchetype) {
         initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
@@ -77,10 +88,12 @@ export function MultiplayerLobby() {
   const handleArchetypeSelect = (archetype: CharacterArchetype) => {
     setSelectedArchetypeLocal(archetype);
     setSelectedArchetype(archetype);
+    setIsArchetypeModalOpen(false);
   };
 
   const handleCountrySelect = (countryId: string) => {
     setSelectedCountry(countryId);
+    setIsCountryModalOpen(false);
   };
 
   const handleToggleReady = () => {
@@ -91,18 +104,12 @@ export function MultiplayerLobby() {
 
   const handleStartGame = () => {
     if (!isHost()) return;
-
-    // Проверяем что все выбрали персонажей и готовы
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
       alert("Не все игроки готовы!");
       return;
     }
-
-    // Запускаем игру
     startGame();
-
-    // Инициализируем свою игру
     const myPlayer = players.find(p => p.isLocal);
     if (myPlayer?.selectedArchetype) {
       initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
@@ -118,200 +125,248 @@ export function MultiplayerLobby() {
   const canStart = isHost() && players.every(p => p.isReady && p.selectedArchetype) && players.length > 0;
   const canReady = selectedArchetype !== null;
 
+  const selectedCountryName = countryList.find(c => c.id === selectedCountry)?.name || "Не выбрано";
+  const selectedArchetypeName = ARCHETYPES.find(a => a.id === selectedArchetype)?.name || "Не выбрано";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div className="min-h-screen bg-slate-950 p-6 text-slate-200 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Лобби мультиплеера
-          </h1>
-          <p className="text-white/60 text-lg mb-4">
-            Комната: <span className="font-mono text-white">{roomId}</span>
-          </p>
+        <div className="flex justify-between items-center mb-12 border-b border-slate-800 pb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Лобби</h1>
+            <p className="text-slate-500 text-sm">
+              Комната: <span className="font-mono text-slate-300">{roomId}</span>
+            </p>
+          </div>
           <Button
             onClick={copyLink}
             variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            className="bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
           >
             <LinkIcon className="w-4 h-4 mr-2" />
-            Скопировать ссылку
+            Пригласить
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Список игроков */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          {/* Левая колонка: Игроки */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
               <div className="flex items-center gap-2 mb-6">
-                <Users className="w-6 h-6 text-white" />
-                <h2 className="text-2xl font-bold text-white">
-                  Игроки ({players.length})
-                </h2>
+                <Users className="w-5 h-5 text-slate-400" />
+                <h2 className="text-xl font-semibold text-white">Игроки ({players.length})</h2>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3">
                 {players.map((player) => (
                   <div
                     key={player.clientId}
-                    className="bg-white/5 rounded-lg p-4 border border-white/10"
+                    className="bg-slate-950/50 rounded-lg p-4 border border-slate-800 flex items-center justify-between"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: player.color }}
-                        />
-                        <span className="text-white font-medium">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-3 h-3 rounded-full shadow-[0_0_10px]"
+                        style={{ backgroundColor: player.color, boxShadow: `0 0 10px ${player.color}` }}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-slate-200">
                           {player.name}
-                          {player.isLocal && <span className="text-white/40 ml-2">(вы)</span>}
-                        </span>
+                          {player.isLocal && <span className="text-slate-500 ml-2">(вы)</span>}
+                        </div>
                         {player.isHost && (
-                          <Crown className="w-4 h-4 text-yellow-400" />
+                          <div className="flex items-center gap-1 mt-1">
+                            <Crown className="w-3 h-3 text-amber-500" />
+                            <span className="text-[10px] uppercase tracking-wider text-amber-500 font-bold">Хост</span>
+                          </div>
                         )}
                       </div>
-                      {player.isReady ? (
-                        <Check className="w-5 h-5 text-emerald-400" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-white/20" />
-                      )}
                     </div>
-                    {player.selectedArchetype && (
-                      <div className="text-xs text-white/60 ml-7">
-                        Персонаж выбран
+                    {player.isReady ? (
+                      <div className="flex items-center gap-1.5 text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded text-xs font-medium">
+                        <Check className="w-3 h-3" /> Готов
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-slate-500 bg-slate-800/50 px-2 py-1 rounded text-xs font-medium">
+                        <AlertCircle className="w-3 h-3" /> Ожидание
                       </div>
                     )}
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Кнопка готовности */}
+            {/* Действия */}
+            <div className="space-y-3">
               {!isHost() && (
                 <Button
                   onClick={handleToggleReady}
                   disabled={!canReady}
-                  className={`w-full mb-4 ${isReady
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                    } text-white disabled:opacity-50`}
+                  className={`w-full h-12 text-base font-medium transition-all ${isReady
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                    }`}
                 >
-                  {isReady ? (
-                    <>
-                      <Check className="w-5 h-5 mr-2" />
-                      Готов
-                    </>
-                  ) : (
-                    "Отметить готовность"
-                  )}
+                  {isReady ? "Вы готовы" : "Готов к игре"}
                 </Button>
               )}
 
-              {/* Кнопка старта для хоста */}
               {isHost() && (
                 <Button
                   onClick={handleStartGame}
                   disabled={!canStart}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                  className="w-full h-14 text-lg font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Начать игру
                 </Button>
               )}
-
-              {!canReady && (
-                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                  <p className="text-amber-200 text-xs">
-                    Выберите персонажа и страну, чтобы отметить готовность
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Выбор страны и персонажа */}
+          {/* Правая колонка: Настройки */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Инструкция */}
-            <div className="bg-blue-500/10 backdrop-blur-md rounded-2xl p-6 border border-blue-500/20">
-              <h3 className="text-lg font-bold text-blue-200 mb-2">
-                Как играть в мультиплеере:
-              </h3>
-              <ol className="text-blue-100 text-sm space-y-2 list-decimal list-inside">
-                <li>Выберите страну и персонажа ниже</li>
-                <li>Нажмите "Готов" когда закончите выбор</li>
-                <li>Дождитесь пока все игроки будут готовы</li>
-                <li>Хост нажмет "Начать игру"</li>
-              </ol>
-            </div>
-
-            {/* Встроенный выбор страны */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                Выберите страну
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {["usa", "china", "germany", "russia"].map((countryId) => (
-                  <button
-                    key={countryId}
-                    onClick={() => handleCountrySelect(countryId)}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${selectedCountry === countryId
-                      ? "bg-purple-600/30 border-purple-400"
-                      : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
-                      }`}
-                  >
-                    <h3 className="text-white font-bold text-lg capitalize">
-                      {countryId === "usa" ? "США" :
-                        countryId === "china" ? "Китай" :
-                          countryId === "germany" ? "Германия" : "Россия"}
-                    </h3>
-                    {selectedCountry === countryId && (
-                      <Check className="w-5 h-5 text-purple-400 mt-2" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Встроенный выбор персонажа */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                Выберите персонажа
-              </h2>
-              <div className="space-y-3">
-                {[
-                  { id: "investor" as CharacterArchetype, name: "Инвестор", desc: "Начальный капитал: $50,000" },
-                  { id: "specialist" as CharacterArchetype, name: "Специалист", desc: "Зарплата: $4,000/мес" },
-                  { id: "entrepreneur" as CharacterArchetype, name: "Предприниматель", desc: "Бонус к бизнесу" },
-                  { id: "worker" as CharacterArchetype, name: "Рабочий", desc: "Стабильный доход" },
-                  { id: "indebted" as CharacterArchetype, name: "Должник", desc: "Долг: $20,000" },
-                ].map((archetype) => (
-                  <button
-                    key={archetype.id}
-                    onClick={() => handleArchetypeSelect(archetype.id)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${selectedArchetype === archetype.id
-                      ? "bg-purple-600/30 border-purple-400"
-                      : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-white font-bold text-lg">
-                          {archetype.name}
-                        </h3>
-                        <p className="text-white/60 text-sm">
-                          {archetype.desc}
-                        </p>
-                      </div>
-                      {selectedArchetype === archetype.id && (
-                        <Check className="w-6 h-6 text-purple-400" />
-                      )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Карточка выбора страны */}
+              <div
+                onClick={() => setIsCountryModalOpen(true)}
+                className="bg-slate-900 rounded-xl p-6 border border-slate-800 cursor-pointer hover:border-slate-600 transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
+                      <Globe className="w-5 h-5 text-slate-400 group-hover:text-white" />
                     </div>
-                  </button>
-                ))}
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-400">Страна</h3>
+                      <p className="text-lg font-bold text-white">{selectedCountryName}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-slate-400 group-hover:text-white">
+                    Изменить
+                  </Button>
+                </div>
+                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 w-full" />
+                </div>
               </div>
+
+              {/* Карточка выбора персонажа */}
+              <div
+                onClick={() => setIsArchetypeModalOpen(true)}
+                className="bg-slate-900 rounded-xl p-6 border border-slate-800 cursor-pointer hover:border-slate-600 transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center group-hover:bg-slate-700 transition-colors">
+                      <User className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-400">Персонаж</h3>
+                      <p className="text-lg font-bold text-white">{selectedArchetypeName}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-slate-400 group-hover:text-white">
+                    Изменить
+                  </Button>
+                </div>
+                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div className={`h-full w-full transition-all ${selectedArchetype ? 'bg-purple-500' : 'bg-transparent'}`} />
+                </div>
+              </div>
+            </div>
+
+            {/* Инфо-блок */}
+            <div className="bg-slate-900/50 rounded-xl p-8 border border-slate-800 text-center">
+              <h3 className="text-lg font-medium text-white mb-2">Ожидание игроков</h3>
+              <p className="text-slate-400 max-w-md mx-auto">
+                Выберите страну и персонажа, затем нажмите "Готов". Игра начнется, когда хост запустит сессию.
+              </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Модалка выбора страны */}
+      <Dialog open={isCountryModalOpen} onOpenChange={setIsCountryModalOpen}>
+        <DialogContent className="max-w-4xl bg-slate-950 border-slate-800 text-slate-200 max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white mb-4">Выберите страну</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {countryList.map((country: CountryEconomy) => (
+              <ExpandableCard
+                key={country.id}
+                title={country.name}
+                description={`${country.archetype.replace(/_/g, " ")}`}
+                image={`/placeholder.svg?height=120&width=120&query=flag+${country.name}`}
+              >
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-slate-500">GDP Growth</p>
+                      <p className="font-semibold text-white">{country.gdpGrowth}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Inflation</p>
+                      <p className="font-semibold text-white">{country.inflation}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Interest Rate</p>
+                      <p className="font-semibold text-white">{country.interestRate}%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500">Tax Rate</p>
+                      <p className="font-semibold text-white">{country.taxRate}%</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleCountrySelect(country.id)}
+                    className="w-full px-4 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition font-semibold border border-slate-700"
+                  >
+                    Выбрать {country.name}
+                  </button>
+                </div>
+              </ExpandableCard>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Модалка выбора персонажа */}
+      <Dialog open={isArchetypeModalOpen} onOpenChange={setIsArchetypeModalOpen}>
+        <DialogContent className="max-w-2xl bg-slate-950 border-slate-800 text-slate-200">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white mb-4">Выберите персонажа</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {ARCHETYPES.map((archetype) => (
+              <button
+                key={archetype.id}
+                onClick={() => handleArchetypeSelect(archetype.id)}
+                className={`w-full text-left p-4 rounded-xl border transition-all ${selectedArchetype === archetype.id
+                    ? "bg-slate-800 border-slate-600"
+                    : "bg-slate-900 border-slate-800 hover:bg-slate-800 hover:border-slate-700"
+                  }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-white font-bold text-lg">
+                      {archetype.name}
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      {archetype.description}
+                    </p>
+                  </div>
+                  {selectedArchetype === archetype.id && (
+                    <Check className="w-6 h-6 text-emerald-500" />
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

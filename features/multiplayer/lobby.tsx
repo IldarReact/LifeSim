@@ -72,6 +72,9 @@ export function MultiplayerLobby() {
     updatePlayers();
 
     const unsubscribeGameStart = subscribeToGameStart(() => {
+      // Хост сам обрабатывает свой редирект в handleStartGame
+      if (isHost()) return;
+
       const myPlayer = getOnlinePlayers().find(p => p.isLocal);
       if (myPlayer?.selectedArchetype) {
         initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
@@ -104,12 +107,15 @@ export function MultiplayerLobby() {
 
   const handleStartGame = () => {
     if (!isHost()) return;
+
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
-      alert("Не все игроки готовы!");
+      alert("Не все игроки готовы! Все игроки должны выбрать персонажа и нажать 'Готов'.");
       return;
     }
+
     startGame();
+
     const myPlayer = players.find(p => p.isLocal);
     if (myPlayer?.selectedArchetype) {
       initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
@@ -233,10 +239,9 @@ export function MultiplayerLobby() {
               {isHost() && (
                 <Button
                   onClick={handleStartGame}
-                  disabled={!canStart}
                   className={`w-full h-14 text-lg font-bold shadow-lg transition-all ${canStart
                       ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse"
-                      : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                      : "bg-slate-800 text-slate-500"
                     }`}
                 >
                   <Play className="w-5 h-5 mr-2" />

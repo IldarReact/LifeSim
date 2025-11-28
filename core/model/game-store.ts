@@ -9,38 +9,6 @@
  * - slices/education-slice.ts - Education system (courses, university)
  * - slices/job-slice.ts - Job applications and management
  * - slices/notification-slice.ts - Notification system
-
-/**
- * @deprecated This file is kept for backward compatibility.
- * Please import from './store' instead.
- * 
- * The store has been refactored following FBA (Feature-Based Architecture) principles:
- * - slices/game-slice.ts - Core game logic (turn, year, status)
- * - slices/player-slice.ts - Player state management
- * - slices/education-slice.ts - Education system (courses, university)
- * - slices/job-slice.ts - Job applications and management
- * - slices/notification-slice.ts - Notification system
-/**
- * @deprecated This file is kept for backward compatibility.
- * Please import from './store' instead.
- * 
- * The store has been refactored following FBA (Feature-Based Architecture) principles:
- * - slices/game-slice.ts - Core game logic (turn, year, status)
- * - slices/player-slice.ts - Player state management
- * - slices/education-slice.ts - Education system (courses, university)
- * - slices/job-slice.ts - Job applications and management
- * - slices/notification-slice.ts - Notification system
-
-/**
- * @deprecated This file is kept for backward compatibility.
- * Please import from './store' instead.
- * 
- * The store has been refactored following FBA (Feature-Based Architecture) principles:
- * - slices/game-slice.ts - Core game logic (turn, year, status)
- * - slices/player-slice.ts - Player state management
- * - slices/education-slice.ts - Education system (courses, university)
- * - slices/job-slice.ts - Job applications and management
- * - slices/notification-slice.ts - Notification system
  * - logic/turn-logic.ts - Business logic for turn processing
  */
 
@@ -77,14 +45,19 @@ export function enableMultiplayerSync() {
 
   // Liveblocks → Zustand (storage)
   shared.subscribeToStorageChanges(() => {
-    const data = shared.storage?.get("game");
-    if (data) {
-      setState(data as Partial<GameState>);
+    const storagePromise = shared.getStorage();
+    if (storagePromise) {
+      storagePromise.then((storage: any) => {
+        const data = storage.get("game");
+        if (data) {
+          setState(data as Partial<GameState>);
+        }
+      });
     }
   });
 
   // Zustand → Liveblocks (синхронизация состояния)
   subscribe((state: GameState) => {
-    shared.storage?.set("game", state);
+    shared.setStorage("game", state);
   });
 }

@@ -165,7 +165,6 @@ export function triggerTurnAdvance() {
 
 // Вспомогательная функция для game-store.ts
 export const getSharedState = () => ({
-  storage: roomInstance?.getStorage(),
   subscribeToPresenceChanges: (cb: () => void) => {
     if (!roomInstance) return () => { };
     return roomInstance.subscribe("others", cb);
@@ -173,5 +172,15 @@ export const getSharedState = () => ({
   subscribeToStorageChanges: (cb: () => void) => {
     if (!roomInstance) return () => { };
     return roomInstance.subscribe("storage", cb);
+  },
+  getStorage: () => {
+    if (!roomInstance) return null;
+    return roomInstance.getStorage();
+  },
+  setStorage: (key: string, value: any) => {
+    if (!roomInstance) return;
+    roomInstance.getStorage().then((storage: any) => {
+      storage.set(key, value);
+    });
   },
 });

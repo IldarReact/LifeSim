@@ -1,4 +1,4 @@
-import type { CountryEconomy, GlobalEvent } from "@/core/types"
+import type { CountryEconomy, GlobalEvent } from "@/core/types/economy.types"
 
 export function calculateCountriesEconomy(
   countries: Record<string, CountryEconomy>,

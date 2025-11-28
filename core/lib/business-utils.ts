@@ -1,4 +1,4 @@
-import type { EmployeeCandidate, EmployeeRole, EmployeeLevel, EmployeeSkills, Business } from "@/core/types"
+import type { EmployeeCandidate, EmployeeRole, EmployeeLevel, EmployeeSkills, Business } from "@/core/types/business.types"
 
 const FIRST_NAMES = [
   "Александр", "Дмитрий", "Максим", "Сергей", "Андрей",
@@ -153,14 +153,14 @@ export function generateEmployeeCandidate(role: EmployeeRole, level?: EmployeeLe
 export function generateCandidates(role: EmployeeRole, count: number = 3): EmployeeCandidate[] {
   const candidates: EmployeeCandidate[] = []
   const levels: EmployeeLevel[] = ['junior', 'middle', 'senior', 'expert']
-  
+
   for (let i = 0; i < count; i++) {
     // Распределяем уровни: больше middle и junior, меньше senior и expert
     const levelWeights = [0.3, 0.4, 0.2, 0.1]
     const random = Math.random()
     let cumulative = 0
     let selectedLevel: EmployeeLevel = 'junior'
-    
+
     for (let j = 0; j < levels.length; j++) {
       cumulative += levelWeights[j]
       if (random <= cumulative) {
@@ -168,10 +168,10 @@ export function generateCandidates(role: EmployeeRole, count: number = 3): Emplo
         break
       }
     }
-    
+
     candidates.push(generateEmployeeCandidate(role, selectedLevel))
   }
-  
+
   return candidates
 }
 
@@ -181,16 +181,16 @@ export function generateCandidates(role: EmployeeRole, count: number = 3): Emplo
 export function calculateBusinessFinancials(business: Business): { income: number, expenses: number, profit: number } {
   let income = business.quarterlyIncome || 0
   let expenses = business.quarterlyExpenses || 0
-  
+
   // Добавляем зарплаты сотрудников к расходам
   business.employees.forEach(employee => {
     expenses += employee.salary || 0
-    
+
     // Каждый сотрудник влияет на доход в зависимости от роли и навыков
     const productivityFactor = (employee.productivity || 50) / 100
     const satisfactionFactor = (employee.satisfaction || 50) / 100
     const overallFactor = (productivityFactor + satisfactionFactor) / 2
-    
+
     switch (employee.role) {
       case 'salesperson':
         // Продавец напрямую увеличивает доход
@@ -218,7 +218,7 @@ export function calculateBusinessFinancials(business: Business): { income: numbe
         break
     }
   })
-  
+
   return {
     income: Math.round(income) || 0,
     expenses: Math.round(expenses) || 0,
@@ -245,23 +245,23 @@ export function updateBusinessMetrics(business: Business): Business {
       customerSatisfaction: 50
     }
   }
-  
+
   // Средняя эффективность сотрудников
-  const avgEfficiency = business.employees.reduce((sum, emp) => 
+  const avgEfficiency = business.employees.reduce((sum, emp) =>
     sum + emp.skills.efficiency * (emp.productivity / 100), 0
   ) / business.employees.length
-  
+
   // Репутация зависит от качества работы
-  const avgTechnical = business.employees.reduce((sum, emp) => 
+  const avgTechnical = business.employees.reduce((sum, emp) =>
     sum + emp.skills.technical, 0
   ) / business.employees.length
-  
+
   // Удовлетворенность клиентов зависит от продавцов и сервиса
   const salespeople = business.employees.filter(e => e.role === 'salesperson')
   const avgSales = salespeople.length > 0
     ? salespeople.reduce((sum, emp) => sum + emp.skills.salesAbility, 0) / salespeople.length
     : 60
-  
+
   return {
     ...business,
     efficiency: Math.min(100, Math.round(avgEfficiency)),

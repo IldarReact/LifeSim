@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { calculateQuarterlyIncome } from './calculateQuarterlyIncome'
 import { calculateQuarterlyExpenses } from './calculateQuarterlyExpenses'
 import { calculateQuarterlyTaxes } from './calculateQuarterlyTaxes'
-import type { PlayerState, CountryEconomy } from '@/core/types'
+import type { PlayerState } from '@/core/types/game.types'
+import type { CountryEconomy } from '@/core/types/economy.types'
 
 describe('Game Calculations', () => {
   const mockPlayer: PlayerState = {
@@ -11,7 +12,7 @@ describe('Game Calculations', () => {
     archetype: 'entrepreneur',
     countryId: 'us',
     cash: 10000,
-    monthlySalary: 5000,
+    quarterlySalary: 15000, // 5000 * 3
     assets: [],
     debts: [],
     personal: {
@@ -24,6 +25,7 @@ describe('Game Calculations', () => {
       skills: [],
       activeCourses: [],
       activeUniversity: [],
+      buffs: [],
       familyMembers: [],
       lifeGoals: [],
       isDating: false,
@@ -51,18 +53,20 @@ describe('Game Calculations', () => {
     name: 'USA',
     gdpGrowth: 2.5,
     inflation: 2.0,
+    keyRate: 5.0,
     interestRate: 5.0,
     taxRate: 20,
     unemployment: 4.0,
     costOfLivingModifier: 1.0,
     salaryModifier: 1.0,
-    archetype: 'rich_stable'
+    archetype: 'rich_stable',
+    activeEvents: []
   }
 
   describe('calculateQuarterlyIncome', () => {
     it('should calculate gross income correctly', () => {
       const result = calculateQuarterlyIncome(mockPlayer, mockCountry)
-      // 5000 * 3 = 15000
+      // 15000 (quarterly salary)
       expect(result).toBe(15000)
     })
   })

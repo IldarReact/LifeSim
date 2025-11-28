@@ -1,4 +1,6 @@
-import type { PersonalLife, Asset, CountryEconomy } from "@/core/types"
+import type { PersonalLife } from "@/core/types/personal.types"
+import type { Asset } from "@/core/types/finance.types"
+import type { CountryEconomy } from "@/core/types/economy.types"
 
 interface Params {
   personal: PersonalLife
@@ -19,7 +21,7 @@ export function calculateQuarterlyExpenses({
 
   // Family expenses
   // TODO: Add family size to PersonalLife or PlayerState
-  const familyExpenses = 0 
+  const familyExpenses = 0
 
   return Math.round(baseLivingCost + assetMaintenance + familyExpenses)
 }

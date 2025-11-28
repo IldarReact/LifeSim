@@ -1,4 +1,5 @@
-import type { Asset, Debt, CountryEconomy, GlobalEvent } from "@/core/types"
+import type { Asset, Debt } from "@/core/types/finance.types"
+import type { CountryEconomy, GlobalEvent } from "@/core/types/economy.types"
 
 interface CalculationResult {
   newAssets: Asset[]
@@ -19,11 +20,11 @@ export function calculatePlayerAssetsAndDebts({
   countryEconomy,
   globalEvents,
 }: Params): CalculationResult {
-  
+
   // 1. Assets value update
   const newAssets = assets.map(asset => {
     let valueChange = 0
-    
+
     if (asset.type === 'stock') {
       // Stocks are volatile
       const volatility = 0.1 // 10%
@@ -31,7 +32,7 @@ export function calculatePlayerAssetsAndDebts({
       valueChange = asset.value * (marketMove + (countryEconomy.gdpGrowth / 100))
     } else if (asset.type === 'real_estate') {
       // Real estate follows inflation + small growth
-      const growth = (countryEconomy.inflation / 100) + 0.01 
+      const growth = (countryEconomy.inflation / 100) + 0.01
       valueChange = asset.value * growth
     }
 

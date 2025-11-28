@@ -1,4 +1,5 @@
-import type { Asset, CountryEconomy } from "@/core/types"
+import type { Asset } from "@/core/types/finance.types"
+import type { CountryEconomy } from "@/core/types/economy.types"
 
 interface Params {
   income: number
@@ -15,7 +16,7 @@ export function calculateQuarterlyTaxes({
 }: Params): number {
   // Simple flat tax for now
   const incomeTax = income * (country.taxRate / 100)
-  
+
   // Property tax (e.g. 0.5% yearly -> 0.125% quarterly)
   const propertyTax = assets
     .filter(a => a.type === 'real_estate')

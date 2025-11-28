@@ -1,4 +1,4 @@
-import type { PersonalLife } from "@/core/types"
+import type { PersonalLife } from "@/core/types/personal.types"
 
 export function applyRandomPersonalEvents(personal: PersonalLife, turn: number): PersonalLife {
   // Simple random event logic
@@ -10,6 +10,6 @@ export function applyRandomPersonalEvents(personal: PersonalLife, turn: number):
       happiness: Math.max(0, personal.happiness - 5)
     }
   }
-  
+
   return personal
 }

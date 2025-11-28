@@ -1,4 +1,6 @@
-import type { PersonalLife, Asset, CountryEconomy, GlobalEvent } from "@/core/types"
+import type { PersonalLife } from "@/core/types/personal.types"
+import type { Asset } from "@/core/types/finance.types"
+import type { CountryEconomy, GlobalEvent } from "@/core/types/economy.types"
 
 interface Params {
   current: PersonalLife
@@ -17,10 +19,10 @@ export function calculatePersonalLife({
 }: Params): PersonalLife {
   let newHappiness = current.happiness
   let newHealth = current.health
-  
+
   // Base recovery to 100 at start of new quarter
   // Real energy for the turn will be calculated in game-store by subtracting job costs
-  let newEnergy = 100 
+  let newEnergy = 100
 
   // Money impact
   if (cash < 0) {

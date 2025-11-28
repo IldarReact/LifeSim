@@ -1,4 +1,6 @@
-import type { CountryEconomy, PlayerState, CharacterArchetype, Job } from "@/core/types"
+import type { CountryEconomy } from "@/core/types/economy.types"
+import type { PlayerState } from "@/core/types/game.types"
+import type { CharacterArchetype, Job } from "@/core/types/job.types"
 import { JOB_INFO } from "@/core/lib/jobsData"
 
 export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
@@ -131,7 +133,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
 
   switch (archetype) {
     case "investor":
-      initialJob.salary = 2000 * 3
+      initialJob.salary = 2000
       finalState = {
         ...base,
         cash: 50000,
@@ -172,7 +174,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
       }
       break
     case "specialist":
-      initialJob.salary = 4000 * 3
+      initialJob.salary = 4000
       finalState = {
         ...base,
         cash: 10000,
@@ -189,7 +191,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
       }
       break
     case "entrepreneur":
-      initialJob.salary = 1000 * 3
+      initialJob.salary = 1000
       finalState = {
         ...base,
         cash: 5000,
@@ -207,7 +209,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
       }
       break
     case "worker":
-      initialJob.salary = 2500 * 3
+      initialJob.salary = 2500
       finalState = {
         ...base,
         cash: 2000,
@@ -225,7 +227,7 @@ export function createInitialPlayer(archetype: CharacterArchetype, countryId: st
       }
       break
     case "indebted":
-      initialJob.salary = 2000 * 3
+      initialJob.salary = 2000
       finalState = {
         ...base,
         cash: 1000,

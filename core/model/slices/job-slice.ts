@@ -40,7 +40,7 @@ export const createJobSlice: StateCreator<
       requirements,
       daysPending: 0
     }
-    
+
     set(state => ({
       player: state.player ? {
         ...state.player,
@@ -65,11 +65,11 @@ export const createJobSlice: StateCreator<
   acceptJobOffer: (applicationId: string) => {
     const state = get()
     const notification = state.notifications.find(n => n.data?.applicationId === applicationId)
-    
+
     if (!notification || !state.player) return
 
     const appData = notification.data
-    
+
     const newJob: Job = {
       id: `job_${Date.now()}`,
       title: appData.jobTitle,
@@ -88,7 +88,7 @@ export const createJobSlice: StateCreator<
       player: state.player ? {
         ...state.player,
         jobs: [...state.player.jobs, newJob],
-        monthlySalary: state.player.quarterlySalary + newJob.salary
+        quarterlySalary: state.player.quarterlySalary + (newJob.salary * 3)
       } : null,
       notifications: state.notifications.filter(n => n.id !== notification.id)
     }))
@@ -104,7 +104,7 @@ export const createJobSlice: StateCreator<
         player: {
           ...state.player,
           jobs: state.player.jobs.filter(j => j.id !== jobId),
-          monthlySalary: state.player.quarterlySalary - job.salary
+          quarterlySalary: state.player.quarterlySalary - (job.salary * 3)
         }
       }
     })

@@ -13,11 +13,23 @@ type Storage = {
   timestamp?: number;
 };
 
-const client = createClient({
-  publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
-});
-
+let client: ReturnType<typeof createClient> | null = null;
 let roomInstance: any = null;
+
+function getClient() {
+  if (!client) {
+    const publicKey = process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY;
+    if (!publicKey) {
+      throw new Error(
+        "NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY is not set. Multiplayer features are disabled."
+      );
+    }
+    client = createClient({
+      publicApiKey: publicKey,
+    });
+  }
+  return client;
+}
 
 // ---------- инициализация ----------
 export function initMultiplayer(inputRoomId?: string): string {
@@ -32,7 +44,7 @@ export function initMultiplayer(inputRoomId?: string): string {
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
 
-  const { room } = client.enterRoom<Presence, Storage, any, any>(id, {
+  const { room } = getClient().enterRoom<Presence, Storage, any, any>(id, {
     initialPresence: {
       name: randomName,
       isReady: false,

@@ -21,7 +21,7 @@ export function HealthIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">❤️</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.stats.health)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.health || 0)}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Здоровье</span>
       </button>

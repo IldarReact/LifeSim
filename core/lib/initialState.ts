@@ -70,6 +70,7 @@ export function createInitialPlayer(
   }
 
   const personalStats = {
+    money: baseStats.money,
     happiness: baseStats.happiness,
     energy: baseStats.energy,
     health: baseStats.health,
@@ -132,6 +133,7 @@ export function createInitialPlayer(
     jobs: [],
     activeFreelanceGigs: [],
     businesses: [],
+    businessIdeas: [],
   }
 
   let finalState = { ...base }

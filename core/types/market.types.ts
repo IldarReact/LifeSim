@@ -37,5 +37,8 @@ export interface MarketEvent {
   description: string;
   impact: number;        // Изменение значения рынка (-1.0 до +1.0)
   duration: number;      // Сколько кварталов действует
-  turn: number;          // Когда произошло
+  turn: number;          // Когда произошло (deprecated, use startTurn)
+  type?: 'positive' | 'negative' | 'neutral';  // Тип события
+  startTurn?: number;    // Когда началось
+  endTurn?: number;      // Когда закончится
 }

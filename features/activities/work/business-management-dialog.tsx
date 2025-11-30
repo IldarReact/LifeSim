@@ -83,7 +83,7 @@ export function BusinessManagementDialog({
       autoPurchaseAmount: 0
     }
   }
-  const { income: forecastIncome } = calculateBusinessFinancials(forecastBusiness, true)
+  const { income: forecastIncome, expenses: forecastExpenses } = calculateBusinessFinancials(forecastBusiness, true)
 
   const { income, expenses } = calculateBusinessFinancials(business, true)
   const availableBudget = playerCash
@@ -91,6 +91,11 @@ export function BusinessManagementDialog({
 
   // ✅ Проверка минимального персонала
   const staffingCheck = checkMinimumStaffing(business)
+
+  // ✅ Вычисление доли владения игрока
+  const playerPartner = business.partners.find(p => p.type === 'player')
+  const playerShare = playerPartner ? playerPartner.share : 100
+  const hasControl = playerShare > 50
 
   const openHireDialog = (role: EmployeeRole) => {
     setSelectedRole(role)
@@ -236,12 +241,16 @@ export function BusinessManagementDialog({
               )}
 
               {/* Прогноз */}
-              <div className="md:col-span-2 bg-white/5 rounded-xl p-4 mt-2 border border-white/5 flex items-center justify-between">
+              <div className="md:col-span-2 bg-white/5 rounded-xl p-4 mt-2 border border-white/5 grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-white/60">Прогнозируемый доход</p>
                   <p className="text-2xl font-bold text-emerald-400">+${forecastIncome.toLocaleString()}</p>
                 </div>
-                <div className="text-right">
+                <div>
+                  <p className="text-sm text-white/60">Прогнозируемые расходы</p>
+                  <p className="text-2xl font-bold text-rose-400">-${forecastExpenses.toLocaleString()}</p>
+                </div>
+                <div className="col-span-2 flex justify-between items-center border-t border-white/5 pt-2">
                   <p className="text-xs text-white/40">Влияние цены: {price > 5 ? '📉 Снижение спроса' : price < 5 ? '📈 Рост спроса' : '➡️ Норма'}</p>
                   {!business.isServiceBased && (
                     <p className="text-xs text-white/40">Загрузка склада: {Math.round((quantity / (business.inventory?.maxStock || 1000)) * 100)}%</p>
@@ -316,6 +325,120 @@ export function BusinessManagementDialog({
               </Button>
             </div>
           </div>
+
+          {/* ✅ НОВОЕ: Партнеры и владение */}
+          {business.partners.length > 0 && (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-400" />
+                Партнеры и владение
+              </h3>
+
+              {/* Статус контроля */}
+              <div className="mb-4 p-4 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white/60">Ваша доля</p>
+                    <p className="text-3xl font-bold text-white">{playerShare}%</p>
+                  </div>
+                  <div className="text-right">
+                    {hasControl ? (
+                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                        ✓ Контрольный пакет
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                        ⚠ Требуется голосование
+                      </Badge>
+                    )}
+                    <p className="text-xs text-white/40 mt-1">
+                      {hasControl ? 'Вы принимаете решения единолично' : 'Решения требуют одобрения партнеров'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Список партнеров */}
+              <div className="space-y-2 mb-4">
+                <p className="text-sm font-semibold text-white/70 uppercase tracking-wider">Владельцы:</p>
+                {business.partners.map(partner => (
+                  <div key={partner.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${partner.type === 'player' ? 'bg-blue-400' : 'bg-gray-400'}`} />
+                      <div>
+                        <p className="font-medium text-white">{partner.name}</p>
+                        <p className="text-xs text-white/40">
+                          {partner.type === 'player' ? 'Вы' : 'NPC'} • Вложено: ${partner.investedAmount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-white">{partner.share}%</p>
+                      {partner.type === 'npc' && (
+                        <p className="text-xs text-white/40">
+                          Отношение: {partner.relation}/100
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* История голосований */}
+              {business.proposals.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-2">
+                    Последние предложения:
+                  </p>
+                  <div className="space-y-2">
+                    {business.proposals.slice(-3).reverse().map(proposal => (
+                      <div key={proposal.id} className="p-3 bg-white/5 rounded-lg border border-white/5">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              {proposal.type === 'change_price' && `Изменение цены на ${proposal.payload.newPrice}`}
+                              {proposal.type === 'change_quantity' && `Изменение производства на ${proposal.payload.newQuantity}`}
+                              {proposal.type === 'expand_network' && 'Открытие филиала'}
+                              {proposal.type === 'withdraw_dividends' && `Вывод дивидендов $${proposal.payload.amount}`}
+                            </p>
+                            <p className="text-xs text-white/40">Квартал {proposal.createdTurn}</p>
+                          </div>
+                          <Badge className={
+                            proposal.status === 'approved'
+                              ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                              : proposal.status === 'rejected'
+                                ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                          }>
+                            {proposal.status === 'approved' && '✓ Одобрено'}
+                            {proposal.status === 'rejected' && '✗ Отклонено'}
+                            {proposal.status === 'pending' && '⏳ На рассмотрении'}
+                          </Badge>
+                        </div>
+                        {/* Детали голосования */}
+                        <div className="flex gap-1 mt-2">
+                          {Object.entries(proposal.votes).map(([partnerId, vote]) => {
+                            const partner = business.partners.find(p => p.id === partnerId)
+                            if (!partner) return null
+                            return (
+                              <div
+                                key={partnerId}
+                                className={`px-2 py-1 rounded text-xs ${vote ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                  }`}
+                                title={`${partner.name}: ${vote ? 'ЗА' : 'ПРОТИВ'} (${partner.share}%)`}
+                              >
+                                {partner.name.split(' ')[0]}: {vote ? '👍' : '👎'}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Employees Section */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">

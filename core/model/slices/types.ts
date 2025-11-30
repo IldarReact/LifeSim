@@ -1,3 +1,5 @@
+import type { StatEffect } from '@/core/types/stats.types'
+import type { SkillRequirement } from '@/core/types/skill.types'
 import type {
   GameState,
   PlayerState,
@@ -27,11 +29,14 @@ export interface GameSlice {
   startSinglePlayer: () => void
 }
 
-import type { StatEffect } from '@/core/types/stats.types'
-import type { SkillRequirement } from '@/core/types/skill.types'
 
 export interface PlayerSlice {
   player: PlayerState | null
+
+
+  updatePlayer: (
+    updater: (prev: PlayerState) => Partial<PlayerState>
+  ) => void
 
   // Actions
   applyStatChanges: (effect: StatEffect) => void
@@ -139,6 +144,7 @@ export interface BusinessSlice {
     type: import('@/core/types/business.types').ProposalType,
     payload: { newPrice?: number; newQuantity?: number; amount?: number }
   ) => void
+  hireFamilyMember: (businessId: string, familyMemberId: string, role: import('@/core/types').EmployeeRole) => void
 }
 
 export interface NotificationSlice {
@@ -146,6 +152,7 @@ export interface NotificationSlice {
   pendingEventNotification: GameState['pendingEventNotification']
 
   // Actions
+  pushNotification: (notification: Omit<Notification, 'id' | 'isRead' | 'date'>) => void
   dismissNotification: (id: string) => void
   markNotificationAsRead: (id: string) => void
   dismissEventNotification: () => void
@@ -160,8 +167,17 @@ export interface MarketSlice {
   addMarketEvent: (event: import('@/core/types').MarketEvent) => void
 }
 
+export interface IdeaSlice {
+  // Actions
+  generateIdea: () => void
+  developIdea: (ideaId: string, investment: number) => void
+  launchBusinessFromIdea: (ideaId: string) => void
+  discardIdea: (ideaId: string) => void
+}
+
 // Combined store type
-export type GameStore = GameSlice &
+export type GameStore =
+  GameSlice &
   PlayerSlice &
   EducationSlice &
   JobSlice &
@@ -169,8 +185,10 @@ export type GameStore = GameSlice &
   FamilySlice &
   BusinessSlice &
   NotificationSlice &
-  MarketSlice & {
+  MarketSlice &
+  IdeaSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']
   }
+

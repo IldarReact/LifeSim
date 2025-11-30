@@ -36,6 +36,7 @@ export interface FamilyMember {
   passiveEffects: StatEffect; // Passive effects per turn
   avatar?: string;
   goals?: LifeGoal[]; // Personal goals of the family member
+  employedInBusinessId?: string; // ID бизнеса, где работает
 }
 
 export interface LifeGoal {

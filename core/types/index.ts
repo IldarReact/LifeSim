@@ -15,6 +15,14 @@ export type {
   EmployeeCandidate
 } from './business.types';
 
+// Business ideas
+export type {
+  RiskLevel,
+  IdeaStage,
+  BusinessIdea,
+  IdeaTemplate
+} from './idea.types';
+
 // Market types
 export type {
   GlobalMarketCondition,

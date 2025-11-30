@@ -31,6 +31,8 @@ export interface Employee {
   productivity: number;    // 0-100 - текущая продуктивность (влияет на KPI)
   experience: number;      // Кварталы работы в компании
   avatar?: string;
+  isFamilyMember?: boolean;
+  familyMemberId?: string;
 }
 
 export type BusinessType =

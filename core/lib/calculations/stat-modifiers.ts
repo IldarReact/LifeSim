@@ -74,7 +74,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifier[] {
     const roles = business.playerRoles
 
     // --- Управленческие роли ---
-    roles.managerialRoles?.forEach(role => {
+    roles?.managerialRoles?.forEach(role => {
       const config = EMPLOYEE_ROLES_CONFIG[role]
 
       if (!config?.playerEffects) return
@@ -86,7 +86,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifier[] {
     })
 
     // --- Операционная роль ---
-    if (roles.operationalRole) {
+    if (roles?.operationalRole) {
       const config =
         EMPLOYEE_ROLES_CONFIG[roles.operationalRole]
 

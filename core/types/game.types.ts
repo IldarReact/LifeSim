@@ -5,6 +5,7 @@ import type { PersonalLife } from './personal.types';
 import type { Job } from './job.types';
 import type { FreelanceGig } from './freelance.types';
 import type { Business } from './business.types';
+import type { BusinessIdea } from './idea.types';
 import type { CountryEconomy, GlobalEvent } from './economy.types';
 import type { Notification } from './notification.types';
 import type { JobApplication } from './job.types';
@@ -45,6 +46,8 @@ export interface PlayerState {
   activeFreelanceGigs: FreelanceGig[];
   // Business System
   businesses: Business[];
+  // Business Ideas System
+  businessIdeas: BusinessIdea[];
 }
 
 

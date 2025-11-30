@@ -19,16 +19,7 @@ import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User }
 import { WorldSelectUI } from "@/features/setup/ui/world-select";
 import { CharacterSelectUI } from "@/features/setup/ui/character-select";
 import type { CountryEconomy } from "@/core/types";
-
-type Player = {
-  clientId: number;
-  name: string;
-  color: string;
-  isHost: boolean;
-  isReady: boolean;
-  selectedArchetype: string | null;
-  isLocal: boolean;
-};
+import { Player } from "./MultiplayerHub";
 
 const ARCHETYPES: { id: CharacterArchetype; name: string; description: string }[] = [
   { id: "investor", name: "Инвестор", description: "Начальный капитал: $50,000" },
@@ -74,15 +65,15 @@ export function MultiplayerLobby() {
       initMultiplayer(room, isStoredHost);
     }
 
-    const updatePlayers = () => {
+    const updatePlayerHost = () => {
       const currentPlayers = getOnlinePlayers();
       const amIHost = isHost();
       console.log("[Lobby] Update players:", currentPlayers.length, "Am I host:", amIHost);
       setPlayers(currentPlayers);
     };
 
-    const interval = setInterval(updatePlayers, 1000); // Реже обновляем, чтобы не спамить, но достаточно часто
-    updatePlayers();
+    const interval = setInterval(updatePlayerHost, 1000); // Реже обновляем, чтобы не спамить, но достаточно часто
+    updatePlayerHost();
 
     const unsubscribeGameStart = subscribeToGameStart(() => {
       // Хост сам обрабатывает свой редирект в handleStartGame

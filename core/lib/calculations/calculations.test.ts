@@ -39,6 +39,7 @@ describe('Quarterly Calculations', () => {
 
     personal: {
       stats: {
+        money: baseStats.money,
         happiness: baseStats.happiness,
         energy: baseStats.energy,
         health: baseStats.health,
@@ -62,7 +63,8 @@ describe('Quarterly Calculations', () => {
 
     jobs: [],
     activeFreelanceGigs: [],
-    businesses: []
+    businesses: [],
+    businessIdeas: []
   }
 
   const mockCountry: CountryEconomy = {

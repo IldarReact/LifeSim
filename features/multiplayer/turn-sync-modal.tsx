@@ -5,15 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { Loader2, Users, CheckCircle2, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getOnlinePlayers, subscribeToTurnReadyStatus, setTurnReady } from "@/core/lib/multiplayer";
-
-type Player = {
-  clientId: number;
-  name: string;
-  color: string;
-  isReady: boolean;
-  turnReady: boolean;
-  isLocal: boolean;
-};
+import { Player } from "./MultiplayerHub";
 
 interface TurnSyncModalProps {
   isOpen: boolean;
@@ -30,7 +22,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
     if (!isOpen) return;
 
     // Обновляем список игроков
-    const updatePlayers = () => {
+    const updateListPlayers = () => {
       setPlayers(getOnlinePlayers());
     };
 
@@ -38,7 +30,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
     const unsubscribe = subscribeToTurnReadyStatus((ready, total, allReady) => {
       setReadyCount(ready);
       setTotalPlayers(total);
-      updatePlayers();
+      updateListPlayers();
 
       // Если все готовы, вызываем callback
       if (allReady) {
@@ -47,7 +39,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
     });
 
     // Обновляем сразу
-    updatePlayers();
+    updateListPlayers();
 
     return () => {
       unsubscribe();

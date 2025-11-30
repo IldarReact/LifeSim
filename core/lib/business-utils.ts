@@ -403,7 +403,10 @@ export function calculateBusinessFinancials(
     if (inventory.autoPurchaseAmount > 0) {
       purchaseAmount = inventory.autoPurchaseAmount;
     } else {
-      purchaseAmount = Math.max(0, inventory.maxStock - (inventory.currentStock - salesVolume));
+      // Если задан quantity (план производства/запасов), используем его как целевой уровень
+      // Иначе пытаемся заполнить склад до максимума
+      const targetStock = business.quantity > 0 ? business.quantity : inventory.maxStock;
+      purchaseAmount = Math.max(0, targetStock - (inventory.currentStock - salesVolume));
     }
 
     purchaseCost = purchaseAmount * inventory.purchaseCost;
@@ -412,7 +415,30 @@ export function calculateBusinessFinancials(
   }
 
   const totalIncome = salesIncome;
-  const totalExpenses = baseExpenses + purchaseCost;
+  let totalExpenses = baseExpenses + purchaseCost;
+
+  // ✅ НОВОЕ: Расчет налогов
+  const grossProfit = totalIncome - totalExpenses;
+  let taxAmount = 0;
+
+  if (grossProfit > 0) {
+    const taxRate = business.taxRate || 0.15;
+    // Бухгалтер может снизить налогооблагаемую базу или ставку?
+    // Пока просто базовая ставка
+    taxAmount = Math.round(grossProfit * taxRate);
+
+    // Если есть бухгалтер, он уже снизил baseExpenses, что увеличило прибыль и налог
+    // Но в реальности бухгалтер оптимизирует налоги. 
+    // Давайте сделаем так: если есть бухгалтер, налог снижается на 10-20%
+    if (accountants.length > 0) {
+      const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0);
+      const taxReduction = Math.min(0.20, 0.05 + (totalStars * 0.02)); // 5-20%
+      taxAmount = Math.round(taxAmount * (1 - taxReduction));
+      console.log(`[Business ${business.name}] Accountant reduced tax by ${(taxReduction * 100).toFixed(1)}%`);
+    }
+
+    totalExpenses += taxAmount;
+  }
 
   const newInventory: BusinessInventory = inventory ? {
     ...inventory,
@@ -429,7 +455,7 @@ export function calculateBusinessFinancials(
     console.log(`[Business ${business.name}] Player impact on financials: ExpenseReduction=${(playerExpenseReduction * 100).toFixed(1)}%`);
   }
 
-  console.log(`[Business ${business.name}] Global Market: ${globalMarketValue.toFixed(2)}, Income=$${totalIncome}, Expenses=$${totalExpenses}, Profit=$${totalIncome - totalExpenses}`);
+  console.log(`[Business ${business.name}] Global Market: ${globalMarketValue.toFixed(2)}, Income=$${totalIncome}, Expenses=$${totalExpenses} (Tax: ${taxAmount}), Profit=$${totalIncome - totalExpenses}`);
 
   return {
     income: Math.round(totalIncome),

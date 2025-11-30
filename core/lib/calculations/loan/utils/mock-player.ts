@@ -34,6 +34,7 @@ export const createMockPlayer = (
 
     personal: {
       stats: {
+        money: 0, // Personal stats don't track money separately
         happiness: baseStats.happiness,
         energy: baseStats.energy,
         health: baseStats.health,
@@ -60,6 +61,7 @@ export const createMockPlayer = (
     jobs: [],
     activeFreelanceGigs: [],
     businesses: [],
+    businessIdeas: [],
 
     ...overrides,
   }

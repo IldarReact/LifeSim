@@ -18,7 +18,7 @@ export function MoneyIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg text-green-400">$</span>
-          <span className="text-lg font-bold text-white tabular-nums">{player.stats.money.toLocaleString()}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{(player?.stats?.money ?? 0).toLocaleString()}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Деньги</span>
       </button>

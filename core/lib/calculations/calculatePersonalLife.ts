@@ -66,6 +66,7 @@ export function calculatePersonalLife({
   return {
     ...current,
     stats: {
+      money: current.stats.money, // Preserve money value
       happiness: clamp(happiness, 0, 100),
       health: clamp(health, 0, 100),
       energy: clamp(energy, 0, 100),

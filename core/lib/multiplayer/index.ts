@@ -1,4 +1,5 @@
 // core/lib/multiplayer/index.ts
+import { Player } from "@/features/multiplayer/MultiplayerHub";
 import { createClient } from "@liveblocks/client";
 
 type Presence = {
@@ -67,18 +68,6 @@ export const isHost = () => {
   if (!roomInstance) return false;
   const self = roomInstance.getSelf();
   return self?.presence.isHost || false;
-};
-
-type Player = {
-  clientId: number;
-  name: string;
-  color: string;
-  isReady: boolean;
-  turnReady: boolean;
-  isHost: boolean;
-  gameStarted: boolean;
-  selectedArchetype: string | null;
-  isLocal: boolean;
 };
 
 export function getOnlinePlayers(): Player[] {

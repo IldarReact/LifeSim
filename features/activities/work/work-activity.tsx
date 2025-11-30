@@ -131,7 +131,7 @@ export function WorkActivity(): React.JSX.Element | null {
                 <BusinessManagement
                   key={business.id}
                   business={business}
-                  playerCash={player.stats.money}
+                  playerCash={player?.stats?.money || 0}
                   onHireEmployee={hireEmployee}
                   onFireEmployee={fireEmployee}
                   onChangePrice={changePrice}
@@ -160,7 +160,7 @@ export function WorkActivity(): React.JSX.Element | null {
             <VacanciesSection onApply={handleApply} />
             <StartupsSection />
             <BusinessesSection
-              playerCash={player.stats.money}
+              playerCash={player?.stats?.money || 0}
               onOpenBusiness={openBusiness}
               onSuccess={(message) => setFeedback({ show: true, success: true, message })}
               onError={(message) => setFeedback({ show: true, success: false, message })}

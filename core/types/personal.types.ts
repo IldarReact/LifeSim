@@ -4,7 +4,7 @@ import type { TimedBuff, FamilyMember, LifeGoal, PotentialPartner, Pregnancy } f
 import { Stats } from './stats.types';
 
 export interface PersonalLife {
-  stats: Omit<Stats, 'money'>;
+  stats: Stats;
   relations: {
     family: number;
     friends: number;

@@ -10,7 +10,7 @@ export function EnergyIndicator() {
 
   if (!player) return null
 
-  const actualEnergy = player.personal.stats.energy
+  const actualEnergy = player?.personal?.stats?.energy || 0
   const statMods = calculateStatModifiers(player)
 
   return (

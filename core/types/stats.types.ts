@@ -12,7 +12,7 @@ export type Stats = {
   energy: number;
   health: number;
   sanity: number;
-  intelligence: number;
+  intelligence: number;   
 };
 
 export type StatEffect = Partial<Stats>;

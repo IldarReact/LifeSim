@@ -2,6 +2,7 @@ import type { StateCreator } from 'zustand'
 import type { GameStore, PlayerSlice } from './types'
 import type { StatEffect } from '@/core/types/stats.types'
 import { applyStats } from '@/core/helpers/applyStats'
+import { PlayerState } from '@/core/types'
 
 export const createPlayerSlice: StateCreator<
   GameStore,
@@ -33,6 +34,34 @@ export const createPlayerSlice: StateCreator<
         }
       } : null
     }))
+  },
+
+  updatePlayer: (updater: Partial<PlayerState> | ((prev: PlayerState) => Partial<PlayerState>)) => {
+    set(state => {
+      const prev = state.player
+      if (!prev) return state
+
+      const patch = typeof updater === 'function' ? updater(prev) : updater
+
+      return {
+        player: {
+          ...prev,
+          ...patch,
+          stats: {
+            ...prev.stats,
+            ...(patch.stats ?? {})
+          },
+          personal: {
+            ...prev.personal,
+            ...(patch.personal ?? {}),
+            stats: {
+              ...prev.personal.stats,
+              ...(patch.personal?.stats ?? {})
+            }
+          }
+        }
+      }
+    })
   },
 
   applyStatChanges: (effect: StatEffect) => {

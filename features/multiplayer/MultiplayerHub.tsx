@@ -1,4 +1,3 @@
-// features/multiplayer/MultiplayerHud.tsx
 "use client";
 
 import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
@@ -7,11 +6,15 @@ import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2,
 import { useEffect, useState } from "react";
 import { subscribeToReadyStatus } from "@/core/lib/multiplayer";
 
-type Player = {
+export type Player = {
   clientId: number;
   name: string;
   color: string;
   isReady: boolean;
+  turnReady?: boolean;
+  isHost?: boolean;
+  gameStarted?: boolean;
+  selectedArchetype?: string | null;
   isLocal: boolean;
 };
 

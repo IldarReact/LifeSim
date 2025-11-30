@@ -22,7 +22,7 @@ export function IntelligenceIndicator() {
       >
         <div className="flex items-center gap-1">
           <Lightbulb className="w-5 h-5 text-yellow-400" />
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.stats.intelligence)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.intelligence || 0)}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Интеллект</span>
       </button>

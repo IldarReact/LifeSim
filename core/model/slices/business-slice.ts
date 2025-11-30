@@ -5,6 +5,14 @@ import type { BusinessProposal } from '@/core/types/business.types'
 import type { StatEffect } from '@/core/types/stats.types'
 import { updateBusinessMetrics, calculateNPCVote } from '@/core/lib/business-utils'
 import { applyStats } from '@/core/helpers/applyStats'
+import {
+  shouldCreateNetwork,
+  createNetworkForBusinesses,
+  addBranchToNetwork,
+  updateNetworkBonuses,
+  canChangePrice,
+  syncPriceToNetwork
+} from '@/core/lib/business-network'
 
 export const createBusinessSlice: StateCreator<
   GameStore,
@@ -82,7 +90,7 @@ export const createBusinessSlice: StateCreator<
       insuranceCost: 0,
 
       inventory: {
-        currentStock: 0,
+        currentStock: 1000, // Полный склад на старте, чтобы не уходить в минус сразу
         maxStock: 1000,
         pricePerUnit: 100,
         purchaseCost: 50,
@@ -118,6 +126,68 @@ export const createBusinessSlice: StateCreator<
       creationCost
     )
 
+    // ===== НОВОЕ: Автоматическое создание сети филиалов =====
+    let finalBusinesses = [...state.player.businesses]
+    let finalNewBusiness = newBusiness
+
+    // Проверяем, нужно ли создать сеть
+    if (shouldCreateNetwork(state.player.businesses, type)) {
+      // Находим первый бизнес этого типа
+      const existingBusiness = state.player.businesses.find(
+        b => b.type === type && b.state !== 'frozen'
+      )
+
+      if (existingBusiness) {
+        // Создаем сеть
+        const { main, branch, networkId } = createNetworkForBusinesses(
+          existingBusiness,
+          newBusiness
+        )
+
+        // Обновляем существующий бизнес (делаем главным)
+        finalBusinesses = finalBusinesses.map(b =>
+          b.id === existingBusiness.id ? main : b
+        )
+
+        // Новый бизнес становится филиалом
+        finalNewBusiness = branch
+
+        console.log(`[Business Network] Создана сеть ${networkId} для типа "${type}"`)
+        console.log(`[Business Network] Главный филиал: ${main.name}`)
+        console.log(`[Business Network] Новый филиал: ${branch.name}`)
+      }
+    } else {
+      // Проверяем, есть ли уже сеть этого типа
+      const existingNetwork = state.player.businesses.find(
+        b => b.type === type && b.networkId && b.state !== 'frozen'
+      )
+
+      if (existingNetwork && existingNetwork.networkId) {
+        // Добавляем к существующей сети
+        const mainBranch = state.player.businesses.find(
+          b => b.networkId === existingNetwork.networkId && b.isMainBranch
+        )
+
+        if (mainBranch) {
+          finalNewBusiness = addBranchToNetwork(
+            newBusiness,
+            existingNetwork.networkId,
+            mainBranch.price
+          )
+
+          console.log(`[Business Network] Добавлен филиал в сеть ${existingNetwork.networkId}`)
+        }
+      }
+    }
+
+    // Добавляем новый бизнес
+    finalBusinesses.push(finalNewBusiness)
+
+    // Обновляем бонусы сети, если есть
+    if (finalNewBusiness.networkId) {
+      finalBusinesses = updateNetworkBonuses(finalBusinesses, finalNewBusiness.networkId)
+    }
+
     set({
       player: {
         ...state.player,
@@ -129,7 +199,7 @@ export const createBusinessSlice: StateCreator<
           stats: updatedPersonalStats
         },
 
-        businesses: [...state.player.businesses, newBusiness]
+        businesses: finalBusinesses
       }
     })
   },
@@ -238,77 +308,8 @@ export const createBusinessSlice: StateCreator<
     })
   },
 
-  setPlayerManagerialRoles: (businessId, roles) => {
-    const state = get()
-    if (!state.player) return
-
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, playerRoles: { ...b.playerRoles, managerialRoles: roles } }
-        : b
-    )
-
-    set({
-      player: {
-        ...state.player,
-        businesses: updatedBusinesses
-      }
-    })
-  },
-
-  setPlayerOperationalRole: (businessId, role) => {
-    const state = get()
-    if (!state.player) return
-
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, playerRoles: { ...b.playerRoles, operationalRole: role } }
-        : b
-    )
-
-    set({
-      player: {
-        ...state.player,
-        businesses: updatedBusinesses
-      }
-    })
-  },
-
-  freezeBusiness: (businessId) => {
-    const state = get()
-    if (!state.player) return
-
-    const business = state.player.businesses.find(b => b.id === businessId)
-    if (!business) return
-
-    // Рассчитать компенсации (зарплата за 1 квартал)
-    const compensation = business.employees.reduce((sum, emp) => sum + emp.salary, 0)
-
-    // Списать деньги (может уйти в минус)
-    const currentMoney = state.player.stats.money
-    const newMoney = currentMoney - compensation
-
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? {
-          ...b,
-          state: 'frozen' as const,
-          employees: [], // Увольняем всех сотрудников
-          reputation: Math.max(0, b.reputation - 20), // Штраф к репутации
-          inventory: { ...b.inventory, currentStock: 0 } // Очищаем склад
-        }
-        : b
-    )
-
-    const updatedStats = { ...state.player.stats, money: newMoney }
-
-    set({
-      player: {
-        ...state.player,
-        stats: updatedStats,
-        businesses: updatedBusinesses
-      }
-    })
+  hireFamilyMember: (businessId, familyMemberId, role) => {
+    console.log(`[Business] Hire family member ${familyMemberId} as ${role} in ${businessId} - Not implemented yet`)
   },
 
   unfreezeBusiness: (businessId) => {
@@ -362,22 +363,23 @@ export const createBusinessSlice: StateCreator<
     const business = state.player.businesses.find(b => b.id === businessId)
     if (!business) return
 
-    // Проверка прав на изменение цены в сети
-    if (business.networkId && !business.isMainBranch) {
+    // Проверка прав на изменение цены в сети (используем утилиту)
+    if (!canChangePrice(business)) {
       console.warn(`[Business] Попытка изменить цену не из главного филиала (ID: ${businessId})`)
       return
     }
 
     let updatedBusinesses = state.player.businesses
+    const oldPrice = business.price
 
     if (business.networkId) {
-      // Если это сеть, обновляем цену во всех филиалах
-      updatedBusinesses = state.player.businesses.map(b =>
-        b.networkId === business.networkId
-          ? { ...b, price: clampedPrice }
-          : b
+      // Если это сеть, синхронизируем цену во всех филиалах (используем утилиту)
+      updatedBusinesses = syncPriceToNetwork(
+        state.player.businesses,
+        business.networkId,
+        clampedPrice
       )
-      console.log(`[Business] Цена обновлена для всей сети ${business.networkId}: ${clampedPrice}`)
+      console.log(`[Business] 💰 Цена изменена для сети ${business.networkId}: ${oldPrice} → ${clampedPrice}`)
     } else {
       // Одиночный бизнес
       updatedBusinesses = state.player.businesses.map(b =>
@@ -385,7 +387,7 @@ export const createBusinessSlice: StateCreator<
           ? { ...b, price: clampedPrice }
           : b
       )
-      console.log(`[Business] Цена обновлена для ${business.name}: ${clampedPrice}`)
+      console.log(`[Business] 💰 Цена изменена для "${business.name}": ${oldPrice} → ${clampedPrice}`)
     }
 
     set({
@@ -408,13 +410,14 @@ export const createBusinessSlice: StateCreator<
       return
     }
 
+    const oldQuantity = business.quantity
     const updatedBusinesses = state.player.businesses.map(b =>
       b.id === businessId
         ? { ...b, quantity: Math.max(0, Math.round(newQuantity)) }
         : b
     )
 
-    console.log(`[Business] Количество обновлено для ${business.name}: ${newQuantity}`)
+    console.log(`[Business] 📦 План производства изменен для "${business.name}": ${oldQuantity} → ${Math.round(newQuantity)} единиц`)
 
     set({
       player: {
@@ -569,13 +572,19 @@ export const createBusinessSlice: StateCreator<
 
     // Подсчитываем результат
     let votesFor = 0
+    const voteDetails: string[] = []
+
     business.partners.forEach(partner => {
-      if (proposal.votes[partner.id]) {
+      const vote = proposal.votes[partner.id]
+      if (vote) {
         votesFor += partner.share
       }
+      voteDetails.push(`${partner.name || partner.id}: ${vote ? '✅ ЗА' : '❌ ПРОТИВ'} (${partner.share}%)`)
     })
 
-    console.log(`[Business] Голосование: ЗА=${votesFor}%, ПРОТИВ=${100 - votesFor}%`)
+    console.log(`[Business] 🗳️ Голосование по ${type}:`)
+    voteDetails.forEach(detail => console.log(`   - ${detail}`))
+    console.log(`   = ИТОГО: ЗА=${votesFor}%, ПРОТИВ=${100 - votesFor}%`)
 
     // Если >50% ЗА, выполняем действие
     if (votesFor > 50) {
@@ -613,6 +622,79 @@ export const createBusinessSlice: StateCreator<
     set({
       player: {
         ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  setPlayerManagerialRoles: (businessId, roles) => {
+    const state = get()
+    if (!state.player) return
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, playerRoles: { ...b.playerRoles, managerialRoles: roles } }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  setPlayerOperationalRole: (businessId, role) => {
+    const state = get()
+    if (!state.player) return
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, playerRoles: { ...b.playerRoles, operationalRole: role } }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  freezeBusiness: (businessId) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    // Рассчитать компенсации (зарплата за 1 квартал)
+    const compensation = business.employees.reduce((sum, emp) => sum + emp.salary, 0)
+
+    // Списать деньги (может уйти в минус)
+    const currentMoney = state.player.stats.money
+    const newMoney = currentMoney - compensation
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? {
+          ...b,
+          state: 'frozen' as const,
+          employees: [], // Увольняем всех сотрудников
+          reputation: Math.max(0, b.reputation - 20), // Штраф к репутации
+          inventory: b.inventory ? { ...b.inventory, currentStock: 0 } : b.inventory // Очищаем склад
+        }
+        : b
+    )
+
+    const updatedStats = { ...state.player.stats, money: newMoney }
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
         businesses: updatedBusinesses
       }
     })

@@ -4,6 +4,7 @@ import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculation
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
 import { processBusinessTurn } from './business-turn-processor'
+import { generateMarketEvent, cleanupExpiredMarketEvents } from '@/core/lib/market-events-generator'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -19,6 +20,33 @@ export function processTurn(get: GetState, set: SetState): void {
 
   // Track skills being studied/used to prevent decay
   const protectedSkills = new Set<string>()
+
+  // 0. Process Global Market Events (каждый квартал)
+  // Очистить истекшие события
+  let marketEvents = cleanupExpiredMarketEvents(prev.marketEvents, prev.turn)
+
+  // Генерировать новое событие с определенной вероятностью
+  const newMarketEvent = generateMarketEvent(prev.turn, prev.year)
+  if (newMarketEvent) {
+    marketEvents.push(newMarketEvent)
+
+    // Уведомить игрока о событии рынка
+    const eventIcon = newMarketEvent.type === 'positive' ? '📈' :
+      newMarketEvent.type === 'negative' ? '📉' : '📊'
+
+    newNotifications.push({
+      id: newMarketEvent.id,
+      type: newMarketEvent.type === 'positive' ? 'success' : 'info',
+      title: `${eventIcon} Рынок: ${newMarketEvent.title}`,
+      message: newMarketEvent.description,
+      date: `${prev.year} Q${(prev.turn % 4) || 4}`,
+      isRead: false
+    })
+
+    console.log(`[MARKET] Новое событие: ${newMarketEvent.title}`)
+    console.log(`[MARKET] Влияние: ${newMarketEvent.impact > 0 ? '+' : ''}${newMarketEvent.impact.toFixed(2)}`)
+    console.log(`[MARKET] Длительность: ${newMarketEvent.duration} кварталов`)
+  }
 
   // 1. Process Active Courses
   let activeCourses = [...prev.player.personal.activeCourses]
@@ -332,6 +360,8 @@ export function processTurn(get: GetState, set: SetState): void {
         isRead: false
       })
 
+      console.log(`[Family] 👶 Рождение ребенка! Двойня: ${pregnancy.isTwins}`)
+
       pregnancy = null
     }
   }
@@ -342,6 +372,8 @@ export function processTurn(get: GetState, set: SetState): void {
     prev.player.jobs.reduce((acc, j) => acc + (j.cost.energy || 0), 0)
 
   const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
+
+  console.log(`[Turn] Energy: Recovered=${recoveredEnergy}, ActiveCost=${totalActiveEnergyCost}`)
 
   // Calculate business sanity impact
   const businessSanityImpact = 0
@@ -380,6 +412,7 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
+      console.log(`[Buff] Expired: ${buff.description}`)
     }
     return newBuff
   }).filter(b => b.duration > 0)
@@ -461,6 +494,7 @@ export function processTurn(get: GetState, set: SetState): void {
       turn: newTurn,
       year: newYear,
       isProcessingTurn: false,
+      marketEvents: marketEvents, // ✅ НОВОЕ: обновляем события рынка
       player: state.player ? {
         ...state.player,
         businesses: businessResult.updatedBusinesses,

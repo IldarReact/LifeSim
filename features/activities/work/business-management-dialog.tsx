@@ -8,10 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import type { Business, EmployeeRole, EmployeeCandidate } from "@/core/types"
 import {
   Store, TrendingUp, TrendingDown, Users, DollarSign,
-  Star, Zap, Brain, UserPlus, Trash2, Award, Activity, Info
+  Star, Zap, Brain, UserPlus, Trash2, Award, Activity, Info,
+  Globe, Plus
 } from "lucide-react"
 import { EmployeeHireDialog } from "./employee-hire-dialog"
 import { calculateBusinessFinancials } from "@/core/lib/business-utils"
+import { checkMinimumStaffing } from "@/features/business/lib/player-roles"
 
 import { generateCandidates } from "@/core/lib/business-utils"
 
@@ -20,6 +22,9 @@ interface BusinessManagementDialogProps {
   playerCash: number
   onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
   onFireEmployee: (businessId: string, employeeId: string) => void
+  onChangePrice: (businessId: string, newPrice: number) => void
+  onSetQuantity: (businessId: string, newQuantity: number) => void
+  onOpenBranch: (sourceBusinessId: string) => void
   trigger?: React.ReactNode
 }
 
@@ -46,15 +51,46 @@ export function BusinessManagementDialog({
   playerCash,
   onHireEmployee,
   onFireEmployee,
+  onChangePrice,
+  onSetQuantity,
+  onOpenBranch,
   trigger
 }: BusinessManagementDialogProps) {
   const [hireDialogOpen, setHireDialogOpen] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<EmployeeRole | null>(null)
   const [candidates, setCandidates] = React.useState<EmployeeCandidate[]>([])
 
-  const { income, expenses } = calculateBusinessFinancials(business)
+  // Локальное состояние для слайдеров
+  const [price, setPrice] = React.useState(business.price || 5)
+  const [quantity, setQuantity] = React.useState(business.quantity || (business.inventory?.currentStock || 0))
+
+  // Обновляем локальное состояние при изменении пропсов
+  React.useEffect(() => {
+    setPrice(business.price || 5)
+    setQuantity(business.quantity || (business.inventory?.currentStock || 0))
+  }, [business.price, business.quantity, business.inventory])
+
+  // Расчет прогноза при изменении локальных значений
+  const forecastBusiness = {
+    ...business,
+    price: price,
+    quantity: quantity,
+    inventory: business.inventory ? { ...business.inventory, currentStock: quantity } : {
+      currentStock: quantity,
+      maxStock: 1000,
+      pricePerUnit: 0,
+      purchaseCost: 0,
+      autoPurchaseAmount: 0
+    }
+  }
+  const { income: forecastIncome } = calculateBusinessFinancials(forecastBusiness, true)
+
+  const { income, expenses } = calculateBusinessFinancials(business, true)
   const availableBudget = playerCash
   const canHireMore = business.employees.length < business.maxEmployees
+
+  // ✅ Проверка минимального персонала
+  const staffingCheck = checkMinimumStaffing(business)
 
   const openHireDialog = (role: EmployeeRole) => {
     setSelectedRole(role)
@@ -64,6 +100,18 @@ export function BusinessManagementDialog({
 
   const handleHire = (candidate: EmployeeCandidate) => {
     onHireEmployee(business.id, candidate)
+  }
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPrice = parseInt(e.target.value)
+    setPrice(newPrice)
+    onChangePrice(business.id, newPrice)
+  }
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = parseInt(e.target.value)
+    setQuantity(newQuantity)
+    onSetQuantity(business.id, newQuantity)
   }
 
   return (
@@ -130,15 +178,142 @@ export function BusinessManagementDialog({
             </div>
           </div>
 
-          {/* Energy & Stress Info */}
-          <div className="flex gap-6 text-sm bg-white/5 rounded-lg p-3 border border-white/10 w-fit">
-            <div className="flex items-center gap-2 text-amber-400">
-              <Zap className="w-4 h-4" />
-              <span>Энергия: -{business.energyCostPerTurn}/кв</span>
+          {/* ✅ Управление ценой и производством */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-yellow-400" />
+              Ценообразование и производство
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Цена */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-white/80">Цена услуги/товара</label>
+                  <span className="text-2xl font-bold text-yellow-400">{price} <span className="text-sm text-white/40">/ 10</span></span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={price}
+                  onChange={handlePriceChange}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-yellow-400"
+                />
+                <div className="flex justify-between text-xs text-white/40">
+                  <span>Дёшево (1)</span>
+                  <span>Дорого (10)</span>
+                </div>
+                <p className="text-xs text-white/60">
+                  Высокая цена увеличивает прибыль с единицы, но снижает спрос.
+                </p>
+              </div>
+
+              {/* Количество (только для товаров) */}
+              {!business.isServiceBased && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-white/80">План производства</label>
+                    <span className="text-2xl font-bold text-blue-400">{quantity} <span className="text-sm text-white/40">ед.</span></span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1000" // Максимум можно настроить
+                    step="10"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                  />
+                  <div className="flex justify-between text-xs text-white/40">
+                    <span>0</span>
+                    <span>1000</span>
+                  </div>
+                  <p className="text-xs text-white/60">
+                    Количество товара для продажи в этом квартале. Излишки останутся на складе.
+                  </p>
+                </div>
+              )}
+
+              {/* Прогноз */}
+              <div className="md:col-span-2 bg-white/5 rounded-xl p-4 mt-2 border border-white/5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-white/60">Прогнозируемый доход</p>
+                  <p className="text-2xl font-bold text-emerald-400">+${forecastIncome.toLocaleString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-white/40">Влияние цены: {price > 5 ? '📉 Снижение спроса' : price < 5 ? '📈 Рост спроса' : '➡️ Норма'}</p>
+                  {!business.isServiceBased && (
+                    <p className="text-xs text-white/40">Загрузка склада: {Math.round((quantity / (business.inventory?.maxStock || 1000)) * 100)}%</p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-purple-400">
-              <Brain className="w-4 h-4" />
-              <span>Рассудок: -{business.stressImpact}/кв</span>
+          </div>
+
+          {/* ✅ НОВОЕ: Предупреждение о минимальном персонале */}
+          {!staffingCheck.isValid && (
+            <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/20 flex-shrink-0">
+                <Users className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-amber-300 mb-1">Недостаточно персонала!</h4>
+                <p className="text-sm text-amber-200/80">
+                  Для работы бизнеса требуется минимум <span className="font-bold">{staffingCheck.requiredWorkers}</span> работников.
+                  Сейчас: <span className="font-bold">{staffingCheck.workerCount}</span>.
+                  {staffingCheck.workerCount < staffingCheck.requiredWorkers && (
+                    <> Наймите ещё <span className="font-bold text-amber-300">{staffingCheck.requiredWorkers - staffingCheck.workerCount}</span> работников.</>
+                  )}
+                </p>
+                {staffingCheck.missingRoles.length > 0 && (
+                  <p className="text-sm text-amber-200/80 mt-2">
+                    Также отсутствуют обязательные роли: <span className="font-bold">{staffingCheck.missingRoles.join(', ')}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ✅ НОВОЕ: Развитие сети */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-400" />
+              Сеть филиалов
+            </h3>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                {business.networkId ? (
+                  <div>
+                    <p className="text-white font-medium flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
+                        {business.isMainBranch ? "Главный офис" : "Филиал"}
+                      </Badge>
+                      <span className="text-white/60 text-sm">ID сети: {business.networkId}</span>
+                    </p>
+                    <p className="text-sm text-white/60 mt-1">
+                      {business.isMainBranch
+                        ? "Вы управляете ценовой политикой всей сети из этого офиса."
+                        : "Ценовая политика управляется главным офисом."}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-white font-medium">Одиночный бизнес</p>
+                    <p className="text-sm text-white/60">Вы можете начать строить сеть, открыв первый филиал.</p>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={() => onOpenBranch(business.id)}
+                disabled={playerCash < business.initialCost}
+                className="bg-blue-600 hover:bg-blue-700 text-white w-full md:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Открыть филиал (${business.initialCost.toLocaleString()})
+              </Button>
             </div>
           </div>
 
@@ -170,7 +345,17 @@ export function BusinessManagementDialog({
                         </div>
                         <div>
                           <h4 className="font-bold text-white text-lg">{employee.name}</h4>
-                          <p className="text-xs text-white/60 uppercase tracking-wide">{ROLE_LABELS[employee.role]} • {employee.level}</p>
+                          <p className="text-xs text-white/60 uppercase tracking-wide">
+                            {ROLE_LABELS[employee.role]} • {
+                              {
+                                1: "Intern",
+                                2: "Junior",
+                                3: "Middle",
+                                4: "Senior",
+                                5: "Lead"
+                              }[employee.stars] || "Junior"
+                            }
+                          </p>
                         </div>
                       </div>
                       <Button

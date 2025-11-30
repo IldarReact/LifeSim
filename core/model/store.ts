@@ -9,6 +9,7 @@ import { createFreelanceSlice } from './slices/freelance-slice'
 import { createFamilySlice } from './slices/family-slice'
 import { createBusinessSlice } from './slices/business-slice'
 import { createNotificationSlice } from './slices/notification-slice'
+import { createMarketSlice } from './slices/market-slice'
 import { INITIAL_COUNTRIES } from '@/core/lib/initialState'
 
 export const useGameStore = create<GameStore>()(
@@ -18,7 +19,7 @@ export const useGameStore = create<GameStore>()(
       countries: INITIAL_COUNTRIES,
       globalEvents: [],
       history: [],
-      
+
       // Combine all slices
       ...createGameSlice(...a),
       ...createPlayerSlice(...a),
@@ -27,7 +28,8 @@ export const useGameStore = create<GameStore>()(
       ...createFreelanceSlice(...a),
       ...createFamilySlice(...a),
       ...createBusinessSlice(...a),
-      ...createNotificationSlice(...a)
+      ...createNotificationSlice(...a),
+      ...createMarketSlice(...a)
     }),
     {
       name: 'life-sim-storage',

@@ -1,7 +1,12 @@
-// Skill and education-related types
+import { StatEffect } from "./stats.types";
 
 // Skill level is now represented by stars: 0-5
 export type SkillLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface SkillRequirement {
+  skillId: string;
+  minLevel: SkillLevel;
+}
 
 export interface Skill {
   id: string;
@@ -20,7 +25,7 @@ export interface ActiveCourse {
   skillBonus: number;
   totalDuration: number; // in turns (quarters)
   remainingDuration: number; // in turns
-  energyCostPerTurn: number;
+  costPerTurn: StatEffect;
   startedTurn: number;
 }
 
@@ -31,6 +36,6 @@ export interface ActiveUniversity {
   skillBonus: number;
   totalDuration: number; // in turns (quarters)
   remainingDuration: number; // in turns
-  energyCostPerTurn: number;
+  costPerTurn: StatEffect;
   startedTurn: number;
 }

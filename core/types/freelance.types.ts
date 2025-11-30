@@ -1,5 +1,6 @@
 // Freelance-related types
-import type { SkillLevel } from './skill.types';
+import type { SkillRequirement } from './skill.types';
+import type { StatEffect } from './stats.types';
 
 export interface FreelanceGig {
   id: string;
@@ -7,8 +8,8 @@ export interface FreelanceGig {
   category: string;
   description: string;
   payment: number;
-  energyCost: number;
-  requirements: Array<{ skill: string; level: SkillLevel }>;
+  cost: StatEffect;
+  requirements: SkillRequirement[];
   imageUrl: string;
 }
 
@@ -17,6 +18,6 @@ export interface FreelanceApplication {
   gigId: string;
   title: string;
   payment: number;
-  energyCost: number;
-  requirements: Array<{ skill: string; level: SkillLevel }>;
+  cost: StatEffect;
+  requirements: SkillRequirement[];
 }

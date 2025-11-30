@@ -1,39 +1,66 @@
-import type { PlayerState, Debt } from '@/core/types';
-import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers';
+import type { PlayerState } from '@/core/types'
+import type { Stats } from '@/core/types/stats.types'
+import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
 
-export const createMockPlayer = (overrides?: Partial<PlayerState>): PlayerState => ({
-  id: 'test',
-  name: 'Test Player',
-  archetype: 'worker',
-  countryId: 'russia',
-  age: 25,
-  cash: 50000,
-  assets: [],
-  debts: [],
-  personal: {
-    health: 100,
+export const createMockPlayer = (
+  overrides?: Partial<PlayerState>
+): PlayerState => {
+  const baseStats: Stats = {
+    money: 50000,
     happiness: 100,
     energy: 100,
+    health: 100,
     sanity: 100,
     intelligence: 100,
-    relations: { family: 50, friends: 50, colleagues: 50 },
-    skills: [],
-    activeCourses: [],
-    activeUniversity: [],
-    buffs: [],
-    lifeGoals: [],
-    isDating: false,
-    potentialPartner: null,
-    pregnancy: null,
-    familyMembers: [],
-  },
-  quarterlyReport: createEmptyQuarterlyReport(),
-  quarterlySalary: 150000,
-  happinessMultiplier: 1,
-  health: 100,
-  energy: 100,
-  jobs: [],
-  activeFreelanceGigs: [],
-  businesses: [],
-  ...overrides,
-});
+  }
+
+  return {
+    id: 'test',
+    name: 'Test Player',
+    archetype: 'worker',
+    countryId: 'russia',
+    age: 25,
+
+    // ✅ Новая система статов
+    stats: { ...baseStats },
+
+    multipliers: {
+      happiness: 1,
+    },
+    happinessMultiplier: 1,
+
+    assets: [],
+    debts: [],
+
+    personal: {
+      stats: {
+        happiness: baseStats.happiness,
+        energy: baseStats.energy,
+        health: baseStats.health,
+        sanity: baseStats.sanity,
+        intelligence: baseStats.intelligence,
+      },
+
+      relations: { family: 50, friends: 50, colleagues: 50 },
+      skills: [],
+      activeCourses: [],
+      activeUniversity: [],
+      buffs: [],
+      lifeGoals: [],
+      familyMembers: [],
+
+      isDating: false,
+      potentialPartner: null,
+      pregnancy: null,
+    },
+
+    quarterlyReport: createEmptyQuarterlyReport(),
+    quarterlySalary: 150000,
+
+    jobs: [],
+    activeFreelanceGigs: [],
+    businesses: [],
+
+    ...overrides,
+  }
+}

@@ -2,6 +2,9 @@ import type { StateCreator } from 'zustand'
 import type { GameStore, JobSlice } from './types'
 import type { Job, JobApplication } from '@/core/types'
 
+import type { StatEffect } from '@/core/types/stats.types'
+import type { SkillRequirement } from '@/core/types/skill.types'
+
 export const createJobSlice: StateCreator<
   GameStore,
   [],
@@ -12,11 +15,12 @@ export const createJobSlice: StateCreator<
   pendingApplications: [],
 
   // Actions
-  applyForJob: (jobTitle: string, company: string, salary: number, energyCost: number, requirements: string[]) => {
+  applyForJob: (jobTitle: string, company: string, salary: number, cost: StatEffect, requirements: SkillRequirement[]) => {
     const state = get()
     if (!state.player) return
 
-    if (state.player.personal.energy < energyCost) {
+    // Check energy if present in cost
+    if (cost.energy && state.player.stats.energy < Math.abs(cost.energy)) {
       set(state => ({
         notifications: [{
           id: `err_${Date.now()}`,
@@ -35,7 +39,7 @@ export const createJobSlice: StateCreator<
       jobTitle,
       company,
       salary,
-      energyCost,
+      cost,
       satisfaction: 70,
       requirements,
       daysPending: 0
@@ -44,11 +48,18 @@ export const createJobSlice: StateCreator<
     set(state => ({
       player: state.player ? {
         ...state.player,
+        // Apply immediate cost (e.g. energy for interview)
+        stats: {
+          ...state.player.stats,
+          energy: state.player.stats.energy + (cost.energy || 0)
+        },
         personal: {
           ...state.player.personal,
-          energy: state.player.personal.energy - energyCost
-        },
-        energy: state.player.energy - energyCost
+          stats: {
+            ...state.player.personal.stats,
+            energy: state.player.personal.stats.energy + (cost.energy || 0)
+          }
+        }
       } : null,
       pendingApplications: [...state.pendingApplications, newApplication],
       notifications: [{
@@ -75,10 +86,8 @@ export const createJobSlice: StateCreator<
       title: appData.jobTitle,
       company: appData.company,
       salary: appData.salary,
-      energyCost: appData.energyCost,
+      cost: appData.cost,
       satisfaction: appData.satisfaction,
-      mentalHealthImpact: 0,
-      physicalHealthImpact: 0,
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
       description: "Новая работа",
       requirements: appData.requirements

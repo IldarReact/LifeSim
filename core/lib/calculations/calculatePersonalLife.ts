@@ -1,6 +1,6 @@
-import type { PersonalLife } from "@/core/types/personal.types"
-import type { Asset } from "@/core/types/finance.types"
-import type { CountryEconomy, GlobalEvent } from "@/core/types/economy.types"
+import type { PersonalLife } from '@/core/types/personal.types'
+import type { Asset } from '@/core/types/finance.types'
+import type { CountryEconomy, GlobalEvent } from '@/core/types/economy.types'
 
 interface Params {
   current: PersonalLife
@@ -10,39 +10,67 @@ interface Params {
   globalEvents: GlobalEvent[]
 }
 
+const clamp = (v: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, v))
+
 export function calculatePersonalLife({
   current,
   countryEconomy,
   cash,
-  assets,
-  globalEvents,
 }: Params): PersonalLife {
-  let newHappiness = current.happiness
-  let newHealth = current.health
 
-  // Base recovery to 100 at start of new quarter
-  // Real energy for the turn will be calculated in game-store by subtracting job costs
-  let newEnergy = 100
+  let { happiness, health, sanity, intelligence } = current.stats
 
-  // Money impact
+  // ====================
+  // Базовый ресет энергии
+  // ====================
+  const energy = 100
+
+  // ====================
+  // Влияние финансов
+  // ====================
   if (cash < 0) {
-    newHappiness -= 10
-    newHealth -= 2 // Stress
-  } else if (cash > 100000) {
-    newHappiness += 2
+    happiness -= 10
+    health -= 2
+    sanity -= 3
   }
 
-  // Economy impact
+  if (cash > 100_000) {
+    happiness += 2
+  }
+
+  // ====================
+  // Экономика страны
+  // ====================
   if (countryEconomy.unemployment > 10) {
-    newHappiness -= 2 // Anxiety
+    happiness -= 2
+    sanity -= 1
+  }
+
+  if (countryEconomy.inflation > 10) {
+    happiness -= 2
+  }
+
+  // ====================
+  // Баффы
+  // ====================
+  for (const buff of current.buffs) {
+    if (!buff.effects) continue
+
+    happiness += buff.effects.happiness || 0
+    health += buff.effects.health || 0
+    sanity += buff.effects.sanity || 0
+    intelligence += buff.effects.intelligence || 0
   }
 
   return {
     ...current,
-    happiness: Math.max(0, Math.min(100, newHappiness)),
-    health: Math.max(0, Math.min(100, newHealth)),
-    energy: newEnergy,
-    relations: current.relations,
-    skills: current.skills,
+    stats: {
+      happiness: clamp(happiness, 0, 100),
+      health: clamp(health, 0, 100),
+      energy: clamp(energy, 0, 100),
+      sanity: clamp(sanity, 0, 100),
+      intelligence: clamp(intelligence, 0, 100),
+    }
   }
 }

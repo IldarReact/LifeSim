@@ -9,6 +9,7 @@ import type { CountryEconomy, GlobalEvent } from './economy.types';
 import type { Notification } from './notification.types';
 import type { JobApplication } from './job.types';
 import type { FreelanceApplication } from './freelance.types';
+import { StatEffect, Stats } from './stats.types';
 
 export type GameStatus = "menu" | "setup" | "select_country" | "select_character" | "playing" | "ended";
 
@@ -18,16 +19,26 @@ export interface PlayerState {
   archetype: CharacterArchetype;
   countryId: string;
   age: number;
-  cash: number;
+
   assets: Asset[];
   debts: Debt[];
   personal: PersonalLife;
   quarterlyReport: QuarterlyReport;
-  // Stats
-  quarterlySalary: number; // Changed from monthlySalary
+
+  quarterlySalary: number;
+
+  stats: {
+    money: number;
+    happiness: number;
+    energy: number;
+    sanity: number;
+    health: number;
+    intelligence: number;
+  };
+
+  multipliers?: StatEffect;
   happinessMultiplier: number;
-  health: number;
-  energy: number;
+
   // New Job System
   jobs: Job[];
   // Freelance System
@@ -35,6 +46,7 @@ export interface PlayerState {
   // Business System
   businesses: Business[];
 }
+
 
 export interface HistoryEntry {
   turn: number;

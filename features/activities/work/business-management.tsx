@@ -14,6 +14,9 @@ interface BusinessManagementProps {
   playerCash: number
   onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
   onFireEmployee: (businessId: string, employeeId: string) => void
+  onChangePrice: (businessId: string, newPrice: number) => void
+  onSetQuantity: (businessId: string, newQuantity: number) => void
+  onOpenBranch: (sourceBusinessId: string) => void
 }
 
 const BUSINESS_IMAGES: Record<string, string> = {
@@ -28,9 +31,12 @@ export function BusinessManagement({
   business,
   playerCash,
   onHireEmployee,
-  onFireEmployee
+  onFireEmployee,
+  onChangePrice,
+  onSetQuantity,
+  onOpenBranch
 }: BusinessManagementProps) {
-  const { income, expenses, profit } = calculateBusinessFinancials(business)
+  const { income, expenses, profit } = calculateBusinessFinancials(business, true)
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
 
   return (
@@ -54,16 +60,10 @@ export function BusinessManagement({
             color: "text-rose-400"
           },
           {
-            label: "Энергия",
-            value: `-${business.energyCostPerTurn}/кв`,
-            icon: <Zap className="w-4 h-4" />,
-            color: "text-amber-400"
-          },
-          {
-            label: "Рассудок",
-            value: `-${business.stressImpact}/кв`,
-            icon: <Brain className="w-4 h-4" />,
-            color: "text-purple-400"
+            label: "Сотрудники",
+            value: `${business.employees.length}/${business.maxEmployees}`,
+            icon: <Users className="w-4 h-4" />,
+            color: "text-blue-400"
           }
         ]}
         modalContent={
@@ -94,24 +94,6 @@ export function BusinessManagement({
 
               <div className="bg-white/5 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-5 h-5 text-amber-400" />
-                  <span className="font-semibold">Энергия</span>
-                </div>
-                <p className="text-3xl font-bold">-{business.energyCostPerTurn}</p>
-                <p className="text-sm text-white/60">За квартал</p>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Brain className="w-5 h-5 text-purple-400" />
-                  <span className="font-semibold">Рассудок</span>
-                </div>
-                <p className="text-3xl font-bold">-{business.stressImpact}</p>
-                <p className="text-sm text-white/60">За квартал</p>
-              </div>
-
-              <div className="bg-white/5 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
                   <Users className="w-5 h-5 text-blue-400" />
                   <span className="font-semibold">Сотрудники</span>
                 </div>
@@ -133,6 +115,9 @@ export function BusinessManagement({
                 playerCash={playerCash}
                 onHireEmployee={onHireEmployee}
                 onFireEmployee={onFireEmployee}
+                onChangePrice={onChangePrice}
+                onSetQuantity={onSetQuantity}
+                onOpenBranch={onOpenBranch}
                 trigger={
                   <Button className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10">
                     <Users className="w-4 h-4 mr-2" />

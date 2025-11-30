@@ -1,4 +1,7 @@
 // Job-related types
+import { StatEffect } from "./stats.types";
+import { SkillRequirement } from "./skill.types";
+
 export type CharacterArchetype = "investor" | "specialist" | "entrepreneur" | "worker" | "indebted";
 
 export interface JobInfo {
@@ -6,9 +9,7 @@ export interface JobInfo {
   title: string;
   description: string;
   satisfaction: number;
-  energyCost: number;
-  mentalHealthImpact: number;
-  physicalHealthImpact: number;
+  cost: StatEffect;
   imageUrl: string;
 }
 
@@ -17,13 +18,11 @@ export interface Job {
   title: string;
   company: string;
   salary: number; // Monthly salary
-  energyCost: number;
+  cost: StatEffect;
   satisfaction: number;
-  mentalHealthImpact: number;
-  physicalHealthImpact: number;
   imageUrl: string;
   description: string;
-  requirements?: string[]; // Skills used in this job
+  requirements?: SkillRequirement[]; // Skills used in this job
 }
 
 export interface JobApplication {
@@ -31,8 +30,8 @@ export interface JobApplication {
   jobTitle: string;
   company: string;
   salary: number;
-  energyCost: number;
+  cost: StatEffect;
   satisfaction: number;
-  requirements: string[];
+  requirements: SkillRequirement[];
   daysPending: number;
 }

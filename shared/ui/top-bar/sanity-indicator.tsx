@@ -11,7 +11,7 @@ export function SanityIndicator() {
   if (!player) return null
 
   const statMods = calculateStatModifiers(player)
-  const sanityMod = getTotalModifier(statMods.sanity, 'sanity')
+  const sanityMod = getTotalModifier(statMods, 'sanity')
 
   return (
     <div className="relative flex flex-col items-center">
@@ -21,7 +21,7 @@ export function SanityIndicator() {
       >
         <div className="flex items-center gap-1">
           <Brain className="w-5 h-5 text-purple-400" />
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.sanity || 80)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.stats.sanity || 80)}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Рассудок</span>
       </button>
@@ -41,17 +41,17 @@ export function SanityIndicator() {
                 <span>Факторы рассудка</span>
               </div>
               <div className="space-y-2">
-                {statMods.sanity.length === 0 ? (
+                {statMods.length === 0 ? (
                   <div className="text-white/50 italic px-2">Нет активных факторов</div>
                 ) : (
-                  statMods.sanity.map((mod, index) => (
+                  statMods.map((mod, index) => (
                     <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                      <span className={mod.sanity && mod.sanity > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
-                        {mod.sanity && mod.sanity > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      <span className={mod.effects.sanity && mod.effects.sanity > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
+                        {mod.effects.sanity && mod.effects.sanity > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                         {mod.source}
                       </span>
                       <span className="text-white font-medium">
-                        {mod.sanity && mod.sanity > 0 ? "+" : ""}{mod.sanity}
+                        {mod.effects.sanity && mod.effects.sanity > 0 ? "+" : ""}{mod.effects.sanity}
                       </span>
                     </div>
                   ))

@@ -3,6 +3,7 @@ import type { Notification, Skill, SkillLevel, JobApplication } from '@/core/typ
 import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
+import { processBusinessTurn } from './business-turn-processor'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -131,7 +132,7 @@ export function processTurn(get: GetState, set: SetState): void {
   prev.player.jobs.forEach(job => {
     if (job.requirements) {
       job.requirements.forEach(req => {
-        const skillName = req.split('(')[0].trim()
+        const skillName = req.skillId
         protectedSkills.add(skillName)
 
         let skillIdx = updatedSkills.findIndex(s => s.name === skillName)
@@ -170,17 +171,8 @@ export function processTurn(get: GetState, set: SetState): void {
 
     if (app.requirements && app.requirements.length > 0) {
       app.requirements.forEach(req => {
-        let reqName = req
-        let reqLevel = 1 // Default Intern (1 star)
-
-        if (req.includes("(")) {
-          const parts = req.split("(")
-          reqName = parts[0].trim()
-          const levelStr = parts[1].replace(")", "").trim()
-          // Map string levels to stars
-          const levelMap: Record<string, number> = { "Intern": 1, "Junior": 2, "Middle": 3, "Senior": 4, "Lead": 5 }
-          reqLevel = levelMap[levelStr] || 1
-        }
+        const reqName = req.skillId
+        const reqLevel = req.minLevel
 
         const playerSkill = updatedSkills.find(s => s.name === reqName)
         const playerLevel = playerSkill ? playerSkill.level : 0
@@ -211,7 +203,7 @@ export function processTurn(get: GetState, set: SetState): void {
           jobTitle: app.jobTitle,
           company: app.company,
           salary: app.salary,
-          energyCost: app.energyCost,
+          energyCost: app.cost.energy || 0,
           satisfaction: app.satisfaction,
           requirements: app.requirements
         }
@@ -324,9 +316,10 @@ export function processTurn(get: GetState, set: SetState): void {
           relationLevel: 100,
           income: 0,
           expenses: 500,
-          happinessMod: 10,
-          sanityMod: -2,
-          healthMod: 0
+          passiveEffects: {
+            happiness: 10,
+            sanity: -2
+          }
         })
       }
 
@@ -344,15 +337,14 @@ export function processTurn(get: GetState, set: SetState): void {
   }
 
   // 7. Calculate Energy for Next Turn
-  const totalActiveEnergyCost = activeCourses.reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-    activeUniversity.reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-    prev.player.jobs.reduce((acc, j) => acc + j.energyCost, 0) +
-    prev.player.businesses.reduce((acc, b) => acc + b.energyCostPerTurn, 0)
+  const totalActiveEnergyCost = activeCourses.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
+    activeUniversity.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
+    prev.player.jobs.reduce((acc, j) => acc + (j.cost.energy || 0), 0)
 
   const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
 
   // Calculate business sanity impact
-  const businessSanityImpact = prev.player.businesses.reduce((acc, b) => acc + b.stressImpact, 0)
+  const businessSanityImpact = 0
 
 
   // 8. Process Buffs
@@ -371,14 +363,12 @@ export function processTurn(get: GetState, set: SetState): void {
     const newBuff = { ...buff, duration: buff.duration - 1 }
 
     // Accumulate modifiers
-    switch (buff.type) {
-      case 'happiness': buffHappinessMod += buff.value; break;
-      case 'health': buffHealthMod += buff.value; break;
-      case 'sanity': buffSanityMod += buff.value; break;
-      case 'intelligence': buffIntelligenceMod += buff.value; break;
-      case 'energy': buffEnergyMod += buff.value; break;
-      case 'income_bonus': buffIncomeMod += buff.value; break;
-    }
+    if (buff.effects.happiness) buffHappinessMod += buff.effects.happiness;
+    if (buff.effects.health) buffHealthMod += buff.effects.health;
+    if (buff.effects.sanity) buffSanityMod += buff.effects.sanity;
+    if (buff.effects.intelligence) buffIntelligenceMod += buff.effects.intelligence;
+    if (buff.effects.energy) buffEnergyMod += buff.effects.energy;
+    if (buff.effects.money) buffIncomeMod += buff.effects.money;
 
     if (newBuff.duration <= 0) {
       expiredBuffs.push(newBuff.id)
@@ -408,10 +398,31 @@ export function processTurn(get: GetState, set: SetState): void {
   const statMods = calculateStatModifiers(tempPlayer)
 
   // Apply modifiers to stats (Base + Buffs + Business)
-  const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
-  const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
-  const sanityMod = getTotalModifier(statMods.sanity, 'sanity') + buffSanityMod - businessSanityImpact
-  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence') + buffIntelligenceMod
+  const happinessMod = getTotalModifier(statMods, 'happiness') + buffHappinessMod
+  const healthMod = getTotalModifier(statMods, 'health') + buffHealthMod
+  const sanityMod = getTotalModifier(statMods, 'sanity') + buffSanityMod - businessSanityImpact
+  const intelligenceMod = getTotalModifier(statMods, 'intelligence') + buffIntelligenceMod
+
+  // 9.5. Business Logic - обработка всех бизнесов за квартал
+  const businessResult = processBusinessTurn(
+    prev.player.businesses,
+    updatedSkills,
+    prev.turn,
+    prev.year,
+    prev.globalMarket.value  // ✅ НОВОЕ: передаем глобальное состояние рынка
+  );
+
+  // Обновить навыки с учетом роста от бизнеса
+  updatedSkills = businessResult.updatedSkills;
+
+  // Добавить уведомления от бизнеса
+  newNotifications.push(...businessResult.notifications);
+
+  // Добавить защищенные навыки
+  businessResult.protectedSkills.forEach(skill => protectedSkills.add(skill));
+
+  // Пересчитать sanity с учетом ролей игрока в бизнесе
+  const finalSanityMod = sanityMod - businessResult.playerRoleSanityCost;
 
 
   // 10. Financial Calculations (Quarterly)
@@ -433,7 +444,11 @@ export function processTurn(get: GetState, set: SetState): void {
     assetIncome,
     assetMaintenance,
     debtInterest,
-    buffIncomeMod
+    buffIncomeMod,
+    businessFinancialsOverride: {
+      income: businessResult.totalIncome,
+      expenses: businessResult.totalExpenses
+    }
   })
 
   const netProfit = quarterlyReport.netProfit
@@ -448,6 +463,7 @@ export function processTurn(get: GetState, set: SetState): void {
       isProcessingTurn: false,
       player: state.player ? {
         ...state.player,
+        businesses: businessResult.updatedBusinesses,
         personal: {
           ...state.player.personal,
           skills: updatedSkills,
@@ -458,15 +474,21 @@ export function processTurn(get: GetState, set: SetState): void {
           isDating: isDating,
           potentialPartner: potentialPartner,
           pregnancy: pregnancy,
-          energy: Math.min(100, recoveredEnergy + buffEnergyMod),
+          energy: Math.min(100, recoveredEnergy + buffEnergyMod - businessResult.playerRoleEnergyCost),
           // Apply modifiers + natural decay
-          health: Math.min(100, Math.max(0, state.player.personal.health - 2 + healthMod)),
-          happiness: Math.min(100, Math.max(0, state.player.personal.happiness - 1 + happinessMod)),
-          sanity: Math.min(100, Math.max(0, state.player.personal.sanity + sanityMod)),
-          intelligence: Math.min(100, Math.max(0, state.player.personal.intelligence + intelligenceMod))
+          stats: {
+            ...state.player.personal.stats,
+            health: Math.min(100, Math.max(0, state.player.personal.stats.health - 2 + healthMod)),
+            happiness: Math.min(100, Math.max(0, state.player.personal.stats.happiness - 1 + happinessMod)),
+            sanity: Math.min(100, Math.max(0, state.player.personal.stats.sanity + finalSanityMod)),
+            intelligence: Math.min(100, Math.max(0, state.player.personal.stats.intelligence + intelligenceMod))
+          }
         },
-        energy: Math.min(100, recoveredEnergy + buffEnergyMod),
-        cash: state.player.cash + netProfit,
+        energy: Math.min(100, recoveredEnergy + buffEnergyMod - businessResult.playerRoleEnergyCost),
+        stats: {
+          ...state.player.stats,
+          money: state.player.stats.money + netProfit
+        },
         quarterlyReport
       } : null,
       notifications: [...newNotifications, ...state.notifications],

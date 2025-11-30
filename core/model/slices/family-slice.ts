@@ -8,6 +8,10 @@ export const createFamilySlice: StateCreator<
   [],
   FamilySlice
 > = (set, get) => ({
+
+  // ------------------------------------------------------------------
+  // ADD FAMILY MEMBER
+  // ------------------------------------------------------------------
   addFamilyMember: (name, type, age, income, expenses) => {
     set(state => {
       if (!state.player) return {}
@@ -20,9 +24,12 @@ export const createFamilySlice: StateCreator<
         relationLevel: 50,
         income,
         expenses,
-        happinessMod: type === 'pet' ? 2 : 5,
-        sanityMod: type === 'pet' ? 3 : 1,
-        healthMod: 0
+
+        passiveEffects: {
+          happiness: type === 'pet' ? 2 : 5,
+          sanity: type === 'pet' ? 3 : 1,
+          health: 0
+        }
       }
 
       return {
@@ -30,14 +37,17 @@ export const createFamilySlice: StateCreator<
           ...state.player,
           personal: {
             ...state.player.personal,
-            familyMembers: [...state.player.personal.familyMembers, newMember]
+            familyMembers: [
+              ...state.player.personal.familyMembers,
+              newMember
+            ]
           }
         },
         notifications: [{
           id: `family_add_${Date.now()}`,
           type: 'success',
           title: 'Пополнение в семье!',
-          message: `В вашей семье появился новый член: ${name} (${type === 'pet' ? 'Питомец' : type === 'wife' ? 'Жена' : type === 'husband' ? 'Муж' : 'Ребенок'})!`,
+          message: `В вашей семье появился новый член: ${name}`,
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
@@ -45,53 +55,39 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // REMOVE FAMILY MEMBER
+  // ------------------------------------------------------------------
   removeFamilyMember: (id) => {
     set(state => {
       if (!state.player) return {}
+
       return {
         player: {
           ...state.player,
           personal: {
             ...state.player.personal,
-            familyMembers: state.player.personal.familyMembers.filter(m => m.id !== id)
+            familyMembers:
+              state.player.personal.familyMembers.filter(
+                m => m.id !== id
+              )
           }
         }
       }
     })
   },
 
+  // ------------------------------------------------------------------
+  // UPDATE LIFE GOAL
+  // ------------------------------------------------------------------
   updateLifeGoal: (goalId, progress) => {
     set(state => {
       if (!state.player) return {}
-      
-      const goals = state.player.personal.lifeGoals.map(g => {
-        if (g.id === goalId) {
-          return { ...g, progress }
-        }
-        return g
-      })
 
-      return {
-        player: {
-          ...state.player,
-          personal: {
-            ...state.player.personal,
-            lifeGoals: goals
-          }
-        }
-      }
-    })
-  },
-
-  completeLifeGoal: (goalId) => {
-    set(state => {
-      if (!state.player) return {}
-      
-      const goal = state.player.personal.lifeGoals.find(g => g.id === goalId)
-      if (!goal || goal.isCompleted) return {}
-
-      const updatedGoals = state.player.personal.lifeGoals.map(g => 
-        g.id === goalId ? { ...g, isCompleted: true, progress: g.target } : g
+      const updatedGoals = state.player.personal.lifeGoals.map(goal =>
+        goal.id === goalId
+          ? { ...goal, progress }
+          : goal
       )
 
       return {
@@ -99,17 +95,52 @@ export const createFamilySlice: StateCreator<
           ...state.player,
           personal: {
             ...state.player.personal,
+            lifeGoals: updatedGoals
+          }
+        }
+      }
+    })
+  },
+
+  // ------------------------------------------------------------------
+  // COMPLETE LIFE GOAL
+  // ------------------------------------------------------------------
+  completeLifeGoal: (goalId) => {
+    set(state => {
+      if (!state.player) return {}
+
+      const goal = state.player.personal.lifeGoals.find(
+        g => g.id === goalId
+      )
+
+      if (!goal || goal.isCompleted) return {}
+
+      const updatedGoals = state.player.personal.lifeGoals.map(g =>
+        g.id === goalId
+          ? { ...g, isCompleted: true, progress: g.target }
+          : g
+      )
+
+      const stats = state.player.personal.stats
+
+      return {
+        player: {
+          ...state.player,
+          personal: {
+            ...state.player.personal,
             lifeGoals: updatedGoals,
-            // Apply immediate reward if needed, but mostly it's passive per turn
-            happiness: Math.min(100, state.player.personal.happiness + 10),
-            sanity: Math.min(100, state.player.personal.sanity + 10)
+            stats: {
+              ...stats,
+              happiness: Math.min(100, stats.happiness + 10),
+              sanity: Math.min(100, stats.sanity + 10)
+            }
           }
         },
         notifications: [{
           id: `goal_complete_${Date.now()}`,
           type: 'success',
           title: 'Цель достигнута! 🎉',
-          message: `Вы достигли цели "${goal.title}"! Теперь вы будете получать бонусы к счастью и рассудку.`,
+          message: `Вы достигли цели «${goal.title}»`,
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
@@ -117,30 +148,39 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // START DATING
+  // ------------------------------------------------------------------
   startDating: () => {
     set(state => {
       if (!state.player) return {}
-      
-      // Cost: 30 Energy, $200
-      if (state.player.personal.energy < 30 || state.player.cash < 200) {
-        return {} // Should handle UI feedback elsewhere or return success boolean
-      }
+
+      const energy = state.player.personal.stats.energy
+      const money = state.player.stats.money
+
+      if (energy < 30 || money < 200) return {}
 
       return {
         player: {
           ...state.player,
-          cash: state.player.cash - 200,
+          stats: {
+            ...state.player.stats,
+            money: money - 200
+          },
           personal: {
             ...state.player.personal,
-            energy: state.player.personal.energy - 30,
-            isDating: true
+            isDating: true,
+            stats: {
+              ...state.player.personal.stats,
+              energy: energy - 30
+            }
           }
         },
         notifications: [{
           id: `dating_start_${Date.now()}`,
           type: 'info',
           title: 'Поиск партнера',
-          message: 'Вы начали активный поиск партнера. Результаты будут в следующем квартале.',
+          message: 'Вы начали искать партнера.',
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
@@ -148,11 +188,16 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // ACCEPT PARTNER
+  // ------------------------------------------------------------------
   acceptPartner: () => {
     set(state => {
-      if (!state.player || !state.player.personal.potentialPartner) return {}
-      
+      if (!state.player) return {}
+      if (!state.player.personal.potentialPartner) return {}
+
       const partner = state.player.personal.potentialPartner
+
       const newMember: FamilyMember = {
         id: partner.id,
         name: partner.name,
@@ -161,9 +206,12 @@ export const createFamilySlice: StateCreator<
         relationLevel: 50,
         income: partner.income,
         expenses: 1500,
-        happinessMod: 5,
-        sanityMod: 2,
-        healthMod: 0
+
+        passiveEffects: {
+          happiness: 5,
+          sanity: 2,
+          health: 0
+        }
       }
 
       return {
@@ -173,14 +221,17 @@ export const createFamilySlice: StateCreator<
             ...state.player.personal,
             potentialPartner: null,
             isDating: false,
-            familyMembers: [...state.player.personal.familyMembers, newMember]
+            familyMembers: [
+              ...state.player.personal.familyMembers,
+              newMember
+            ]
           }
         },
         notifications: [{
           id: `partner_accept_${Date.now()}`,
           type: 'success',
           title: 'Новые отношения!',
-          message: `Вы начали встречаться с ${partner.name}.`,
+          message: `Вы начали отношения с ${partner.name}.`,
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
@@ -188,9 +239,13 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // REJECT PARTNER
+  // ------------------------------------------------------------------
   rejectPartner: () => {
     set(state => {
       if (!state.player) return {}
+
       return {
         player: {
           ...state.player,
@@ -203,15 +258,20 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // TRY FOR BABY
+  // ------------------------------------------------------------------
   tryForBaby: () => {
     set(state => {
       if (!state.player) return {}
-      
-      // Check if has partner
-      const hasPartner = state.player.personal.familyMembers.some(m => m.type === 'wife' || m.type === 'husband')
+
+      const hasPartner =
+        state.player.personal.familyMembers.some(m =>
+          m.type === 'wife' || m.type === 'husband'
+        )
+
       if (!hasPartner) return {}
 
-      // 9 months = 3 turns
       return {
         player: {
           ...state.player,
@@ -219,8 +279,8 @@ export const createFamilySlice: StateCreator<
             ...state.player.personal,
             pregnancy: {
               turnsLeft: 3,
-              isTwins: Math.random() < 0.1, // 10% chance of twins
-              motherId: 'wife' // Simplified
+              isTwins: Math.random() < 0.1,
+              motherId: 'wife'
             }
           }
         },
@@ -228,7 +288,7 @@ export const createFamilySlice: StateCreator<
           id: `pregnancy_start_${Date.now()}`,
           type: 'success',
           title: 'Планирование ребенка',
-          message: 'Вы решили завести ребенка. Ожидайте новостей!',
+          message: 'Вы решили завести ребенка.',
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
@@ -236,11 +296,17 @@ export const createFamilySlice: StateCreator<
     })
   },
 
+  // ------------------------------------------------------------------
+  // ADOPT PET
+  // ------------------------------------------------------------------
   adoptPet: (petType, name, cost) => {
     set(state => {
-      if (!state.player || state.player.cash < cost) return {}
+      if (!state.player) return {}
 
-      const newMember: FamilyMember = {
+      const money = state.player.stats.money
+      if (money < cost) return {}
+
+      const newPet: FamilyMember = {
         id: `pet_${Date.now()}`,
         name,
         type: 'pet',
@@ -248,29 +314,39 @@ export const createFamilySlice: StateCreator<
         relationLevel: 80,
         income: 0,
         expenses: 100,
-        happinessMod: 3,
-        sanityMod: 2,
-        healthMod: 0
+
+        passiveEffects: {
+          happiness: 3,
+          sanity: 2,
+          health: 0
+        }
       }
 
       return {
         player: {
           ...state.player,
-          cash: state.player.cash - cost,
+          stats: {
+            ...state.player.stats,
+            money: money - cost
+          },
           personal: {
             ...state.player.personal,
-            familyMembers: [...state.player.personal.familyMembers, newMember]
+            familyMembers: [
+              ...state.player.personal.familyMembers,
+              newPet
+            ]
           }
         },
         notifications: [{
           id: `pet_adopt_${Date.now()}`,
           type: 'success',
           title: 'Новый друг!',
-          message: `У вас появился питомец: ${name}!`,
+          message: `У вас появился питомец: ${name}`,
           date: `${state.year} Q${(state.turn % 4) || 4}`,
           isRead: false
         }, ...state.notifications]
       }
     })
   }
+
 })

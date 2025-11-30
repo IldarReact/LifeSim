@@ -6,8 +6,11 @@ export function applyRandomPersonalEvents(personal: PersonalLife, turn: number):
     // Sick
     return {
       ...personal,
-      health: Math.max(0, personal.health - 10),
-      happiness: Math.max(0, personal.happiness - 5)
+      stats: {
+        ...personal.stats,
+        health: Math.max(0, personal.stats.health - 10),
+        happiness: Math.max(0, personal.stats.happiness - 5)
+      }
     }
   }
 

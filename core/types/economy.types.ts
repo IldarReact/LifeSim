@@ -35,7 +35,8 @@ export interface CountryEconomy {
   keyRate: number; // Ключевая ставка ЦБ (% годовых)
   interestRate: number; // Базовая процентная ставка (deprecated, используем keyRate)
   unemployment: number; // Безработица (%)
-  taxRate: number; // Налоговая ставка (%)
+  taxRate: number; // Личный налог на доход (зарплата, дивиденды) (%)
+  corporateTaxRate: number; // Налог на прибыль бизнеса (%)
   salaryModifier: number; // Модификатор зарплат
   costOfLivingModifier: number; // Модификатор стоимости жизни
   activeEvents: EconomicEvent[]; // Активные экономические события

@@ -1,7 +1,10 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, BusinessSlice } from './types'
 import type { Business, Employee, EmployeeCandidate, BusinessType } from '@/core/types'
-import { updateBusinessMetrics, calculateBusinessIncome } from '@/core/lib/business-utils'
+import type { BusinessProposal } from '@/core/types/business.types'
+import type { StatEffect } from '@/core/types/stats.types'
+import { updateBusinessMetrics, calculateNPCVote } from '@/core/lib/business-utils'
+import { applyStats } from '@/core/helpers/applyStats'
 
 export const createBusinessSlice: StateCreator<
   GameStore,
@@ -9,146 +12,201 @@ export const createBusinessSlice: StateCreator<
   [],
   BusinessSlice
 > = (set, get) => ({
+
   openBusiness: (
-    name: string,
-    type: BusinessType,
-    description: string,
-    initialCost: number,
-    monthlyIncome: number,
-    monthlyExpenses: number,
-    maxEmployees: number,
-    energyCostPerTurn: number,
-    stressImpact: number
+    name,
+    type,
+    description,
+    totalCost,
+    upfrontCost,
+    creationCost,
+    openingQuarters,
+    monthlyIncome,
+    monthlyExpenses,
+    maxEmployees,
+    minEmployees,
+    taxRate
   ) => {
     const state = get()
     if (!state.player) return
 
-    // Проверяем, хватает ли денег
-    if (state.player.cash < initialCost) {
+    // ✅ Проверка денег
+    if (state.player.stats.money < upfrontCost) {
       console.warn('Недостаточно денег для открытия бизнеса')
       return
     }
 
-    console.log('Creating business with:', {
-      monthlyIncome,
-      monthlyExpenses,
-      quarterlyIncome: (monthlyIncome || 0) * 3,
-      quarterlyExpenses: (monthlyExpenses || 0) * 3
-    })
+    // ✅ Проверка энергии (если есть в стоимости)
+    if (creationCost.energy && state.player.personal.stats.energy < Math.abs(creationCost.energy)) {
+      console.warn('Недостаточно энергии для открытия бизнеса')
+      return
+    }
 
     const newBusiness: Business = {
       id: `business_${Date.now()}`,
       name,
       type,
       description,
-      initialCost,
-      quarterlyIncome: (monthlyIncome || 0) * 3, // Convert input monthly to quarterly for storage
-      quarterlyExpenses: (monthlyExpenses || 0) * 3, // Convert input monthly to quarterly for storage
-      currentValue: initialCost,
+      state: openingQuarters > 0 ? 'opening' : 'active',
+
+      // ===== НОВОЕ: Ценообразование и производство =====
+      price: 5,  // Средняя цена по умолчанию (1-10)
+      quantity: type === 'service' || type === 'tech' ? 0 : 100,  // 0 для услуг, 100 для товаров
+      isServiceBased: type === 'service' || type === 'tech',  // Услуговые бизнесы
+
+      // ===== НОВОЕ: Сеть филиалов =====
+      networkId: undefined,  // Пока не в сети
+      isMainBranch: true,    // Первый бизнес всегда главный
+
+      // ===== НОВОЕ: Кооперативное владение =====
+      partners: [],  // Пока нет партнеров
+      proposals: [],  // Нет предложений
+
+      openingProgress: {
+        totalQuarters: openingQuarters,
+        quartersLeft: openingQuarters,
+        investedAmount: upfrontCost,
+        totalCost,
+        upfrontCost,
+      },
+
+      creationCost,
+
+      initialCost: totalCost,
+      quarterlyIncome: (monthlyIncome || 0) * 3,
+      quarterlyExpenses: (monthlyExpenses || 0) * 3,
+      currentValue: totalCost,
+
+      taxRate: taxRate || 0.15,
+      hasInsurance: false,
+      insuranceCost: 0,
+
+      inventory: {
+        currentStock: 0,
+        maxStock: 1000,
+        pricePerUnit: 100,
+        purchaseCost: 50,
+        autoPurchaseAmount: 0,
+      },
+
       employees: [],
       maxEmployees,
+      requiredRoles: [],  // TODO: заполнить из конфига типа бизнеса
+      minEmployees: minEmployees || 1,
+
+      // ✅ новый формат ролей
+      playerRoles: {
+        managerialRoles: ['manager', 'accountant'],  // По умолчанию игрок выполняет эти роли
+        operationalRole: null,  // Операционная роль не выбрана
+      },
+
       reputation: 50,
       efficiency: 50,
       customerSatisfaction: 50,
-      energyCostPerTurn: energyCostPerTurn || 0,
-      stressImpact: stressImpact || 0,
+
+      eventsHistory: [],
       foundedTurn: state.turn
     }
+
+    // ✅ применяем статы игроку
+    const updatedStats = applyStats(state.player.stats, {
+      money: -upfrontCost,
+    })
+
+    const updatedPersonalStats = applyStats(
+      { ...state.player.personal.stats, money: 0 },
+      creationCost
+    )
 
     set({
       player: {
         ...state.player,
-        cash: state.player.cash - initialCost,
+
+        stats: updatedStats,
+
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats
+        },
+
         businesses: [...state.player.businesses, newBusiness]
       }
     })
   },
 
-  hireEmployee: (businessId: string, candidate: EmployeeCandidate) => {
+  hireEmployee: (businessId, candidate) => {
     const state = get()
     if (!state.player) return
 
-    const businessIndex = state.player.businesses.findIndex(b => b.id === businessId)
-    if (businessIndex === -1) return
+    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    if (i === -1) return
 
-    const business = state.player.businesses[businessIndex]
+    const business = state.player.businesses[i]
 
-    // Проверяем лимит сотрудников
     if (business.employees.length >= business.maxEmployees) {
       console.warn('Достигнут лимит сотрудников')
       return
     }
 
-    // Проверяем бюджет (на первую зарплату)
-    if (state.player.cash < candidate.requestedSalary) {
+    if (state.player.stats.money < candidate.requestedSalary) {
       console.warn('Недостаточно денег для найма')
       return
     }
 
-    // Создаем сотрудника из кандидата
     const newEmployee: Employee = {
       id: `employee_${Date.now()}`,
       name: candidate.name,
       role: candidate.role,
-      level: candidate.level,
+      stars: candidate.stars,
       skills: candidate.skills,
       salary: candidate.requestedSalary,
-      satisfaction: 80, // Начальная удовлетворенность
-      productivity: 75, // Начальная продуктивность
-      experience: candidate.experience
+      satisfaction: 80,
+      productivity: 75,
+      experience: candidate.experience,
     }
 
-    // Обновляем список сотрудников
     const employees = [...business.employees, newEmployee]
-    
-    // Пересчитываем метрики бизнеса
-    const tempBusiness = { ...business, employees }
-    const updatedMetrics = updateBusinessMetrics(tempBusiness)
-    
-    // Мы не обновляем monthlyIncome/expenses в самом объекте бизнеса здесь, 
-    // так как они являются "базовыми" значениями. 
-    // Динамические значения (с учетом сотрудников) должны рассчитываться в UI или в отдельном поле.
-    // Но для простоты, давайте пока оставим базовые значения неизменными, 
-    // а реальный доход будет считаться в turn-logic.
-    
-    // Однако, UI (BusinessManagement) показывает business.monthlyIncome.
-    // Если мы хотим чтобы UI показывал реальный доход, нам нужно или обновлять это поле,
-    // или добавить поле calculatedIncome.
-    // Давайте пока просто обновим метрики.
+
+    const updatedBusiness = updateBusinessMetrics({
+      ...business,
+      employees
+    })
 
     const updatedBusinesses = [...state.player.businesses]
-    updatedBusinesses[businessIndex] = {
-      ...updatedMetrics,
-      employees
-    }
+    updatedBusinesses[i] = updatedBusiness
+
+    // ✅ списание зарплаты
+    const updatedStats = applyStats(state.player.stats, {
+      money: -candidate.requestedSalary
+    })
 
     set({
       player: {
         ...state.player,
+        stats: updatedStats,
         businesses: updatedBusinesses
       }
     })
   },
 
-  fireEmployee: (businessId: string, employeeId: string) => {
+  fireEmployee: (businessId, employeeId) => {
     const state = get()
     if (!state.player) return
 
-    const businessIndex = state.player.businesses.findIndex(b => b.id === businessId)
-    if (businessIndex === -1) return
+    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    if (i === -1) return
 
-    const business = state.player.businesses[businessIndex]
+    const business = state.player.businesses[i]
+
     const employees = business.employees.filter(e => e.id !== employeeId)
 
-    // Пересчитываем метрики
-    const tempBusiness = { ...business, employees }
-    const updatedMetrics = updateBusinessMetrics(tempBusiness)
+    const updatedBusiness = updateBusinessMetrics({
+      ...business,
+      employees
+    })
 
     const updatedBusinesses = [...state.player.businesses]
-    updatedBusinesses[businessIndex] = {
-      ...updatedMetrics,
-      employees
-    }
+    updatedBusinesses[i] = updatedBusiness
 
     set({
       player: {
@@ -158,21 +216,404 @@ export const createBusinessSlice: StateCreator<
     })
   },
 
-  closeBusiness: (businessId: string) => {
+  closeBusiness: (businessId) => {
     const state = get()
     if (!state.player) return
 
     const business = state.player.businesses.find(b => b.id === businessId)
     if (!business) return
 
-    // Возвращаем часть стоимости бизнеса (50%)
     const returnValue = Math.round(business.currentValue * 0.5)
+
+    const updatedStats = applyStats(state.player.stats, {
+      money: returnValue
+    })
 
     set({
       player: {
         ...state.player,
-        cash: state.player.cash + returnValue,
+        stats: updatedStats,
         businesses: state.player.businesses.filter(b => b.id !== businessId)
+      }
+    })
+  },
+
+  setPlayerManagerialRoles: (businessId, roles) => {
+    const state = get()
+    if (!state.player) return
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, playerRoles: { ...b.playerRoles, managerialRoles: roles } }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  setPlayerOperationalRole: (businessId, role) => {
+    const state = get()
+    if (!state.player) return
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, playerRoles: { ...b.playerRoles, operationalRole: role } }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  freezeBusiness: (businessId) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    // Рассчитать компенсации (зарплата за 1 квартал)
+    const compensation = business.employees.reduce((sum, emp) => sum + emp.salary, 0)
+
+    // Списать деньги (может уйти в минус)
+    const currentMoney = state.player.stats.money
+    const newMoney = currentMoney - compensation
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? {
+          ...b,
+          state: 'frozen' as const,
+          employees: [], // Увольняем всех сотрудников
+          reputation: Math.max(0, b.reputation - 20), // Штраф к репутации
+          inventory: { ...b.inventory, currentStock: 0 } // Очищаем склад
+        }
+        : b
+    )
+
+    const updatedStats = { ...state.player.stats, money: newMoney }
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  unfreezeBusiness: (businessId) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    // Стоимость разморозки: 30% от общей стоимости
+    const unfreezeCost = Math.round(business.initialCost * 0.3)
+
+    if (state.player.stats.money < unfreezeCost) {
+      console.warn('Недостаточно денег для разморозки бизнеса')
+      return
+    }
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? {
+          ...b,
+          state: 'opening' as const,
+          openingProgress: {
+            ...b.openingProgress,
+            quartersLeft: 1 // Занимает 1 квартал
+          }
+        }
+        : b
+    )
+
+    const updatedStats = applyStats(state.player.stats, {
+      money: -unfreezeCost
+    })
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  changePrice: (businessId, newPrice) => {
+    const state = get()
+    if (!state.player) return
+
+    // Ограничение цены 1-10
+    const clampedPrice = Math.max(1, Math.min(10, Math.round(newPrice)))
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    // Проверка прав на изменение цены в сети
+    if (business.networkId && !business.isMainBranch) {
+      console.warn(`[Business] Попытка изменить цену не из главного филиала (ID: ${businessId})`)
+      return
+    }
+
+    let updatedBusinesses = state.player.businesses
+
+    if (business.networkId) {
+      // Если это сеть, обновляем цену во всех филиалах
+      updatedBusinesses = state.player.businesses.map(b =>
+        b.networkId === business.networkId
+          ? { ...b, price: clampedPrice }
+          : b
+      )
+      console.log(`[Business] Цена обновлена для всей сети ${business.networkId}: ${clampedPrice}`)
+    } else {
+      // Одиночный бизнес
+      updatedBusinesses = state.player.businesses.map(b =>
+        b.id === businessId
+          ? { ...b, price: clampedPrice }
+          : b
+      )
+      console.log(`[Business] Цена обновлена для ${business.name}: ${clampedPrice}`)
+    }
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  setQuantity: (businessId, newQuantity) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    if (business.isServiceBased) {
+      console.warn(`[Business] Нельзя установить количество для услуги (ID: ${businessId})`)
+      return
+    }
+
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, quantity: Math.max(0, Math.round(newQuantity)) }
+        : b
+    )
+
+    console.log(`[Business] Количество обновлено для ${business.name}: ${newQuantity}`)
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  openBranch: (sourceBusinessId) => {
+    const state = get()
+    if (!state.player) return
+
+    const sourceBusiness = state.player.businesses.find(b => b.id === sourceBusinessId)
+    if (!sourceBusiness) return
+
+    // Стоимость открытия филиала (берем initialCost)
+    const branchCost = sourceBusiness.initialCost
+
+    if (state.player.stats.money < branchCost) {
+      console.warn('Недостаточно денег для открытия филиала')
+      return
+    }
+
+    let networkId = sourceBusiness.networkId
+    let updatedBusinesses = [...state.player.businesses]
+
+    // Если сети еще нет, создаем её
+    if (!networkId) {
+      networkId = `net_${Date.now()}`
+
+      // Обновляем исходный бизнес, делаем его главным
+      updatedBusinesses = updatedBusinesses.map(b =>
+        b.id === sourceBusinessId
+          ? { ...b, networkId, isMainBranch: true }
+          : b
+      )
+    }
+
+    // Считаем количество филиалов в этой сети для названия
+    const branchCount = updatedBusinesses.filter(b => b.networkId === networkId).length
+    const branchName = `${sourceBusiness.name.split(' (')[0]} (Филиал ${branchCount})`
+
+    const newBranch: Business = {
+      ...sourceBusiness, // Копируем конфиг
+      id: `business_${Date.now()}`,
+      name: branchName,
+      state: 'opening', // Филиал нужно открыть
+
+      // Сетевые настройки
+      networkId,
+      isMainBranch: false,
+      price: sourceBusiness.price, // Наследуем цену
+
+      // Сбрасываем состояние
+      employees: [],
+      inventory: {
+        ...sourceBusiness.inventory,
+        currentStock: 0 // Пустой склад
+      },
+
+      // Прогресс открытия
+      openingProgress: {
+        ...sourceBusiness.openingProgress,
+        quartersLeft: Math.max(1, Math.round(sourceBusiness.openingProgress.totalQuarters * 0.7)), // Открывается на 30% быстрее
+        investedAmount: branchCost,
+        totalCost: branchCost,
+        upfrontCost: branchCost
+      },
+
+      // Сбрасываем метрики
+      reputation: 50, // Стартовая репутация
+      efficiency: 50,
+      customerSatisfaction: 50,
+      eventsHistory: [],
+      foundedTurn: state.turn,
+
+      // Роли игрока сбрасываем (в филиале он может не работать или работать отдельно)
+      playerRoles: {
+        managerialRoles: [],
+        operationalRole: null
+      }
+    }
+
+    // Списываем деньги
+    const updatedStats = applyStats(state.player.stats, {
+      money: -branchCost
+    })
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
+        businesses: [...updatedBusinesses, newBranch]
+      }
+    })
+
+    console.log(`[Business] Открыт филиал: ${branchName} в сети ${networkId}`)
+  },
+
+  proposeAction: (businessId, type, payload) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) return
+
+    // Вычисляем долю игрока
+    const playerPartner = business.partners.find(p => p.type === 'player')
+    const playerShare = playerPartner ? playerPartner.share : 100
+
+    // Если у игрока контрольный пакет (>50%), выполняем действие сразу
+    if (playerShare > 50) {
+      console.log(`[Business] Игрок имеет ${playerShare}% - выполняем действие без голосования`)
+
+      // Выполняем действие напрямую
+      switch (type) {
+        case 'change_price':
+          if (payload.newPrice !== undefined) {
+            get().changePrice(businessId, payload.newPrice)
+          }
+          break
+        case 'change_quantity':
+          if (payload.newQuantity !== undefined) {
+            get().setQuantity(businessId, payload.newQuantity)
+          }
+          break
+      }
+      return
+    }
+
+    // Создаем предложение
+    const proposal: BusinessProposal = {
+      id: `prop_${Date.now()}`,
+      type,
+      initiatorId: playerPartner?.id || 'player',
+      payload,
+      votes: {
+        [playerPartner?.id || 'player']: true // Игрок голосует ЗА свое предложение
+      },
+      status: 'pending',
+      createdTurn: state.turn
+    }
+
+    // Собираем голоса NPC
+    business.partners.forEach(partner => {
+      if (partner.type === 'npc') {
+        const vote = calculateNPCVote(proposal, business, partner)
+        proposal.votes[partner.id] = vote
+      }
+    })
+
+    // Подсчитываем результат
+    let votesFor = 0
+    business.partners.forEach(partner => {
+      if (proposal.votes[partner.id]) {
+        votesFor += partner.share
+      }
+    })
+
+    console.log(`[Business] Голосование: ЗА=${votesFor}%, ПРОТИВ=${100 - votesFor}%`)
+
+    // Если >50% ЗА, выполняем действие
+    if (votesFor > 50) {
+      proposal.status = 'approved'
+      proposal.resolvedTurn = state.turn
+
+      console.log(`[Business] Предложение одобрено`)
+
+      // Выполняем действие
+      switch (type) {
+        case 'change_price':
+          if (payload.newPrice !== undefined) {
+            get().changePrice(businessId, payload.newPrice)
+          }
+          break
+        case 'change_quantity':
+          if (payload.newQuantity !== undefined) {
+            get().setQuantity(businessId, payload.newQuantity)
+          }
+          break
+      }
+    } else {
+      proposal.status = 'rejected'
+      proposal.resolvedTurn = state.turn
+      console.log(`[Business] Предложение отклонено`)
+    }
+
+    // Сохраняем предложение в историю
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? { ...b, proposals: [...b.proposals, proposal] }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
       }
     })
   }

@@ -12,7 +12,7 @@ export function IntelligenceIndicator() {
 
   const activeUniversity = player.personal.activeUniversity || []
   const statMods = calculateStatModifiers(player)
-  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence')
+  const intelligenceMod = getTotalModifier(statMods, 'intelligence')
 
   return (
     <div className="relative flex flex-col items-center">
@@ -22,7 +22,7 @@ export function IntelligenceIndicator() {
       >
         <div className="flex items-center gap-1">
           <Lightbulb className="w-5 h-5 text-yellow-400" />
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.intelligence)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.stats.intelligence)}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Интеллект</span>
       </button>
@@ -47,16 +47,16 @@ export function IntelligenceIndicator() {
                     <Brain className="w-3.5 h-3.5" />
                     Базовый уровень
                   </span>
-                  <span className="text-white/70 font-medium">{player.personal.intelligence}</span>
+                  <span className="text-white/70 font-medium">{player.personal.stats.intelligence}</span>
                 </div>
 
-                {statMods.intelligence.map((mod, index) => (
+                {statMods.map((mod, index) => (
                   <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                     <span className="text-[#004d00] flex items-center gap-2">
                       <GraduationCap className="w-3.5 h-3.5" />
                       {mod.source}
                     </span>
-                    <span className="text-white/70 font-medium">+{mod.intelligence}</span>
+                    <span className="text-white/70 font-medium">+{mod.effects.intelligence}</span>
                   </div>
                 ))}
               </div>

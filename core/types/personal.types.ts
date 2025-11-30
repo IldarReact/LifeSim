@@ -1,13 +1,10 @@
 // Player and personal life state types
 import type { Skill, ActiveCourse, ActiveUniversity } from './skill.types';
 import type { TimedBuff, FamilyMember, LifeGoal, PotentialPartner, Pregnancy } from './family.types';
+import { Stats } from './stats.types';
 
 export interface PersonalLife {
-  happiness: number;
-  health: number;
-  energy: number;
-  intelligence: number;
-  sanity: number;
+  stats: Omit<Stats, 'money'>;
   relations: {
     family: number;
     friends: number;

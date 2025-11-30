@@ -15,11 +15,7 @@ export function determinePlayerType(player: PlayerState): 'employee' | 'business
   return 'employee';
 }
 
-/**
- * Calculates quarterly report for an employee
- * Formula: (Income - Taxes) - Expenses = Net Profit
- */
-export function calculateEmployeeQuarterlyReport(params: {
+interface QuarterlyReportParams {
   player: PlayerState;
   country: CountryEconomy;
   familyIncome: number;
@@ -28,7 +24,18 @@ export function calculateEmployeeQuarterlyReport(params: {
   assetMaintenance: number;
   debtInterest: number;
   buffIncomeMod: number;
-}): QuarterlyReport {
+  // Optional override for business financials (to avoid re-calculation)
+  businessFinancialsOverride?: {
+    income: number;
+    expenses: number;
+  };
+}
+
+/**
+ * Calculates quarterly report for an employee
+ * Formula: (Income - Taxes) - Expenses = Net Profit
+ */
+export function calculateEmployeeQuarterlyReport(params: QuarterlyReportParams): QuarterlyReport {
   const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod } = params;
 
   // Income
@@ -89,34 +96,35 @@ export function calculateEmployeeQuarterlyReport(params: {
  * Calculates quarterly report for a business owner
  * Formula: (Revenue - Business Expenses) - Taxes = Net Profit
  */
-export function calculateBusinessOwnerQuarterlyReport(params: {
-  player: PlayerState;
-  country: CountryEconomy;
-  familyIncome: number;
-  familyExpenses: number;
-  assetIncome: number;
-  assetMaintenance: number;
-  debtInterest: number;
-  buffIncomeMod: number;
-}): QuarterlyReport {
-  const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod } = params;
+export function calculateBusinessOwnerQuarterlyReport(params: QuarterlyReportParams): QuarterlyReport {
+  const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod, businessFinancialsOverride } = params;
 
   // Calculate business financials
-  const businessFinancials = player.businesses.reduce((acc, b) => {
-    const financials = calculateBusinessFinancials(b);
-    return {
-      revenue: acc.revenue + financials.income,
-      expenses: acc.expenses + financials.expenses
-    };
-  }, { revenue: 0, expenses: 0 });
+  let businessRevenue = 0;
+  let businessExpenses = 0;
+
+  if (businessFinancialsOverride) {
+    businessRevenue = businessFinancialsOverride.income;
+    businessExpenses = businessFinancialsOverride.expenses;
+  } else {
+    const financials = player.businesses.reduce((acc, b) => {
+      const fin = calculateBusinessFinancials(b);
+      return {
+        revenue: acc.revenue + fin.income,
+        expenses: acc.expenses + fin.expenses
+      };
+    }, { revenue: 0, expenses: 0 });
+    businessRevenue = financials.revenue;
+    businessExpenses = financials.expenses;
+  }
 
   // Income
-  const businessRevenue = businessFinancials.revenue * (1 + buffIncomeMod / 100);
-  const totalIncome = businessRevenue + familyIncome + assetIncome;
+  const adjustedBusinessRevenue = businessRevenue * (1 + buffIncomeMod / 100);
+  const totalIncome = adjustedBusinessRevenue + familyIncome + assetIncome;
 
   const income: IncomeBreakdown = {
     salary: 0,
-    businessRevenue,
+    businessRevenue: adjustedBusinessRevenue,
     familyIncome,
     assetIncome,
     capitalGains: 0,
@@ -129,10 +137,10 @@ export function calculateBusinessOwnerQuarterlyReport(params: {
   const expenses: ExpensesBreakdown = {
     living: Math.round(baseLiving),
     family: Math.round(familyExpenses),
-    business: Math.round(businessFinancials.expenses),
+    business: Math.round(businessExpenses),
     debtInterest: Math.round(debtInterest),
     assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(baseLiving + familyExpenses + businessFinancials.expenses + debtInterest + assetMaintenance)
+    total: Math.round(baseLiving + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
   };
 
   // Profit before tax
@@ -168,35 +176,36 @@ export function calculateBusinessOwnerQuarterlyReport(params: {
  * Calculates quarterly report for mixed activity (both employee and business owner)
  * Uses a hybrid approach
  */
-export function calculateMixedQuarterlyReport(params: {
-  player: PlayerState;
-  country: CountryEconomy;
-  familyIncome: number;
-  familyExpenses: number;
-  assetIncome: number;
-  assetMaintenance: number;
-  debtInterest: number;
-  buffIncomeMod: number;
-}): QuarterlyReport {
-  const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod } = params;
+export function calculateMixedQuarterlyReport(params: QuarterlyReportParams): QuarterlyReport {
+  const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod, businessFinancialsOverride } = params;
 
   // Calculate business financials
-  const businessFinancials = player.businesses.reduce((acc, b) => {
-    const financials = calculateBusinessFinancials(b);
-    return {
-      revenue: acc.revenue + financials.income,
-      expenses: acc.expenses + financials.expenses
-    };
-  }, { revenue: 0, expenses: 0 });
+  let businessRevenue = 0;
+  let businessExpenses = 0;
+
+  if (businessFinancialsOverride) {
+    businessRevenue = businessFinancialsOverride.income;
+    businessExpenses = businessFinancialsOverride.expenses;
+  } else {
+    const financials = player.businesses.reduce((acc, b) => {
+      const fin = calculateBusinessFinancials(b);
+      return {
+        revenue: acc.revenue + fin.income,
+        expenses: acc.expenses + fin.expenses
+      };
+    }, { revenue: 0, expenses: 0 });
+    businessRevenue = financials.revenue;
+    businessExpenses = financials.expenses;
+  }
 
   // Income
   const salary = player.quarterlySalary * (1 + buffIncomeMod / 100);
-  const businessRevenue = businessFinancials.revenue * (1 + buffIncomeMod / 100);
-  const totalIncome = salary + businessRevenue + familyIncome + assetIncome;
+  const adjustedBusinessRevenue = businessRevenue * (1 + buffIncomeMod / 100);
+  const totalIncome = salary + adjustedBusinessRevenue + familyIncome + assetIncome;
 
   const income: IncomeBreakdown = {
     salary,
-    businessRevenue,
+    businessRevenue: adjustedBusinessRevenue,
     familyIncome,
     assetIncome,
     capitalGains: 0,
@@ -209,15 +218,15 @@ export function calculateMixedQuarterlyReport(params: {
   const expenses: ExpensesBreakdown = {
     living: Math.round(baseLiving),
     family: Math.round(familyExpenses),
-    business: Math.round(businessFinancials.expenses),
+    business: Math.round(businessExpenses),
     debtInterest: Math.round(debtInterest),
     assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(baseLiving + familyExpenses + businessFinancials.expenses + debtInterest + assetMaintenance)
+    total: Math.round(baseLiving + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
   };
 
   // For mixed: tax salary as employee, business profit as business
   const salaryTax = salary * (country.taxRate / 100);
-  const businessProfit = businessRevenue - businessFinancials.expenses;
+  const businessProfit = adjustedBusinessRevenue - businessExpenses;
   const businessTax = Math.max(0, businessProfit * (country.taxRate / 100));
   const propertyTax = player.assets
     .filter(a => a.type === 'real_estate')
@@ -246,16 +255,7 @@ export function calculateMixedQuarterlyReport(params: {
 /**
  * Main function to calculate quarterly report based on player type
  */
-export function calculateQuarterlyReport(params: {
-  player: PlayerState;
-  country: CountryEconomy;
-  familyIncome: number;
-  familyExpenses: number;
-  assetIncome: number;
-  assetMaintenance: number;
-  debtInterest: number;
-  buffIncomeMod: number;
-}): QuarterlyReport {
+export function calculateQuarterlyReport(params: QuarterlyReportParams): QuarterlyReport {
   const playerType = determinePlayerType(params.player);
 
   switch (playerType) {

@@ -1,5 +1,7 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, PlayerSlice } from './types'
+import type { StatEffect } from '@/core/types/stats.types'
+import { applyStats } from '@/core/helpers/applyStats'
 
 export const createPlayerSlice: StateCreator<
   GameStore,
@@ -14,43 +16,40 @@ export const createPlayerSlice: StateCreator<
   spendEnergy: (amount: number) => {
     const player = get().player
     if (!player) return
-    
+
     set((state) => ({
       player: state.player ? {
         ...state.player,
+        stats: {
+          ...state.player.stats,
+          energy: Math.max(0, state.player.stats.energy - amount)
+        },
         personal: {
           ...state.player.personal,
-          energy: Math.max(0, state.player.personal.energy - amount)
-        },
-        energy: Math.max(0, state.player.energy - amount)
+          stats: {
+            ...state.player.personal.stats,
+            energy: Math.max(0, state.player.personal.stats.energy - amount)
+          }
+        }
       } : null
     }))
   },
 
-  applyStatChanges: (changes: {
-    happiness?: number
-    health?: number
-    energy?: number
-    sanity?: number
-    intelligence?: number
-    cash?: number
-  }) => {
+  applyStatChanges: (effect: StatEffect) => {
     const player = get().player
     if (!player) return
+
+    const updatedStats = applyStats(player.stats, effect)
+    const updatedPersonalStats = applyStats(player.personal.stats, effect)
 
     set((state) => ({
       player: state.player ? {
         ...state.player,
-        cash: state.player.cash + (changes.cash || 0),
+        stats: updatedStats,
         personal: {
           ...state.player.personal,
-          happiness: Math.min(100, Math.max(0, state.player.personal.happiness + (changes.happiness || 0))),
-          health: Math.min(100, Math.max(0, state.player.personal.health + (changes.health || 0))),
-          energy: Math.min(100, Math.max(0, state.player.personal.energy + (changes.energy || 0))),
-          sanity: Math.min(100, Math.max(0, state.player.personal.sanity + (changes.sanity || 0))),
-          intelligence: Math.min(100, Math.max(0, state.player.personal.intelligence + (changes.intelligence || 0)))
-        },
-        energy: Math.min(100, Math.max(0, state.player.energy + (changes.energy || 0)))
+          stats: updatedPersonalStats
+        }
       } : null
     }))
   }

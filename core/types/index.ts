@@ -7,13 +7,19 @@ export type { CharacterArchetype, JobInfo, Job, JobApplication } from './job.typ
 // Business types
 export type {
   EmployeeRole,
-  EmployeeLevel,
+  EmployeeStars,
   EmployeeSkills,
   Employee,
   BusinessType,
   Business,
   EmployeeCandidate
 } from './business.types';
+
+// Market types
+export type {
+  GlobalMarketCondition,
+  MarketEvent
+} from './market.types';
 
 // Freelance types
 export type { FreelanceGig, FreelanceApplication } from './freelance.types';
@@ -50,8 +56,7 @@ export type {
   Pregnancy,
   FamilyMember,
   LifeGoal,
-  StatModifier,
-  StatModifiers
+  StatModifier
 } from './family.types';
 
 // Notification types
@@ -67,3 +72,6 @@ export type {
   HistoryEntry,
   GameState
 } from './game.types';
+
+// Stats core
+export type { CoreStat, Stats, StatEffect } from './stats.types';

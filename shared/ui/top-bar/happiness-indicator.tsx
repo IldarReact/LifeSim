@@ -11,7 +11,7 @@ export function HappinessIndicator() {
   if (!player) return null
 
   const statMods = calculateStatModifiers(player)
-  const happinessMod = getTotalModifier(statMods.happiness, 'happiness')
+  const happinessMod = getTotalModifier(statMods, 'happiness')
 
   return (
     <div className="relative flex flex-col items-center">
@@ -21,7 +21,7 @@ export function HappinessIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">😊</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.happiness)}%</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player.personal.stats.happiness)}%</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Счастье</span>
       </button>
@@ -41,17 +41,17 @@ export function HappinessIndicator() {
                 <span>Факторы счастья</span>
               </div>
               <div className="space-y-2">
-                {statMods.happiness.length === 0 ? (
+                {statMods.length === 0 ? (
                   <div className="text-white/50 italic px-2">Нет активных факторов</div>
                 ) : (
-                  statMods.happiness.map((mod, index) => (
+                  statMods.map((mod, index) => (
                     <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                      <span className={mod.happiness && mod.happiness > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
+                      <span className={mod.effects.happiness && mod.effects.happiness > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
                         <Users className="w-3.5 h-3.5" />
                         {mod.source}
                       </span>
                       <span className="text-white/70 font-medium">
-                        {mod.happiness && mod.happiness > 0 ? "+" : ""}{mod.happiness}
+                        {mod.effects.happiness && mod.effects.happiness > 0 ? "+" : ""}{mod.effects.happiness}
                       </span>
                     </div>
                   ))

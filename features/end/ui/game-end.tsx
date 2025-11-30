@@ -11,10 +11,10 @@ export function GameEnd(): React.JSX.Element | null {
 
   if (gameStatus !== "ended") return null
 
-  const avgHappiness = history.length > 0 
+  const avgHappiness = history.length > 0
     ? history.reduce((acc, snap) => acc + snap.happiness, 0) / history.length
-    : (player?.personal.happiness || 0)
-    
+    : (player?.personal.stats.happiness || 0)
+
   const finalScore = avgHappiness * (player?.happinessMultiplier || 1)
 
   const isVictory = endReason === "Конец игры" || endReason === "Конец жизни"
@@ -51,10 +51,10 @@ export function GameEnd(): React.JSX.Element | null {
             </>
           )}
           {!isVictory && !isBankrupt && !isDead && (
-             <>
+            <>
               <h1 className="text-4xl font-bold mb-2">Игра окончена</h1>
               <p className="text-xl text-muted-foreground">{endReason}</p>
-             </>
+            </>
           )}
         </div>
 
@@ -77,7 +77,7 @@ export function GameEnd(): React.JSX.Element | null {
           <p className="font-bold mb-2">📊 Финальная статистика</p>
           <p>Прожито лет: {Math.floor(turn / 4)}</p>
           <p>Совершено ходов: {turn}</p>
-          <p>Капитал: ${(player?.cash || 0).toLocaleString()}</p>
+          <p>Капитал: ${(player?.stats.money || 0).toLocaleString()}</p>
           <p>Всего событий: {globalEvents.length}</p>
         </div>
 

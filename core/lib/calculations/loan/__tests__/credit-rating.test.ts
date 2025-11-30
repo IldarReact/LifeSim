@@ -5,7 +5,11 @@ import { calculateCreditRating, createDebt } from '../../loan-calculator';
 describe('calculateCreditRating', () => {
   it('должен вернуть базовый рейтинг для игрока без кредитов', () => {
     const player = createMockPlayer();
-    expect(calculateCreditRating(player)).toBe(70);
+    expect(calculateCreditRating({
+      activeDebts: player.debts,
+      monthlyIncome: player.quarterlySalary / 3,
+      cash: player.stats.money
+    })).toBe(70);
   });
 
   it('должен снизить рейтинг за активные кредиты', () => {
@@ -15,7 +19,11 @@ describe('calculateCreditRating', () => {
         createDebt(30000, 12, 4, 'consumer_credit', 'Кредит 2', 1),
       ],
     });
-    expect(calculateCreditRating(player)).toBeLessThan(70);
+    expect(calculateCreditRating({
+      activeDebts: player.debts,
+      monthlyIncome: player.quarterlySalary / 3,
+      cash: player.stats.money
+    })).toBeLessThan(70);
   });
 
   it('должен снизить рейтинг за высокую долговую нагрузку', () => {
@@ -23,14 +31,28 @@ describe('calculateCreditRating', () => {
       quarterlySalary: 90000,
       debts: [createDebt(200000, 12, 4, 'consumer_credit', 'Большой кредит', 1)],
     });
-    expect(calculateCreditRating(player)).toBeLessThan(60);
+    expect(calculateCreditRating({
+      activeDebts: player.debts,
+      monthlyIncome: player.quarterlySalary / 3,
+      cash: player.stats.money
+    })).toBeLessThan(60);
   });
 
   it('должен повысить рейтинг за большие накопления', () => {
-    expect(calculateCreditRating(createMockPlayer({ cash: 150000 }))).toBe(80);
+    const player = createMockPlayer({ stats: { money: 150000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 } });
+    expect(calculateCreditRating({
+      activeDebts: player.debts,
+      monthlyIncome: player.quarterlySalary / 3,
+      cash: player.stats.money
+    })).toBe(80);
   });
 
   it('должен снизить рейтинг за малые накопления', () => {
-    expect(calculateCreditRating(createMockPlayer({ cash: 5000 }))).toBe(65);
+    const player = createMockPlayer({ stats: { money: 5000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 } });
+    expect(calculateCreditRating({
+      activeDebts: player.debts,
+      monthlyIncome: player.quarterlySalary / 3,
+      cash: player.stats.money
+    })).toBe(65);
   });
 });

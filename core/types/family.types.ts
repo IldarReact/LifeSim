@@ -1,11 +1,12 @@
 // Family and personal life types
 
+import { CoreStat, StatEffect } from "./stats.types";
+
 export interface TimedBuff {
   id: string;
   source: string;
-  type: 'happiness' | 'health' | 'energy' | 'sanity' | 'intelligence' | 'income_bonus';
-  value: number;
-  duration: number; // turns left
+  effects: StatEffect;
+  duration: number;
   description: string;
 }
 
@@ -32,9 +33,7 @@ export interface FamilyMember {
   relationLevel: number; // 0-100
   income: number; // Quarterly income contribution
   expenses: number; // Quarterly expenses
-  happinessMod: number; // Passive happiness per turn
-  sanityMod: number; // Passive sanity per turn
-  healthMod: number; // Passive health per turn
+  passiveEffects: StatEffect; // Passive effects per turn
   avatar?: string;
   goals?: LifeGoal[]; // Personal goals of the family member
 }
@@ -47,8 +46,7 @@ export interface LifeGoal {
   progress: number;
   target: number;
   reward: {
-    happinessPerTurn: number;
-    sanityPerTurn: number;
+    perTurnReward: StatEffect;
     durationTurns: number; // How long the reward lasts
   };
   isCompleted: boolean;
@@ -64,18 +62,6 @@ export interface LifeGoal {
 }
 
 export interface StatModifier {
-  source: string; // "Работа: Frontend Developer", "Семья: Виктория", "Курс: React"
-  happiness?: number;
-  health?: number;
-  energy?: number;
-  sanity?: number;
-  intelligence?: number;
-}
-
-export interface StatModifiers {
-  happiness: StatModifier[];
-  health: StatModifier[];
-  energy: StatModifier[];
-  sanity: StatModifier[];
-  intelligence: StatModifier[];
+  source: string;
+  effects: StatEffect;
 }

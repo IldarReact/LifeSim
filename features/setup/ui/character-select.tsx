@@ -177,8 +177,8 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                       </div>
                       <div className="flex justify-between items-center text-lg">
                         <span className="text-white/70">Капитал:</span>
-                        <span className={cn("font-bold", charPreview.cash >= 0 ? "text-white" : "text-red-400")}>
-                          ${charPreview.cash.toLocaleString()}
+                        <span className={cn("font-bold", charPreview.stats.money >= 0 ? "text-white" : "text-red-400")}>
+                          ${charPreview.stats.money.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-lg">

@@ -28,18 +28,20 @@ const ROLE_LABELS: Record<EmployeeRole, string> = {
   worker: "Рабочий"
 }
 
-const LEVEL_LABELS = {
-  junior: "Junior",
-  middle: "Middle",
-  senior: "Senior",
-  expert: "Expert"
+const STARS_LABELS: Record<number, string> = {
+  1: "Intern",
+  2: "Junior",
+  3: "Middle",
+  4: "Senior",
+  5: "Lead"
 }
 
-const LEVEL_COLORS = {
-  junior: "bg-gray-500/20 text-gray-300 border-gray-500/30",
-  middle: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  senior: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-  expert: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+const STARS_COLORS: Record<number, string> = {
+  1: "bg-gray-500/20 text-gray-300 border-gray-500/30",
+  2: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+  3: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+  4: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  5: "bg-red-500/20 text-red-300 border-red-500/30"
 }
 
 export function EmployeeHireDialog({
@@ -81,7 +83,7 @@ export function EmployeeHireDialog({
       id: `player_${player.clientId}`,
       name: player.name,
       role: candidates[0]?.role || 'worker',
-      level: 'middle',
+      stars: 3,
       experience: 24,
       requestedSalary: 5000, // Players are expensive!
       skills: {
@@ -166,8 +168,8 @@ export function EmployeeHireDialog({
                     <User className="w-5 h-5 text-white/80" />
                     <h3 className="font-bold text-white text-lg">{candidate.name}</h3>
                   </div>
-                  <Badge className={LEVEL_COLORS[candidate.level]}>
-                    {LEVEL_LABELS[candidate.level]}
+                  <Badge className={STARS_COLORS[candidate.stars]}>
+                    {STARS_LABELS[candidate.stars]}
                   </Badge>
                 </div>
 

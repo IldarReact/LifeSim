@@ -27,19 +27,14 @@ export interface GameSlice {
   startSinglePlayer: () => void
 }
 
+import type { StatEffect } from '@/core/types/stats.types'
+import type { SkillRequirement } from '@/core/types/skill.types'
+
 export interface PlayerSlice {
   player: PlayerState | null
 
   // Actions
-  spendEnergy: (amount: number) => void
-  applyStatChanges: (changes: {
-    happiness?: number
-    health?: number
-    energy?: number
-    sanity?: number
-    intelligence?: number
-    cash?: number
-  }) => void
+  applyStatChanges: (effect: StatEffect) => void
 }
 
 export interface EducationSlice {
@@ -47,14 +42,14 @@ export interface EducationSlice {
   studyCourse: (
     courseName: string,
     cost: number,
-    energyCost: number,
+    costPerTurn: StatEffect,
     skillBonus: string,
     duration: number
   ) => void
   applyToUniversity: (
     programName: string,
     cost: number,
-    energyCost: number,
+    costPerTurn: StatEffect,
     skillBonus: string,
     duration: number
   ) => void
@@ -68,8 +63,8 @@ export interface JobSlice {
     jobTitle: string,
     company: string,
     salary: number,
-    energyCost: number,
-    requirements: string[]
+    cost: StatEffect,
+    requirements: SkillRequirement[]
   ) => void
   acceptJobOffer: (applicationId: string) => void
   quitJob: (jobId: string) => void
@@ -83,8 +78,8 @@ export interface FreelanceSlice {
     gigId: string,
     title: string,
     payment: number,
-    energyCost: number,
-    requirements: Array<{ skill: string; level: SkillLevel }>
+    cost: StatEffect,
+    requirements: SkillRequirement[]
   ) => void
   acceptFreelanceGig: (applicationId: string) => void
   completeFreelanceGig: (gigId: string) => void
@@ -117,16 +112,33 @@ export interface BusinessSlice {
     name: string,
     type: import('@/core/types').BusinessType,
     description: string,
-    initialCost: number,
+    totalCost: number,
+    upfrontCost: number,
+    creationCost: StatEffect,
+    openingQuarters: number,
     monthlyIncome: number,
     monthlyExpenses: number,
     maxEmployees: number,
-    energyCostPerTurn: number,
-    stressImpact: number
+    minEmployees: number,
+    taxRate: number
   ) => void
   hireEmployee: (businessId: string, candidate: import('@/core/types').EmployeeCandidate) => void
   fireEmployee: (businessId: string, employeeId: string) => void
   closeBusiness: (businessId: string) => void
+
+  // New actions
+  setPlayerManagerialRoles: (businessId: string, roles: import('@/core/types').EmployeeRole[]) => void
+  setPlayerOperationalRole: (businessId: string, role: import('@/core/types').EmployeeRole | null) => void
+  freezeBusiness: (businessId: string) => void
+  unfreezeBusiness: (businessId: string) => void
+  changePrice: (businessId: string, newPrice: number) => void
+  setQuantity: (businessId: string, newQuantity: number) => void
+  openBranch: (sourceBusinessId: string) => void
+  proposeAction: (
+    businessId: string,
+    type: import('@/core/types/business.types').ProposalType,
+    payload: { newPrice?: number; newQuantity?: number; amount?: number }
+  ) => void
 }
 
 export interface NotificationSlice {
@@ -139,6 +151,15 @@ export interface NotificationSlice {
   dismissEventNotification: () => void
 }
 
+export interface MarketSlice {
+  globalMarket: import('@/core/types').GlobalMarketCondition
+  marketEvents: import('@/core/types').MarketEvent[]
+
+  // Actions
+  updateMarketCondition: (newValue: number, description: string, trend: 'rising' | 'falling' | 'stable') => void
+  addMarketEvent: (event: import('@/core/types').MarketEvent) => void
+}
+
 // Combined store type
 export type GameStore = GameSlice &
   PlayerSlice &
@@ -147,7 +168,8 @@ export type GameStore = GameSlice &
   FreelanceSlice &
   FamilySlice &
   BusinessSlice &
-  NotificationSlice & {
+  NotificationSlice &
+  MarketSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']

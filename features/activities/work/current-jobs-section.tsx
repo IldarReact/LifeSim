@@ -38,22 +38,28 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
               },
               {
                 label: "Энергия",
-                value: `-${job.energyCost}/кв`,
+                value: `${job.cost.energy || 0}/кв`,
                 icon: <Zap className="w-4 h-4" />,
                 color: "text-amber-400"
               },
               {
-                label: "Рассудок",
-                value: job.mentalHealthImpact > 0 ? `+${job.mentalHealthImpact}` : job.mentalHealthImpact.toString(),
-                icon: <Brain className="w-4 h-4" />,
-                color: job.mentalHealthImpact >= 0 ? "text-[#004d00]" : "text-rose-400"
+                label: "Здоровье",
+                value: (job.cost.health || 0) > 0 ? `+${job.cost.health}` : (job.cost.health || 0).toString(),
+                icon: <Activity className="w-4 h-4" />,
+                color: (job.cost.health || 0) >= 0 ? "text-[#004d00]" : "text-rose-400"
               },
               {
-                label: "Здоровье",
-                value: job.physicalHealthImpact > 0 ? `+${job.physicalHealthImpact}` : job.physicalHealthImpact.toString(),
-                icon: <Activity className="w-4 h-4" />,
-                color: job.physicalHealthImpact >= 0 ? "text-[#004d00]" : "text-rose-400"
+                label: "Рассудок",
+                value: (job.cost.sanity || 0) > 0 ? `+${job.cost.sanity}` : (job.cost.sanity || 0).toString(),
+                icon: <Brain className="w-4 h-4" />,
+                color: (job.cost.sanity || 0) >= 0 ? "text-[#004d00]" : "text-rose-400"
               }
+              // {
+              //   label: "Интеллект",
+              //   value: job. > 0 ? `+${job.satisfaction}` : job.satisfaction.toString(),
+              //   icon: <Brain className="w-4 h-4" />,
+              //   color: job.satisfaction >= 0 ? "text-[#004d00]" : "text-rose-400"
+              // }
             ]}
             modalContent={
               <div className="space-y-6">
@@ -76,7 +82,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
                       <Zap className="w-5 h-5 text-amber-400" />
                       <span className="font-semibold">Энергия</span>
                     </div>
-                    <p className="text-3xl font-bold">-{job.energyCost}</p>
+                    <p className="text-3xl font-bold">{job.cost.energy || 0}</p>
                     <p className="text-sm text-white/60">За квартал</p>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, EducationSlice } from './types'
 import type { ActiveCourse, ActiveUniversity } from '@/core/types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 export const createEducationSlice: StateCreator<
   GameStore,
@@ -8,12 +9,18 @@ export const createEducationSlice: StateCreator<
   [],
   EducationSlice
 > = (set, get) => ({
-  // Actions
-  studyCourse: (courseName: string, cost: number, energyCost: number, skillBonus: string, duration: number) => {
+  studyCourse: (
+    courseName: string,
+    cost: number,
+    costPerTurn: StatEffect,
+    skillBonus: string,
+    duration: number
+  ) => {
     const state = get()
     if (!state.player) return
 
-    if (state.player.cash < cost) {
+    // ✅ Денежная проверка
+    if (state.player.stats.money < cost) {
       set(state => ({
         notifications: [{
           id: `err_${Date.now()}`,
@@ -27,11 +34,17 @@ export const createEducationSlice: StateCreator<
       return
     }
 
-    const currentEnergyCost = (state.player.personal.activeCourses || []).reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                              (state.player.personal.activeUniversity || []).reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                              state.player.jobs.reduce((acc, j) => acc + j.energyCost, 0)
-    
-    if (100 - currentEnergyCost < energyCost) {
+    // ✅ Подсчет текущих затрат энергии
+    const currentEnergyCost =
+      (state.player.personal.activeCourses || [])
+        .reduce((acc, c) => acc + Math.abs(c.costPerTurn?.energy || 0), 0) +
+      (state.player.personal.activeUniversity || [])
+        .reduce((acc, c) => acc + Math.abs(c.costPerTurn?.energy || 0), 0) +
+      state.player.jobs.reduce((acc, j) => acc + Math.abs(j.cost?.energy || 0), 0)
+
+    const requiredEnergy = Math.abs(costPerTurn.energy || 0)
+
+    if (state.player.stats.energy - currentEnergyCost < requiredEnergy) {
       set(state => ({
         notifications: [{
           id: `err_${Date.now()}`,
@@ -54,19 +67,29 @@ export const createEducationSlice: StateCreator<
       skillBonus: 0,
       totalDuration: duration,
       remainingDuration: duration,
-      energyCostPerTurn: energyCost,
+      costPerTurn,
       startedTurn: state.turn
     }
 
     set(state => ({
       player: state.player ? {
         ...state.player,
-        cash: state.player.cash - cost,
+
+        // ✅ HELLO NEW SYSTEM
+        stats: {
+          ...state.player.stats,
+          money: state.player.stats.money - cost
+        },
+
         personal: {
           ...state.player.personal,
-          activeCourses: [...state.player.personal.activeCourses, newCourse]
+          activeCourses: [
+            ...state.player.personal.activeCourses,
+            newCourse
+          ]
         }
       } : null,
+
       notifications: [{
         id: `course_${Date.now()}`,
         type: 'info',
@@ -78,11 +101,18 @@ export const createEducationSlice: StateCreator<
     }))
   },
 
-  applyToUniversity: (programName: string, cost: number, energyCost: number, skillBonus: string, duration: number) => {
+  applyToUniversity: (
+    programName: string,
+    cost: number,
+    costPerTurn: StatEffect,
+    skillBonus: string,
+    duration: number
+  ) => {
     const state = get()
     if (!state.player) return
 
-    if (state.player.cash < cost) {
+    // ✅ Денежная проверка
+    if (state.player.stats.money < cost) {
       set(state => ({
         notifications: [{
           id: `err_${Date.now()}`,
@@ -96,11 +126,17 @@ export const createEducationSlice: StateCreator<
       return
     }
 
-    const currentEnergyCost = (state.player.personal.activeCourses || []).reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                              (state.player.personal.activeUniversity || []).reduce((acc, c) => acc + c.energyCostPerTurn, 0) +
-                              state.player.jobs.reduce((acc, j) => acc + j.energyCost, 0)
-    
-    if (100 - currentEnergyCost < energyCost) {
+    // ✅ Подсчет текущих затрат энергии
+    const currentEnergyCost =
+      (state.player.personal.activeCourses || [])
+        .reduce((acc, c) => acc + Math.abs(c.costPerTurn?.energy || 0), 0) +
+      (state.player.personal.activeUniversity || [])
+        .reduce((acc, c) => acc + Math.abs(c.costPerTurn?.energy || 0), 0) +
+      state.player.jobs.reduce((acc, j) => acc + Math.abs(j.cost?.energy || 0), 0)
+
+    const requiredEnergy = Math.abs(costPerTurn.energy || 0)
+
+    if (state.player.stats.energy - currentEnergyCost < requiredEnergy) {
       set(state => ({
         notifications: [{
           id: `err_${Date.now()}`,
@@ -123,19 +159,29 @@ export const createEducationSlice: StateCreator<
       skillBonus: 0,
       totalDuration: duration,
       remainingDuration: duration,
-      energyCostPerTurn: energyCost,
+      costPerTurn,
       startedTurn: state.turn
     }
 
     set(state => ({
       player: state.player ? {
         ...state.player,
-        cash: state.player.cash - cost,
+
+        // ✅ HELLO NEW SYSTEM
+        stats: {
+          ...state.player.stats,
+          money: state.player.stats.money - cost
+        },
+
         personal: {
           ...state.player.personal,
-          activeUniversity: [...state.player.personal.activeUniversity, newUni]
+          activeUniversity: [
+            ...state.player.personal.activeUniversity,
+            newUni
+          ]
         }
       } : null,
+
       notifications: [{
         id: `uni_${Date.now()}`,
         type: 'info',

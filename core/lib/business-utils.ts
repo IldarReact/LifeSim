@@ -1,4 +1,6 @@
-import type { EmployeeCandidate, EmployeeRole, EmployeeLevel, EmployeeSkills, Business } from "@/core/types/business.types"
+import type { EmployeeCandidate, EmployeeRole, EmployeeStars, EmployeeSkills, Business, BusinessEvent, BusinessInventory, Employee, BusinessProposal, BusinessPartner } from "@/core/types/business.types"
+import type { Skill } from '@/core/types';
+import { checkMinimumStaffing, getPlayerRoleBusinessImpact } from '@/features/business/lib/player-roles';
 
 const FIRST_NAMES = [
   "Александр", "Дмитрий", "Максим", "Сергей", "Андрей",
@@ -42,24 +44,19 @@ const ROLE_DESCRIPTIONS: Record<EmployeeRole, { strengths: string[], weaknesses:
 }
 
 /**
- * Генерирует случайные навыки для сотрудника на основе роли и уровня
+ * Генерирует случайные навыки для сотрудника на основе роли и звезд
  */
-function generateSkills(role: EmployeeRole, level: EmployeeLevel): EmployeeSkills {
+function generateSkills(role: EmployeeRole, stars: EmployeeStars): EmployeeSkills {
   const baseSkills = {
-    efficiency: 50,
-    salesAbility: 50,
-    technical: 50,
-    management: 50,
-    creativity: 50
+    efficiency: 40,
+    salesAbility: 40,
+    technical: 40,
+    management: 40,
+    creativity: 40
   }
 
-  // Модификаторы по уровню
-  const levelBonus = {
-    junior: 0,
-    middle: 15,
-    senior: 30,
-    expert: 50
-  }[level]
+  // Модификаторы по звездам (1 звезда = +10 к базе, 5 звезд = +50)
+  const starBonus = stars * 10;
 
   // Модификаторы по роли
   const roleModifiers: Record<EmployeeRole, Partial<EmployeeSkills>> = {
@@ -80,19 +77,19 @@ function generateSkills(role: EmployeeRole, level: EmployeeLevel): EmployeeSkill
     skills[skillKey] += modifiers[skillKey] || 0
   })
 
-  // Применяем бонус уровня ко всем навыкам
+  // Применяем бонус звезд ко всем навыкам с рандомом
   Object.keys(skills).forEach(key => {
     const skillKey = key as keyof EmployeeSkills
-    skills[skillKey] = Math.min(100, skills[skillKey] + levelBonus + Math.random() * 10 - 5)
+    skills[skillKey] = Math.min(100, Math.max(10, skills[skillKey] + starBonus + (Math.random() * 20 - 10)))
   })
 
   return skills
 }
 
 /**
- * Рассчитывает зарплату на основе роли, уровня и навыков
+ * Рассчитывает зарплату на основе роли и звезд
  */
-function calculateSalary(role: EmployeeRole, level: EmployeeLevel, skills: EmployeeSkills): number {
+function calculateSalary(role: EmployeeRole, stars: EmployeeStars): number {
   const baseSalary = {
     worker: 800,
     salesperson: 1200,
@@ -102,35 +99,41 @@ function calculateSalary(role: EmployeeRole, level: EmployeeLevel, skills: Emplo
     manager: 2500
   }[role]
 
-  const levelMultiplier = {
-    junior: 0.7,
-    middle: 1.0,
-    senior: 1.5,
-    expert: 2.2
-  }[level]
+  // Множитель зарплаты от звезд (экспоненциальный рост)
+  // 1★: 1.0, 2★: 1.5, 3★: 2.2, 4★: 3.5, 5★: 5.0
+  const starMultiplier = [1.0, 1.5, 2.2, 3.5, 5.0][stars - 1];
 
-  // Средний навык влияет на зарплату
-  const avgSkill = Object.values(skills).reduce((a, b) => a + b, 0) / Object.keys(skills).length
-  const skillMultiplier = 0.8 + (avgSkill / 100) * 0.4 // 0.8 - 1.2
-
-  return Math.round(baseSalary * levelMultiplier * skillMultiplier)
+  return Math.round(baseSalary * starMultiplier)
 }
 
 /**
  * Генерирует кандидата на работу
  */
-export function generateEmployeeCandidate(role: EmployeeRole, level?: EmployeeLevel): EmployeeCandidate {
-  const candidateLevel = level || (['junior', 'middle', 'senior', 'expert'][Math.floor(Math.random() * 4)] as EmployeeLevel)
+export function generateEmployeeCandidate(role: EmployeeRole, stars?: EmployeeStars): EmployeeCandidate {
+  // Распределение звезд если не указано: 1★ (40%), 2★ (30%), 3★ (20%), 4★ (8%), 5★ (2%)
+  let candidateStars: EmployeeStars = 1;
+  if (stars) {
+    candidateStars = stars;
+  } else {
+    const rand = Math.random();
+    if (rand > 0.98) candidateStars = 5;
+    else if (rand > 0.90) candidateStars = 4;
+    else if (rand > 0.70) candidateStars = 3;
+    else if (rand > 0.40) candidateStars = 2;
+  }
+
   const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]
   const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]
-  const skills = generateSkills(role, candidateLevel)
-  const salary = calculateSalary(role, candidateLevel, skills)
+  const skills = generateSkills(role, candidateStars)
+  const salary = calculateSalary(role, candidateStars)
+
   const experience = {
-    junior: Math.floor(Math.random() * 12),
-    middle: 12 + Math.floor(Math.random() * 24),
-    senior: 36 + Math.floor(Math.random() * 36),
-    expert: 72 + Math.floor(Math.random() * 60)
-  }[candidateLevel]
+    1: Math.floor(Math.random() * 4),
+    2: 4 + Math.floor(Math.random() * 8),
+    3: 12 + Math.floor(Math.random() * 12),
+    4: 24 + Math.floor(Math.random() * 24),
+    5: 48 + Math.floor(Math.random() * 48)
+  }[candidateStars]
 
   const roleDesc = ROLE_DESCRIPTIONS[role]
 
@@ -138,7 +141,7 @@ export function generateEmployeeCandidate(role: EmployeeRole, level?: EmployeeLe
     id: `candidate_${Date.now()}_${Math.random()}`,
     name: `${firstName} ${lastName}`,
     role,
-    level: candidateLevel,
+    stars: candidateStars,
     skills,
     requestedSalary: salary,
     experience,
@@ -152,120 +155,428 @@ export function generateEmployeeCandidate(role: EmployeeRole, level?: EmployeeLe
  */
 export function generateCandidates(role: EmployeeRole, count: number = 3): EmployeeCandidate[] {
   const candidates: EmployeeCandidate[] = []
-  const levels: EmployeeLevel[] = ['junior', 'middle', 'senior', 'expert']
-
   for (let i = 0; i < count; i++) {
-    // Распределяем уровни: больше middle и junior, меньше senior и expert
-    const levelWeights = [0.3, 0.4, 0.2, 0.1]
-    const random = Math.random()
-    let cumulative = 0
-    let selectedLevel: EmployeeLevel = 'junior'
-
-    for (let j = 0; j < levels.length; j++) {
-      cumulative += levelWeights[j]
-      if (random <= cumulative) {
-        selectedLevel = levels[j]
-        break
-      }
-    }
-
-    candidates.push(generateEmployeeCandidate(role, selectedLevel))
+    candidates.push(generateEmployeeCandidate(role))
   }
-
   return candidates
 }
 
 /**
- * Рассчитывает детальные финансовые показатели бизнеса
+ * Рассчитывает KPI бонус/штраф для сотрудника
  */
-export function calculateBusinessFinancials(business: Business): { income: number, expenses: number, profit: number } {
-  let income = business.quarterlyIncome || 0
-  let expenses = business.quarterlyExpenses || 0
-
-  // Добавляем зарплаты сотрудников к расходам
-  business.employees.forEach(employee => {
-    expenses += employee.salary || 0
-
-    // Каждый сотрудник влияет на доход в зависимости от роли и навыков
-    const productivityFactor = (employee.productivity || 50) / 100
-    const satisfactionFactor = (employee.satisfaction || 50) / 100
-    const overallFactor = (productivityFactor + satisfactionFactor) / 2
-
-    switch (employee.role) {
-      case 'salesperson':
-        // Продавец напрямую увеличивает доход
-        income += (employee.skills.salesAbility || 0) * 10 * overallFactor
-        break
-      case 'manager':
-        // Менеджер повышает эффективность всех
-        income *= 1 + ((employee.skills.management || 0) / 100) * 0.2 * overallFactor
-        break
-      case 'marketer':
-        // Маркетолог привлекает клиентов
-        income += (employee.skills.creativity || 0) * 8 * overallFactor
-        break
-      case 'accountant':
-        // Бухгалтер снижает расходы
-        expenses *= 1 - ((employee.skills.efficiency || 0) / 100) * 0.15 * overallFactor
-        break
-      case 'technician':
-        // Техник повышает качество, что привлекает клиентов
-        income *= 1 + ((employee.skills.technical || 0) / 100) * 0.15 * overallFactor
-        break
-      case 'worker':
-        // Рабочий дает базовый вклад
-        income += (employee.skills.efficiency || 0) * 5 * overallFactor
-        break
-    }
-  })
-
-  return {
-    income: Math.round(income) || 0,
-    expenses: Math.round(expenses) || 0,
-    profit: Math.round(income - expenses) || 0
-  }
+export function calculateEmployeeKPI(employee: Employee): number {
+  if (employee.productivity >= 80) return Math.round(employee.salary * 0.1);  // +10%
+  if (employee.productivity <= 50) return Math.round(employee.salary * -0.1); // -10%
+  return 0;
 }
 
 /**
- * Рассчитывает итоговый доход бизнеса с учетом сотрудников
+ * Рассчитывает эффективность бизнеса (0-100)
  */
-export function calculateBusinessIncome(business: Business): number {
-  return calculateBusinessFinancials(business).profit
+export function calculateEfficiency(business: Business, playerSkills?: Skill[]): number {
+  const state = business.state ?? 'active';
+  if (state !== 'active') return 0;
+
+  // 1. Проверка минимального персонала
+  const staffingCheck = checkMinimumStaffing(business);
+  if (!staffingCheck.isValid) {
+    console.log(`[Business ${business.name}] Staffing requirements not met. Efficiency: 0`);
+    return 0; // Бизнес не работает без минимума
+  }
+
+  // 2. Базовая эффективность от сотрудников
+  let totalEfficiency = 0;
+  let managerBonus = 0;
+
+  business.employees.forEach(emp => {
+    // Вклад сотрудника зависит от его эффективности и продуктивности
+    const contribution = emp.skills.efficiency * (emp.productivity / 100);
+
+    // Менеджеры дают бонус к общей эффективности
+    if (emp.role === 'manager') {
+      managerBonus += (emp.skills.management / 100) * 10; // До +10% от каждого менеджера
+    }
+
+    totalEfficiency += contribution;
+  });
+
+  // Средняя эффективность команды
+  let avgEfficiency = totalEfficiency / business.employees.length;
+
+  // 3. Бонус менеджера
+  avgEfficiency += managerBonus;
+
+  // 4. ✅ НОВОЕ: Влияние навыков игрока
+  let playerBonus = 0;
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
+    playerBonus = playerImpact.efficiencyBonus;
+    avgEfficiency += playerBonus;
+  }
+
+  // 5. Влияние событий (последние 4 события)
+  const recentEvents = (business.eventsHistory || []).slice(-4);
+  const eventImpact = recentEvents.reduce((sum, event) => sum + (event.effects.efficiency || 0), 0);
+
+  // Итоговая эффективность
+  const finalEfficiency = Math.min(100, Math.max(0, avgEfficiency + eventImpact));
+
+  console.log(`[Business ${business.name}] Efficiency Calc: Avg=${avgEfficiency.toFixed(1)}, ManagerBonus=${managerBonus.toFixed(1)}, PlayerBonus=${playerBonus.toFixed(1)}, EventImpact=${eventImpact}, Final=${finalEfficiency.toFixed(1)}`);
+
+  return Math.round(finalEfficiency);
 }
 
 /**
- * Обновляет характеристики бизнеса на основе сотрудников
+ * Рассчитывает репутацию бизнеса (0-100)
  */
-export function updateBusinessMetrics(business: Business): Business {
-  if (business.employees.length === 0) {
-    return {
-      ...business,
-      efficiency: 50,
-      reputation: 50,
-      customerSatisfaction: 50
-    }
+export function calculateReputation(business: Business, currentEfficiency: number, playerSkills?: Skill[]): number {
+  // Репутация меняется медленно, стремясь к текущей эффективности
+  // Но также зависит от маркетинга и событий
+
+  // 1. Влияние эффективности (вес 60%)
+  const efficiencyImpact = currentEfficiency * 0.6;
+
+  // 2. Влияние команды (звезды) (вес 20%)
+  const avgStars = business.employees.length > 0
+    ? business.employees.reduce((sum, e) => sum + e.stars, 0) / business.employees.length
+    : 0;
+  const teamImpact = (avgStars / 5) * 100 * 0.2; // 5 звезд = 100 * 0.2 = 20
+
+  // 3. Маркетологи (вес 20%)
+  const marketers = business.employees.filter(e => e.role === 'marketer');
+  const marketingImpact = marketers.length > 0
+    ? (marketers.reduce((sum, m) => sum + m.skills.creativity, 0) / marketers.length) * 0.2
+    : 0;
+
+  // 4. ✅ НОВОЕ: Влияние навыков игрока на репутацию
+  let playerReputationBonus = 0;
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
+    playerReputationBonus = playerImpact.reputationBonus;
   }
 
-  // Средняя эффективность сотрудников
-  const avgEfficiency = business.employees.reduce((sum, emp) =>
-    sum + emp.skills.efficiency * (emp.productivity / 100), 0
-  ) / business.employees.length
+  // 5. События (прямое влияние)
+  const recentEvents = (business.eventsHistory || []).slice(-4);
+  const eventImpact = recentEvents.reduce((sum, event) => sum + (event.effects.reputation || 0), 0);
 
-  // Репутация зависит от качества работы
-  const avgTechnical = business.employees.reduce((sum, emp) =>
-    sum + emp.skills.technical, 0
-  ) / business.employees.length
+  // Целевая репутация
+  const targetReputation = efficiencyImpact + teamImpact + marketingImpact + playerReputationBonus + eventImpact;
 
-  // Удовлетворенность клиентов зависит от продавцов и сервиса
-  const salespeople = business.employees.filter(e => e.role === 'salesperson')
-  const avgSales = salespeople.length > 0
-    ? salespeople.reduce((sum, emp) => sum + emp.skills.salesAbility, 0) / salespeople.length
-    : 60
+  // Плавное изменение (сдвиг на 10% к цели каждый ход)
+  const newReputation = business.reputation + (targetReputation - business.reputation) * 0.1;
+
+  console.log(`[Business ${business.name}] Reputation Calc: Target=${targetReputation.toFixed(1)}, PlayerBonus=${playerReputationBonus.toFixed(1)}, Current=${business.reputation.toFixed(1)}, New=${newReputation.toFixed(1)}`);
+
+  return Math.min(100, Math.max(0, Math.round(newReputation)));
+}
+
+/**
+ * Обновляет метрики бизнеса (эффективность, репутация)
+ */
+export function updateBusinessMetrics(business: Business, playerSkills?: Skill[]): Business {
+  const efficiency = calculateEfficiency(business, playerSkills);
+  const reputation = calculateReputation(business, efficiency, playerSkills);
 
   return {
     ...business,
-    efficiency: Math.min(100, Math.round(avgEfficiency)),
-    reputation: Math.min(100, Math.round((avgTechnical + business.reputation) / 2)),
-    customerSatisfaction: Math.min(100, Math.round(avgSales))
+    efficiency,
+    reputation
+  };
+}
+
+/**
+ * Рассчитывает детальные финансовые показатели бизнеса за квартал
+ */
+export function calculateBusinessFinancials(
+  business: Business,
+  isPreview: boolean = false,
+  playerSkills?: Skill[],
+  globalMarketValue: number = 1.0  // ✅ НОВОЕ: глобальное состояние рынка
+): {
+  income: number;
+  expenses: number;
+  profit: number;
+  newInventory: BusinessInventory;
+} {
+  const state = business.state ?? 'active';
+  if (state !== 'active') {
+    const fixedExpenses = business.quarterlyExpenses;
+    return {
+      income: 0,
+      expenses: fixedExpenses,
+      profit: -fixedExpenses,
+      newInventory: business.inventory || {
+        currentStock: 0,
+        maxStock: 1000,
+        pricePerUnit: 100,
+        purchaseCost: 50,
+        autoPurchaseAmount: 0
+      }
+    };
+  }
+
+  // 1. Base Expenses
+  const employeesCost = business.employees.reduce((sum, emp) => {
+    const kpi = calculateEmployeeKPI(emp);
+    return sum + emp.salary + kpi;
+  }, 0);
+  const rent = business.maxEmployees * 200;
+  const utilities = business.maxEmployees * 50;
+
+  let baseExpenses = employeesCost + rent + utilities;
+
+  // Accountant reduction (from employees)
+  const accountants = business.employees.filter(e => e.role === 'accountant');
+  if (accountants.length > 0) {
+    const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0);
+    const reduction = Math.min(0.15, 0.05 + (totalStars * 0.01));
+    baseExpenses *= (1 - reduction);
+  }
+
+  // ✅ НОВОЕ: Дополнительное снижение расходов от навыков игрока
+  let playerExpenseReduction = 0;
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
+    playerExpenseReduction = playerImpact.expenseReduction / 100;
+    baseExpenses *= (1 - playerExpenseReduction);
+  }
+
+  // 2. Sales & Inventory
+  let salesIncome = 0;
+  let purchaseCost = 0;
+  let salesVolume = 0;
+  let purchaseAmount = 0;
+
+  const inventory = business.inventory;
+
+  // ✅ НОВОЕ: Разделяем логику для товарных и услуговых бизнесов
+  if (business.isServiceBased) {
+    // === УСЛУГОВЫЙ БИЗНЕС ===
+    const price = business.price || 5;
+    const baseServiceDemand = business.maxEmployees * 10;
+
+    const efficiencyMod = business.efficiency / 100;
+    const reputationMod = business.reputation / 100;
+    const priceMod = 1 / price;
+    const marketMod = globalMarketValue;
+
+    let serviceDemand = baseServiceDemand * efficiencyMod * reputationMod * priceMod * marketMod;
+
+    if (playerSkills && playerSkills.length > 0) {
+      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
+      const salesBonus = playerImpact.salesBonus / 100;
+      serviceDemand *= (1 + salesBonus);
+    }
+
+    const pricePerService = 1000 * price;
+    salesIncome = Math.floor(serviceDemand * pricePerService);
+
+    console.log(`[Business ${business.name}] SERVICE: Demand=${serviceDemand.toFixed(1)}, Price=${price}, Market=${marketMod.toFixed(2)}, Income=$${salesIncome}`);
+
+  } else if (inventory) {
+    // === ТОВАРНЫЙ БИЗНЕС ===
+    const price = business.price || 5;
+
+    const baseDemand = business.maxEmployees * 50;
+    const efficiencyMod = business.efficiency / 100;
+    const reputationMod = business.reputation / 100;
+    const marketMod = globalMarketValue;
+
+    let baseProductDemand = baseDemand * efficiencyMod * reputationMod * marketMod;
+    const priceMod = 1 / price;
+    let finalDemand = baseProductDemand * priceMod;
+
+    if (!isPreview) {
+      const demandFluctuation = 0.8 + Math.random() * 0.4;
+      finalDemand *= demandFluctuation;
+    }
+
+    if (playerSkills && playerSkills.length > 0) {
+      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
+      const salesBonus = playerImpact.salesBonus / 100;
+      finalDemand *= (1 + salesBonus);
+    }
+
+    salesVolume = Math.min(Math.floor(finalDemand), inventory.currentStock);
+    salesIncome = salesVolume * inventory.pricePerUnit;
+
+    if (inventory.autoPurchaseAmount > 0) {
+      purchaseAmount = inventory.autoPurchaseAmount;
+    } else {
+      purchaseAmount = Math.max(0, inventory.maxStock - (inventory.currentStock - salesVolume));
+    }
+
+    purchaseCost = purchaseAmount * inventory.purchaseCost;
+
+    console.log(`[Business ${business.name}] PRODUCT: BaseDemand=${baseProductDemand.toFixed(1)}, Price=${price}, Market=${marketMod.toFixed(2)}, FinalDemand=${finalDemand.toFixed(1)}, Sales=${salesVolume}, Income=$${salesIncome}`);
+  }
+
+  const totalIncome = salesIncome;
+  const totalExpenses = baseExpenses + purchaseCost;
+
+  const newInventory: BusinessInventory = inventory ? {
+    ...inventory,
+    currentStock: Math.max(0, Math.min(inventory.maxStock, inventory.currentStock - salesVolume + purchaseAmount))
+  } : {
+    currentStock: 0,
+    maxStock: 1000,
+    pricePerUnit: 100,
+    purchaseCost: 50,
+    autoPurchaseAmount: 0
+  };
+
+  if (playerSkills && playerSkills.length > 0) {
+    console.log(`[Business ${business.name}] Player impact on financials: ExpenseReduction=${(playerExpenseReduction * 100).toFixed(1)}%`);
+  }
+
+  console.log(`[Business ${business.name}] Global Market: ${globalMarketValue.toFixed(2)}, Income=$${totalIncome}, Expenses=$${totalExpenses}, Profit=$${totalIncome - totalExpenses}`);
+
+  return {
+    income: Math.round(totalIncome),
+    expenses: Math.round(totalExpenses),
+    profit: Math.round(totalIncome - totalExpenses),
+    newInventory
+  };
+}
+
+/**
+ * Рассчитывает доход бизнеса (упрощенная версия для UI)
+ */
+export function calculateBusinessIncome(business: Business): number {
+  const financials = calculateBusinessFinancials(business, true);
+  return financials.income;
+}
+
+/**
+ * @deprecated Use calculateBusinessFinancials instead
+ */
+export function updateInventory(business: Business): BusinessInventory {
+  return business.inventory;
+}
+
+/**
+ * Генерирует случайные события для бизнеса
+ */
+export function generateBusinessEvents(business: Business, currentTurn: number): BusinessEvent[] {
+  const state = business.state ?? 'active';
+  if (state !== 'active') return [];
+
+  const events: BusinessEvent[] = [];
+  // 0-3 события за квартал
+  const eventCount = Math.floor(Math.random() * 4);
+
+  // Шанс негативного события выше, если эффективность или репутация низкие
+  const negativeChance = 0.3 + (100 - business.efficiency) / 200 + (100 - business.reputation) / 200;
+
+  for (let i = 0; i < eventCount; i++) {
+    const isNegative = Math.random() < negativeChance;
+
+    if (isNegative) {
+      const negativeEvents = [
+        { title: "Конфликт сотрудников", desc: "Снижение эффективности", eff: -5, rep: -2 },
+        { title: "Поломка оборудования", desc: "Требуется ремонт", eff: -10, money: -500 },
+        { title: "Жалоба клиента", desc: "Удар по репутации", rep: -5, eff: -2 },
+        { title: "Проверка", desc: "Найдены нарушения", money: -1000, rep: -3 },
+        { title: "Порча товара", desc: "Списана часть склада", money: -Math.round((business.inventory?.currentStock || 0) * (business.inventory?.purchaseCost || 0) * 0.1) }
+      ];
+      const evt = negativeEvents[Math.floor(Math.random() * negativeEvents.length)];
+
+      events.push({
+        id: `evt_${Date.now()}_${Math.random()}`,
+        type: 'negative',
+        title: evt.title,
+        description: evt.desc,
+        turn: currentTurn,
+        effects: {
+          efficiency: evt.eff,
+          reputation: evt.rep,
+          money: evt.money
+        }
+      });
+    } else {
+      const positiveEvents = [
+        { title: "Удачный маркетинг", desc: "Рост продаж", rep: 5, eff: 2 },
+        { title: "Премия", desc: "Награда от города", rep: 3, money: 500 },
+        { title: "Командный дух", desc: "Рост эффективности", eff: 5, rep: 1 },
+        { title: "Выгодная сделка", desc: "Снижение расходов", money: 200 },
+        { title: "Вирусный пост", desc: "Резкий рост популярности", rep: 8 }
+      ];
+      const evt = positiveEvents[Math.floor(Math.random() * positiveEvents.length)];
+
+      events.push({
+        id: `evt_${Date.now()}_${Math.random()}`,
+        type: 'positive',
+        title: evt.title,
+        description: evt.desc,
+        turn: currentTurn,
+        effects: {
+          efficiency: evt.eff,
+          reputation: evt.rep,
+          money: evt.money
+        }
+      });
+    }
+  }
+
+  return events;
+}
+
+/**
+ * Рассчитывает голос NPC по предложению
+ */
+export function calculateNPCVote(
+  proposal: BusinessProposal,
+  business: Business,
+  partner: BusinessPartner,
+  marketPrice: number = 5 // Базовая рыночная цена
+): boolean {
+  // Если отношение плохое, голосует против из вредности (с вероятностью 30%)
+  if (partner.relation < 30 && Math.random() < 0.3) {
+    return false;
+  }
+
+  switch (proposal.type) {
+    case 'change_price':
+      const newPrice = proposal.payload.newPrice || business.price;
+
+      // Если цена в разумных пределах (4-8), то скорее всего ЗА
+      if (newPrice >= 4 && newPrice <= 8) return true;
+
+      // Если эффективность низкая, нужны перемены -> ЗА
+      if (business.efficiency < 40) return true;
+
+      // Если эффективность высокая и цена растет -> ЗА (капитализация успеха)
+      if (business.efficiency > 80 && newPrice > business.price) return true;
+
+      return false;
+
+    case 'change_quantity':
+      const newQuantity = proposal.payload.newQuantity || 0;
+      const currentStock = business.inventory?.currentStock || 0;
+      const maxStock = business.inventory?.maxStock || 1000;
+
+      // Если склад почти полон (>80%) и мы снижаем производство -> ЗА
+      if (currentStock > maxStock * 0.8 && newQuantity < business.quantity) return true;
+
+      // Если склад почти пуст (<20%) и мы повышаем производство -> ЗА
+      if (currentStock < maxStock * 0.2 && newQuantity > business.quantity) return true;
+
+      // В остальных случаях NPC консервативен, если изменение резкое (>50%)
+      const changePercent = Math.abs(newQuantity - business.quantity) / (business.quantity || 1);
+      if (changePercent > 0.5) return false;
+
+      return true;
+
+    case 'expand_network':
+      // NPC всегда за расширение, если есть деньги
+      return true;
+
+    case 'withdraw_dividends':
+      // Если денег много, то ЗА
+      return true;
+
+    default:
+      return false;
   }
 }
+

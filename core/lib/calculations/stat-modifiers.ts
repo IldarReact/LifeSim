@@ -1,142 +1,101 @@
-import type { PlayerState, StatModifiers, StatModifier } from '@/core/types'
+import type { PlayerState, StatModifier, Stats } from '@/core/types'
+import type { StatEffect } from '@/core/types/stats.types'
+import { EMPLOYEE_ROLES_CONFIG } from '@/features/business/config/employee-roles.config'
 
 /**
- * Собирает все модификаторы статов из разных источников
+ * Собирает все пакетные модификаторы статов игрока
  */
-export function calculateStatModifiers(player: PlayerState): StatModifiers {
-  const modifiers: StatModifiers = {
-    happiness: [],
-    health: [],
-    energy: [],
-    sanity: [],
-    intelligence: []
+export function calculateStatModifiers(player: PlayerState): StatModifier[] {
+  const modifiers: StatModifier[] = []
+
+  const push = (source: string, effects: StatEffect) => {
+    if (Object.keys(effects).length > 0) {
+      modifiers.push({ source, effects })
+    }
   }
 
-  // Модификаторы от семьи
+  // ---------------------------------
+  // СЕМЬЯ
+  // ---------------------------------
   player.personal.familyMembers?.forEach(member => {
-    if (member.happinessMod !== 0) {
-      modifiers.happiness.push({
-        source: `Семья: ${member.name}`,
-        happiness: member.happinessMod
-      })
-    }
-    if (member.sanityMod !== 0) {
-      modifiers.sanity.push({
-        source: `Семья: ${member.name}`,
-        sanity: member.sanityMod
-      })
-    }
-    if (member.healthMod !== 0) {
-      modifiers.health.push({
-        source: `Семья: ${member.name}`,
-        health: member.healthMod
-      })
-    }
+    push(`Семья: ${member.name}`, member.passiveEffects || {})
   })
 
-
-  // Модификаторы от работы
+  // ---------------------------------
+  // РАБОТА
+  // ---------------------------------
   player.jobs?.forEach(job => {
-    // Энергия от работы
-    if (job.energyCost) {
-      modifiers.energy.push({
-        source: `Работа: ${job.title}`,
-        energy: -job.energyCost
-      })
+    const effects: StatEffect = { ...(job.cost || {}) }
+
+    if (job.satisfaction !== undefined) {
+      effects.happiness =
+        (effects.happiness || 0) +
+        Math.round((job.satisfaction - 50) / 10)
     }
 
-    // Удовлетворение от работы влияет на счастье
-    if (job.satisfaction) {
-      const happinessMod = Math.round((job.satisfaction - 50) / 10) // 50-60 = +1, 60-70 = +2, etc.
-      if (happinessMod !== 0) {
-        modifiers.happiness.push({
-          source: `Работа: ${job.title}`,
-          happiness: happinessMod
-        })
-      }
-    }
-
-    // Ментальное здоровье от работы влияет на рассудок
-    if (job.mentalHealthImpact !== undefined && job.mentalHealthImpact !== 0) {
-      modifiers.sanity.push({
-        source: `Работа: ${job.title}`,
-        sanity: job.mentalHealthImpact
-      })
-    }
-
-    // Физическое здоровье от работы
-    if (job.physicalHealthImpact !== undefined && job.physicalHealthImpact !== 0) {
-      modifiers.health.push({
-        source: `Работа: ${job.title}`,
-        health: job.physicalHealthImpact
-      })
-    }
+    push(`Работа: ${job.title}`, effects)
   })
 
-
-  // Модификаторы от активных курсов
+  // ---------------------------------
+  // КУРСЫ
+  // ---------------------------------
   player.personal.activeCourses?.forEach(course => {
-    if (course.energyCostPerTurn) {
-      modifiers.energy.push({
-        source: `Курс: ${course.courseName}`,
-        energy: -course.energyCostPerTurn
-      })
-    }
-    // Обучение даёт интеллект
-    modifiers.intelligence.push({
-      source: `Курс: ${course.courseName}`,
-      intelligence: 1
+    push(`Курс: ${course.courseName}`, {
+      ...(course.costPerTurn || {}),
+      intelligence: (course.costPerTurn?.intelligence || 0) + 1,
     })
   })
 
-  // Модификаторы от университета
+  // ---------------------------------
+  // УНИВЕРСИТЕТ
+  // ---------------------------------
   player.personal.activeUniversity?.forEach(uni => {
-    if (uni.energyCostPerTurn) {
-      modifiers.energy.push({
-        source: `Университет: ${uni.programName}`,
-        energy: -uni.energyCostPerTurn
-      })
-    }
-    // Университет даёт больше интеллекта
-    modifiers.intelligence.push({
-      source: `Университет: ${uni.programName}`,
-      intelligence: 2
-    })
-    // Но может снижать рассудок из-за стресса
-    modifiers.sanity.push({
-      source: `Университет: ${uni.programName}`,
-      sanity: -1
+    push(`Университет: ${uni.programName}`, {
+      ...(uni.costPerTurn || {}),
+      intelligence: (uni.costPerTurn?.intelligence || 0) + 2,
+      sanity: (uni.costPerTurn?.sanity || 0) - 1,
     })
   })
 
-  // Модификаторы от беременности
+  // ---------------------------------
+  // БЕРЕМЕННОСТЬ
+  // ---------------------------------
   if (player.personal.pregnancy) {
-    modifiers.happiness.push({
-      source: 'Беременность',
-      happiness: 5
-    })
-    modifiers.energy.push({
-      source: 'Беременность',
-      energy: -10
+    push(`Беременность`, {
+      happiness: 5,
+      energy: -10,
     })
   }
 
-  // Модификаторы от бизнеса
+  // ---------------------------------
+  // БИЗНЕС: РОЛИ ИГРОКА
+  // ---------------------------------
   player.businesses?.forEach(business => {
-    // Энергия от бизнеса
-    if (business.energyCostPerTurn) {
-      modifiers.energy.push({
-        source: `Бизнес: ${business.name}`,
-        energy: -business.energyCostPerTurn
-      })
-    }
+    const roles = business.playerRoles
 
-    // Стресс от бизнеса влияет на рассудок
-    if (business.stressImpact) {
-      modifiers.sanity.push({
-        source: `Бизнес: ${business.name}`,
-        sanity: -business.stressImpact
-      })
+    // --- Управленческие роли ---
+    roles.managerialRoles?.forEach(role => {
+      const config = EMPLOYEE_ROLES_CONFIG[role]
+
+      if (!config?.playerEffects) return
+
+      push(
+        `Бизнес: ${config.name} (${business.name})`,
+        config.playerEffects
+      )
+    })
+
+    // --- Операционная роль ---
+    if (roles.operationalRole) {
+      const config =
+        EMPLOYEE_ROLES_CONFIG[roles.operationalRole]
+
+      if (config?.playerEffects) {
+        push(
+          `Бизнес: ${config.name} (${business.name})`,
+          config.playerEffects
+        )
+      }
     }
   })
 
@@ -144,11 +103,13 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
 }
 
 /**
- * Вычисляет суммарный модификатор для конкретного стата
+ * Считает суммарный эффект для конкретного стата
  */
-export function getTotalModifier(modifiers: StatModifier[], stat: keyof StatModifier): number {
+export function getTotalModifier(
+  modifiers: StatModifier[],
+  stat: keyof Stats
+): number {
   return modifiers.reduce((sum, mod) => {
-    const value = mod[stat]
-    return sum + (typeof value === 'number' ? value : 0)
+    return sum + (mod.effects[stat] ?? 0)
   }, 0)
 }

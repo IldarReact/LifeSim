@@ -5,23 +5,47 @@ import { calculateQuarterlyTaxes } from './calculateQuarterlyTaxes'
 import { createEmptyQuarterlyReport } from './financial-helpers'
 import type { PlayerState } from '@/core/types/game.types'
 import type { CountryEconomy } from '@/core/types/economy.types'
+import type { Stats } from '@/core/types/stats.types'
 
 describe('Quarterly Calculations', () => {
+  const baseStats: Stats = {
+    money: 10000,
+    happiness: 100,
+    energy: 100,
+    health: 100,
+    sanity: 80,
+    intelligence: 100,
+  }
+
   const mockPlayer: PlayerState = {
     id: 'test',
     name: 'Test Player',
     archetype: 'entrepreneur',
     countryId: 'us',
-    cash: 10000,
+    age: 25,
+
+    // ✅ новая статистика
+    stats: { ...baseStats },
+
+    multipliers: {
+      happiness: 1,
+    },
+    happinessMultiplier: 1,
+
     quarterlySalary: 15000, // 5000 * 3
+
     assets: [],
     debts: [],
+
     personal: {
-      happiness: 100,
-      health: 100,
-      energy: 100,
-      intelligence: 100,
-      sanity: 80,
+      stats: {
+        happiness: baseStats.happiness,
+        energy: baseStats.energy,
+        health: baseStats.health,
+        sanity: baseStats.sanity,
+        intelligence: baseStats.intelligence,
+      },
+
       relations: { family: 50, friends: 50, colleagues: 50 },
       skills: [],
       activeCourses: [],
@@ -31,13 +55,11 @@ describe('Quarterly Calculations', () => {
       lifeGoals: [],
       isDating: false,
       potentialPartner: null,
-      pregnancy: null
+      pregnancy: null,
     },
-    happinessMultiplier: 1,
+
     quarterlyReport: createEmptyQuarterlyReport(),
-    age: 25,
-    health: 100,
-    energy: 100,
+
     jobs: [],
     activeFreelanceGigs: [],
     businesses: []
@@ -50,18 +72,22 @@ describe('Quarterly Calculations', () => {
     inflation: 2.0,
     keyRate: 5.0,
     interestRate: 5.0,
-    taxRate: 20,
+
+    taxRate: 20,            // налог с зарплаты
+    corporateTaxRate: 20,  // ✅ НОВОЕ — налог с прибыли бизнеса
+
     unemployment: 4.0,
     costOfLivingModifier: 1.0,
     salaryModifier: 1.0,
+
     archetype: 'rich_stable',
     activeEvents: []
   }
 
+
   describe('calculateQuarterlyIncome', () => {
     it('should calculate gross income correctly', () => {
       const result = calculateQuarterlyIncome(mockPlayer, mockCountry)
-      // 15000 (quarterly salary)
       expect(result).toBe(15000)
     })
   })
@@ -69,12 +95,14 @@ describe('Quarterly Calculations', () => {
   describe('calculateQuarterlyTaxes', () => {
     it('should calculate tax correctly', () => {
       const income = 15000
+
       const result = calculateQuarterlyTaxes({
         income,
         assets: mockPlayer.assets,
         country: mockCountry,
         playerAge: mockPlayer.age
       })
+
       // 15000 * 0.20 = 3000
       expect(result).toBe(3000)
     })
@@ -87,6 +115,7 @@ describe('Quarterly Calculations', () => {
         assets: mockPlayer.assets,
         country: mockCountry
       })
+
       // Base 1000 * 3 * 1.0 = 3000
       expect(result).toBe(3000)
     })

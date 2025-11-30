@@ -7,18 +7,23 @@ import { BusinessDetailDialog, BUSINESS_REQUIREMENTS } from "./business-detail-d
 import { Store } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 
+import type { StatEffect } from "@/core/types/stats.types"
+
 interface BusinessesSectionProps {
   playerCash: number
   onOpenBusiness: (
     name: string,
     type: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing',
     description: string,
-    initialCost: number,
+    totalCost: number,
+    upfrontCost: number,
+    creationCost: StatEffect,
+    openingQuarters: number,
     monthlyIncome: number,
     monthlyExpenses: number,
     maxEmployees: number,
-    energyCostPerTurn: number,
-    stressImpact: number
+    minWorkers: number,
+    taxRate: number
   ) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
@@ -46,12 +51,15 @@ export function BusinessesSection({
         name,
         type,
         description,
-        cost,
+        cost, // totalCost
+        cost, // upfrontCost (assuming full payment for now)
+        { energy: -energyCost, sanity: -stressImpact }, // creationCost
+        0, // openingQuarters
         monthlyIncome,
         monthlyExpenses,
         maxEmployees,
-        energyCost,
-        stressImpact
+        1, // minWorkers
+        0.15 // taxRate
       )
       onSuccess(`Бизнес "${name}" успешно открыт!`)
     } else {

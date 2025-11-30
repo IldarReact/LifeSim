@@ -206,11 +206,16 @@ function GoalCard({ goal }: { goal: LifeGoal }) {
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-1 text-rose-400">
           <Heart className="w-3 h-3" />
-          <span>+{goal.reward.happinessPerTurn}/ход</span>
+          <span>
+            +{goal.reward.perTurnReward.happiness ?? 0}/ход
+          </span>
         </div>
+
         <div className="flex items-center gap-1 text-purple-400">
           <Brain className="w-3 h-3" />
-          <span>+{goal.reward.sanityPerTurn}/ход</span>
+          <span>
+            +{goal.reward.perTurnReward.sanity ?? 0}/ход
+          </span>
         </div>
       </div>
     </div>

@@ -11,9 +11,9 @@ export interface PersonalLife {
     colleagues: number;
   };
   skills: Skill[];
-  activeCourses: ActiveCourse[]; // Courses currently being studied
-  activeUniversity: ActiveUniversity[]; // University programs currently enrolled
-  buffs: TimedBuff[]; // Temporary buffs/debuffs
+  activeCourses: ActiveCourse[];
+  activeUniversity: ActiveUniversity[];
+  buffs: TimedBuff[];
 
   // New Family & Goals System
   familyMembers: FamilyMember[];

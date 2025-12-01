@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { FamilyActivity } from "@/features/activities/family-activity"
 import { WorkActivity } from "@/features/activities/work/work-activity"
+import { ShopSection } from "@/features/activities/shop/shop-section"
 import { InvestmentsActivity } from "@/features/activities/investments-activity"
 import { BanksActivity } from "@/features/activities/banks-activity"
 import { RelocationActivity } from "@/features/activities/relocation-activity"
@@ -25,6 +26,7 @@ import {
 type ActivityType = NonNullable<GameState["activeActivity"]> | "education"
 
 const backgroundImages: Record<ActivityType, string> = {
+  shop: "url('https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1200&h=800&fit=crop')",
   family: "url('https://images.unsplash.com/photo-1511895426328-dc8714191300?w=1200&h=800&fit=crop')",
   work: "url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=800&fit=crop')",
   education: "url('https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1200&h=800&fit=crop')",
@@ -94,6 +96,7 @@ export function ActivityContent(): React.JSX.Element | null {
       />
 
       <div className="relative z-10 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto pb-24 sm:pb-32">
+        {currentActivity === "shop" && <ShopSection />}
         {currentActivity === "family" && <FamilyActivity />}
         {currentActivity === "work" && <WorkActivity />}
         {currentActivity === "education" && <EducationActivity />}

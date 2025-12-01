@@ -134,6 +134,10 @@ export function createInitialPlayer(
     activeFreelanceGigs: [],
     businesses: [],
     businessIdeas: [],
+    activeLifestyle: {
+      food: 'food_homemade', // Дефолт: готовит сам
+      real_estate: 'housing_room' // Дефолт: съемная комната
+    },
   }
 
   let finalState = { ...base }

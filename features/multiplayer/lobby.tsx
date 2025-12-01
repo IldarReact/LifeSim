@@ -21,6 +21,9 @@ import { CharacterSelectUI } from "@/features/setup/ui/character-select";
 import type { CountryEconomy } from "@/core/types";
 import { Player } from "./MultiplayerHub";
 
+
+// ARCHETYPES нужно полностью переделать под переменные как минимум
+// Нужно удобное добавление новых персонажей чтобы мы их как из лего собирали
 const ARCHETYPES: { id: CharacterArchetype; name: string; description: string }[] = [
   { id: "investor", name: "Инвестор", description: "Начальный капитал: $50,000" },
   { id: "specialist", name: "Специалист", description: "Зарплата: $4,000/мес" },

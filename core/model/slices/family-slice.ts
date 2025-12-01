@@ -259,6 +259,20 @@ export const createFamilySlice: StateCreator<
       title: 'Новый друг!',
       message: `У вас появился питомец: ${name}`,
     })
+  },
+
+  // ------------------------------------------------------------
+  // SET MEMBER FOOD PREFERENCE
+  // ------------------------------------------------------------
+  setMemberFoodPreference: (memberId, foodId) => {
+    get().updatePlayer(prev => ({
+      personal: {
+        ...prev.personal,
+        familyMembers: prev.personal.familyMembers.map(m =>
+          m.id === memberId ? { ...m, foodPreference: foodId } : m
+        )
+      }
+    }))
   }
 
 })

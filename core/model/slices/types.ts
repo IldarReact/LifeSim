@@ -27,6 +27,7 @@ export interface GameSlice {
   setActiveActivity: (activity: string | null) => void
   nextTurn: () => void
   startSinglePlayer: () => void
+  resolveCrisis: (actionType: string) => void
 }
 
 
@@ -109,6 +110,7 @@ export interface FamilySlice {
   rejectPartner: () => void
   tryForBaby: () => void
   adoptPet: (petType: 'dog' | 'cat' | 'hamster', name: string, cost: number) => void
+  setMemberFoodPreference: (memberId: string, foodId: string) => void
 }
 
 export interface BusinessSlice {
@@ -175,6 +177,11 @@ export interface IdeaSlice {
   discardIdea: (ideaId: string) => void
 }
 
+export interface ShopSlice {
+  buyItem: (itemId: string) => void
+  setLifestyle: (category: string, itemId: string | undefined) => void
+}
+
 // Combined store type
 export type GameStore =
   GameSlice &
@@ -186,9 +193,9 @@ export type GameStore =
   BusinessSlice &
   NotificationSlice &
   MarketSlice &
-  IdeaSlice & {
+  IdeaSlice &
+  ShopSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']
   }
-

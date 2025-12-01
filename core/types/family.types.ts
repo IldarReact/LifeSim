@@ -37,6 +37,11 @@ export interface FamilyMember {
   avatar?: string;
   goals?: LifeGoal[]; // Personal goals of the family member
   employedInBusinessId?: string; // ID бизнеса, где работает
+
+  // Lifestyle preferences (references to shop items)
+  foodPreference?: string; // ID товара из категории 'food'
+  housingPreference?: string; // ID товара из категории 'real_estate' (будет добавлено)
+  transportPreference?: string; // ID товара из категории 'transport'
 }
 
 export interface LifeGoal {

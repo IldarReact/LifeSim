@@ -64,7 +64,8 @@ describe('Quarterly Calculations', () => {
     jobs: [],
     activeFreelanceGigs: [],
     businesses: [],
-    businessIdeas: []
+    businessIdeas: [],
+    activeLifestyle: {}
   }
 
   const mockCountry: CountryEconomy = {

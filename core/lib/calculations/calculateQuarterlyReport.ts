@@ -29,6 +29,7 @@ interface QuarterlyReportParams {
     income: number;
     expenses: number;
   };
+  lifestyleExpenses?: number;
 }
 
 /**
@@ -72,7 +73,7 @@ export function calculateEmployeeQuarterlyReport(params: QuarterlyReportParams):
   const baseLiving = 1000 * 3 * country.costOfLivingModifier; // Base cost of living for 3 months
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(baseLiving),
+    living: Math.round(baseLiving + (params.lifestyleExpenses || 0)),
     family: Math.round(familyExpenses),
     business: 0,
     debtInterest: Math.round(debtInterest),
@@ -135,7 +136,7 @@ export function calculateBusinessOwnerQuarterlyReport(params: QuarterlyReportPar
   const baseLiving = 1000 * 3 * country.costOfLivingModifier;
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(baseLiving),
+    living: Math.round(baseLiving + (params.lifestyleExpenses || 0)),
     family: Math.round(familyExpenses),
     business: Math.round(businessExpenses),
     debtInterest: Math.round(debtInterest),

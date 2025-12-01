@@ -11,6 +11,7 @@ import { createBusinessSlice } from './slices/business-slice'
 import { createNotificationSlice } from './slices/notification-slice'
 import { createMarketSlice } from './slices/market-slice'
 import { createIdeaSlice } from './slices/idea-slice'
+import { createShopSlice } from './slices/shop-slice'
 import { INITIAL_COUNTRIES } from '@/core/lib/initialState'
 
 export const useGameStore = create<GameStore>()(
@@ -31,7 +32,8 @@ export const useGameStore = create<GameStore>()(
       ...createBusinessSlice(...a),
       ...createNotificationSlice(...a),
       ...createMarketSlice(...a),
-      ...createIdeaSlice(...a)
+      ...createIdeaSlice(...a),
+      ...createShopSlice(...a)
     }),
     {
       name: 'life-sim-storage',

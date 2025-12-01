@@ -1,7 +1,7 @@
 "use client"
 
 import { useGameStore } from "@/core/model/game-store"
-import { Heart, Briefcase, TrendingUp, Landmark, Home, Palmtree, Bell, GraduationCap } from "lucide-react"
+import { Heart, Briefcase, TrendingUp, Landmark, Home, Palmtree, Bell, GraduationCap, ShoppingCart } from "lucide-react"
 import type { GameState } from "@/core/types"
 
 type ActivityId = NonNullable<GameState["activeActivity"]> | "education"
@@ -14,13 +14,14 @@ interface Activity {
 }
 
 const ACTIVITIES: readonly Activity[] = [
+  { id: "shop", label: "МАГАЗИН", icon: ShoppingCart, description: "Товары и услуги" },
   { id: "family", label: "СЕМЬЯ", icon: Heart, description: "Семья и отношения" },
   { id: "work", label: "РАБОТА", icon: Briefcase, description: "Карьера и доход" },
   { id: "education", label: "ОБУЧЕНИЕ", icon: GraduationCap, description: "Образование и навыки" },
   { id: "investments", label: "ИНВЕСТИЦИИ", icon: TrendingUp, description: "Акции и активы" },
-  { id: "banks", label: "БАНКИ", icon: Landmark, description: "Кредиты и депозиты" },
+  { id: "banking", label: "БАНКИ", icon: Landmark, description: "Кредиты и депозиты" },
   { id: "relocation", label: "ПЕРЕЕЗД", icon: Home, description: "Жилище и имущество" },
-  { id: "rest", label: "ОТДЫХ", icon: Palmtree, description: "Развлечения и здоровье" },
+  { id: "leisure", label: "ОТДЫХ", icon: Palmtree, description: "Развлечения и здоровье" },
   { id: "events", label: "СОБЫТИЯ", icon: Bell, description: "История событий" },
 ]
 

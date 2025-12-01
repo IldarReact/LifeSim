@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "@/shared/ui/dialog";
 import type { FamilyMember } from "@/core/types";
-import { PlayerCard } from "./ui/player-card";
+import { FamilyMemberCard } from "./ui/family-member-card";
 
 export function FamilyActivity(): React.JSX.Element | null {
   const { player, startDating, acceptPartner, rejectPartner, tryForBaby, adoptPet } = useGameStore();
@@ -31,9 +31,6 @@ export function FamilyActivity(): React.JSX.Element | null {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* Player Card & Expenses */}
-      <PlayerCard />
-
       <SectionSeparator title="Семья" />
 
       {/* Dating Status */}
@@ -57,7 +54,7 @@ export function FamilyActivity(): React.JSX.Element | null {
           <div className="bg-gradient-to-r from-rose-500/20 to-purple-500/20 border border-rose-500/30 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl border-2 border-white/20">
-                Person
+                👤
               </div>
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
@@ -107,8 +104,12 @@ export function FamilyActivity(): React.JSX.Element | null {
         )
       }
 
-      {/* Family Members */}
+      {/* Family Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Player Card */}
+        <FamilyMemberCard isPlayer={true} />
+
+        {/* Family Members */}
         {familyMembers?.map(member => (
           <FamilyMemberCard key={member.id} member={member} />
         ))}
@@ -157,7 +158,7 @@ export function FamilyActivity(): React.JSX.Element | null {
             ].map((pet) => (
               <div key={pet.type} className="bg-white/5 p-4 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="text-2xl">{pet.type === "dog" ? "Dog" : pet.type === "cat" ? "Cat" : "Hamster"}</div>
+                  <div className="text-2xl">{pet.type === "dog" ? "🐕" : pet.type === "cat" ? "🐈" : "🐹"}</div>
                   <div>
                     <h4 className="font-bold text-white">{pet.name}</h4>
                     <p className="text-xs text-white/60">
@@ -178,102 +179,5 @@ export function FamilyActivity(): React.JSX.Element | null {
         </OpportunityCard>
       </div>
     </div >
-  );
-}
-
-function FamilyMemberCard({ member }: { member: FamilyMember }) {
-  return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors flex flex-col h-full">
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl shrink-0">
-          {member.type === 'pet' ? 'Paw' : member.type === 'child' ? 'Baby' : 'Person'}
-        </div>
-        <div>
-          <h4 className="font-bold text-white line-clamp-1">{member.name}</h4>
-          <p className="text-white/60 text-sm capitalize">
-            {member.type === 'wife' ? 'Жена' : member.type === 'husband' ? 'Муж' : member.type === 'child' ? 'Ребенок' : 'Питомец'} • {member.age} лет
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-3 mb-4 flex-1">
-        <div>
-          <div className="flex justify-between text-xs text-white/40 mb-1">
-            <span>Отношения</span>
-            <span>{member.relationLevel}%</span>
-          </div>
-          <Progress value={member.relationLevel} className="h-1.5" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {member.income > 0 && (
-            <div className="bg-green-500/10 rounded-lg p-2 flex items-center gap-2 text-green-400">
-              <DollarSign className="w-3 h-3" />
-              <span>+${member.income}</span>
-            </div>
-          )}
-          {member.expenses > 0 && (
-            <div className="bg-red-500/10 rounded-lg p-2 flex items-center gap-2 text-red-400">
-              <DollarSign className="w-3 h-3" />
-              <span>-${member.expenses}</span>
-            </div>
-          )}
-          <div className="bg-rose-500/10 rounded-lg p-2 flex items-center gap-2 text-rose-400">
-            <Heart className="w-3 h-3" />
-            <span>+{member.passiveEffects?.happiness || 0}</span>
-          </div>
-          <div className="bg-purple-500/10 rounded-lg p-2 flex items-center gap-2 text-purple-400">
-            <Brain className="w-3 h-3" />
-            <span>+{member.passiveEffects?.sanity || 0}</span>
-          </div>
-        </div>
-      </div>
-
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline" className="w-full border-white/10 hover:bg-white/10 text-white text-xs h-8">
-            Подробнее
-            <ChevronRight className="w-3 h-3 ml-1" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="bg-zinc-900/95 backdrop-blur-xl border-white/10 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <span className="text-2xl">{member.type === 'pet' ? 'Paw' : member.type === 'child' ? 'Baby' : 'Person'}</span>
-              <div>
-                <div className="text-xl font-bold">{member.name}</div>
-                <div className="text-sm font-normal text-white/60 capitalize">
-                  {member.type === 'wife' ? 'Жена' : member.type === 'husband' ? 'Муж' : member.type === 'child' ? 'Ребенок' : 'Питомец'}, {member.age} лет
-                </div>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6 mt-4">
-            <div className="space-y-3">
-              <h4 className="text-sm font-bold text-white/80 uppercase tracking-wider">Влияние на жизнь</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/5 p-3 rounded-lg">
-                  <div className="text-xs text-white/50 mb-1">Счастье</div>
-                  <div className="text-lg font-bold text-rose-400">+{member.passiveEffects?.happiness || 0}/ход</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-lg">
-                  <div className="text-xs text-white/50 mb-1">Рассудок</div>
-                  <div className="text-lg font-bold text-purple-400">+{member.passiveEffects?.sanity || 0}/ход</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-lg">
-                  <div className="text-xs text-white/50 mb-1">Доход</div>
-                  <div className="text-lg font-bold text-green-400">+${member.income}</div>
-                </div>
-                <div className="bg-white/5 p-3 rounded-lg">
-                  <div className="text-xs text-white/50 mb-1">Расходы</div>
-                  <div className="text-lg font-bold text-red-400">-${member.expenses}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
   );
 }

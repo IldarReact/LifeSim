@@ -14,6 +14,13 @@ import { StatEffect, Stats } from './stats.types';
 
 export type GameStatus = "menu" | "setup" | "select_country" | "select_character" | "playing" | "ended";
 
+export type GameOverReason =
+  | "DEATH"              // Health = 0
+  | "MENTAL_BREAKDOWN"   // Sanity = 0
+  | "DEGRADATION"        // Intelligence = 0
+  | "DEPRESSION"         // Happiness = 0
+  | "BANKRUPTCY";        // Финансовый крах
+
 export interface PlayerState {
   id: string;
   name: string;
@@ -48,6 +55,9 @@ export interface PlayerState {
   businesses: Business[];
   // Business Ideas System
   businessIdeas: BusinessIdea[];
+
+  // Lifestyle System
+  activeLifestyle: Partial<Record<string, string>>; // category -> itemId
 }
 
 
@@ -72,7 +82,7 @@ export interface GameState {
   activeActivity: string | null;
   pendingEventNotification: GlobalEvent | null;
   setupCountryId: string | null;
-  endReason: string | null;
+  endReason: GameOverReason | null;
   // New fields
   notifications: Notification[];
   pendingApplications: JobApplication[];

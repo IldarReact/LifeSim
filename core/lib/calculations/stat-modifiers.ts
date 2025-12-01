@@ -14,7 +14,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
   }
 
   // Helper to push effects
-  const pushEffects = (source: string, effects: Partial<StatEffect>) => {
+  const pushEffects = (source: string, effects: StatEffect) => {
     if (effects.happiness) modifiers.happiness.push({ source, happiness: effects.happiness })
     if (effects.health) modifiers.health.push({ source, health: effects.health })
     if (effects.energy) modifiers.energy.push({ source, energy: effects.energy })
@@ -38,7 +38,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
       // Если cost = { energy: 10 }, то это расход. Значит эффект = -10.
       // Если cost уже содержит отрицательные значения, то просто берем их.
       // Предположим, что cost хранит положительные значения затрат.
-      const effects: Partial<StatEffect> = {}
+      const effects: StatEffect = {}
       if (job.cost.energy) effects.energy = -job.cost.energy
       if (job.cost.health) effects.health = -job.cost.health
       if (job.cost.sanity) effects.sanity = -job.cost.sanity
@@ -62,7 +62,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
   player.personal.activeCourses?.forEach(course => {
     if (course.costPerTurn) {
       // Аналогично, costPerTurn - это затраты
-      const effects: Partial<StatEffect> = {}
+      const effects: StatEffect = {}
       if (course.costPerTurn.energy) effects.energy = -course.costPerTurn.energy
       if (course.costPerTurn.health) effects.health = -course.costPerTurn.health
       if (course.costPerTurn.sanity) effects.sanity = -course.costPerTurn.sanity
@@ -79,7 +79,7 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
   // Модификаторы от университета
   player.personal.activeUniversity?.forEach(uni => {
     if (uni.costPerTurn) {
-      const effects: Partial<StatEffect> = {}
+      const effects: StatEffect = {}
       if (uni.costPerTurn.energy) effects.energy = -uni.costPerTurn.energy
       if (uni.costPerTurn.health) effects.health = -uni.costPerTurn.health
       if (uni.costPerTurn.sanity) effects.sanity = -uni.costPerTurn.sanity

@@ -13,8 +13,17 @@ import { BanksActivity } from "../activities/banks-activity"
 import { RelocationActivity } from "../activities/relocation-activity"
 import { RestActivity } from "../activities/rest-activity"
 import { EducationActivity } from "../activities/education-activity"
+import { ShopSection } from "../activities/shop/shop-section"
 
 const ACTIVITIES = [
+  {
+    id: "shop",
+    title: "МАГАЗИНы",
+    description: "Покупай товары и услуги",
+    icon: "🛒",
+    details: "Еда, здоровье, развлечения, транспорт",
+    component: ShopSection
+  },
   {
     id: "family",
     title: "СЕМЬЯ",

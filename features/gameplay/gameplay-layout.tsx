@@ -8,6 +8,9 @@ import { Button } from "@/shared/ui/button"
 import { isMultiplayerActive, setTurnReady, subscribeToTurnReadyStatus } from "@/core/lib/multiplayer"
 import { TurnSyncModal } from "@/features/multiplayer/turn-sync-modal"
 import { TurnLockedModal } from "@/features/multiplayer/turn-locked-modal"
+import { GameOverScreen } from "./game-over-screen"
+import { FinancialCrisisModal } from "./financial-crisis-modal"
+import { isInFinancialCrisis } from "@/core/lib/financial-crisis"
 import { Loader2 } from "lucide-react"
 
 export function GameplayLayout() {
@@ -23,6 +26,7 @@ export function GameplayLayout() {
   const [isTurnSyncOpen, setIsTurnSyncOpen] = useState(false)
   const [isTurnLocked, setIsTurnLocked] = useState(false)
   const [showLockedModal, setShowLockedModal] = useState(false)
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false)
 
   // Подписка на готовность всех игроков
   useEffect(() => {
@@ -38,9 +42,17 @@ export function GameplayLayout() {
     return () => unsubscribe()
   }, [isTurnLocked])
 
-  if (!player || gameStatus !== "playing") return null
+  // Разрешаем рендер при ended, чтобы показать интерфейс под модалкой Game Over
+  if (!player || (gameStatus !== "playing" && gameStatus !== "ended")) return null
+
+  const isCrisis = isInFinancialCrisis(player.stats.money)
 
   const handleNextTurn = () => {
+    if (isCrisis) {
+      setIsCrisisModalOpen(true)
+      return
+    }
+
     const isMultiplayer = isMultiplayerActive()
 
     if (isMultiplayer) {
@@ -80,6 +92,16 @@ export function GameplayLayout() {
 
   return (
     <>
+      {/* Game Over экран */}
+      {gameStatus === 'ended' && <GameOverScreen />}
+      
+      {/* Финансовый кризис - открывается по кнопке */}
+      {isCrisisModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <FinancialCrisisModal onClose={() => setIsCrisisModalOpen(false)} />
+        </div>
+      )}
+
       <div
         className="max-w-7xl mx-auto px-6 py-8"
         onClick={handleClick}
@@ -110,7 +132,11 @@ export function GameplayLayout() {
           <Button
             onClick={handleNextTurn}
             disabled={isProcessingTurn || isTurnLocked}
-            className="px-8 py-6 bg-white/5 border border-white/10 text-white text-lg font-semibold rounded-xl hover:bg-white/10 transition-all w-full max-w-md backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-8 py-6 text-lg font-semibold rounded-xl transition-all w-full max-w-md backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+              isCrisis 
+                ? 'bg-red-500/20 border-red-500/50 text-red-100 hover:bg-red-500/30 animate-pulse' 
+                : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+            }`}
           >
             {isProcessingTurn ? (
               <>
@@ -122,6 +148,8 @@ export function GameplayLayout() {
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 Ожидание других игроков...
               </>
+            ) : isCrisis ? (
+              'УСТРАНИТЬ ДОЛГ'
             ) : (
               `ЗАВЕРШИТЬ ХОД (${turn}/40)`
             )}

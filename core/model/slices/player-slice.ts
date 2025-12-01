@@ -64,7 +64,7 @@ export const createPlayerSlice: StateCreator<
     })
   },
 
-  applyStatChanges: (changes: Partial<StatEffect> & { cash?: number }) => {
+  applyStatChanges: (changes: StatEffect & { cash?: number }) => {
     const player = get().player
     if (!player) return
 

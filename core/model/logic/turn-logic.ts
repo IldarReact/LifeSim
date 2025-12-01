@@ -5,6 +5,10 @@ import { calculateBusinessFinancials } from '@/core/lib/business-utils'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
 import { processBusinessTurn } from './business-turn-processor'
 import { generateMarketEvent, cleanupExpiredMarketEvents } from '@/core/lib/market-events-generator'
+import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
+import { checkDefeatConditions } from '@/core/lib/defeat-conditions'
+import { isInFinancialCrisis, generateCrisisEconomicEvent, applyCrisisToCountry } from '@/core/lib/financial-crisis'
+import { SHOP_ITEMS } from '@/core/lib/shop-data'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -431,11 +435,53 @@ export function processTurn(get: GetState, set: SetState): void {
   const statMods = calculateStatModifiers(tempPlayer)
 
   // Apply modifiers to stats (Base + Buffs + Business)
-  // Apply modifiers to stats (Base + Buffs + Business)
   const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
   const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
   const sanityMod = getTotalModifier(statMods.sanity, 'sanity') + buffSanityMod - businessSanityImpact
   const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence') + buffIntelligenceMod
+
+  // Process Lifestyle
+  let lifestyleExpenses = 0
+  let lifestyleHappiness = 0
+  let lifestyleHealth = 0
+  let lifestyleEnergy = 0
+  let lifestyleSanity = 0
+  let lifestyleIntelligence = 0
+
+  // Player's lifestyle (food + housing)
+  if (prev.player.activeLifestyle) {
+    Object.values(prev.player.activeLifestyle).forEach(itemId => {
+      const item = SHOP_ITEMS.find(i => i.id === itemId)
+      if (item && item.isRecurring) {
+        lifestyleExpenses += (item.costPerTurn || item.price)
+        if (item.effects) {
+          if (item.effects.happiness) lifestyleHappiness += item.effects.happiness
+          if (item.effects.health) lifestyleHealth += item.effects.health
+          if (item.effects.energy) lifestyleEnergy += item.effects.energy
+          if (item.effects.sanity) lifestyleSanity += item.effects.sanity
+          if (item.effects.intelligence) lifestyleIntelligence += item.effects.intelligence
+        }
+      }
+    })
+  }
+
+  // Family members' lifestyle (food only, housing shared)
+  familyMembers.forEach(member => {
+    if (member.foodPreference) {
+      const foodItem = SHOP_ITEMS.find(i => i.id === member.foodPreference)
+      if (foodItem && foodItem.isRecurring) {
+        lifestyleExpenses += (foodItem.costPerTurn || foodItem.price)
+        // Effects apply to player indirectly through family happiness
+      }
+    } else {
+      // Default food if not set
+      const defaultFood = SHOP_ITEMS.find(i => i.id === 'food_homemade')
+      if (defaultFood && defaultFood.isRecurring) {
+        lifestyleExpenses += (defaultFood.costPerTurn || defaultFood.price)
+      }
+    }
+  })
+
 
   // 9.5. Business Logic - обработка всех бизнесов за квартал
   const businessResult = processBusinessTurn(
@@ -455,8 +501,16 @@ export function processTurn(get: GetState, set: SetState): void {
   // Добавить защищенные навыки
   businessResult.protectedSkills.forEach(skill => protectedSkills.add(skill));
 
+  // Apply lifestyle effects (after business calculation)
+  const finalHappinessMod = happinessMod + lifestyleHappiness
+  const finalHealthMod = healthMod + lifestyleHealth
+  const finalSanityMod = sanityMod + lifestyleSanity - businessResult.playerRoleSanityCost
+  const finalIntelligenceMod = intelligenceMod + lifestyleIntelligence
+  const finalEnergyMod = buffEnergyMod + lifestyleEnergy
+
+
   // Пересчитать sanity с учетом ролей игрока в бизнесе
-  const finalSanityMod = sanityMod - businessResult.playerRoleSanityCost;
+  // const finalSanityMod = sanityMod - businessResult.playerRoleSanityCost; // Moved up
 
 
   // 10. Financial Calculations (Quarterly)
@@ -482,16 +536,97 @@ export function processTurn(get: GetState, set: SetState): void {
     businessFinancialsOverride: {
       income: businessResult.totalIncome,
       expenses: businessResult.totalExpenses
-    }
+    },
+    lifestyleExpenses
   })
 
   const netProfit = quarterlyReport.netProfit
 
+  // 11. Проверка пороговых эффектов статов
+  const currentStats = {
+    health: Math.min(100, Math.max(0, prev.player.personal.stats.health - 2 + finalHealthMod)),
+    happiness: Math.min(100, Math.max(0, prev.player.personal.stats.happiness - 1 + finalHappinessMod)),
+    sanity: Math.min(100, Math.max(0, prev.player.personal.stats.sanity + finalSanityMod)),
+    intelligence: Math.min(100, Math.max(0, prev.player.personal.stats.intelligence + finalIntelligenceMod)),
+    energy: Math.min(100, recoveredEnergy + finalEnergyMod - businessResult.playerRoleEnergyCost)
+  }
+
+  const thresholdEffects = checkAllThresholdEffects(currentStats)
+
+  // Генерируем события для низких статов
+  const lowStatEvents = generateLowStatEvents(currentStats, prev.turn, prev.year)
+
+  // Добавляем уведомления о пороговых эффектах
+  thresholdEffects.events.forEach(event => {
+    newNotifications.push({
+      id: `threshold_${event.type}_${Date.now()}_${Math.random()}`,
+      type: event.severity === 'critical' ? 'warning' : 'info',
+      title: event.severity === 'critical' ? '⚠️ КРИТИЧЕСКОЕ СОСТОЯНИЕ' : '⚡ Предупреждение',
+      message: event.message,
+      date: `${prev.year} Q${(prev.turn % 4) || 4}`,
+      isRead: false
+    })
+  })
+
+  // Добавляем события низких статов
+  newNotifications.push(...lowStatEvents)
+
+  // Добавляем расходы на лечение и терапию к финансовому отчету
+  const totalThresholdCosts = thresholdEffects.medicalCosts + thresholdEffects.therapyCosts
+  const adjustedNetProfit = netProfit - totalThresholdCosts
+
+  // Логируем пороговые эффекты
+  if (totalThresholdCosts > 0) {
+    console.log(`[Threshold] Medical: $${thresholdEffects.medicalCosts}, Therapy: $${thresholdEffects.therapyCosts}`)
+  }
+  if (thresholdEffects.workEfficiency < 1.0) {
+    console.log(`[Threshold] Work efficiency: ${(thresholdEffects.workEfficiency * 100).toFixed(0)}%`)
+  }
+
   const newTurn = prev.turn + 1
-  const newYear = prev.year + Math.floor((newTurn - 1) / 4)
+  // Год увеличивается только когда завершается 4-й квартал (turn кратен 4)
+  const newYear = prev.turn % 4 === 0 ? prev.year + 1 : prev.year
 
   setTimeout(() => {
+    // Проверяем условия поражения ПЕРЕД обновлением состояния
+    const gameOverReason = checkDefeatConditions(currentStats)
+
+    if (gameOverReason) {
+      // Игрок проиграл - завершаем игру
+      console.log(`[GAME OVER] Reason: ${gameOverReason}`)
+      set({
+        gameStatus: 'ended',
+        endReason: gameOverReason,
+        isProcessingTurn: false
+      })
+      return // Прерываем обновление состояния
+    }
+
+    // Проверка финансового кризиса
+    let newGameStatus = 'playing'
+    let updatedCountries = { ...prev.countries }
+
+    if (prev.player) {
+      const finalMoney = prev.player.stats.money + adjustedNetProfit
+
+      if (isInFinancialCrisis(finalMoney)) {
+        // newGameStatus = 'crisis' // Больше не меняем статус игры
+
+        newNotifications.push({
+          id: `crisis_alert_${Date.now()}`,
+          type: 'warning',
+          title: '📉 ФИНАНСОВЫЙ КРИЗИС',
+          message: 'Ваш баланс упал до критической отметки! Вы не можете продолжать игру, пока не решите проблему с долгом.',
+          date: `${newYear} Q${(newTurn % 4) || 4}`,
+          isRead: false
+        })
+      }
+    }
+
+    // Если игрок жив - продолжаем обычное обновление
     set(state => ({
+      gameStatus: newGameStatus as any, // TypeScript workaround if needed
+      countries: updatedCountries,
       turn: newTurn,
       year: newYear,
       isProcessingTurn: false,
@@ -513,16 +648,16 @@ export function processTurn(get: GetState, set: SetState): void {
           // Apply modifiers + natural decay
           stats: {
             ...state.player.personal.stats,
-            health: Math.min(100, Math.max(0, state.player.personal.stats.health - 2 + healthMod)),
-            happiness: Math.min(100, Math.max(0, state.player.personal.stats.happiness - 1 + happinessMod)),
+            health: Math.min(100, Math.max(0, state.player.personal.stats.health - 2 + finalHealthMod)),
+            happiness: Math.min(100, Math.max(0, state.player.personal.stats.happiness - 1 + finalHappinessMod)),
             sanity: Math.min(100, Math.max(0, state.player.personal.stats.sanity + finalSanityMod)),
-            intelligence: Math.min(100, Math.max(0, state.player.personal.stats.intelligence + intelligenceMod))
+            intelligence: Math.min(100, Math.max(0, state.player.personal.stats.intelligence + finalIntelligenceMod))
           }
         },
-        energy: Math.min(100, recoveredEnergy + buffEnergyMod - businessResult.playerRoleEnergyCost),
+        energy: Math.min(100, recoveredEnergy + finalEnergyMod - businessResult.playerRoleEnergyCost),
         stats: {
           ...state.player.stats,
-          money: state.player.stats.money + netProfit
+          money: state.player.stats.money + adjustedNetProfit
         },
         quarterlyReport
       } : null,

@@ -62,6 +62,7 @@ export const createMockPlayer = (
     activeFreelanceGigs: [],
     businesses: [],
     businessIdeas: [],
+    activeLifestyle: {},
 
     ...overrides,
   }

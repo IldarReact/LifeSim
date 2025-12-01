@@ -431,10 +431,11 @@ export function processTurn(get: GetState, set: SetState): void {
   const statMods = calculateStatModifiers(tempPlayer)
 
   // Apply modifiers to stats (Base + Buffs + Business)
-  const happinessMod = getTotalModifier(statMods, 'happiness') + buffHappinessMod
-  const healthMod = getTotalModifier(statMods, 'health') + buffHealthMod
-  const sanityMod = getTotalModifier(statMods, 'sanity') + buffSanityMod - businessSanityImpact
-  const intelligenceMod = getTotalModifier(statMods, 'intelligence') + buffIntelligenceMod
+  // Apply modifiers to stats (Base + Buffs + Business)
+  const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
+  const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
+  const sanityMod = getTotalModifier(statMods.sanity, 'sanity') + buffSanityMod - businessSanityImpact
+  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence') + buffIntelligenceMod
 
   // 9.5. Business Logic - обработка всех бизнесов за квартал
   const businessResult = processBusinessTurn(

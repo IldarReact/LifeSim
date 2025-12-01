@@ -64,5 +64,18 @@ export interface LifeGoal {
 
 export interface StatModifier {
   source: string;
-  effects: StatEffect;
+  happiness?: number;
+  health?: number;
+  energy?: number;
+  sanity?: number;
+  intelligence?: number;
 }
+
+export interface StatModifiers {
+  happiness: StatModifier[];
+  health: StatModifier[];
+  energy: StatModifier[];
+  sanity: StatModifier[];
+  intelligence: StatModifier[];
+}
+

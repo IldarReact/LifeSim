@@ -12,7 +12,7 @@ export function IntelligenceIndicator() {
 
   const activeUniversity = player.personal.activeUniversity || []
   const statMods = calculateStatModifiers(player)
-  const intelligenceMod = getTotalModifier(statMods, 'intelligence')
+  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence')
 
   return (
     <div className="relative flex flex-col items-center">
@@ -50,13 +50,13 @@ export function IntelligenceIndicator() {
                   <span className="text-white/70 font-medium">{player.personal.stats.intelligence}</span>
                 </div>
 
-                {statMods.map((mod, index) => (
+                {statMods.intelligence.map((mod, index) => (
                   <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                     <span className="text-[#004d00] flex items-center gap-2">
                       <GraduationCap className="w-3.5 h-3.5" />
                       {mod.source}
                     </span>
-                    <span className="text-white/70 font-medium">+{mod.effects.intelligence}</span>
+                    <span className="text-white/70 font-medium">+{mod.intelligence}</span>
                   </div>
                 ))}
               </div>

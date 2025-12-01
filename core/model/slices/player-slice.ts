@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, PlayerSlice } from './types'
 import type { StatEffect } from '@/core/types/stats.types'
-import { applyStats } from '@/core/helpers/applyStats'
+
 import { PlayerState } from '@/core/types'
 
 export const createPlayerSlice: StateCreator<
@@ -64,22 +64,37 @@ export const createPlayerSlice: StateCreator<
     })
   },
 
-  applyStatChanges: (effect: StatEffect) => {
+  applyStatChanges: (changes: Partial<StatEffect> & { cash?: number }) => {
     const player = get().player
     if (!player) return
 
-    const updatedStats = applyStats(player.stats, effect)
-    const updatedPersonalStats = applyStats(player.personal.stats, effect)
+    set((state) => {
+      if (!state.player) return { player: null }
 
-    set((state) => ({
-      player: state.player ? {
-        ...state.player,
-        stats: updatedStats,
-        personal: {
-          ...state.player.personal,
-          stats: updatedPersonalStats
+      const currentStats = state.player.stats
+      const currentPersonalStats = state.player.personal.stats
+
+      return {
+        player: {
+          ...state.player,
+          stats: {
+            ...currentStats,
+            money: currentStats.money + (changes.money || changes.cash || 0),
+            energy: Math.min(100, Math.max(0, currentStats.energy + (changes.energy || 0)))
+          },
+          personal: {
+            ...state.player.personal,
+            stats: {
+              ...currentPersonalStats,
+              happiness: Math.min(100, Math.max(0, currentPersonalStats.happiness + (changes.happiness || 0))),
+              health: Math.min(100, Math.max(0, currentPersonalStats.health + (changes.health || 0))),
+              energy: Math.min(100, Math.max(0, currentPersonalStats.energy + (changes.energy || 0))),
+              sanity: Math.min(100, Math.max(0, currentPersonalStats.sanity + (changes.sanity || 0))),
+              intelligence: Math.min(100, Math.max(0, currentPersonalStats.intelligence + (changes.intelligence || 0)))
+            }
+          }
         }
-      } : null
-    }))
+      }
+    })
   }
 })

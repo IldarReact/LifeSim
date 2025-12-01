@@ -64,7 +64,8 @@ export type {
   Pregnancy,
   FamilyMember,
   LifeGoal,
-  StatModifier
+  StatModifier,
+  StatModifiers
 } from './family.types';
 
 // Notification types

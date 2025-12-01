@@ -49,14 +49,14 @@ export function EnergyIndicator() {
                   <span className="text-white/70 font-medium">+100</span>
                 </div>
 
-                {statMods.map((mod, index) => (
+                {statMods.energy.map((mod, index) => (
                   <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                    <span className={mod.effects.energy && mod.effects.energy > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
-                      {mod.effects.energy && mod.effects.energy > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    <span className={(mod.energy || 0) > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
+                      {(mod.energy || 0) > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                       {mod.source}
                     </span>
                     <span className="text-white/70 font-medium">
-                      {mod.effects.energy && mod.effects.energy > 0 ? "+" : ""}{mod.effects.energy}
+                      {(mod.energy || 0) > 0 ? "+" : ""}{mod.energy}
                     </span>
                   </div>
                 ))}

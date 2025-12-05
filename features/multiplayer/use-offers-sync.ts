@@ -23,12 +23,16 @@ export function useOffersSync() {
             offers: [...state.offers, offer]
           }))
 
-          // Уведомление не нужно, так как OffersList покажет интерактивную карточку
-          // pushNotification({
-          //   title: "Новое предложение!",
-          //   message: `От ${offer.fromPlayerName}`,
-          //   type: "info"
-          // })
+          // Показываем уведомление
+          pushNotification({
+            title: "Новое предложение!",
+            message: `От ${offer.fromPlayerName}`,
+            type: "info",
+            data: {
+              offerId: offer.id,
+              type: 'offer_received'
+            }
+          })
         }
       }
       else if (type === 'OFFER_ACCEPTED') {

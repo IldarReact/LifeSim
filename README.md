@@ -207,9 +207,54 @@ interface Job {
 }
 ```
 
+```
+
 ---
 
-## 8. 🛠️ Технический Стек и Инструменты
+## 8. 🌐 Multiplayer Offers System (Система Предложений)
+
+### Архитектура
+Единая система для обработки взаимодействий между игроками в реальном времени.
+
+### Типы Предложений (`GameOffer`)
+1. **Job Offer**: Предложение работы от игрока-владельца бизнеса другому игроку.
+   - Настраиваемая зарплата и KPI.
+2. **Partnership Offer**: Предложение открыть бизнес совместно.
+   - Разделение долей (10-90%).
+   - Совместные инвестиции.
+3. **Share Sale Offer**: Предложение купить долю в существующем бизнесе (Planned).
+
+### Поток данных (Liveblocks)
+```mermaid
+sequenceDiagram
+    participant P1 as Player 1 (Sender)
+    participant LB as Liveblocks Room
+    participant P2 as Player 2 (Receiver)
+    
+    P1->>LB: broadcastEvent({ type: 'OFFER_SENT', payload: offer })
+    LB->>P2: Event Received
+    P2->>P2: useOffersSync() -> Add to Store
+    P2->>P2: Show Notification & OfferCard
+    
+    alt Accept
+        P2->>LB: broadcastEvent({ type: 'OFFER_ACCEPTED' })
+        P2->>P2: Execute Action (Join Job / Open Business)
+    else Reject
+        P2->>LB: broadcastEvent({ type: 'OFFER_REJECTED' })
+    end
+    
+    LB->>P1: Event Received (Status Update)
+    P1->>P1: Update Offer Status -> Show Notification
+```
+
+### Ключевые компоненты
+- **Store Slice**: `createGameOffersSlice` (управление состоянием офферов)
+- **Sync Hook**: `useOffersSync` (синхронизация через Liveblocks)
+- **UI**: `OfferCard`, `OffersList` (отображение)
+
+---
+
+## 9. 🛠️ Технический Стек и Инструменты
 
 - **Core**: TypeScript, React 18, Next.js 14
 - **State**: Zustand (модульная архитектура slices)
@@ -220,7 +265,7 @@ interface Job {
 
 ---
 
-## 9. 📊 Статистика Проекта
+## 10. 📊 Статистика Проекта
 
 ### Код
 - **TypeScript файлов**: 111+
@@ -242,7 +287,7 @@ interface Job {
 
 ---
 
-## 10. 🚀 Quick Start (Команды)
+## 11. 🚀 Quick Start (Команды)
 
 ```bash
 # 1. Установка всех зависимостей
@@ -263,7 +308,7 @@ pnpm lint
 
 ---
 
-## 11. 📝 Ключевые Принципы Архитектуры
+## 12. 📝 Ключевые Принципы Архитектуры
 
 1. **Разделение ответственности**: UI не содержит бизнес-логику
 2. **Типобезопасность**: Все данные валидируются через Zod

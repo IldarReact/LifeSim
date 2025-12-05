@@ -21,7 +21,7 @@ export function useOffersSync() {
           // Показываем уведомление
           pushNotification({
             title: "Новое предложение!",
-            description: `От ${offer.fromPlayerName}`,
+            message: `От ${offer.fromPlayerName}`,
             type: "info"
           })
         }
@@ -41,7 +41,7 @@ export function useOffersSync() {
         if (offer && offer.fromPlayerId === player?.id) {
           pushNotification({
             title: "Предложение принято!",
-            description: `${offer.toPlayerName} принял ваше предложение`,
+            message: `${offer.toPlayerName} принял ваше предложение`,
             type: "success"
           })
         }
@@ -61,7 +61,7 @@ export function useOffersSync() {
         if (offer && offer.fromPlayerId === player?.id) {
           pushNotification({
             title: "Предложение отклонено",
-            description: `${offer.toPlayerName} отклонил ваше предложение`,
+            message: `${offer.toPlayerName} отклонил ваше предложение`,
             type: "warning"
           })
         }

@@ -7,6 +7,10 @@ export function OffersList() {
   const { getIncomingOffers, acceptOffer, rejectOffer } = useGameStore()
   const offers = getIncomingOffers().filter(o => o.status === 'pending')
 
+  if (offers.length > 0) {
+    console.log('[OffersList] Rendering pending offers:', offers)
+  }
+
   if (offers.length === 0) return null
 
   return (

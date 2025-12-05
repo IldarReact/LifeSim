@@ -4,6 +4,8 @@ import React from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
+import { Slider } from "@/shared/ui/slider"
+import { Input } from "@/shared/ui/input"
 import type { EmployeeCandidate, EmployeeRole } from "@/core/types"
 import { getOnlinePlayers } from "@/core/lib/multiplayer"
 import {
@@ -300,21 +302,31 @@ export function EmployeeHireDialog({
                   <span>Зарплата (квартал)</span>
                   <span className="text-2xl font-bold text-green-400">${customSalary.toLocaleString()}</span>
                 </label>
-                <input
-                  type="range"
-                  min="1000"
-                  max="20000"
-                  step="500"
-                  value={customSalary}
-                  onChange={(e) => setCustomSalary(parseInt(e.target.value))}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-400"
-                />
+
+                <div className="flex gap-4 items-center">
+                  <Slider
+                    value={[customSalary]}
+                    min={1000}
+                    max={1000000}
+                    step={1000}
+                    onValueChange={(val) => setCustomSalary(val[0])}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    value={customSalary}
+                    onChange={(e) => setCustomSalary(Number(e.target.value))}
+                    className="w-24 bg-white/5 border-white/10 text-white h-9"
+                  />
+                </div>
+
                 <div className="flex justify-between text-xs text-white/40">
                   <span>$1,000</span>
-                  <span>$20,000</span>
+                  <span>$1,000,000</span>
                 </div>
-                <p className="text-xs text-white/60">
-                  Месячная зарплата: <span className="text-green-400 font-bold">${(customSalary / 3).toLocaleString()}</span>
+
+                <p className="text-sm text-white/60">
+                  Месячная зарплата: <span className="text-green-400 font-bold">${Math.round(customSalary / 3).toLocaleString()}</span>
                 </p>
               </div>
 
@@ -396,7 +408,7 @@ export function EmployeeHireDialog({
             <CheckCircle className="w-4 h-4 mr-2" />
             {activeTab === 'players' ? 'Отправить оффер' : 'Нанять'} {selectedCandidate && (
               activeTab === 'players'
-                ? `за $${(customSalary / 3).toLocaleString()}/мес`
+                ? `за $${Math.round(customSalary / 3).toLocaleString()}/мес`
                 : `за $${selectedCandidate.requestedSalary.toLocaleString()}/мес`
             )}
           </Button>

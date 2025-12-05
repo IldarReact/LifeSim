@@ -77,7 +77,7 @@ export function getOnlinePlayers(): Player[] {
   const self = roomInstance.getSelf();
 
   const players: Player[] = others.map((other: any) => ({
-    clientId: other.connectionId,
+    clientId: String(other.connectionId),
     name: other.presence.name || "Игрок",
     color: other.presence.color || "#94a3b8",
     isReady: other.presence.isReady || false,
@@ -90,7 +90,7 @@ export function getOnlinePlayers(): Player[] {
 
   if (self) {
     players.unshift({
-      clientId: self.connectionId,
+      clientId: String(self.connectionId),
       name: self.presence.name || "Игрок",
       color: self.presence.color || "#94a3b8",
       isReady: self.presence.isReady || false,

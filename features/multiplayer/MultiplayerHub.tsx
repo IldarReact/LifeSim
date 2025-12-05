@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { subscribeToReadyStatus } from "@/core/lib/multiplayer";
 
 export type Player = {
-  clientId: number;
+  clientId: string;
   name: string;
   color: string;
   isReady: boolean;

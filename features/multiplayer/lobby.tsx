@@ -67,7 +67,7 @@ export function MultiplayerLobby() {
       setPlayers(currentPlayers);
     };
 
-    const interval = setInterval(updatePlayerHost, 1000); // Реже обновляем, чтобы не спамить, но достаточно часто
+    const interval = setInterval(updatePlayerHost, 6000); // Реже обновляем, чтобы не спамить, но достаточно часто
     updatePlayerHost();
 
     const unsubscribeGameStart = subscribeToGameStart(() => {

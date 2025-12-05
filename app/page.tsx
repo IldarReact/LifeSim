@@ -15,8 +15,14 @@ import "@/core/lib/persistence/clear-saves"
 
 import { MainMenu } from "@/features/menu/main-menu"
 
+import { OffersList } from "@/features/notifications/offers-list"
+import { useOffersSync } from "@/features/multiplayer/use-offers-sync"
+
 export default function Page() {
   const { gameStatus } = useGameStore()
+
+  // Sync offers (multiplayer)
+  useOffersSync()
 
   // Main Menu
   if (gameStatus === "menu") {
@@ -53,8 +59,11 @@ export default function Page() {
       </div>
       <EventModal />
 
+      {/* Notifications & Overlays */}
+      <OffersList />
+
       {/* Multiplayer */}
-      {/* <MultiplayerHud /> */}
+      <MultiplayerHud />
     </div>
   )
 }

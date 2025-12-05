@@ -33,8 +33,6 @@ export function MultiplayerHud() {
     // Дополнительно: обновляем список каждую секунду
     const interval = setInterval(() => {
       setPlayers(getOnlinePlayers());
-      // Log connection ID occasionally for debugging
-      console.log('[MultiplayerHud] My Connection ID:', getMyConnectionId());
     }, 1000);
 
     return () => {

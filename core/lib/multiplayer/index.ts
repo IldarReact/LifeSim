@@ -220,7 +220,8 @@ export function broadcastEvent(event: any) {
 
 export function subscribeToEvents(callback: (event: any) => void) {
   if (!roomInstance) return () => { };
-  return roomInstance.subscribe("event", callback);
+  // FIX: Unwrap the event object from Liveblocks
+  return roomInstance.subscribe("event", ({ event }: { event: any }) => callback(event));
 }
 
 export const getSharedState = () => ({

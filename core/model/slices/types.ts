@@ -83,6 +83,9 @@ export interface JobSlice {
   ) => void
   acceptJobOffer: (applicationId: string) => void
   quitJob: (jobId: string) => void
+
+  // ✅ Multiplayer Job Actions
+  acceptExternalJob: (jobTitle: string, company: string, salary: number, businessId: string) => void
 }
 
 export interface FreelanceSlice {
@@ -161,6 +164,11 @@ export interface BusinessSlice {
   // ✅ Player Employment in Business
   joinBusinessAsEmployee: (businessId: string, role: import('@/core/types').EmployeeRole, salary: number) => void
   leaveBusinessJob: (businessId: string) => void
+
+  // ✅ Multiplayer Business Actions
+  addPartnerToBusiness: (businessId: string, partnerId: string, partnerName: string, share: number, investment: number) => void
+  addSharedBusiness: (business: import('@/core/types').Business) => void
+  addEmployeeToBusiness: (businessId: string, employeeName: string, role: import('@/core/types').EmployeeRole, salary: number, playerId?: string) => void
 }
 
 export interface NotificationSlice {

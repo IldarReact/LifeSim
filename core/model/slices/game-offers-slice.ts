@@ -50,20 +50,38 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     if (offer.status !== 'pending') return
 
     // Логика принятия в зависимости от типа
+    // Логика принятия в зависимости от типа
     if (isJobOffer(offer)) {
       // 1. Устроиться на работу
-      state.joinBusinessAsEmployee(
-        offer.details.businessId,
+      state.acceptExternalJob(
         offer.details.role,
-        offer.details.salary
+        offer.details.businessName,
+        offer.details.salary,
+        offer.details.businessId
       )
     }
     else if (isPartnershipOffer(offer)) {
       // 2. Открыть бизнес с партнером
+      if (state.player!.stats.money < offer.details.yourInvestment) {
+        console.warn("Not enough money to accept partnership")
+        return
+      }
+
+      // Списываем инвестиции
+      state.applyStatChanges({ money: -offer.details.yourInvestment })
+
       console.log('[GameOffers] Accepting partnership:', offer.details)
     }
     else if (isShareSaleOffer(offer)) {
       // 3. Купить долю
+      if (state.player!.stats.money < offer.details.price) {
+        console.warn("Not enough money to buy share")
+        return
+      }
+
+      // Списываем стоимость доли
+      state.applyStatChanges({ money: -offer.details.price })
+
       console.log('[GameOffers] Accepting share sale:', offer.details)
     }
 

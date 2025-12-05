@@ -117,5 +117,41 @@ export const createJobSlice: StateCreator<
         }
       }
     })
+  },
+
+  acceptExternalJob: (jobTitle: string, company: string, salary: number, businessId: string) => {
+    const state = get()
+    if (!state.player) return
+
+    // Зарплата в оффере указана за квартал, а в Job хранится за месяц
+    const monthlySalary = Math.round(salary / 3)
+
+    const newJob: import('@/core/types').Job = {
+      id: `job_ext_${Date.now()}`,
+      title: jobTitle,
+      company: company,
+      salary: monthlySalary,
+      cost: { energy: -20 },
+      satisfaction: 70,
+      imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
+      description: `Работа в ${company} (онлайн)`,
+      requirements: []
+    }
+
+    set(state => ({
+      player: state.player ? {
+        ...state.player,
+        jobs: [...state.player.jobs, newJob],
+        quarterlySalary: state.player.quarterlySalary + salary
+      } : null,
+      notifications: [{
+        id: `notif_${Date.now()}`,
+        type: 'success',
+        title: 'Вы приняты на работу!',
+        message: `Вы устроились на должность ${jobTitle} в ${company}.`,
+        date: `${state.year} Q${(state.turn % 4) || 4}`,
+        isRead: false
+      }, ...state.notifications]
+    }))
   }
 })

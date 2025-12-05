@@ -799,5 +799,144 @@ export const createBusinessSlice: StateCreator<
     })
 
     console.log(`[Business] Игрок уволился из ${business.name}`)
+  },
+
+  // ✅ Multiplayer Actions implementation
+
+  addPartnerToBusiness: (businessId, partnerId, partnerName, share, investment) => {
+    const state = get()
+    if (!state.player) return
+
+    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    if (i === -1) return
+
+    const business = state.player.businesses[i]
+
+    // Уменьшаем долю текущего владельца
+    const ownerPartner = business.partners.find(p => p.type === 'player' && p.id === state.player!.id)
+
+    let updatedPartners = [...business.partners]
+
+    // Если владельца нет в списке партнеров (старый бизнес), добавляем его
+    if (!ownerPartner) {
+      updatedPartners.push({
+        id: state.player.id,
+        name: state.player.name,
+        type: 'player',
+        share: 100,
+        investedAmount: business.initialCost,
+        relation: 100
+      })
+    }
+
+    // Обновляем доли
+    updatedPartners = updatedPartners.map(p => {
+      if (p.id === state.player!.id) {
+        return { ...p, share: Math.max(0, p.share - share) }
+      }
+      return p
+    })
+
+    // Добавляем нового партнера
+    updatedPartners.push({
+      id: partnerId,
+      name: partnerName,
+      type: 'player',
+      share: share,
+      investedAmount: investment,
+      relation: 50
+    })
+
+    const updatedBusiness = {
+      ...business,
+      partners: updatedPartners
+    }
+
+    const updatedBusinesses = [...state.player.businesses]
+    updatedBusinesses[i] = updatedBusiness
+
+    // Добавляем деньги от инвестиции владельцу
+    const updatedStats = applyStats(state.player.stats, {
+      money: investment
+    })
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
+        businesses: updatedBusinesses
+      }
+    })
+  },
+
+  addSharedBusiness: (business) => {
+    const state = get()
+    if (!state.player) return
+
+    // Проверяем, нет ли уже такого
+    if (state.player.businesses.some(b => b.id === business.id)) {
+      // Если есть, обновляем
+      const updatedBusinesses = state.player.businesses.map(b =>
+        b.id === business.id ? business : b
+      )
+      set({
+        player: {
+          ...state.player,
+          businesses: updatedBusinesses
+        }
+      })
+      return
+    }
+
+    set({
+      player: {
+        ...state.player,
+        businesses: [...state.player.businesses, business]
+      }
+    })
+  },
+
+  addEmployeeToBusiness: (businessId, employeeName, role, salary, playerId) => {
+    const state = get()
+    if (!state.player) return
+
+    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    if (i === -1) return
+
+    const business = state.player.businesses[i]
+
+    const newEmployee: import('@/core/types').Employee = {
+      id: playerId ? `player_${playerId}` : `emp_${Date.now()}`,
+      name: employeeName,
+      role: role,
+      stars: 3,
+      skills: {
+        efficiency: 50,
+        salesAbility: 50,
+        technical: 50,
+        management: 50,
+        creativity: 50
+      },
+      salary: salary,
+      satisfaction: 100,
+      productivity: 100,
+      experience: 0,
+      humanTraits: []
+    }
+
+    const updatedBusiness = {
+      ...business,
+      employees: [...business.employees, newEmployee]
+    }
+
+    const updatedBusinesses = [...state.player.businesses]
+    updatedBusinesses[i] = updatedBusiness
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses
+      }
+    })
   }
 })

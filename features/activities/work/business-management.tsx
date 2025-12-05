@@ -17,6 +17,8 @@ interface BusinessManagementProps {
   onChangePrice: (businessId: string, newPrice: number) => void
   onSetQuantity: (businessId: string, newQuantity: number) => void
   onOpenBranch: (sourceBusinessId: string) => void
+  onJoinAsEmployee: (businessId: string, role: import('@/core/types').EmployeeRole, salary: number) => void
+  onLeaveJob: (businessId: string) => void
 }
 
 const BUSINESS_IMAGES: Record<string, string> = {
@@ -34,7 +36,9 @@ export function BusinessManagement({
   onFireEmployee,
   onChangePrice,
   onSetQuantity,
-  onOpenBranch
+  onOpenBranch,
+  onJoinAsEmployee,
+  onLeaveJob
 }: BusinessManagementProps) {
   const { income, expenses, profit } = calculateBusinessFinancials(business, true)
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
@@ -118,6 +122,8 @@ export function BusinessManagement({
                 onChangePrice={onChangePrice}
                 onSetQuantity={onSetQuantity}
                 onOpenBranch={onOpenBranch}
+                onJoinAsEmployee={onJoinAsEmployee}
+                onLeaveJob={onLeaveJob}
                 trigger={
                   <Button className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10">
                     <Users className="w-4 h-4 mr-2" />

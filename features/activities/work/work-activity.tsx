@@ -25,7 +25,9 @@ export function WorkActivity(): React.JSX.Element | null {
     fireEmployee,
     changePrice,
     setQuantity,
-    openBranch
+    openBranch,
+    joinBusinessAsEmployee,
+    leaveBusinessJob
   } = useGameStore()
 
   const [feedback, setFeedback] = React.useState<{
@@ -137,6 +139,8 @@ export function WorkActivity(): React.JSX.Element | null {
                   onChangePrice={changePrice}
                   onSetQuantity={setQuantity}
                   onOpenBranch={openBranch}
+                  onJoinAsEmployee={joinBusinessAsEmployee}
+                  onLeaveJob={leaveBusinessJob}
                 />
               ))}
             </div>

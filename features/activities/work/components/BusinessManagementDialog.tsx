@@ -25,6 +25,8 @@ interface BusinessManagementDialogProps {
   onChangePrice: (businessId: string, newPrice: number) => void
   onSetQuantity: (businessId: string, newQuantity: number) => void
   onOpenBranch: (sourceBusinessId: string) => void
+  onJoinAsEmployee: (businessId: string, role: EmployeeRole, salary: number) => void
+  onLeaveJob: (businessId: string) => void
   trigger?: React.ReactNode
 }
 
@@ -54,11 +56,21 @@ export function BusinessManagementDialog({
   onChangePrice,
   onSetQuantity,
   onOpenBranch,
+  onJoinAsEmployee,
+  onLeaveJob,
   trigger
 }: BusinessManagementDialogProps) {
   const [hireDialogOpen, setHireDialogOpen] = React.useState(false)
   const [selectedRole, setSelectedRole] = React.useState<EmployeeRole | null>(null)
   const [candidates, setCandidates] = React.useState<EmployeeCandidate[]>([])
+
+  // ✅ Доступные позиции для игрока (временно хардкод, потом из данных)
+  const availablePositions = [
+    { role: 'manager' as EmployeeRole, salary: 8000, description: 'Управление бизнесом' },
+    { role: 'salesperson' as EmployeeRole, salary: 5500, description: 'Продажи и работа с клиентами' },
+    { role: 'worker' as EmployeeRole, salary: 4000, description: 'Работа в бизнесе' },
+    { role: 'accountant' as EmployeeRole, salary: 7000, description: 'Бухгалтерия и финансы' }
+  ]
 
   // Локальное состояние для слайдеров
   const [price, setPrice] = React.useState(business.price || 5)
@@ -439,6 +451,79 @@ export function BusinessManagementDialog({
               )}
             </div>
           )}
+
+          {/* ✅ НОВОЕ: Работа игрока в бизнесе */}
+          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-purple-400" />
+              Работа в своем бизнесе
+            </h3>
+
+            {business.playerEmployment ? (
+              <div className="space-y-4">
+                <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-sm text-white/60">Текущая позиция</p>
+                      <p className="text-xl font-bold text-white">{ROLE_LABELS[business.playerEmployment.role]}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-white/60">Зарплата</p>
+                      <p className="text-xl font-bold text-green-400">${business.playerEmployment.salary.toLocaleString()}/кв</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => onLeaveJob(business.id)}
+                    variant="outline"
+                    className="w-full border-red-500/20 hover:bg-red-500/20 text-red-300"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Уволиться
+                  </Button>
+                </div>
+                <p className="text-xs text-white/40 text-center">
+                  Работаете с квартала {business.playerEmployment.startedTurn}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-white/70">
+                  Вы можете устроиться на работу в свой бизнес и получать зарплату каждый квартал.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {availablePositions.map((position) => (
+                    <div
+                      key={position.role}
+                      className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-purple-500/30 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-lg bg-purple-500/20">
+                            {ROLE_ICONS[position.role]}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-white">{ROLE_LABELS[position.role]}</p>
+                            <p className="text-xs text-white/50">{position.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                        <p className="text-sm text-green-400 font-bold">${position.salary.toLocaleString()}/кв</p>
+                        <Button
+                          size="sm"
+                          onClick={() => onJoinAsEmployee(business.id, position.role, position.salary)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          <UserPlus className="w-3 h-3 mr-1" />
+                          Устроиться
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Employees Section */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">

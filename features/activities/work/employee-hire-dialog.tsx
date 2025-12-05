@@ -64,6 +64,10 @@ export function EmployeeHireDialog({
   const [activeTab, setActiveTab] = React.useState<'npc' | 'players'>('npc')
   const [onlinePlayers, setOnlinePlayers] = React.useState<any[]>([])
 
+  // ✅ НОВОЕ: Ручной ввод зарплаты и KPI для онлайн-игроков
+  const [customSalary, setCustomSalary] = React.useState<number>(5000)
+  const [customKPI, setCustomKPI] = React.useState<number>(0) // KPI бонус в процентах
+
   React.useEffect(() => {
     if (isOpen) {
       if (activeTab === 'players') {
@@ -93,7 +97,7 @@ export function EmployeeHireDialog({
       role: candidates[0]?.role || 'worker',
       stars: 3,
       experience: 24,
-      requestedSalary: 5000, // Players are expensive!
+      requestedSalary: customSalary, // ✅ Используем кастомную зарплату
       skills: {
         efficiency: 80,
         salesAbility: 70,
@@ -274,6 +278,76 @@ export function EmployeeHireDialog({
             )
           })}
         </div>
+
+        {/* ✅ НОВОЕ: Настройки для онлайн-игроков */}
+        {activeTab === 'players' && selectedCandidate && (
+          <div className="mt-6 p-6 bg-purple-500/10 border border-purple-500/20 rounded-2xl">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-purple-400" />
+              Условия найма
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Зарплата */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-white/80 flex items-center justify-between">
+                  <span>Зарплата (квартал)</span>
+                  <span className="text-2xl font-bold text-green-400">${customSalary.toLocaleString()}</span>
+                </label>
+                <input
+                  type="range"
+                  min="1000"
+                  max="20000"
+                  step="500"
+                  value={customSalary}
+                  onChange={(e) => setCustomSalary(parseInt(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-green-400"
+                />
+                <div className="flex justify-between text-xs text-white/40">
+                  <span>$1,000</span>
+                  <span>$20,000</span>
+                </div>
+                <p className="text-xs text-white/60">
+                  Месячная зарплата: <span className="text-green-400 font-bold">${(customSalary / 3).toLocaleString()}</span>
+                </p>
+              </div>
+
+              {/* KPI Бонус */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-white/80 flex items-center justify-between">
+                  <span>KPI Бонус</span>
+                  <span className="text-2xl font-bold text-amber-400">{customKPI}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="5"
+                  value={customKPI}
+                  onChange={(e) => setCustomKPI(parseInt(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                />
+                <div className="flex justify-between text-xs text-white/40">
+                  <span>0%</span>
+                  <span>50%</span>
+                </div>
+                <p className="text-xs text-white/60">
+                  Бонус при высокой продуктивности (≥80%): <span className="text-amber-400 font-bold">+${Math.round(customSalary * (customKPI / 100)).toLocaleString()}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Итоговая стоимость */}
+            <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white/70">Максимальная стоимость (с KPI):</span>
+                <span className="text-xl font-bold text-white">
+                  ${(customSalary + Math.round(customSalary * (customKPI / 100))).toLocaleString()}/квартал
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">

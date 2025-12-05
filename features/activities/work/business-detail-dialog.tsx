@@ -6,9 +6,10 @@ import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import {
   Store, Users, TrendingUp, DollarSign, Zap, Brain,
-  CheckCircle, AlertCircle, Info, Star
+  CheckCircle, AlertCircle, Info, Star, Globe
 } from "lucide-react"
 import type { BusinessType } from "@/core/types"
+import { PartnerSelectionDialog } from "./partner-selection-dialog"
 
 interface BusinessRequirement {
   role: string
@@ -30,6 +31,7 @@ interface BusinessDetailDialogProps {
   requirements: BusinessRequirement[]
   onBuy: () => void
   trigger?: React.ReactNode
+  onOpenWithPartner?: (partnerId: string, partnerName: string, playerShare: number) => void
 }
 
 export function BusinessDetailDialog({
@@ -44,8 +46,11 @@ export function BusinessDetailDialog({
   image,
   requirements,
   onBuy,
-  trigger
+  trigger,
+  onOpenWithPartner
 }: BusinessDetailDialogProps) {
+  const [partnerDialogOpen, setPartnerDialogOpen] = React.useState(false)
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -167,16 +172,40 @@ export function BusinessDetailDialog({
             </div>
           </div>
 
-          {/* Action Button */}
-          <Button
-            onClick={onBuy}
-            className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg"
-          >
-            <Store className="w-5 h-5 mr-2" />
-            Открыть бизнес за ${cost.toLocaleString()}
-          </Button>
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button
+              onClick={onBuy}
+              className="h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg"
+            >
+              <Store className="w-5 h-5 mr-2" />
+              Открыть за ${cost.toLocaleString()}
+            </Button>
+
+            {onOpenWithPartner && (
+              <Button
+                onClick={() => setPartnerDialogOpen(true)}
+                variant="outline"
+                className="h-14 border-purple-500/30 hover:bg-purple-500/10 text-white font-bold text-lg"
+              >
+                <Globe className="w-5 h-5 mr-2" />
+                Открыть с партнером
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
+
+      {/* Partner Selection Dialog */}
+      {onOpenWithPartner && (
+        <PartnerSelectionDialog
+          isOpen={partnerDialogOpen}
+          onClose={() => setPartnerDialogOpen(false)}
+          businessName={title}
+          businessCost={cost}
+          onSelectPartner={onOpenWithPartner}
+        />
+      )}
     </Dialog>
   )
 }

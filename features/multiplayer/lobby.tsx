@@ -105,7 +105,7 @@ export function MultiplayerLobby() {
   };
 
   const handleStartGame = () => {
-    if (!isHost()) return;
+    // if (!isHost()) return;
 
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
@@ -238,10 +238,7 @@ export function MultiplayerLobby() {
               {/* {isHost() && ( */}
                 <Button
                   onClick={handleStartGame}
-                  className={`w-full h-14 text-lg font-bold shadow-lg transition-all ${canStart
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse"
-                    : "bg-slate-800 text-slate-500"
-                    }`}
+                  className={`w-full h-14 text-lg font-bold shadow-lg transition-all bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse`}
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Начать игру

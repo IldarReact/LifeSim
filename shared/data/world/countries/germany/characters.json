@@ -1,0 +1,118 @@
+[
+  {
+    "id": "ge_investor",
+    "archetype": "investor",
+    "name": "Frankfurt Banker",
+    "description": "Вы работаете в банковском секторе Франкфурта. Стабильная европейская экономика и высокие налоги.",
+    "startingMoney": 45000,
+    "startingSalary": 5400,
+    "startingStats": {
+      "intelligence": 70,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "finance",
+        "name": "Финансовый анализ",
+        "level": 3
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "ge_specialist",
+    "archetype": "specialist",
+    "name": "German Engineer",
+    "description": "Вы инженер в немецкой компании. Отличная социальная защита и баланс работы и жизни.",
+    "startingMoney": 9000,
+    "startingSalary": 10800,
+    "startingStats": {
+      "intelligence": 80,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "engineering",
+        "name": "Инженерия",
+        "level": 4
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "ge_entrepreneur",
+    "archetype": "entrepreneur",
+    "name": "Berlin Startup Owner",
+    "description": "Вы владелец стартапа в Берлине. Растущая экосистема стартапов с европейской стабильностью.",
+    "startingMoney": 4500,
+    "startingSalary": 2700,
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "business",
+        "name": "Бизнес-управление",
+        "level": 2
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "ge_worker",
+    "archetype": "worker",
+    "name": "Factory Worker",
+    "description": "Вы работаете на производстве. Сильные профсоюзы и хорошие условия труда.",
+    "startingMoney": 1800,
+    "startingSalary": 6750,
+    "startingStats": {
+      "intelligence": 50,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "ge_indebted",
+    "archetype": "indebted",
+    "name": "University Graduate",
+    "description": "Вы закончили университет. В Германии образование дешевле, но все равно есть долги.",
+    "startingMoney": 900,
+    "startingSalary": 5400,
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "startingDebts": [
+      {
+        "id": "student_loan",
+        "name": "Bildungskredit",
+        "type": "student_loan",
+        "principalAmount": 10000,
+        "remainingAmount": 10000,
+        "interestRate": 3,
+        "quarterlyPayment": 300,
+        "termQuarters": 40,
+        "remainingQuarters": 40
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&h=600&fit=crop"
+  }
+]

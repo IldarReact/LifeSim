@@ -39,6 +39,7 @@ export interface CountryEconomy {
   corporateTaxRate: number; // Налог на прибыль бизнеса (%)
   salaryModifier: number; // Модификатор зарплат
   costOfLivingModifier: number; // Модификатор стоимости жизни
+  imageUrl?: string; // URL изображения страны
   activeEvents: EconomicEvent[]; // Активные экономические события
 }
 

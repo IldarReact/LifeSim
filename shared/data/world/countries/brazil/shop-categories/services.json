@@ -1,0 +1,43 @@
+[
+  {
+    "id": "service_streaming",
+    "name": "📺 Netflix + Spotify",
+    "description": "Entretenimento em casa",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 120,
+    "effects": {
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "service_cleaning",
+    "name": "🧹 Limpeza 2x/mês",
+    "description": "Ajuda profissional",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 500,
+    "effects": {
+      "sanity": 12,
+      "energy": 15,
+      "happiness": 8
+    }
+  },
+  {
+    "id": "service_massage",
+    "name": "💆 Massagem Mensal",
+    "description": "Relaxamento",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 200,
+    "effects": {
+      "sanity": 15,
+      "health": 8,
+      "happiness": 6
+    }
+  }
+]

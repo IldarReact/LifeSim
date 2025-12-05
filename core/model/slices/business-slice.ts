@@ -121,7 +121,7 @@ export const createBusinessSlice: StateCreator<
       money: -upfrontCost,
     })
 
-    const updatedPersonalStats = applyStats(
+    const updatedStatEffect = applyStats(
       { ...state.player.personal.stats, money: 0 },
       creationCost
     )
@@ -196,7 +196,7 @@ export const createBusinessSlice: StateCreator<
 
         personal: {
           ...state.player.personal,
-          stats: updatedPersonalStats
+          stats: updatedStatEffect
         },
 
         businesses: finalBusinesses
@@ -233,6 +233,7 @@ export const createBusinessSlice: StateCreator<
       satisfaction: 80,
       productivity: 75,
       experience: candidate.experience,
+      humanTraits: candidate.humanTraits
     }
 
     const employees = [...business.employees, newEmployee]
@@ -698,5 +699,105 @@ export const createBusinessSlice: StateCreator<
         businesses: updatedBusinesses
       }
     })
+  },
+
+  // ✅ Игрок устраивается работать в свой бизнес
+  joinBusinessAsEmployee: (businessId, role, salary) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) {
+      console.warn(`[Business] Бизнес ${businessId} не найден`)
+      return
+    }
+
+    // Проверяем, не работает ли игрок уже в этом бизнесе
+    if (business.playerEmployment) {
+      console.warn(`[Business] Игрок уже работает в бизнесе ${business.name}`)
+      return
+    }
+
+    // Создаем Job для игрока
+    const newJob: import('@/core/types').Job = {
+      id: `job_business_${businessId}`,
+      title: `${role} в ${business.name}`,
+      company: business.name,
+      salary: salary / 3, // Конвертируем квартальную зарплату в месячную
+      cost: {
+        energy: -20 // Стандартная стоимость энергии за работу
+      },
+      satisfaction: 70, // Базовая удовлетворенность
+      imageUrl: business.imageUrl || '',
+      description: `Работа в собственном бизнесе на позиции ${role}`
+    }
+
+    // Обновляем бизнес
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? {
+          ...b,
+          playerEmployment: {
+            role,
+            salary,
+            startedTurn: state.turn
+          }
+        }
+        : b
+    )
+
+    // Добавляем работу в список работ игрока
+    const updatedJobs = [...state.player.jobs, newJob]
+
+    set({
+      player: {
+        ...state.player,
+        jobs: updatedJobs,
+        businesses: updatedBusinesses
+      }
+    })
+
+    console.log(`[Business] Игрок устроился на работу в ${business.name} как ${role} с зарплатой $${salary}/квартал`)
+  },
+
+  // ✅ Игрок увольняется из своего бизнеса
+  leaveBusinessJob: (businessId) => {
+    const state = get()
+    if (!state.player) return
+
+    const business = state.player.businesses.find(b => b.id === businessId)
+    if (!business) {
+      console.warn(`[Business] Бизнес ${businessId} не найден`)
+      return
+    }
+
+    if (!business.playerEmployment) {
+      console.warn(`[Business] Игрок не работает в бизнесе ${business.name}`)
+      return
+    }
+
+    // Удаляем работу из списка работ игрока
+    const jobId = `job_business_${businessId}`
+    const updatedJobs = state.player.jobs.filter(j => j.id !== jobId)
+
+    // Обновляем бизнес
+    const updatedBusinesses = state.player.businesses.map(b =>
+      b.id === businessId
+        ? {
+          ...b,
+          playerEmployment: undefined
+        }
+        : b
+    )
+
+    set({
+      player: {
+        ...state.player,
+        jobs: updatedJobs,
+        businesses: updatedBusinesses
+      }
+    })
+
+    console.log(`[Business] Игрок уволился из ${business.name}`)
   }
 })

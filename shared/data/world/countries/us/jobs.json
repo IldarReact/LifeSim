@@ -1,0 +1,188 @@
+[
+  {
+    "id": "job_investor_start",
+    "title": "Инвестор",
+    "company": "Инвестиционный фонд",
+    "salary": 6000,
+    "cost": {
+      "happiness": -3,
+      "energy": -20
+    },
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Финансовый анализ",
+          "level": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_specialist_start",
+    "title": "IT-специалист",
+    "company": "IT-компания",
+    "salary": 25000,
+    "cost": {
+      "energy": -30
+    },
+    "satisfaction": 82,
+    "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Программирование",
+          "level": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_entrepreneur_start",
+    "title": "Предприниматель",
+    "company": "Собственный бизнес",
+    "salary": 50000,
+    "cost": {
+      "energy": -40
+    },
+    "satisfaction": 90,
+    "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Управление",
+          "level": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_worker_start",
+    "title": "Рабочий",
+    "company": "Производство",
+    "salary": 15000,
+    "cost": {
+      "happiness": -2,
+      "energy": -35
+    },
+    "satisfaction": 60,
+    "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop",
+    "requirements": {
+      "skills": []
+    }
+  },
+  {
+    "id": "job_indebted_start",
+    "title": "Офисный работник",
+    "company": "Корпорация",
+    "salary": 18000,
+    "cost": {
+      "energy": -25
+    },
+    "satisfaction": 48,
+    "imageUrl": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&h=600&fit=crop",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Офисные программы",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_junior_dev",
+    "title": "Junior Front-End Developer",
+    "company": "Local Tech Startup",
+    "salary": 19500,
+    "cost": {
+      "energy": -60
+    },
+    "satisfaction": 68,
+    "imageUrl": "/images/jobs/junior_frontend.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Frontend",
+          "level": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_python_dev",
+    "title": "Python Developer",
+    "company": "Mid-size FinTech / Logistics",
+    "salary": 28500,
+    "cost": {
+      "energy": -60
+    },
+    "satisfaction": 78,
+    "imageUrl": "/images/jobs/python_dev.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Python",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_data_analyst",
+    "title": "Data Analyst",
+    "company": "Healthcare / Retail chain",
+    "salary": 33000,
+    "cost": {
+      "energy": -75
+    },
+    "satisfaction": 80,
+    "imageUrl": "/images/jobs/data_analyst.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Аналитика данных",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_marketing",
+    "title": "Digital Marketing Specialist",
+    "company": "Local Agency",
+    "salary": 22500,
+    "cost": {
+      "energy": -45
+    },
+    "satisfaction": 72,
+    "imageUrl": "/images/jobs/marketing.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Маркетинг",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_senior_dev",
+    "title": "Senior Full-Stack Engineer",
+    "company": "Remote или крупная местная компания",
+    "salary": 48000,
+    "cost": {
+      "energy": -90
+    },
+    "satisfaction": 88,
+    "imageUrl": "/images/jobs/senior_fullstack.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Full-Stack",
+          "level": 3
+        }
+      ]
+    }
+  }
+]

@@ -9,11 +9,11 @@ import { ArrowLeft } from "lucide-react"
 import { FamilyActivity } from "../activities/family-activity"
 import { WorkActivity } from "../activities/work/work-activity"
 import { InvestmentsActivity } from "../activities/investments-activity"
-import { BanksActivity } from "../activities/banks-activity"
+import { BanksActivity } from "../activities/bank/BanksActivity"
 import { RelocationActivity } from "../activities/relocation-activity"
 import { RestActivity } from "../activities/rest-activity"
 import { EducationActivity } from "../activities/education-activity"
-import { ShopSection } from "../activities/shop/shop-section"
+import { ShopActivity } from "../activities/shop/shop-activity"
 
 const ACTIVITIES = [
   {
@@ -22,7 +22,7 @@ const ACTIVITIES = [
     description: "Покупай товары и услуги",
     icon: "🛒",
     details: "Еда, здоровье, развлечения, транспорт",
-    component: ShopSection
+    component: ShopActivity
   },
   {
     id: "family",

@@ -15,7 +15,13 @@ export function createEmptyIncomeBreakdown(): IncomeBreakdown {
 export function createEmptyExpensesBreakdown(): ExpensesBreakdown {
   return {
     living: 0,
-    family: 0,
+    food: 0,
+    housing: 0,
+    transport: 0,
+    credits: 0,
+    mortgage: 0,
+    other: 0,
+    family: 0, // Deprecated
     business: 0,
     debtInterest: 0,
     assetMaintenance: 0,

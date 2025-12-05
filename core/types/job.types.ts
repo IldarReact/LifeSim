@@ -2,15 +2,10 @@
 import { StatEffect } from "./stats.types";
 import { SkillRequirement } from "./skill.types";
 
-export type CharacterArchetype = "investor" | "specialist" | "entrepreneur" | "worker" | "indebted";
-
-export interface JobInfo {
-  archetype: CharacterArchetype;
-  title: string;
-  description: string;
-  satisfaction: number;
-  cost: StatEffect;
-  imageUrl: string;
+export interface JobRequirements {
+  education?: string;
+  skills?: { name: string; level: number }[];
+  experience?: number;
 }
 
 export interface Job {
@@ -22,7 +17,7 @@ export interface Job {
   satisfaction: number;
   imageUrl: string;
   description: string;
-  requirements?: SkillRequirement[]; // Skills used in this job
+  requirements?: JobRequirements;
 }
 
 export interface JobApplication {

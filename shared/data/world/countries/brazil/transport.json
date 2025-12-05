@@ -1,0 +1,50 @@
+[
+  {
+    "id": "transport_public",
+    "name": "🚌 Ônibus/Metrô Mensal",
+    "description": "Bilhete mensal ~200R$",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 600,
+    "effects": {
+      "happiness": -6,
+      "energy": -9
+    }
+  },
+  {
+    "id": "transport_used_car",
+    "name": "🚗 Carro Usado (Fiat Uno)",
+    "description": "Compra + seguro + gasolina",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 1200,
+    "effects": {
+      "happiness": 12,
+      "energy": 3
+    }
+  },
+  {
+    "id": "transport_new_car",
+    "name": "🚙 Carro Novo em Crédito",
+    "description": "Hyundai HB20",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 2400,
+    "effects": {
+      "happiness": 20,
+      "sanity": 8
+    }
+  },
+  {
+    "id": "transport_uber",
+    "name": "🚖 Uber Diário",
+    "description": "Para trabalho e lazer",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 1200,
+    "effects": {
+      "happiness": 6,
+      "energy": 6
+    }
+  }
+]

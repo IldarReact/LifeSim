@@ -1,0 +1,47 @@
+{
+  "us": {
+    "id": "us",
+    "name": "United States",
+    "archetype": "rich_stable",
+    "gdpGrowth": 3,
+    "inflation": 2.5,
+    "keyRate": 3,
+    "interestRate": 3,
+    "unemployment": 4,
+    "taxRate": 30,
+    "corporateTaxRate": 21,
+    "salaryModifier": 1,
+    "costOfLivingModifier": 1,
+    "activeEvents": []
+  },
+  "ge": {
+    "id": "ge",
+    "name": "Germany",
+    "archetype": "rich_stable",
+    "gdpGrowth": 1.5,
+    "inflation": 2,
+    "keyRate": 2.5,
+    "interestRate": 2.5,
+    "unemployment": 3.5,
+    "taxRate": 40,
+    "corporateTaxRate": 30,
+    "salaryModifier": 0.9,
+    "costOfLivingModifier": 0.9,
+    "activeEvents": []
+  },
+  "br": {
+    "id": "br",
+    "name": "Brazil",
+    "archetype": "rich_resource",
+    "gdpGrowth": 10,
+    "inflation": 6,
+    "keyRate": 12,
+    "interestRate": 12,
+    "unemployment": 3,
+    "taxRate": 13,
+    "corporateTaxRate": 15,
+    "salaryModifier": 0.4,
+    "costOfLivingModifier": 0.5,
+    "activeEvents": []
+  }
+}

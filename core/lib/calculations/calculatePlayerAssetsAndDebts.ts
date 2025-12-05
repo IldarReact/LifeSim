@@ -30,7 +30,7 @@ export function calculatePlayerAssetsAndDebts({
       const volatility = 0.1 // 10%
       const marketMove = (Math.random() - 0.5) * 2 * volatility
       valueChange = asset.value * (marketMove + (countryEconomy.gdpGrowth / 100))
-    } else if (asset.type === 'real_estate') {
+    } else if (asset.type === 'housing') {
       // Real estate follows inflation + small growth
       const growth = (countryEconomy.inflation / 100) + 0.01
       valueChange = asset.value * growth

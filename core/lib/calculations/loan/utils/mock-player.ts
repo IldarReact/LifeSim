@@ -17,9 +17,10 @@ export const createMockPlayer = (
   return {
     id: 'test',
     name: 'Test Player',
-    archetype: 'worker',
-    countryId: 'russia',
+    countryId: 'us',
     age: 25,
+    creditScore: { value: 650 },
+    traits: [],
 
     // ✅ Новая система статов
     stats: { ...baseStats },
@@ -63,6 +64,7 @@ export const createMockPlayer = (
     businesses: [],
     businessIdeas: [],
     activeLifestyle: {},
+    housingId: 'housing_room',
 
     ...overrides,
   }

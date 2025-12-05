@@ -7,7 +7,7 @@ import type { Business, EmployeeCandidate } from "@/core/types"
 import { TrendingUp, TrendingDown, Zap, Brain, Users, Info } from "lucide-react"
 import { calculateBusinessFinancials } from "@/core/lib/business-utils"
 
-import { BusinessManagementDialog } from "./business-management-dialog"
+import { BusinessManagementDialog } from "./components/BusinessManagementDialog"
 
 interface BusinessManagementProps {
   business: Business
@@ -44,7 +44,7 @@ export function BusinessManagement({
       <InfoCard
         title={business.name}
         subtitle={business.type}
-        value={`+$${profit.toLocaleString()}/кв`}
+        value={`${profit >= 0 ? '+' : ''}$${profit.toLocaleString()}/кв`}
         imageUrl={image}
         details={[
           {

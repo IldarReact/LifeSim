@@ -6,6 +6,7 @@ import { StatEffect } from "@/core/types/stats.types";
  */
 export function calculateStatModifiers(player: PlayerState): StatModifiers {
   const modifiers: StatModifiers = {
+    money: [],
     happiness: [],
     health: [],
     energy: [],
@@ -33,15 +34,12 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
   player.jobs?.forEach(job => {
     // Стоимость работы (обычно отрицательная энергия/здоровье)
     if (job.cost) {
-      // Инвертируем cost для отображения как расхода (если там положительные числа)
-      // Но обычно в cost пишут сколько тратится. Проверим логику:
-      // Если cost = { energy: 10 }, то это расход. Значит эффект = -10.
-      // Если cost уже содержит отрицательные значения, то просто берем их.
-      // Предположим, что cost хранит положительные значения затрат.
       const effects: StatEffect = {}
-      if (job.cost.energy) effects.energy = -job.cost.energy
-      if (job.cost.health) effects.health = -job.cost.health
-      if (job.cost.sanity) effects.sanity = -job.cost.sanity
+      effects.happiness = job.cost.happiness
+      effects.energy = job.cost.energy
+      effects.health = job.cost.health
+      effects.sanity = job.cost.sanity
+      effects.intelligence = job.cost.intelligence
 
       pushEffects(`Работа: ${job.title}`, effects)
     }

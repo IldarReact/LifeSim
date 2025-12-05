@@ -6,20 +6,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { CountryEconomy } from "@/core/types"
+import { getCountryArchetypes } from "@/core/lib/data-loaders/static-data-loader"
 
-const COUNTRY_IMAGES: Record<string, string> = {
-  "United States": "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=2000&h=1200&fit=crop",
-  "Germany": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=2000&h=1200&fit=crop",
-  "Russia": "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=2000&h=1200&fit=crop",
-}
-
-const ARCHETYPE_DESCRIPTIONS: Record<string, { title: string; description: string }> = {
-  rich_resource: { title: "Развитая + Ресурсная", description: "Стабильная экономика с богатыми природными ресурсами. Вы сможете рассчитывать на высокий доход и стабильность, но с умеренным потенциалом роста." },
-  rich_stable: { title: "Развитая + Стабильная", description: "Высокий доход и максимальная стабильность. Идеально для консервативной стратегии с предсказуемым будущим и надёжной экономикой." },
-  growing_resource: { title: "Растущая + Ресурсная", description: "Высокий рост, но волатильная экономика. Риск оправдывается потенциалом значительного прироста капитала при правильной стратегии." },
-  growing_stable: { title: "Растущая + Стабильная", description: "Хороший рост с приемлемой стабильностью. Оптимальный баланс между возможностью роста и управляемым риском." },
-  poor: { title: "Развивающаяся", description: "Низкий доход, нестабильность и высокие риски. Сложный путь, но потенциально высокая награда за правильные решения." },
-}
+const ARCHETYPE_DESCRIPTIONS = getCountryArchetypes() as Record<string, { title: string; description: string }>
 
 interface StatProps {
   label: string
@@ -65,8 +54,8 @@ export function WorldSelectUI({ countries, onSelect, onBack }: WorldSelectUIProp
   }
 
   const country = countries[index]
-  const bg = COUNTRY_IMAGES[country.name] || COUNTRY_IMAGES["United States"]
-  const archetype = ARCHETYPE_DESCRIPTIONS[country.archetype]
+  const bg = country.imageUrl || "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=2000&h=1200&fit=crop"
+  const archetype = ARCHETYPE_DESCRIPTIONS[country.archetype] || { title: country.archetype, description: "" }
 
   const next = (): void => setIndex(i => (i + 1) % countries.length)
   const prev = (): void => setIndex(i => (i - 1 + countries.length) % countries.length)

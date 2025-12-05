@@ -1,0 +1,86 @@
+[
+  {
+    "id": "beach",
+    "title": "Praia de Copacabana",
+    "energyCost": 10,
+    "effects": {
+      "happiness": 6,
+      "health": 1,
+      "sanity": 3
+    },
+    "cost": 0,
+    "icon": "Mountain",
+    "color": "text-cyan-400",
+    "bg": "from-cyan-900/20 to-cyan-800/10"
+  },
+  {
+    "id": "samba",
+    "title": "Aula de Samba",
+    "energyCost": 25,
+    "effects": {
+      "happiness": 8,
+      "health": 3,
+      "sanity": 2
+    },
+    "cost": 40,
+    "icon": "Music",
+    "color": "text-pink-400",
+    "bg": "from-pink-900/20 to-pink-800/10"
+  },
+  {
+    "id": "football_beach",
+    "title": "Futebol de Areia",
+    "energyCost": 20,
+    "effects": {
+      "happiness": 7,
+      "health": 4,
+      "sanity": 1
+    },
+    "cost": 0,
+    "icon": "Activity",
+    "color": "text-yellow-400",
+    "bg": "from-yellow-900/20 to-yellow-800/10"
+  },
+  {
+    "id": "gym",
+    "title": "Academia",
+    "energyCost": 15,
+    "effects": {
+      "health": 4,
+      "happiness": 1,
+      "sanity": 1
+    },
+    "cost": 400,
+    "icon": "Activity",
+    "color": "text-orange-400",
+    "bg": "from-orange-900/20 to-orange-800/10"
+  },
+  {
+    "id": "meditation",
+    "title": "Meditação",
+    "energyCost": 5,
+    "effects": {
+      "sanity": 2,
+      "happiness": 1,
+      "intelligence": 1,
+      "health": 1
+    },
+    "cost": 0,
+    "icon": "Brain",
+    "color": "text-purple-400",
+    "bg": "from-purple-900/20 to-purple-800/10"
+  },
+  {
+    "id": "coffee",
+    "title": "Café com amigos",
+    "energyCost": 15,
+    "effects": {
+      "happiness": 10,
+      "sanity": 3
+    },
+    "cost": 1200,
+    "icon": "Coffee",
+    "color": "text-amber-400",
+    "bg": "from-amber-900/20 to-amber-800/10"
+  }
+]

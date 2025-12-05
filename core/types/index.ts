@@ -2,7 +2,10 @@
 // This file maintains backward compatibility while organizing types by domain
 
 // Job types
-export type { CharacterArchetype, JobInfo, Job, JobApplication } from './job.types';
+export type { Job, JobApplication } from './job.types';
+
+// Character types
+export type { CharacterData, CharacterSkill, CharacterDebt } from './character.types';
 
 // Business types
 export type {
@@ -68,6 +71,20 @@ export type {
   StatModifiers
 } from './family.types';
 
+// Housing types
+export type {
+  HousingOwnershipType,
+  HousingSubType,
+  NearbyConstruction,
+  HousingOption
+} from './housing.types';
+
+// Shop types
+export type {
+  ShopCategory,
+  ShopItem
+} from './shop.types';
+
 // Notification types
 export type { Notification } from './notification.types';
 
@@ -84,3 +101,6 @@ export type {
 
 // Stats core
 export type { CoreStat, Stats, StatEffect } from './stats.types';
+
+// Human traits
+export type { HumanTrait } from './human-traits.types';

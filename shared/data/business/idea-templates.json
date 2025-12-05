@@ -1,0 +1,161 @@
+{
+  "templates": [
+    {
+      "nameTemplates": [
+        "Онлайн-магазин {category}",
+        "{category} E-commerce",
+        "Интернет-магазин {category}"
+      ],
+      "descriptionTemplates": [
+        "Продажа {category} через интернет с доставкой",
+        "Онлайн-платформа для продажи {category}",
+        "Цифровой магазин {category} с быстрой доставкой"
+      ],
+      "type": "retail",
+      "requiredSkills": [
+        {
+          "skillId": "marketing",
+          "minLevel": 2
+        }
+      ],
+      "riskRange": [
+        "medium",
+        "high"
+      ],
+      "returnRange": [
+        0.3,
+        1.5
+      ],
+      "investmentRange": [
+        5000,
+        30000
+      ]
+    },
+    {
+      "nameTemplates": [
+        "SaaS платформа для {niche}",
+        "{niche} Software",
+        "Облачный сервис {niche}"
+      ],
+      "descriptionTemplates": [
+        "Программное обеспечение как услуга для {niche}",
+        "Облачная платформа для автоматизации {niche}",
+        "Подписочный сервис для {niche}"
+      ],
+      "type": "tech",
+      "requiredSkills": [
+        {
+          "skillId": "programming",
+          "minLevel": 3
+        }
+      ],
+      "riskRange": [
+        "high",
+        "very_high"
+      ],
+      "returnRange": [
+        1.0,
+        3.0
+      ],
+      "investmentRange": [
+        10000,
+        100000
+      ]
+    },
+    {
+      "nameTemplates": [
+        "Консалтинг в {field}",
+        "{field} Consulting",
+        "Консультации по {field}"
+      ],
+      "descriptionTemplates": [
+        "Профессиональные консультации в области {field}",
+        "Экспертные услуги по {field}",
+        "Консалтинговое агентство {field}"
+      ],
+      "type": "service",
+      "requiredSkills": [
+        {
+          "skillId": "management",
+          "minLevel": 2
+        }
+      ],
+      "riskRange": [
+        "low",
+        "medium"
+      ],
+      "returnRange": [
+        0.5,
+        1.2
+      ],
+      "investmentRange": [
+        2000,
+        15000
+      ]
+    },
+    {
+      "nameTemplates": [
+        "Производство {product}",
+        "Фабрика {product}",
+        "{product} Manufacturing"
+      ],
+      "descriptionTemplates": [
+        "Производство и продажа {product}",
+        "Изготовление {product} на заказ",
+        "Массовое производство {product}"
+      ],
+      "type": "manufacturing",
+      "requiredSkills": [
+        {
+          "skillId": "engineering",
+          "minLevel": 2
+        }
+      ],
+      "riskRange": [
+        "medium",
+        "high"
+      ],
+      "returnRange": [
+        0.4,
+        1.8
+      ],
+      "investmentRange": [
+        20000,
+        150000
+      ]
+    }
+  ],
+  "replacements": {
+    "categories": [
+      "электроники",
+      "одежды",
+      "книг",
+      "спорттоваров",
+      "косметики",
+      "мебели"
+    ],
+    "niches": [
+      "бухгалтерии",
+      "HR",
+      "маркетинга",
+      "продаж",
+      "логистики",
+      "образования"
+    ],
+    "fields": [
+      "финансах",
+      "маркетинге",
+      "IT",
+      "недвижимости",
+      "юриспруденции"
+    ],
+    "products": [
+      "мебели",
+      "одежды",
+      "электроники",
+      "упаковки",
+      "игрушек",
+      "инструментов"
+    ]
+  }
+}

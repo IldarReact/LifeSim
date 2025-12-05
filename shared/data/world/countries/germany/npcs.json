@@ -1,0 +1,90 @@
+[
+  {
+    "id": "ge_anna",
+    "name": "Anna Müller",
+    "type": "wife",
+    "age": 27,
+    "relationLevel": 94,
+    "income": 3800,
+    "expenses": 1600,
+    "passiveEffects": {
+      "happiness": 16,
+      "sanity": 14,
+      "intelligence": 3
+    },
+    "tags": [
+      "spouse",
+      "engineer",
+      "german"
+    ]
+  },
+  {
+    "id": "ge_mother",
+    "name": "Frau Schmidt",
+    "type": "parent",
+    "age": 65,
+    "relationLevel": 90,
+    "income": 2500,
+    "expenses": 1000,
+    "passiveEffects": {
+      "happiness": 12,
+      "sanity": -2
+    },
+    "tags": [
+      "mother-in-law",
+      "retired_teacher"
+    ]
+  },
+  {
+    "id": "ge_friend_hans",
+    "name": "Hans",
+    "type": "friend",
+    "age": 32,
+    "relationLevel": 85,
+    "income": 0,
+    "expenses": 180,
+    "passiveEffects": {
+      "happiness": 10,
+      "sanity": 8
+    },
+    "tags": [
+      "best_friend",
+      "architect"
+    ]
+  },
+  {
+    "id": "ge_cat_felix",
+    "name": "Felix",
+    "type": "pet",
+    "age": 5,
+    "relationLevel": 95,
+    "income": 0,
+    "expenses": 280,
+    "passiveEffects": {
+      "happiness": 18,
+      "sanity": 20,
+      "energy": -5
+    },
+    "tags": [
+      "cat",
+      "indoor"
+    ]
+  },
+  {
+    "id": "ge_colleague_klaus",
+    "name": "Klaus",
+    "type": "colleague",
+    "age": 35,
+    "relationLevel": 72,
+    "income": 0,
+    "expenses": 0,
+    "passiveEffects": {
+      "intelligence": 5,
+      "sanity": 3
+    },
+    "tags": [
+      "coworker",
+      "senior_developer"
+    ]
+  }
+]

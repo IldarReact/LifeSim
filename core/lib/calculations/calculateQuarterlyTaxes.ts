@@ -19,7 +19,7 @@ export function calculateQuarterlyTaxes({
 
   // Property tax (e.g. 0.5% yearly -> 0.125% quarterly)
   const propertyTax = assets
-    .filter(a => a.type === 'real_estate')
+    .filter(a => a.type === 'housing')
     .reduce((sum, a) => sum + (a.value * 0.00125), 0)
 
   return Math.round(incomeTax + propertyTax)

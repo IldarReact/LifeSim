@@ -20,6 +20,7 @@ import {
 } from "@/shared/ui/dialog";
 import type { FamilyMember } from "@/core/types";
 import { FamilyMemberCard } from "./ui/family-member-card";
+import { FamilyFinancesCard } from "./ui/family-finances-card";
 
 export function FamilyActivity(): React.JSX.Element | null {
   const { player, startDating, acceptPartner, rejectPartner, tryForBaby, adoptPet } = useGameStore();
@@ -32,6 +33,9 @@ export function FamilyActivity(): React.JSX.Element | null {
   return (
     <div className="space-y-8 pb-10">
       <SectionSeparator title="Семья" />
+
+      {/* Finances Summary */}
+      <FamilyFinancesCard />
 
       {/* Dating Status */}
       {

@@ -1,11 +1,7 @@
 import type { StateCreator } from 'zustand'
-import type { GameStore } from './types'
-import { SHOP_ITEMS } from '@/core/lib/shop-data'
-
-export interface ShopSlice {
-  buyItem: (itemId: string) => void
-  setLifestyle: (category: string, itemId: string | undefined) => void
-}
+import type { GameStore, ShopSlice } from './types'
+import { getItemCost, type ShopItem } from '@/core/types/shop.types'
+import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
 
 export const createShopSlice: StateCreator<
   GameStore,
@@ -17,89 +13,51 @@ export const createShopSlice: StateCreator<
     const player = get().player
     if (!player) return
 
-    const item = SHOP_ITEMS.find(i => i.id === itemId)
+    const item = getShopItemById(itemId, player.countryId)
     if (!item) return
 
-    // Проверка денег
-    if (player.stats.money < item.price) {
+    const cost = getItemCost(item)
+    if (player.stats.money < cost) {
       get().pushNotification({
         type: 'info',
-        title: '💸 Недостаточно средств',
-        message: `Для покупки "${item.name}" нужно $${item.price}, а у вас только $${player.stats.money.toFixed(0)}.`
+        title: 'Недостаточно средств',
+        message: `Нужно $${cost}, у вас только $${player.stats.money}`
       })
       return
     }
 
     // Списываем деньги
-    const newMoney = player.stats.money - item.price
-
-    // Применяем эффекты к статам
-    const newStats = { ...player.personal.stats }
-    if (item.effects) {
-      if (item.effects.health) {
-        newStats.health = Math.min(100, Math.max(0, newStats.health + item.effects.health))
-      }
-      if (item.effects.energy) {
-        newStats.energy = Math.min(100, Math.max(0, newStats.energy + item.effects.energy))
-      }
-      if (item.effects.sanity) {
-        newStats.sanity = Math.min(100, Math.max(0, newStats.sanity + item.effects.sanity))
-      }
-      if (item.effects.happiness) {
-        newStats.happiness = Math.min(100, Math.max(0, newStats.happiness + item.effects.happiness))
-      }
-      if (item.effects.intelligence) {
-        newStats.intelligence = Math.min(100, Math.max(0, newStats.intelligence + item.effects.intelligence))
-      }
-    }
-
-    // Если это актив (транспорт)
-    let newAssets = [...player.assets]
-    if (item.assetType) {
-      newAssets.push({
-        id: `asset_${item.id}_${Date.now()}`,
-        name: item.name,
-        type: item.assetType,
-        value: item.price * 0.8, // Deprecated field
-        currentValue: item.price * 0.8, // Сразу теряет 20% в цене
-        purchasePrice: item.price,
-        unrealizedGain: -item.price * 0.2,
-        income: 0,
-        expenses: item.maintenanceCost || 0,
-        risk: 'low',
-        liquidity: 'medium'
-      })
-    }
-
-    // Обновляем состояние
-    set({
-      player: {
-        ...player,
+    set(state => ({
+      player: state.player && {
+        ...state.player,
         stats: {
-          ...player.stats,
-          money: newMoney
-        },
-        personal: {
-          ...player.personal,
-          stats: newStats
-        },
-        assets: newAssets
+          ...state.player.stats,
+          money: state.player.stats.money - cost
+        }
       }
-    })
+    }))
 
-    // Уведомление об успешной покупке
     get().pushNotification({
       type: 'success',
-      title: '✅ Покупка успешна',
-      message: `Вы купили "${item.name}" за $${item.price}.`
+      title: 'Покупка успешна',
+      message: `Вы купили "${item.name}" за $${cost}`
     })
-
-    console.log(`[Shop] Bought ${item.name} for $${item.price}`)
   },
 
   setLifestyle: (category: string, itemId: string | undefined) => {
     const player = get().player
     if (!player) return
+
+    // Запрещаем удалять обязательные категории (еда, транспорт)
+    const requiredCategories = ['food', 'transport']
+    if (requiredCategories.includes(category) && !itemId) {
+      get().pushNotification({
+        type: 'error',
+        title: 'Невозможно отменить',
+        message: 'Эта категория обязательна для жизни'
+      })
+      return
+    }
 
     const newLifestyle = { ...player.activeLifestyle }
     if (itemId) {
@@ -113,6 +71,49 @@ export const createShopSlice: StateCreator<
         ...player,
         activeLifestyle: newLifestyle
       }
+    })
+  },
+
+  setPlayerHousing: (housingId: string) => {
+    const player = get().player
+    if (!player) return
+
+    const housing = getShopItemById(housingId, player.countryId)
+    if (!housing || housing.category !== 'housing') {
+      get().pushNotification({
+        type: 'error',
+        title: 'Ошибка',
+        message: 'Жильё не найдено'
+      })
+      return
+    }
+
+    const cost = housing.price || 0
+    if (player.stats.money < cost) {
+      get().pushNotification({
+        type: 'error',
+        title: 'Недостаточно средств',
+        message: `Нужно $${cost.toLocaleString()}, у вас $${player.stats.money.toLocaleString()}`
+      })
+      return
+    }
+
+    // Списываем деньги и меняем жильё
+    set({
+      player: {
+        ...player,
+        housingId,
+        stats: {
+          ...player.stats,
+          money: player.stats.money - cost
+        }
+      }
+    })
+
+    get().pushNotification({
+      type: 'success',
+      title: 'Переезд завершён',
+      message: `Вы переехали в "${housing.name}"`
     })
   }
 })

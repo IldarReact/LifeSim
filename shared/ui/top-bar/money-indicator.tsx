@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Wallet, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
 import { useGameStore } from "@/core/model/game-store"
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/shared/utils/utils"
 import { useState } from "react"
 
 export function MoneyIndicator() {
@@ -17,8 +17,8 @@ export function MoneyIndicator() {
         className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity"
       >
         <div className="flex items-center gap-1">
-          <span className="text-lg text-green-400">$</span>
-          <span className="text-lg font-bold text-white tabular-nums">{(player?.stats?.money ?? 0).toLocaleString()}</span>
+          <span className="text-lg text-green-500">$</span>
+          <span className="text-lg font-bold text-white tabular-nums tracking-tight">{(player?.stats?.money ?? 0).toLocaleString()}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Деньги</span>
       </button>
@@ -30,7 +30,7 @@ export function MoneyIndicator() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full mt-2 w-72 p-4 bg-black/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-50"
+            className="absolute top-full mt-2 w-72 p-4 bg-zinc-950/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50"
           >
             <div className="text-xs text-white/90 space-y-3">
               <div className="font-semibold text-white mb-3 flex items-center gap-2">

@@ -6,9 +6,17 @@ import type {
   Notification,
   JobApplication,
   FreelanceApplication,
-  CharacterArchetype,
-  SkillLevel
 } from '@/core/types'
+
+// Inflation Notification Type
+export interface InflationNotificationData {
+  year: number
+  inflationRate: number
+  inflationChange: number
+  keyRate: number
+  keyRateChange: number
+  countryName: string
+}
 
 // Slice types for better organization
 export interface GameSlice {
@@ -19,21 +27,21 @@ export interface GameSlice {
   setupCountryId: string | null
   endReason: string | null
   activeActivity: string | null
+  inflationNotification: InflationNotificationData | null
 
   // Actions
   setSetupCountry: (id: string) => void
-  initializeGame: (countryId: string, archetype: CharacterArchetype) => void
+  initializeGame: (countryId: string, archetype: string) => void
   resetGame: () => void
   setActiveActivity: (activity: string | null) => void
   nextTurn: () => void
   startSinglePlayer: () => void
   resolveCrisis: (actionType: string) => void
+  clearInflationNotification: () => void
 }
-
 
 export interface PlayerSlice {
   player: PlayerState | null
-
 
   updatePlayer: (
     updater: (prev: PlayerState) => Partial<PlayerState>
@@ -111,6 +119,7 @@ export interface FamilySlice {
   tryForBaby: () => void
   adoptPet: (petType: 'dog' | 'cat' | 'hamster', name: string, cost: number) => void
   setMemberFoodPreference: (memberId: string, foodId: string) => void
+  setMemberTransportPreference: (memberId: string, transportId: string) => void
 }
 
 export interface BusinessSlice {
@@ -147,6 +156,10 @@ export interface BusinessSlice {
     payload: { newPrice?: number; newQuantity?: number; amount?: number }
   ) => void
   hireFamilyMember: (businessId: string, familyMemberId: string, role: import('@/core/types').EmployeeRole) => void
+
+  // ✅ Player Employment in Business
+  joinBusinessAsEmployee: (businessId: string, role: import('@/core/types').EmployeeRole, salary: number) => void
+  leaveBusinessJob: (businessId: string) => void
 }
 
 export interface NotificationSlice {
@@ -180,6 +193,19 @@ export interface IdeaSlice {
 export interface ShopSlice {
   buyItem: (itemId: string) => void
   setLifestyle: (category: string, itemId: string | undefined) => void
+  setPlayerHousing: (housingId: string) => void
+}
+
+export interface BankSlice {
+  openDeposit: (amount: number, name?: string) => void
+  takeLoan: (params: {
+    name: string
+    type: 'consumer_credit' | 'mortgage' | 'student_loan'
+    amount: number
+    interestRate: number
+    quarterlyPayment: number
+    termQuarters: number
+  }) => void
 }
 
 // Combined store type
@@ -194,7 +220,9 @@ export type GameStore =
   NotificationSlice &
   MarketSlice &
   IdeaSlice &
-  ShopSlice & {
+  ShopSlice &
+  BankSlice &
+  {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']

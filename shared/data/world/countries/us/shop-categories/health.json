@@ -1,0 +1,88 @@
+[
+  {
+    "id": "health_meds",
+    "name": "💊 Лекарства и витамины",
+    "description": "GoodRx + Walmart pharmacy: антидепрессанты, статины, витамин D, магний, рыбий жир",
+    "price": 240,
+    "category": "health",
+    "effects": {
+      "health": 6,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "health_doctor",
+    "name": "👨‍⚕️ Визит к врачу (с страховкой)",
+    "description": "Primary care + специалист (дерматолог, ортопед) — доплата после страховки",
+    "price": 450,
+    "category": "health",
+    "effects": {
+      "health": 18,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_urgent_care",
+    "name": "🚑 Urgent Care / Telehealth",
+    "description": "Teladoc или поход в местный urgent care вместо ER",
+    "price": 300,
+    "category": "health",
+    "effects": {
+      "health": 12
+    }
+  },
+  {
+    "id": "health_gym_basic",
+    "name": "🏋️‍♂️ Planet Fitness / Local Gym",
+    "description": "$10–25 в месяц — классика среднего города",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 180,
+    "effects": {
+      "health": 8,
+      "energy": 6,
+      "happiness": 4
+    }
+  },
+  {
+    "id": "health_gym_premium",
+    "name": "🏋️ Lifetime Fitness / OrangeTheory",
+    "description": "Премиум-залы с сауной, бассейном, групповыми",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 720,
+    "effects": {
+      "health": 12,
+      "energy": 10,
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_therapy",
+    "name": "🧠 Терапия раз в неделю",
+    "description": "BetterHelp или местный психолог (с страховкой $20–50 за сессию)",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 900,
+    "effects": {
+      "sanity": 25,
+      "happiness": 12
+    }
+  },
+  {
+    "id": "health_insurance",
+    "name": "🏥 Медицинская страховка (employer-sponsored)",
+    "description": "Ты платишь свою часть из зарплаты — типичный план в среднем городе",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 1800,
+    "effects": {
+      "sanity": 15
+    }
+  }
+]

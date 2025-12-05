@@ -1,0 +1,56 @@
+[
+  {
+    "id": "housing_room",
+    "name": "Quarto alugado",
+    "description": "Quarto simples em apartamento compartilhado",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 900,
+    "effects": {
+      "happiness": 5,
+      "health": 3,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "housing_apartment_rent",
+    "name": "Apartamento alugado",
+    "description": "Apartamento de um quarto na periferia",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 2400,
+    "effects": {
+      "happiness": 12,
+      "health": 6,
+      "sanity": 8
+    }
+  },
+  {
+    "id": "housing_apartment_buy",
+    "name": "Apartamento próprio",
+    "description": "Apartamento de um quarto próprio",
+    "category": "housing",
+    "price": 180000,
+    "assetType": "real_estate",
+    "maintenanceCost": 600,
+    "effects": {
+      "happiness": 20,
+      "health": 8,
+      "sanity": 12
+    }
+  },
+  {
+    "id": "housing_house_buy",
+    "name": "Casa própria",
+    "description": "Casa própria no subúrbio com quintal",
+    "category": "housing",
+    "price": 320000,
+    "assetType": "real_estate",
+    "maintenanceCost": 1800,
+    "effects": {
+      "happiness": 30,
+      "health": 12,
+      "sanity": 18
+    }
+  }
+]

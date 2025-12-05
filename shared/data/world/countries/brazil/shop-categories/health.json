@@ -1,0 +1,78 @@
+[
+  {
+    "id": "health_meds",
+    "name": "💊 Medicamentos",
+    "description": "Farmácia: vitaminas, remédios básicos",
+    "price": 150,
+    "category": "health",
+    "effects": {
+      "health": 6,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "health_doctor",
+    "name": "👨‍⚕️ Consulta Médica (Plano SUS/Privado)",
+    "description": "Consulta com seguro privado",
+    "price": 300,
+    "category": "health",
+    "effects": {
+      "health": 18,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_gym_basic",
+    "name": "🏋️‍♂️ Academia Básica",
+    "description": "Smart Fit 100–150R$/mês",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 400,
+    "effects": {
+      "health": 8,
+      "energy": 6,
+      "happiness": 4
+    }
+  },
+  {
+    "id": "health_gym_premium",
+    "name": "🏋️ Academia Premium",
+    "description": "Bio Ritmo, 200–300R$/mês",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 800,
+    "effects": {
+      "health": 12,
+      "energy": 10,
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_therapy",
+    "name": "🧠 Terapia",
+    "description": "Psicólogo, 150–250R$/sessão",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 500,
+    "effects": {
+      "sanity": 25,
+      "happiness": 12
+    }
+  },
+  {
+    "id": "health_insurance",
+    "name": "🏥 Plano de Saúde",
+    "description": "Privado, ~500R$/mês",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 1500,
+    "effects": {
+      "sanity": 15
+    }
+  }
+]

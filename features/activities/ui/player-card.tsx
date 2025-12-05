@@ -141,9 +141,6 @@ export function PlayerCard() {
               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sm font-medium">
                 {player.age} лет
               </span>
-              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-sm font-medium capitalize">
-                {player.archetype}
-              </span>
             </div>
           </div>
 

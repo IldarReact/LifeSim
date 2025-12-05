@@ -8,8 +8,11 @@ import type { EmployeeCandidate, EmployeeRole } from "@/core/types"
 import { getOnlinePlayers } from "@/core/lib/multiplayer"
 import {
   User, TrendingUp, DollarSign, Star, CheckCircle,
-  XCircle, Briefcase, Target, Award, AlertCircle, Users, Globe
+  XCircle, Briefcase, Target, Award, AlertCircle, Users, Globe,
+  Activity
 } from "lucide-react"
+import humanTraitsData from "@/shared/data/world/commons/human-traits.json"
+import type { HumanTrait } from "@/core/types/human-traits.types"
 
 interface EmployeeHireDialogProps {
   isOpen: boolean
@@ -43,6 +46,12 @@ const STARS_COLORS: Record<number, string> = {
   4: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   5: "bg-red-500/20 text-red-300 border-red-500/30"
 }
+
+// Создаем карту черт для быстрого доступа
+const TRAITS_MAP = humanTraitsData.reduce((acc, trait) => {
+  acc[trait.id] = trait as HumanTrait
+  return acc
+}, {} as Record<string, HumanTrait>)
 
 export function EmployeeHireDialog({
   isOpen,
@@ -78,7 +87,6 @@ export function EmployeeHireDialog({
 
   const createPlayerCandidate = (player: any): EmployeeCandidate => {
     // Create a candidate profile for the online player
-    // In a real scenario, we might fetch their actual stats if they are shared
     return {
       id: `player_${player.clientId}`,
       name: player.name,
@@ -93,14 +101,31 @@ export function EmployeeHireDialog({
         management: 60,
         creativity: 85
       },
-      strengths: ['Реальный игрок', 'Высокая мотивация'],
-      weaknesses: ['Высокие запросы']
+      humanTraits: ['ambitious', 'creative'] // Пример черт для игрока
     }
   }
 
   const displayCandidates = activeTab === 'npc'
     ? candidates
     : onlinePlayers.map(createPlayerCandidate)
+
+  const getTraitColor = (type: HumanTrait['type']) => {
+    switch (type) {
+      case 'positive': return 'text-green-400'
+      case 'negative': return 'text-rose-400'
+      case 'medical': return 'text-amber-400'
+      default: return 'text-white/80'
+    }
+  }
+
+  const getTraitIcon = (type: HumanTrait['type']) => {
+    switch (type) {
+      case 'positive': return <TrendingUp className="w-3 h-3 text-green-400" />
+      case 'negative': return <AlertCircle className="w-3 h-3 text-rose-400" />
+      case 'medical': return <Activity className="w-3 h-3 text-amber-400" />
+      default: return <User className="w-3 h-3 text-white/80" />
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -212,35 +237,28 @@ export function EmployeeHireDialog({
                   </div>
                 </div>
 
-                {/* Strengths */}
+                {/* Traits (replacing Strengths/Weaknesses) */}
                 <div className="mb-3">
-                  <h4 className="text-sm font-semibold text-green-400 mb-1.5 flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
-                    Сильные стороны
+                  <h4 className="text-sm font-semibold text-white/80 mb-1.5 flex items-center gap-1">
+                    <Activity className="w-4 h-4" />
+                    Особенности
                   </h4>
                   <ul className="space-y-1">
-                    {candidate.strengths.slice(0, 2).map((strength, idx) => (
-                      <li key={idx} className="text-sm text-white/80 flex items-start gap-1">
-                        <span className="text-green-400 mt-0.5">+</span>
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                    {candidate.humanTraits && candidate.humanTraits.length > 0 ? (
+                      candidate.humanTraits.map((traitId, idx) => {
+                        const trait = TRAITS_MAP[traitId]
+                        if (!trait) return null
 
-                {/* Weaknesses */}
-                <div>
-                  <h4 className="text-sm font-semibold text-rose-400 mb-1.5 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    Слабые стороны
-                  </h4>
-                  <ul className="space-y-1">
-                    {candidate.weaknesses.slice(0, 2).map((weakness, idx) => (
-                      <li key={idx} className="text-sm text-white/80 flex items-start gap-1">
-                        <span className="text-rose-400 mt-0.5">-</span>
-                        {weakness}
-                      </li>
-                    ))}
+                        return (
+                          <li key={idx} className="text-sm flex items-start gap-1.5" title={trait.description}>
+                            <span className="mt-0.5">{getTraitIcon(trait.type)}</span>
+                            <span className={getTraitColor(trait.type)}>{trait.name}</span>
+                          </li>
+                        )
+                      })
+                    ) : (
+                      <li className="text-sm text-white/40 italic">Нет особенностей</li>
+                    )}
                   </ul>
                 </div>
 

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "service_netflix",
+    "name": "Netflix + Spotify",
+    "description": "Развлечения дома",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 150,
+    "effects": {
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "service_cleaning",
+    "name": "Уборка 2 раза в месяц",
+    "description": "Профессиональная уборщица",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 750,
+    "effects": {
+      "sanity": 12,
+      "energy": 15,
+      "happiness": 8
+    }
+  }
+]

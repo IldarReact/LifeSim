@@ -1,0 +1,43 @@
+[
+  {
+    "id": "service_streaming",
+    "name": "📺 Netflix + YouTube Premium + Spotify",
+    "description": "Всё вместе в семейном плане",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 180,
+    "effects": {
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "service_cleaning",
+    "name": "🧹 Уборка раз в 2 недели",
+    "description": "Локальная тётя или Merry Maids",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 900,
+    "effects": {
+      "sanity": 12,
+      "energy": 15,
+      "happiness": 8
+    }
+  },
+  {
+    "id": "service_massage",
+    "name": "💆 Массаж раз в месяц",
+    "description": "Massage Envy или местный массажист",
+    "price": 0,
+    "category": "services",
+    "isRecurring": true,
+    "costPerTurn": 450,
+    "effects": {
+      "sanity": 15,
+      "health": 8,
+      "happiness": 6
+    }
+  }
+]

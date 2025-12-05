@@ -1,0 +1,97 @@
+[
+  {
+    "id": "job_junior_dev",
+    "title": "Junior Front-End Entwickler",
+    "company": "Lokales Startup",
+    "salary": 12000,
+    "cost": {
+      "energy": -60
+    },
+    "satisfaction": 68,
+    "imageUrl": "/images/jobs/junior_frontend.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Frontend",
+          "level": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_python_dev",
+    "title": "Python Entwickler",
+    "company": "FinTech Firma",
+    "salary": 21000,
+    "cost": {
+      "energy": -60
+    },
+    "satisfaction": 78,
+    "imageUrl": "/images/jobs/python_dev.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Python",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_data_analyst",
+    "title": "Data Analyst",
+    "company": "Handelsnetzwerk",
+    "salary": 24000,
+    "cost": {
+      "energy": -75
+    },
+    "satisfaction": 80,
+    "imageUrl": "/images/jobs/data_analyst.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Аналитика данных",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_marketing",
+    "title": "Digital Marketing Specialist",
+    "company": "Lokale Agentur",
+    "salary": 15000,
+    "cost": {
+      "energy": -45
+    },
+    "satisfaction": 72,
+    "imageUrl": "/images/jobs/marketing.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Маркетинг",
+          "level": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "job_senior_dev",
+    "title": "Senior Full-Stack Engineer",
+    "company": "Großes Unternehmen",
+    "salary": 36000,
+    "cost": {
+      "energy": -90
+    },
+    "satisfaction": 88,
+    "imageUrl": "/images/jobs/senior_fullstack.png",
+    "requirements": {
+      "skills": [
+        {
+          "name": "Full-Stack",
+          "level": 3
+        }
+      ]
+    }
+  }
+]

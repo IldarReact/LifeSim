@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, GameSlice } from './types'
-import { INITIAL_COUNTRIES, createInitialPlayer } from '@/core/lib/initialState'
+import { createInitialPlayer } from '@/core/lib/initialState'
+import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
 import { processTurn } from '../logic/turn-logic'
 
 export const createGameSlice: StateCreator<
@@ -17,6 +18,7 @@ export const createGameSlice: StateCreator<
   setupCountryId: null,
   endReason: null,
   activeActivity: null,
+  inflationNotification: null,
 
   // Actions
   setSetupCountry: (id: string) => {
@@ -35,7 +37,7 @@ export const createGameSlice: StateCreator<
       turn: 1,
       year: 2024,
       gameStatus: 'playing',
-      countries: INITIAL_COUNTRIES,
+      countries: WORLD_COUNTRIES,
       player: createInitialPlayer(archetype, cId),
       history: [],
       notifications: [],
@@ -50,7 +52,7 @@ export const createGameSlice: StateCreator<
       year: 2024,
       isProcessingTurn: false,
       globalEvents: [],
-      countries: INITIAL_COUNTRIES,
+      countries: WORLD_COUNTRIES,
       player: null,
       history: [],
       gameStatus: 'menu',
@@ -145,5 +147,9 @@ export const createGameSlice: StateCreator<
         }
       }
     })
+  },
+
+  clearInflationNotification: () => {
+    set({ inflationNotification: null })
   }
 })

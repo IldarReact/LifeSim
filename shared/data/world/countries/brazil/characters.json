@@ -1,0 +1,118 @@
+[
+  {
+    "id": "br_investor",
+    "archetype": "investor",
+    "name": "São Paulo Trader",
+    "description": "Вы трейдер в Сан-Паулу. Высокая волатильность рынка, но большие возможности.",
+    "startingMoney": 20000,
+    "startingSalary": 2400,
+    "startingStats": {
+      "intelligence": 70,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "finance",
+        "name": "Финансовый анализ",
+        "level": 3
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "br_specialist",
+    "archetype": "specialist",
+    "name": "Tech Professional",
+    "description": "Вы IT-специалист в растущем бразильском tech-секторе. Хорошая зарплата по местным меркам.",
+    "startingMoney": 4000,
+    "startingSalary": 4800,
+    "startingStats": {
+      "intelligence": 80,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "programming",
+        "name": "Программирование",
+        "level": 4
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "br_entrepreneur",
+    "archetype": "entrepreneur",
+    "name": "Small Business Owner",
+    "description": "Вы владелец малого бизнеса в Бразилии. Высокие риски, но потенциал быстрого роста.",
+    "startingMoney": 2000,
+    "startingSalary": 1200,
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "business",
+        "name": "Бизнес-управление",
+        "level": 2
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "br_worker",
+    "archetype": "worker",
+    "name": "Service Worker",
+    "description": "Вы работаете в сфере услуг. Низкая зарплата, но стабильная занятость.",
+    "startingMoney": 800,
+    "startingSalary": 3000,
+    "startingStats": {
+      "intelligence": 50,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "br_indebted",
+    "archetype": "indebted",
+    "name": "University Graduate",
+    "description": "Вы закончили частный университет с долгами. Сложный старт в конкурентной среде.",
+    "startingMoney": 400,
+    "startingSalary": 2400,
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "startingDebts": [
+      {
+        "id": "student_loan",
+        "name": "Empréstimo Estudantil",
+        "type": "student_loan",
+        "principalAmount": 8000,
+        "remainingAmount": 8000,
+        "interestRate": 8,
+        "quarterlyPayment": 240,
+        "termQuarters": 40,
+        "remainingQuarters": 40
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&h=600&fit=crop"
+  }
+]

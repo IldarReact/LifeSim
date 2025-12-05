@@ -9,6 +9,9 @@ import { EventModal } from "@/features/events/event-modal"
 import { MultiplayerHud } from "@/features/multiplayer/MultiplayerHub"
 import { useGameStore } from "@/core/model/store"
 
+// Утилита для очистки сохранений (доступна в консоли браузера)
+import "@/core/lib/persistence/clear-saves"
+
 
 import { MainMenu } from "@/features/menu/main-menu"
 

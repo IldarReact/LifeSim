@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "name", "cost", "duration", "skillName", "skillGain"],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string",
+        "description": "Course name"
+      },
+      "description": {
+        "type": "string"
+      },
+      "cost": {
+        "type": "number",
+        "minimum": 0
+      },
+      "duration": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Duration in quarters"
+      },
+      "skillName": {
+        "type": "string",
+        "description": "Skill that will be gained/improved"
+      },
+      "skillGain": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "description": "Skill level gain"
+      },
+      "costPerTurn": {
+        "type": "object",
+        "properties": {
+          "energy": { "type": "number" },
+          "sanity": { "type": "number" }
+        }
+      },
+      "requirements": {
+        "type": "object",
+        "properties": {
+          "education": {
+            "type": "string",
+            "enum": ["none", "high_school", "bachelor", "master"]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "level"],
+              "properties": {
+                "name": { "type": "string" },
+                "level": { "type": "integer", "minimum": 1, "maximum": 5 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

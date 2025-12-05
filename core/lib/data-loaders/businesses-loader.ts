@@ -1,0 +1,111 @@
+// Country imports
+import usBusinesses from '@/shared/data/world/countries/us/businesses.json'
+import geBusinesses from '@/shared/data/world/countries/germany/businesses.json'
+import brBusinesses from '@/shared/data/world/countries/brazil/businesses.json'
+
+export interface BusinessType {
+  id: string
+  name: string
+  description?: string
+  imageUrl?: string
+  type: 'retail' | 'service' | 'manufacturing' | 'tech' | 'cafe' | 'food'
+  price: number // Цена товара/услуги (1-10)
+  quantity: number // Количество производимого товара за квартал
+  isServiceBased: boolean // Является ли бизнес услуговым
+  initialCost: number
+  upfrontCost: number // Первоначальный взнос
+  openingQuarters: number // Сколько кварталов нужно для открытия
+  monthlyIncome: number
+  monthlyExpenses: number
+  maxEmployees: number
+  minEmployees: number
+  inventory: {
+    maxStock: number
+    pricePerUnit: number
+    purchaseCost: number
+    autoPurchaseAmount: number
+  }
+  requiredRoles: string[] // Роли сотрудников
+  risk: 'low' | 'medium' | 'high'
+  requiredSkills?: Array<{ name: string; level: number }>
+  requiredEmployees?: {
+    min: number
+    recommended: number
+  }
+  employeeRoles?: Array<{
+    role: string
+    priority: 'required' | 'recommended' | 'optional'
+    description: string
+  }>
+}
+
+function validateBusinessType(item: unknown): item is BusinessType {
+  const b = item as BusinessType
+
+  if (!b.id || typeof b.id !== 'string') return false
+  if (!b.name || typeof b.name !== 'string') return false
+  if (!b.type || typeof b.type !== 'string') return false
+  if (typeof b.price !== 'number' || b.price < 0) return false
+  if (typeof b.quantity !== 'number' || b.quantity < 0) return false
+  if (typeof b.isServiceBased !== 'boolean') return false
+  if (typeof b.initialCost !== 'number' || b.initialCost < 0) return false
+  if (typeof b.upfrontCost !== 'number' || b.upfrontCost < 0) return false
+  if (typeof b.openingQuarters !== 'number' || b.openingQuarters < 0) return false
+  if (typeof b.monthlyIncome !== 'number' || b.monthlyIncome < 0) return false
+  if (typeof b.monthlyExpenses !== 'number' || b.monthlyExpenses < 0) return false
+  if (typeof b.maxEmployees !== 'number' || b.maxEmployees < 0) return false
+  if (typeof b.minEmployees !== 'number' || b.minEmployees < 0) return false
+  if (!b.inventory || typeof b.inventory !== 'object') return false
+  if (!Array.isArray(b.requiredRoles)) return false
+  if (!b.risk || typeof b.risk !== 'string') return false
+
+  return true
+}
+
+function loadBusinessTypes(data: unknown[], source: string): BusinessType[] {
+  const validated: BusinessType[] = []
+
+  for (const item of data) {
+    if (validateBusinessType(item)) {
+      validated.push(item)
+    } else {
+      console.error(`Invalid business type in ${source}:`, item)
+      throw new Error(`Business type data validation failed for ${source}`)
+    }
+  }
+
+  return validated
+}
+
+// Country Data Registry
+const COUNTRY_BUSINESSES: Record<string, BusinessType[]> = {
+  us: loadBusinessTypes(usBusinesses, 'us/businesses.json'),
+  germany: loadBusinessTypes(geBusinesses, 'germany/businesses.json'),
+  brazil: loadBusinessTypes(brBusinesses, 'brazil/businesses.json')
+}
+
+// Get business types for specific country
+function getCountryBusinessTypes(countryId: string): BusinessType[] {
+  if (!COUNTRY_BUSINESSES[countryId]) {
+    console.error(`No business types data found for country: ${countryId}`)
+    return []
+  }
+  return COUNTRY_BUSINESSES[countryId]
+}
+
+// Export for backward compatibility (defaults to US)
+export const ALL_BUSINESS_TYPES = COUNTRY_BUSINESSES.us || []
+
+export function getBusinessTypeById(id: string, countryId: string = 'us'): BusinessType | undefined {
+  const businesses = getCountryBusinessTypes(countryId)
+  return businesses.find(b => b.id === id)
+}
+
+export function getBusinessTypesByCategory(type: string, countryId: string = 'us'): BusinessType[] {
+  const businesses = getCountryBusinessTypes(countryId)
+  return businesses.filter(b => b.type === type)
+}
+
+export function getAllBusinessTypesForCountry(countryId: string): BusinessType[] {
+  return getCountryBusinessTypes(countryId)
+}

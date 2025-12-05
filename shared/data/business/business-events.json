@@ -1,0 +1,83 @@
+{
+  "negativeEvents": [
+    {
+      "title": "Конфликт сотрудников",
+      "description": "Снижение эффективности",
+      "effects": {
+        "efficiency": -5,
+        "reputation": -2
+      }
+    },
+    {
+      "title": "Поломка оборудования",
+      "description": "Требуется ремонт",
+      "effects": {
+        "efficiency": -10,
+        "money": -500
+      }
+    },
+    {
+      "title": "Жалоба клиента",
+      "description": "Удар по репутации",
+      "effects": {
+        "reputation": -5,
+        "efficiency": -2
+      }
+    },
+    {
+      "title": "Проверка",
+      "description": "Найдены нарушения",
+      "effects": {
+        "money": -1000,
+        "reputation": -3
+      }
+    },
+    {
+      "title": "Порча товара",
+      "description": "Списана часть склада",
+      "effects": {
+        "moneyPercentage": -0.1
+      }
+    }
+  ],
+  "positiveEvents": [
+    {
+      "title": "Удачный маркетинг",
+      "description": "Рост продаж",
+      "effects": {
+        "reputation": 5,
+        "efficiency": 2
+      }
+    },
+    {
+      "title": "Премия",
+      "description": "Награда от города",
+      "effects": {
+        "reputation": 3,
+        "money": 500
+      }
+    },
+    {
+      "title": "Командный дух",
+      "description": "Рост эффективности",
+      "effects": {
+        "efficiency": 5,
+        "reputation": 1
+      }
+    },
+    {
+      "title": "Выгодная сделка",
+      "description": "Снижение расходов",
+      "effects": {
+        "money": 200
+      }
+    },
+    {
+      "title": "Вирусный пост",
+      "description": "Резкий рост популярности",
+      "effects": {
+        "reputation": 8
+      }
+    }
+  ]
+}

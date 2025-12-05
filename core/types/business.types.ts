@@ -33,6 +33,16 @@ export interface Employee {
   avatar?: string;
   isFamilyMember?: boolean;
   familyMemberId?: string;
+  humanTraits: string[];   // ID черт характера из human-traits.json
+}
+
+/**
+ * Доступная позиция в бизнесе для найма
+ */
+export interface BusinessPosition {
+  role: EmployeeRole;
+  salary: number;
+  description: string;
 }
 
 export type BusinessType =
@@ -40,7 +50,8 @@ export type BusinessType =
   | 'service'       // Сервис
   | 'cafe'          // Кафе/ресторан
   | 'tech'          // IT-компания
-  | 'manufacturing'; // Производство
+  | 'manufacturing' // Производство
+  | 'food';         // Еда (для совместимости с данными)
 
 export type BusinessState = 'opening' | 'active' | 'frozen';
 
@@ -204,6 +215,17 @@ export interface Business {
   // Кооперация
   // partners уже определены выше
 
+  // ✅ НОВОЕ: Работа игрока в бизнесе
+  /**
+   * Информация о работе игрока в этом бизнесе
+   * Если игрок устроился работать в свой бизнес, это поле содержит детали
+   */
+  playerEmployment?: {
+    role: EmployeeRole;
+    salary: number;
+    startedTurn: number;
+  };
+
   // Метаданные
   imageUrl?: string;
 }
@@ -217,7 +239,6 @@ export interface EmployeeCandidate {
   requestedSalary: number; // За квартал
   experience: number;
   avatar?: string;
-  strengths: string[];      // Сильные стороны
-  weaknesses: string[];     // Слабые стороны
+  humanTraits: string[];   // ID черт характера из human-traits.json
 }
 

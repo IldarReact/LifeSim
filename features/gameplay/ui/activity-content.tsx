@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { FamilyActivity } from "@/features/activities/family-activity"
 import { WorkActivity } from "@/features/activities/work/work-activity"
-import { ShopSection } from "@/features/activities/shop/shop-section"
+import { ShopActivity } from "@/features/activities/shop/shop-activity"
 import { InvestmentsActivity } from "@/features/activities/investments-activity"
-import { BanksActivity } from "@/features/activities/banks-activity"
+import { BanksActivity } from "@/features/activities/bank/BanksActivity"
 import { RelocationActivity } from "@/features/activities/relocation-activity"
 import { RestActivity } from "@/features/activities/rest-activity"
 import { EventsActivity } from "@/features/activities/events-activity"
@@ -31,9 +31,9 @@ const backgroundImages: Record<ActivityType, string> = {
   work: "url('https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=800&fit=crop')",
   education: "url('https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1200&h=800&fit=crop')",
   investments: "url('https://images.unsplash.com/photo-1611974588547-b06c3f1b0b6f?w=1200&h=800&fit=crop')",
-  banks: "url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=800&fit=crop')",
+  banking: "url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=800&fit=crop')",
   relocation: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=800&fit=crop')",
-  rest: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop')",
+  leisure: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop')",
   events: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop')",
 }
 
@@ -96,14 +96,14 @@ export function ActivityContent(): React.JSX.Element | null {
       />
 
       <div className="relative z-10 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto pb-24 sm:pb-32">
-        {currentActivity === "shop" && <ShopSection />}
+        {currentActivity === "shop" && <ShopActivity />}
         {currentActivity === "family" && <FamilyActivity />}
         {currentActivity === "work" && <WorkActivity />}
         {currentActivity === "education" && <EducationActivity />}
         {currentActivity === "investments" && <InvestmentsActivity />}
-        {currentActivity === "banks" && <BanksActivity />}
+        {currentActivity === "banking" && <BanksActivity />}
         {currentActivity === "relocation" && <RelocationActivity />}
-        {currentActivity === "rest" && <RestActivity />}
+        {currentActivity === "leisure" && <RestActivity />}
         {currentActivity === "events" && <EventsActivity />}
       </div>
 

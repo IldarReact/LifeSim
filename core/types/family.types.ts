@@ -37,11 +37,25 @@ export interface FamilyMember {
   avatar?: string;
   goals?: LifeGoal[]; // Personal goals of the family member
   employedInBusinessId?: string; // ID бизнеса, где работает
+  occupation?: string; // Название работы (если работает не в бизнесе игрока)
 
   // Lifestyle preferences (references to shop items)
   foodPreference?: string; // ID товара из категории 'food'
-  housingPreference?: string; // ID товара из категории 'real_estate' (будет добавлено)
   transportPreference?: string; // ID товара из категории 'transport'
+
+  // Traits
+  traits?: string[]; // IDs from human-traits.json
+
+  // Detailed expenses
+  expensesBreakdown?: {
+    food: number;
+    housing: number;
+    transport: number;
+    credits: number;
+    mortgage: number;
+    other: number;
+    total: number;
+  };
 }
 
 export interface LifeGoal {
@@ -68,6 +82,7 @@ export interface LifeGoal {
 }
 
 export interface StatModifier {
+  money?: number;
   source: string;
   happiness?: number;
   health?: number;
@@ -77,6 +92,7 @@ export interface StatModifier {
 }
 
 export interface StatModifiers {
+  money: StatModifier[];
   happiness: StatModifier[];
   health: StatModifier[];
   energy: StatModifier[];

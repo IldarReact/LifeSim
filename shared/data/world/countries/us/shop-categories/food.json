@@ -1,0 +1,29 @@
+[
+  {
+    "id": "food_home",
+    "name": "Готовлю сам",
+    "description": "Whole Foods + домашняя готовка",
+    "price": 1200,
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 1200,
+    "effects": {
+      "health": 10,
+      "happiness": 5,
+      "energy": -20
+    }
+  },
+  {
+    "id": "food_fast",
+    "name": "In-N-Out, Chipotle, Taco Bell",
+    "description": "Фастфуд 5 раз в неделю",
+    "price": 2800,
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 2800,
+    "effects": {
+      "health": -12,
+      "happiness": 15
+    }
+  }
+]

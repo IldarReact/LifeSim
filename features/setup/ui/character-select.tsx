@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, User, DollarSign, Home, CreditCard, PieChart, ArrowLeft, X } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/shared/utils/utils"
 import { useGameStore } from "@/core/model/game-store"
 import { createInitialPlayer } from "@/core/lib/initialState"
-import { JOB_INFO } from "@/core/lib/jobsData"
-import type { CharacterArchetype } from "@/core/types"
+import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader"
+import { getJobById } from "@/core/lib/data-loaders/jobs-loader"
 import type {
   CategoryCardProps,
   DetailCardProps,
@@ -17,7 +17,6 @@ import type {
   ModalView
 } from "../types"
 
-const ARCHETYPES: CharacterArchetype[] = ["investor", "specialist", "entrepreneur", "worker", "indebted"]
 
 const getCharacterImage = (archetypeId: string): string => {
   switch (archetypeId) {
@@ -56,30 +55,34 @@ const getDetailedInfo = (archetypeId: string): CharacterDetailedInfo => {
 
 export interface CharacterSelectUIProps {
   setupCountryId: string
-  onSelect: (archetype: CharacterArchetype) => void
+  onSelect: (archetype: string) => void
   onBack?: () => void
 }
 
 export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: CharacterSelectUIProps): React.JSX.Element | null {
+  const characters = getCharactersForCountry(setupCountryId || 'us')
+  const archetypes = characters.map(c => c.archetype)
+
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalView, setModalView] = useState<ModalView>("main")
 
   const handleNext = (): void => {
-    setCurrentIndex((prev) => (prev + 1) % ARCHETYPES.length)
+    setCurrentIndex((prev) => (prev + 1) % archetypes.length)
   }
 
   const handlePrev = (): void => {
-    setCurrentIndex((prev) => (prev - 1 + ARCHETYPES.length) % ARCHETYPES.length)
+    setCurrentIndex((prev) => (prev - 1 + archetypes.length) % archetypes.length)
   }
 
-  const currentArchetype = ARCHETYPES[currentIndex]
+  const currentArchetype = archetypes[currentIndex]
+  const currentCharacter = characters[currentIndex]
   const character = createInitialPlayer(currentArchetype, setupCountryId || 'us')
   const detailedInfo = getDetailedInfo(currentArchetype)
 
   const getVisibleIndices = (): number[] => {
-    const prev = (currentIndex - 1 + ARCHETYPES.length) % ARCHETYPES.length
-    const next = (currentIndex + 1) % ARCHETYPES.length
+    const prev = (currentIndex - 1 + archetypes.length) % archetypes.length
+    const next = (currentIndex + 1) % archetypes.length
     return [prev, currentIndex, next]
   }
 
@@ -128,7 +131,8 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
         <AnimatePresence mode="popLayout" initial={false}>
           {visibleIndices.map((idx, i) => {
             const isCenter = i === 1
-            const archetype = ARCHETYPES[idx]
+            const archetype = archetypes[idx]
+            const charData = characters[idx]
             const charPreview = createInitialPlayer(archetype, setupCountryId || 'us')
 
             return (
@@ -164,7 +168,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                 <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8 text-white">
                   <div className="text-center mt-4">
                     <h2 className="text-3xl md:text-5xl font-bold mb-2 uppercase tracking-wide drop-shadow-lg">
-                      {JOB_INFO[archetype].title}
+                      {charData.name}
                     </h2>
                   </div>
 
@@ -173,7 +177,13 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                     <div className="bg-black/60 backdrop-blur-md rounded-2xl p-4 w-full border border-white/10 space-y-2">
                       <div className="flex justify-between items-center text-lg">
                         <span className="text-white/70">Доход:</span>
-                        <span className="font-bold text-green-400">${charPreview.quarterlySalary.toLocaleString()}/кв</span>
+                        <span className="font-bold text-green-400">
+                          ${(() => {
+                            const startingJob = getJobById(charData.startingJobId, setupCountryId || 'us')
+                            const quarterlySalary = startingJob ? startingJob.salary * 3 : 0
+                            return quarterlySalary.toLocaleString()
+                          })()}/кв
+                        </span>
                       </div>
                       <div className="flex justify-between items-center text-lg">
                         <span className="text-white/70">Капитал:</span>
@@ -261,7 +271,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                   <div>
                     <h2 className="text-3xl font-bold text-white">
                       {modalView === "main"
-                        ? `Личное дело: ${JOB_INFO[currentArchetype].title}`
+                        ? `Личное дело: ${currentCharacter.name}`
                         : modalView === "family"
                           ? "Семья"
                           : modalView === "assets"
@@ -391,7 +401,7 @@ export function CharacterSelect(): React.JSX.Element | null {
 
   return (
     <CharacterSelectUI
-      setupCountryId={setupCountryId || 'us'}
+      setupCountryId={setupCountryId || 'us' || 'ge' || 'br'}
       onSelect={(archetype) => {
         if (setupCountryId) {
           initializeGame(setupCountryId, archetype)

@@ -1,0 +1,89 @@
+[
+  {
+    "id": "us_sarah",
+    "name": "Sarah Johnson",
+    "type": "wife",
+    "age": 28,
+    "relationLevel": 92,
+    "income": 4500,
+    "expenses": 1800,
+    "passiveEffects": {
+      "happiness": 18,
+      "sanity": 12
+    },
+    "tags": [
+      "spouse",
+      "marketing_manager",
+      "american"
+    ]
+  },
+  {
+    "id": "us_mother",
+    "name": "Linda",
+    "type": "parent",
+    "age": 62,
+    "relationLevel": 88,
+    "income": 2200,
+    "expenses": 900,
+    "passiveEffects": {
+      "happiness": 10,
+      "sanity": -3
+    },
+    "tags": [
+      "mother-in-law",
+      "retired_nurse"
+    ]
+  },
+  {
+    "id": "us_friend_mike",
+    "name": "Mike",
+    "type": "friend",
+    "age": 30,
+    "relationLevel": 82,
+    "income": 0,
+    "expenses": 250,
+    "passiveEffects": {
+      "happiness": 8,
+      "energy": 5
+    },
+    "tags": [
+      "best_friend",
+      "gym_buddy"
+    ]
+  },
+  {
+    "id": "us_dog_buddy",
+    "name": "Buddy",
+    "type": "pet",
+    "age": 3,
+    "relationLevel": 100,
+    "income": 0,
+    "expenses": 400,
+    "passiveEffects": {
+      "happiness": 22,
+      "sanity": 15,
+      "health": 5
+    },
+    "tags": [
+      "dog",
+      "golden_retriever"
+    ]
+  },
+  {
+    "id": "us_colleague_jessica",
+    "name": "Jessica",
+    "type": "colleague",
+    "age": 26,
+    "relationLevel": 70,
+    "income": 0,
+    "expenses": 0,
+    "passiveEffects": {
+      "intelligence": 4,
+      "happiness": 3
+    },
+    "tags": [
+      "coworker",
+      "tech_lead"
+    ]
+  }
+]

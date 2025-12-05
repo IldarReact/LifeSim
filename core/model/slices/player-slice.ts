@@ -72,7 +72,7 @@ export const createPlayerSlice: StateCreator<
       if (!state.player) return { player: null }
 
       const currentStats = state.player.stats
-      const currentPersonalStats = state.player.personal.stats
+      const currentStatEffect = state.player.personal.stats
 
       return {
         player: {
@@ -85,12 +85,12 @@ export const createPlayerSlice: StateCreator<
           personal: {
             ...state.player.personal,
             stats: {
-              ...currentPersonalStats,
-              happiness: Math.min(100, Math.max(0, currentPersonalStats.happiness + (changes.happiness || 0))),
-              health: Math.min(100, Math.max(0, currentPersonalStats.health + (changes.health || 0))),
-              energy: Math.min(100, Math.max(0, currentPersonalStats.energy + (changes.energy || 0))),
-              sanity: Math.min(100, Math.max(0, currentPersonalStats.sanity + (changes.sanity || 0))),
-              intelligence: Math.min(100, Math.max(0, currentPersonalStats.intelligence + (changes.intelligence || 0)))
+              ...currentStatEffect,
+              happiness: Math.min(100, Math.max(0, currentStatEffect.happiness + (changes.happiness || 0))),
+              health: Math.min(100, Math.max(0, currentStatEffect.health + (changes.health || 0))),
+              energy: Math.min(100, Math.max(0, currentStatEffect.energy + (changes.energy || 0))),
+              sanity: Math.min(100, Math.max(0, currentStatEffect.sanity + (changes.sanity || 0))),
+              intelligence: Math.min(100, Math.max(0, currentStatEffect.intelligence + (changes.intelligence || 0)))
             }
           }
         }

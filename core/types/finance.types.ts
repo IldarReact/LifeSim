@@ -1,6 +1,6 @@
 // Finance-related types (assets and debts)
 
-export type AssetType = 'real_estate' | 'stock' | 'business' | 'deposit';
+export type AssetType = 'housing' | 'stock' | 'business' | 'deposit';
 export type DebtType = 'mortgage' | 'consumer_credit' | 'student_loan';
 
 export interface Asset {
@@ -46,10 +46,17 @@ export interface IncomeBreakdown {
 }
 
 export interface ExpensesBreakdown {
-  living: number;           // Расходы на жизнь
-  family: number;           // Расходы на семью
+  living: number;           // Общие расходы на жизнь (сумма категорий ниже)
+  food: number;             // Еда
+  housing: number;          // Жилье
+  transport: number;        // Транспорт
+  credits: number;          // Потребительские кредиты
+  mortgage: number;         // Ипотека
+  other: number;            // Другое (включая личные траты семьи)
+
+  family: number;           // Deprecated: теперь распределено по категориям
   business: number;         // Расходы бизнеса
-  debtInterest: number;     // Проценты по кредитам
+  debtInterest: number;     // Общие проценты (сумма credits + mortgage)
   assetMaintenance: number; // Обслуживание активов
   total: number;            // Общие расходы
 }

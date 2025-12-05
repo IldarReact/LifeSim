@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fl_br_frontend",
+    "title": "Landing page para startup (React)",
+    "category": "tech",
+    "description": "Site institucional + integração com Stripe",
+    "payment": 6500,
+    "cost": {
+      "energy": -45,
+      "sanity": -12
+    },
+    "requirements": [
+      {
+        "skillId": "skill_frontend",
+        "minLevel": 3
+      }
+    ],
+    "imageUrl": "br-freelance.jpg"
+  }
+]

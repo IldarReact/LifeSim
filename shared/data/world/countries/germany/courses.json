@@ -1,0 +1,46 @@
+[
+  {
+    "id": "course_german",
+    "name": "Немецкий интенсив",
+    "cost": 500,
+    "duration": 2,
+    "skillName": "Немецкий",
+    "skillGain": 1,
+    "costPerTurn": {
+      "energy": -15
+    }
+  },
+  {
+    "id": "course_python",
+    "name": "Python для Data Science",
+    "cost": 1800,
+    "duration": 3,
+    "skillName": "Python",
+    "skillGain": 2,
+    "costPerTurn": {
+      "energy": -25
+    }
+  },
+  {
+    "id": "course_fullstack",
+    "name": "Full-Stack Bootcamp",
+    "cost": 9000,
+    "duration": 4,
+    "skillName": "Full-Stack",
+    "skillGain": 3,
+    "costPerTurn": {
+      "energy": -30
+    }
+  },
+  {
+    "id": "course_university",
+    "name": "Университет (Informatik)",
+    "cost": 0,
+    "duration": 12,
+    "skillName": "Informatik",
+    "skillGain": 4,
+    "costPerTurn": {
+      "energy": -35
+    }
+  }
+]

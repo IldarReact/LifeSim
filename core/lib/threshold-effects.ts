@@ -1,4 +1,4 @@
-import type { PersonalStats } from '@/core/types/stats.types'
+import type { StatEffect } from '@/core/types/stats.types'
 import type { Notification } from '@/core/types/notification.types'
 
 /**
@@ -194,11 +194,11 @@ function checkHappinessEffects(happiness: number): Partial<ThresholdEffectsResul
 /**
  * Объединяет все пороговые эффекты
  */
-export function checkAllThresholdEffects(stats: PersonalStats): ThresholdEffectsResult {
-  const healthEffects = checkHealthEffects(stats.health)
-  const sanityEffects = checkSanityEffects(stats.sanity)
-  const intelligenceEffects = checkIntelligenceEffects(stats.intelligence)
-  const happinessEffects = checkHappinessEffects(stats.happiness)
+export function checkAllThresholdEffects(stats: StatEffect): ThresholdEffectsResult {
+  const healthEffects = checkHealthEffects(stats.health || 0)
+  const sanityEffects = checkSanityEffects(stats.sanity || 0)
+  const intelligenceEffects = checkIntelligenceEffects(stats.intelligence || 0)
+  const happinessEffects = checkHappinessEffects(stats.happiness || 0)
 
   // Объединяем результаты
   return {
@@ -230,7 +230,7 @@ export function checkAllThresholdEffects(stats: PersonalStats): ThresholdEffects
  * Генерирует события для низких статов (случайные негативные события)
  */
 export function generateLowStatEvents(
-  stats: PersonalStats,
+  stats: StatEffect,
   turn: number,
   year: number
 ): Notification[] {
@@ -238,7 +238,7 @@ export function generateLowStatEvents(
   const quarter = (turn % 4) || 4
 
   // Конфликт на работе (Sanity < 20)
-  if (stats.sanity < 20 && Math.random() < 0.3) {
+  if ((stats.sanity || 0) < 20 && Math.random() < 0.3) {
     notifications.push({
       id: `conflict_work_${Date.now()}`,
       type: 'warning',
@@ -250,7 +250,7 @@ export function generateLowStatEvents(
   }
 
   // Ошибка в бизнесе (Sanity < 20)
-  if (stats.sanity < 20 && Math.random() < 0.2) {
+  if ((stats.sanity || 0) < 20 && Math.random() < 0.2) {
     notifications.push({
       id: `business_error_${Date.now()}`,
       type: 'warning',
@@ -263,7 +263,7 @@ export function generateLowStatEvents(
   }
 
   // Семейный конфликт (Sanity < 20 или Happiness < 20)
-  if ((stats.sanity < 20 || stats.happiness < 20) && Math.random() < 0.15) {
+  if (((stats.sanity || 0) < 20 || (stats.happiness || 0) < 20) && Math.random() < 0.15) {
     notifications.push({
       id: `family_conflict_${Date.now()}`,
       type: 'warning',

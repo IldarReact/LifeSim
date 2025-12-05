@@ -1,5 +1,3 @@
-// Game state types
-import type { CharacterArchetype } from './job.types';
 import type { Asset, Debt, QuarterlyReport } from './finance.types';
 import type { PersonalLife } from './personal.types';
 import type { Job } from './job.types';
@@ -24,7 +22,6 @@ export type GameOverReason =
 export interface PlayerState {
   id: string;
   name: string;
-  archetype: CharacterArchetype;
   countryId: string;
   age: number;
 
@@ -32,6 +29,7 @@ export interface PlayerState {
   debts: Debt[];
   personal: PersonalLife;
   quarterlyReport: QuarterlyReport;
+  creditScore: { value: number } | number;
 
   quarterlySalary: number;
 
@@ -58,6 +56,12 @@ export interface PlayerState {
 
   // Lifestyle System
   activeLifestyle: Partial<Record<string, string>>; // category -> itemId
+
+  // Housing System
+  housingId: string; // ID текущего жилья из housing.json
+
+  // Traits System
+  traits: string[];
 }
 
 

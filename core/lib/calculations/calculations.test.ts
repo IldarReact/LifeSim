@@ -20,9 +20,10 @@ describe('Quarterly Calculations', () => {
   const mockPlayer: PlayerState = {
     id: 'test',
     name: 'Test Player',
-    archetype: 'entrepreneur',
     countryId: 'us',
     age: 25,
+    creditScore: { value: 650 },
+    traits: [],
 
     // ✅ новая статистика
     stats: { ...baseStats },
@@ -65,7 +66,8 @@ describe('Quarterly Calculations', () => {
     activeFreelanceGigs: [],
     businesses: [],
     businessIdeas: [],
-    activeLifestyle: {}
+    activeLifestyle: {},
+    housingId: 'housing_room'
   }
 
   const mockCountry: CountryEconomy = {

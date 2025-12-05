@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { Bell, Check, X, Briefcase } from "lucide-react"
 import { useGameStore } from "@/core/model/game-store"
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/shared/utils/utils"
 import { Button } from "@/shared/ui/button"
 import { useState, useRef, useEffect } from "react"
 

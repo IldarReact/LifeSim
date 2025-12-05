@@ -3,9 +3,11 @@
 import React from "react"
 import { OpportunityCard } from "../ui/opportunity-card"
 import { BusinessDetailCard } from "../ui/business-detail-card"
-import { BusinessDetailDialog, BUSINESS_REQUIREMENTS } from "./business-detail-dialog"
-import { Store } from "lucide-react"
+import { BusinessDetailDialog } from "./business-detail-dialog"
+import { Store, TrendingUp, Users, CheckCircle, Star, AlertCircle } from "lucide-react"
 import { Button } from "@/shared/ui/button"
+import { getAllBusinessTypesForCountry } from "@/core/lib/data-loaders/businesses-loader"
+import { useGameStore } from "@/core/model/store"
 
 import type { StatEffect } from "@/core/types/stats.types"
 
@@ -29,12 +31,52 @@ interface BusinessesSectionProps {
   onError: (message: string) => void
 }
 
+// Helper to map role to icon
+const getRoleIcon = (role: string, priority: string) => {
+  const colorClass = priority === 'required' ? 'text-red-400' :
+    priority === 'recommended' ? 'text-blue-400' : 'text-green-400'
+
+  const iconClass = `w-5 h-5 ${colorClass}`
+
+  switch (role.toLowerCase()) {
+    case 'salesperson':
+    case 'продавец':
+      return <TrendingUp className={iconClass} />
+    case 'worker':
+    case 'рабочий':
+      return <Users className={iconClass} />
+    case 'technician':
+    case 'техник':
+      return <CheckCircle className={iconClass} />
+    case 'marketer':
+    case 'маркетолог':
+      return <Star className={iconClass} />
+    case 'manager':
+    case 'управляющий':
+      return <AlertCircle className={iconClass} />
+    default:
+      return <CheckCircle className={iconClass} />
+  }
+}
+
+// Helper to get business type label
+const getBusinessTypeLabel = (risk: string, initialCost: number) => {
+  if (initialCost < 50000) return "Малый бизнес"
+  if (initialCost < 100000) return "Средний бизнес"
+  return "Крупный бизнес"
+}
+
 export function BusinessesSection({
   playerCash,
   onOpenBusiness,
   onSuccess,
   onError
 }: BusinessesSectionProps) {
+  const player = useGameStore(state => state.player)
+  const countryId = player?.countryId || 'us'
+
+  const businesses = getAllBusinessTypesForCountry(countryId)
+
   const handleOpenBusiness = (
     name: string,
     type: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing',
@@ -80,164 +122,78 @@ export function BusinessesSection({
           Открытие бизнеса требует начального капитала и отнимает много энергии на старте. Будьте готовы к расходам и стрессу!
         </p>
 
-        <BusinessDetailCard
-          title="Магазин гаджетов"
-          type="Малый бизнес"
-          description="Розничная точка продажи смартфонов и аксессуаров в торговом центре. Требует закупки товара и найма продавцов."
-          cost={50000}
-          income="$9,000 - $24,000/кв"
-          expenses="$7,500/кв"
-          energyCost={15}
-          stressImpact="+2"
-          image="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop"
-          detailDialog={
-            <BusinessDetailDialog
-              title="Магазин гаджетов"
-              type="Малый бизнес"
-              description="Розничная точка продажи смартфонов и аксессуаров в торговом центре. Требует закупки товара и найма продавцов."
-              cost={50000}
-              income="$9,000 - $24,000/кв"
-              expenses="$7,500/кв"
-              energyCost={15}
-              stressImpact="+2"
-              image="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop"
-              requirements={BUSINESS_REQUIREMENTS.gadget_store}
-              trigger={
-                <Button variant="outline" className="flex-1 text-xs h-9 border-white/20 text-white hover:bg-white/10">
-                  Подробнее
-                </Button>
-              }
-              onBuy={() => handleOpenBusiness(
-                "Магазин гаджетов",
-                "retail",
-                "Розничная точка продажи смартфонов и аксессуаров в торговом центре",
-                50000,
-                5500,
-                2500,
-                5,
-                15,
-                2
-              )}
-            />
-          }
-          onBuy={() => handleOpenBusiness(
-            "Магазин гаджетов",
-            "retail",
-            "Розничная точка продажи смартфонов и аксессуаров в торговом центре",
-            50000,
-            5500,
-            2500,
-            5,
-            15,
-            2
-          )}
-        />
+        {businesses.map(business => {
+          const typeLabel = getBusinessTypeLabel(business.risk, business.initialCost)
+          // Default values since BusinessType doesn't have cost field
+          const energyCost = 15
+          const stressImpact = 2
+          const incomeRange = `$${Math.round(business.monthlyIncome * 0.6).toLocaleString()} - $${Math.round(business.monthlyIncome * 1.5).toLocaleString()}/кв`
+          const expenses = `$${business.monthlyExpenses.toLocaleString()}/кв`
 
-        <BusinessDetailCard
-          title="Автомойка"
-          type="Средний бизнес"
-          description="Комплекс по обслуживанию автомобилей. Стабильный поток клиентов, но требует контроля качества и обслуживания оборудования."
-          cost={120000}
-          income="$24,000 - $45,000/кв"
-          expenses="$15,000/кв"
-          energyCost={25}
-          stressImpact="+4"
-          image="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop"
-          detailDialog={
-            <BusinessDetailDialog
-              title="Автомойка"
-              type="Средний бизнес"
-              description="Комплекс по обслуживанию автомобилей. Стабильный поток клиентов, но требует контроля качества и обслуживания оборудования."
-              cost={120000}
-              income="$24,000 - $45,000/кв"
-              expenses="$15,000/кв"
-              energyCost={25}
-              stressImpact="+4"
-              image="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop"
-              requirements={BUSINESS_REQUIREMENTS.car_wash}
-              trigger={
-                <Button variant="outline" className="flex-1 text-xs h-9 border-white/20 text-white hover:bg-white/10">
-                  Подробнее
-                </Button>
-              }
-              onBuy={() => handleOpenBusiness(
-                "Автомойка",
-                "service",
-                "Комплекс по обслуживанию автомобилей",
-                120000,
-                11500,
-                5000,
-                8,
-                25,
-                4
-              )}
-            />
-          }
-          onBuy={() => handleOpenBusiness(
-            "Автомойка",
-            "service",
-            "Комплекс по обслуживанию автомобилей",
-            120000,
-            11500,
-            5000,
-            8,
-            25,
-            4
-          )}
-        />
+          // Map employee roles to requirements with icons
+          const requirements = (business.employeeRoles || []).map(role => ({
+            role: role.role,
+            priority: role.priority,
+            description: role.description,
+            icon: getRoleIcon(role.role, role.priority)
+          }))
 
-        <BusinessDetailCard
-          title="Кофейня"
-          type="Малый бизнес"
-          description="Уютное место с качественным кофе и выпечкой. Важна локация и атмосфера."
-          cost={35000}
-          income="$6,000 - $15,000/кв"
-          expenses="$4,500/кв"
-          energyCost={10}
-          stressImpact="+1"
-          image="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop"
-          detailDialog={
-            <BusinessDetailDialog
-              title="Кофейня"
-              type="Малый бизнес"
-              description="Уютное место с качественным кофе и выпечкой. Важна локация и атмосфера."
-              cost={35000}
-              income="$6,000 - $15,000/кв"
-              expenses="$4,500/кв"
-              energyCost={10}
-              stressImpact="+1"
-              image="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop"
-              requirements={BUSINESS_REQUIREMENTS.cafe}
-              trigger={
-                <Button variant="outline" className="flex-1 text-xs h-9 border-white/20 text-white hover:bg-white/10">
-                  Подробнее
-                </Button>
+          return (
+            <BusinessDetailCard
+              key={business.id}
+              title={business.name}
+              type={typeLabel}
+              description={business.description || ''}
+              cost={business.initialCost}
+              income={incomeRange}
+              expenses={expenses}
+              energyCost={energyCost}
+              stressImpact={`+${stressImpact}`}
+              image={business.imageUrl || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop'}
+              detailDialog={
+                <BusinessDetailDialog
+                  title={business.name}
+                  type={typeLabel}
+                  description={business.description || ''}
+                  cost={business.initialCost}
+                  income={incomeRange}
+                  expenses={expenses}
+                  energyCost={energyCost}
+                  stressImpact={`+${stressImpact}`}
+                  image={business.imageUrl || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop'}
+                  requirements={requirements}
+                  trigger={
+                    <Button variant="outline" className="flex-1 text-xs h-9 border-white/20 text-white hover:bg-white/10">
+                      Подробнее
+                    </Button>
+                  }
+                  onBuy={() => handleOpenBusiness(
+                    business.name,
+                    business.type as any,
+                    business.description || '',
+                    business.initialCost,
+                    business.monthlyIncome,
+                    business.monthlyExpenses,
+                    business.requiredEmployees?.recommended || 5,
+                    energyCost,
+                    stressImpact
+                  )}
+                />
               }
               onBuy={() => handleOpenBusiness(
-                "Кофейня",
-                "cafe",
-                "Уютное место с качественным кофе и выпечкой",
-                35000,
-                3500,
-                1500,
-                4,
-                10,
-                1
+                business.name,
+                business.type as any,
+                business.description || '',
+                business.initialCost,
+                business.monthlyIncome,
+                business.monthlyExpenses,
+                business.requiredEmployees?.recommended || 5,
+                energyCost,
+                stressImpact
               )}
             />
-          }
-          onBuy={() => handleOpenBusiness(
-            "Кофейня",
-            "cafe",
-            "Уютное место с качественным кофе и выпечкой",
-            35000,
-            3500,
-            1500,
-            4,
-            10,
-            1
-          )}
-        />
+          )
+        })}
       </div>
     </OpportunityCard>
   )

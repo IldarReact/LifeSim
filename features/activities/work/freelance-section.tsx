@@ -40,7 +40,7 @@ export function FreelanceSection({ onTakeOrder }: FreelanceSectionProps) {
             requirements={[
               { skill: "Frontend", level: 1 }
             ]}
-            image="https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&h=600&fit=crop"
+            image="/images/jobs/freelance_landing.png"
             onTakeOrder={() => onTakeOrder(
               "gig_1",
               "Лендинг",
@@ -59,7 +59,7 @@ export function FreelanceSection({ onTakeOrder }: FreelanceSectionProps) {
             requirements={[
               { skill: "Дизайн", level: 1 }
             ]}
-            image="https://images.unsplash.com/photo-1626785774573-4b799314346d?w=800&h=600&fit=crop"
+            image="/images/jobs/freelance_logo.png"
             onTakeOrder={() => onTakeOrder(
               "gig_2",
               "Логотип",

@@ -8,6 +8,14 @@ export interface SkillRequirement {
   minLevel: SkillLevel;
 }
 
+export interface SkillDefinition {
+  id: string;
+  name: string;
+  description: string;
+  maxLevel?: number;
+  category?: 'technical' | 'creative' | 'social' | 'physical' | 'language';
+}
+
 export interface Skill {
   id: string;
   name: string;

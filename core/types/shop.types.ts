@@ -1,30 +1,47 @@
-import type { StatEffect } from './stats.types'
-import type { AssetType } from './finance.types'
+import { StatEffect } from "./stats.types"
+import { AssetType } from "./finance.types"
 
-export type ShopCategory = 'food' | 'transport' | 'health' | 'services' | 'real_estate' | 'luxury'
+export type ShopCategory =
+  | 'food'
+  | 'transport'
+  | 'health'
+  | 'services'
+  | 'housing'
 
-export interface ShopItem {
+/** Базовый интерфейс */
+export interface BaseShopItem {
   id: string
   name: string
-  description: string
-  price: number
+  description?: string
   category: ShopCategory
-
-  // Эффекты при покупке (разовые)
   effects?: StatEffect
+}
 
-  // Если это актив (машина, дом)
+/** Разовая покупка (машина, гаджет, подарок) */
+export interface OneTimeShopItem extends BaseShopItem {
+  price: number
+  isRecurring?: never
+  costPerTurn?: never
+
+  // Для активов (машины, недвижимость и т.д.)
   assetType?: AssetType
-  maintenanceCost?: number // Ежемесячное обслуживание
+  maintenanceCost?: number
+}
 
-  // Требования
-  minMoney?: number
+/** Рекуррентная подписка (еда, транспорт, жильё, Netflix) */
+export interface RecurringShopItem extends BaseShopItem {
+  isRecurring: true
+  costPerTurn: number
+  price?: never
+}
 
-  // Ограничения
-  maxQuantity?: number // Например, нельзя купить 2 одинаковые машины (условно)
-  cooldown?: number // Кулдаун в ходах (пока не используется, на будущее)
+/** Главный тип */
+export type ShopItem = OneTimeShopItem | RecurringShopItem
 
-  // Рекуррентные платежи (лайфстайл)
-  isRecurring?: boolean
-  costPerTurn?: number
+export function isRecurringItem(item: ShopItem): item is RecurringShopItem {
+  return (item as RecurringShopItem).isRecurring === true
+}
+
+export function getItemCost(item: ShopItem): number {
+  return isRecurringItem(item) ? item.costPerTurn : item.price
 }

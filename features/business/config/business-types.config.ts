@@ -181,6 +181,34 @@ export const BUSINESS_TYPES_CONFIG: Record<BusinessType, BusinessTypeConfig> = {
     pricePerUnit: 120,
     purchaseCost: 60,
   },
+
+  food: {
+    key: 'food',
+    name: 'Ресторан',
+    description: 'Ресторан с полным циклом обслуживания',
+
+    totalCost: 55000,
+    upfrontCost: 9000,
+    openingQuarters: 2,
+
+    creationCost: {
+      energy: -30,
+    },
+
+    baseMonthlyIncome: 14000,
+    baseMonthlyExpenses: 7000,
+
+    maxEmployees: 12,
+    requiredRoles: ['worker', 'salesperson'],
+    minEmployees: 4,
+
+    defaultTaxRate: 0.15,
+    insuranceCost: 500,
+
+    maxStock: 1000,
+    pricePerUnit: 150,
+    purchaseCost: 60,
+  },
 };
 
 /**

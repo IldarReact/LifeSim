@@ -1,28 +1,28 @@
 import type { GameOverReason } from '@/core/types/game.types'
-import type { PersonalStats } from '@/core/types/stats.types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 /**
  * Проверяет условия поражения игрока
  * @returns Причина поражения или null, если игрок еще жив
  */
-export function checkDefeatConditions(stats: PersonalStats): GameOverReason | null {
+export function checkDefeatConditions(stats: StatEffect): GameOverReason | null {
   // Проверка здоровья
-  if (stats.health <= 0) {
+  if ((stats.health || 0) <= 0) {
     return 'DEATH'
   }
 
   // Проверка рассудка
-  if (stats.sanity <= 0) {
+  if ((stats.sanity || 0) <= 0) {
     return 'MENTAL_BREAKDOWN'
   }
 
   // Проверка интеллекта
-  if (stats.intelligence <= 0) {
+  if ((stats.intelligence || 0) <= 0) {
     return 'DEGRADATION'
   }
 
   // Проверка счастья
-  if (stats.happiness <= 0) {
+  if ((stats.happiness || 0) <= 0) {
     return 'DEPRESSION'
   }
 

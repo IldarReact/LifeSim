@@ -4,7 +4,8 @@ import React from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { SectionSeparator } from "@/shared/ui/section-separator"
 import { OpportunityCard } from "./ui/opportunity-card"
-import { GraduationCap, BookOpen, Code, DollarSign, Globe, Brain, Clock, Zap, Star, TrendingUp, Palette } from "lucide-react"
+import { GraduationCap, BookOpen, Code, DollarSign, Globe, Brain, Clock, Zap, Star, TrendingUp, Palette, Lightbulb } from "lucide-react"
+import { getAllCoursesForCountry } from "@/core/lib/data-loaders/courses-loader"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
@@ -73,7 +74,7 @@ function CourseCard({
             <div className="bg-white/5 rounded-lg p-2">
               <span className="text-xs text-white/50 block mb-1">Интеллект</span>
               <span className="text-blue-400 font-semibold text-sm flex items-center gap-1">
-                <Brain className="w-3 h-3" /> +{intelligenceBonus}
+                <Lightbulb className="w-3 h-3" /> +{intelligenceBonus}
               </span>
             </div>
             {skillBonus && (
@@ -173,6 +174,11 @@ export function EducationActivity(): React.JSX.Element | null {
   if (!player) return null
 
   const currentCountry = countries[player.countryId]
+  const countryId = player.countryId || 'us'
+
+  // Load courses from data loader
+  const availableCourses = getAllCoursesForCountry(countryId)
+
   // Filter skills > 0
   const skills = (player.personal.skills || []).filter(s => s.level > 0)
   const activeCourses = player.personal.activeCourses || []

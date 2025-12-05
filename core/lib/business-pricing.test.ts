@@ -60,7 +60,8 @@ describe('Business Pricing & Market Tests', () => {
     salary: 1000,
     satisfaction: 100,
     productivity: 100,
-    experience: 4
+    experience: 4,
+    humanTraits: []
   })
 
   describe('Price Impact on Demand', () => {

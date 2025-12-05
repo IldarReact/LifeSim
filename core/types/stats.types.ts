@@ -15,7 +15,4 @@ export type Stats = {
   intelligence: number;   
 };
 
-// Статы персонажа (без денег)
-export type PersonalStats = Omit<Stats, 'money'>;
-
 export type StatEffect = Partial<Stats>;

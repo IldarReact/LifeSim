@@ -42,13 +42,12 @@ export function TopStatusBar() {
   // Функция создания комнаты
   const createRoom = () => {
     initMultiplayer(); // генерирует ID и меняет URL
-    alert("Комната создана! Скопируй ссылку и отправь друзьям!");
   };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-4 py-2 md:px-6 md:py-3">
       <div className="mx-auto max-w-7xl">
-        <div className="relative flex items-center justify-between rounded-2xl border border-white/10 bg-black/20 px-4 py-2 shadow-lg backdrop-blur-md transition-all hover:bg-black/30 md:px-6">
+        <div className="relative flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950/80 px-4 py-2 shadow-2xl backdrop-blur-xl transition-all md:px-6">
 
           {/* Left: Country */}
           <div className="flex items-center gap-2">

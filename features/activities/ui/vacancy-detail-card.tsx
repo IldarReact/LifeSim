@@ -2,7 +2,7 @@
 
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
-import { Star, Building, Zap } from "lucide-react"
+import { Star, Building, Zap, Heart, Brain, Smile } from "lucide-react"
 import { useState } from "react"
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog"
+import type { Job } from "@/core/types/job.types"
 
 interface VacancyDetailCardProps {
   title: string
@@ -20,6 +21,7 @@ interface VacancyDetailCardProps {
   requirements: Array<{ skill: string; level: number }>
   image: string
   onApply?: () => void
+  jobCost?: Job['cost'] // Добавляем полный cost
 }
 
 export function VacancyDetailCard({
@@ -29,9 +31,30 @@ export function VacancyDetailCard({
   energyCost = 20,
   requirements,
   image,
-  onApply
+  onApply,
+  jobCost
 }: VacancyDetailCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+
+  const getEffectIcon = (key: string) => {
+    const icons: Record<string, React.ReactElement> = {
+      health: <Heart className="w-3 h-3" />,
+      energy: <Zap className="w-3 h-3" />,
+      sanity: <Brain className="w-3 h-3" />,
+      happiness: <Smile className="w-3 h-3" />,
+    }
+    return icons[key] || null
+  }
+
+  const getEffectColor = (key: string) => {
+    const colors: Record<string, string> = {
+      health: 'text-red-400',
+      energy: 'text-amber-400',
+      sanity: 'text-purple-400',
+      happiness: 'text-pink-400',
+    }
+    return colors[key] || 'text-gray-400'
+  }
 
   return (
     <>
@@ -48,14 +71,24 @@ export function VacancyDetailCard({
         <div className="p-4">
           <div className="flex justify-between items-start mb-2">
             <h3 className="text-lg font-bold text-white">{title}</h3>
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end gap-1">
               <div className="text-green-400 font-bold text-sm whitespace-nowrap ml-2">
                 {salary}
               </div>
-              <div className="flex items-center gap-1 text-amber-400 text-xs">
-                <Zap className="w-3 h-3" />
-                <span>-{energyCost}</span>
-              </div>
+              {jobCost && (
+                <div className="flex flex-wrap gap-1 justify-end">
+                  {Object.entries(jobCost).map(([key, value]) => {
+                    if (!value || value === 0) return null
+                    const color = getEffectColor(key)
+                    return (
+                      <div key={key} className={`flex items-center gap-0.5 ${color} text-xs`}>
+                        {getEffectIcon(key)}
+                        <span>{value > 0 ? '+' : ''}{value}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </div>
 

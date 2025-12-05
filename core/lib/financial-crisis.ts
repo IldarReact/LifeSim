@@ -1,6 +1,7 @@
 import type { PlayerState } from '@/core/types/game.types'
 import type { Asset } from '@/core/types/finance.types'
 import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
+import { getCrisisOptions } from '@/core/lib/data-loaders/static-data-loader'
 
 /**
  * Критический порог баланса для финансового кризиса
@@ -31,58 +32,71 @@ export interface CrisisExitOption {
  */
 export function getCrisisExitOptions(player: PlayerState): CrisisExitOption[] {
   const options: CrisisExitOption[] = []
+  const staticOptions = getCrisisOptions()
 
   // 1. Продажа активов
-  const sellableAssets = player.assets.filter(a => a.value > 0)
-  options.push({
-    id: 'sell_assets',
-    type: 'sell_asset',
-    title: '💰 Продать активы',
-    description: sellableAssets.length > 0
-      ? `У вас есть ${sellableAssets.length} активов на сумму $${sellableAssets.reduce((sum, a) => sum + a.value, 0).toLocaleString()}`
-      : 'Нет активов для продажи',
-    available: sellableAssets.length > 0
-  })
+  const sellAssetsOpt = staticOptions.find(o => o.type === 'sell_asset')
+  if (sellAssetsOpt) {
+    const sellableAssets = player.assets.filter(a => a.value > 0)
+    const totalValue = sellableAssets.reduce((sum, a) => sum + a.value, 0)
 
-  // 2. Экстренный кредит (высокая ставка)
-  const canTakeLoan = player.debts.length < 3 // Максимум 3 кредита
-  options.push({
-    id: 'emergency_loan',
-    type: 'emergency_loan',
-    title: '🏦 Экстренный кредит',
-    description: canTakeLoan
-      ? 'Взять кредит под 25% годовых (очень высокая ставка!)'
-      : 'Слишком много активных кредитов',
-    available: canTakeLoan,
-    unavailableReason: canTakeLoan ? undefined : 'Максимум 3 кредита одновременно'
-  })
+    options.push({
+      id: sellAssetsOpt.id,
+      type: 'sell_asset',
+      title: sellAssetsOpt.title,
+      description: sellableAssets.length > 0
+        ? (sellAssetsOpt.descriptionTemplate || '').replace('{count}', sellableAssets.length.toString()).replace('{value}', totalValue.toLocaleString())
+        : (sellAssetsOpt.emptyDescription || 'Нет активов'),
+      available: sellableAssets.length > 0
+    })
+  }
+
+  // 2. Экстренный кредит
+  const loanOpt = staticOptions.find(o => o.type === 'emergency_loan')
+  if (loanOpt) {
+    const canTakeLoan = player.debts.length < 3
+    options.push({
+      id: loanOpt.id,
+      type: 'emergency_loan',
+      title: loanOpt.title,
+      description: loanOpt.description ?? "",
+      available: canTakeLoan,
+      unavailableReason: canTakeLoan ? undefined : loanOpt.unavailableReason
+    })
+  }
 
   // 3. Помощь семьи
-  const hasFamily = player.personal.familyMembers.length > 0
-  const familyRelations = player.personal.familyMembers.reduce((sum, m) => sum + (m.relationLevel || 50), 0) / Math.max(1, player.personal.familyMembers.length)
-  const canAskFamily = hasFamily && familyRelations > 50
+  const familyOpt = staticOptions.find(o => o.type === 'family_help')
+  if (familyOpt) {
+    const hasFamily = player.personal.familyMembers.length > 0
+    const familyRelations = player.personal.familyMembers.reduce((sum, m) => sum + (m.relationLevel || 50), 0) / Math.max(1, player.personal.familyMembers.length)
+    const canAskFamily = hasFamily && familyRelations > 50
 
-  options.push({
-    id: 'family_help',
-    type: 'family_help',
-    title: '👨‍👩‍👧‍👦 Попросить помощи у семьи',
-    description: canAskFamily
-      ? 'Семья может помочь деньгами (отношения ухудшатся)'
-      : hasFamily
-        ? 'Отношения с семьей слишком плохие'
-        : 'У вас нет семьи',
-    available: canAskFamily,
-    unavailableReason: canAskFamily ? undefined : 'Требуются хорошие отношения (>50)'
-  })
+    options.push({
+      id: familyOpt.id,
+      type: 'family_help',
+      title: familyOpt.title,
+      description: canAskFamily
+        ? (familyOpt.description ?? "")
+        : hasFamily
+          ? (familyOpt.unavailableDescription || 'Отношения плохие')
+          : (familyOpt.noFamilyDescription || 'Нет семьи'),
+      available: canAskFamily,
+      unavailableReason: canAskFamily ? undefined : familyOpt.unavailableReason
+    })
+  }
 
-  // 4. Банкротство (Game Over)
-  options.push({
-    id: 'bankruptcy',
-    type: 'bankruptcy',
-    title: '💸 Объявить банкротство',
-    description: 'Сдаться и завершить игру',
-    available: true
-  })
+  // 4. Банкротство
+  const bankruptcyOpt = staticOptions.find(o => o.type === 'bankruptcy')
+  if (bankruptcyOpt) {
+    options.push({
+      id: bankruptcyOpt.id,
+      type: 'bankruptcy',
+      title: bankruptcyOpt.title,
+      description: bankruptcyOpt.description ?? "",
+      available: true
+    })
+  }
 
   return options
 }

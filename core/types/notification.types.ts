@@ -2,7 +2,7 @@
 
 export interface Notification {
   id: string;
-  type: 'job_offer' | 'job_rejection' | 'info' | 'promotion' | 'success' | 'warning';
+  type: 'job_offer' | 'job_rejection' | 'info' | 'promotion' | 'success' | 'warning' | 'error';
   title: string;
   message: string;
   date: string;

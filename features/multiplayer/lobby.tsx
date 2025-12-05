@@ -14,23 +14,12 @@ import {
   setPlayerReady
 } from "@/core/lib/multiplayer";
 import { useGameStore } from "@/core/model/game-store";
-import type { CharacterArchetype } from "@/core/types/job.types";
 import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from "lucide-react";
 import { WorldSelectUI } from "@/features/setup/ui/world-select";
 import { CharacterSelectUI } from "@/features/setup/ui/character-select";
 import type { CountryEconomy } from "@/core/types";
 import { Player } from "./MultiplayerHub";
-
-
-// ARCHETYPES нужно полностью переделать под переменные как минимум
-// Нужно удобное добавление новых персонажей чтобы мы их как из лего собирали
-const ARCHETYPES: { id: CharacterArchetype; name: string; description: string }[] = [
-  { id: "investor", name: "Инвестор", description: "Начальный капитал: $50,000" },
-  { id: "specialist", name: "Специалист", description: "Зарплата: $4,000/мес" },
-  { id: "entrepreneur", name: "Предприниматель", description: "Бонус к бизнесу" },
-  { id: "worker", name: "Рабочий", description: "Стабильный доход" },
-  { id: "indebted", name: "Должник", description: "Долг: $20,000" },
-];
+import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader";
 
 export function MultiplayerLobby() {
   const router = useRouter();
@@ -38,10 +27,13 @@ export function MultiplayerLobby() {
   const countryList: CountryEconomy[] = Object.values(countries);
 
   const [players, setPlayers] = useState<Player[]>([]);
-  const [selectedArchetype, setSelectedArchetypeLocal] = useState<CharacterArchetype | null>(null);
-  const [selectedCountry, setSelectedCountry] = useState<string>("usa");
+  const [selectedArchetype, setSelectedArchetypeLocal] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string>("us");
   const [roomId, setRoomId] = useState("");
   const [isReady, setIsReady] = useState(false);
+
+  // Загружаем архетипы для выбранной страны
+  const characters = getCharactersForCountry(selectedCountry);
 
   const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
   const [isArchetypeModalOpen, setIsArchetypeModalOpen] = useState(false);
@@ -84,7 +76,7 @@ export function MultiplayerLobby() {
 
       const myPlayer = getOnlinePlayers().find(p => p.isLocal);
       if (myPlayer?.selectedArchetype) {
-        initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
+        initializeGame(selectedCountry, myPlayer.selectedArchetype);
         router.push("/");
       }
     });
@@ -95,7 +87,7 @@ export function MultiplayerLobby() {
     };
   }, [initializeGame, router, selectedCountry]);
 
-  const handleArchetypeSelect = (archetype: CharacterArchetype) => {
+  const handleArchetypeSelect = (archetype: string) => {
     setSelectedArchetypeLocal(archetype);
     setSelectedArchetype(archetype);
     setIsArchetypeModalOpen(false);
@@ -125,7 +117,7 @@ export function MultiplayerLobby() {
 
     const myPlayer = players.find(p => p.isLocal);
     if (myPlayer?.selectedArchetype) {
-      initializeGame(selectedCountry, myPlayer.selectedArchetype as CharacterArchetype);
+      initializeGame(selectedCountry, myPlayer.selectedArchetype);
       router.push("/");
     }
   };
@@ -139,7 +131,7 @@ export function MultiplayerLobby() {
   const canReady = selectedArchetype !== null;
 
   const selectedCountryName = countryList.find(c => c.id === selectedCountry)?.name || "Не выбрано";
-  const selectedArchetypeName = ARCHETYPES.find(a => a.id === selectedArchetype)?.name || "Не выбрано";
+  const selectedArchetypeName = characters.find(c => c.archetype === selectedArchetype)?.name || "Не выбрано";
 
   // Full screen modals
   if (isCountryModalOpen) {

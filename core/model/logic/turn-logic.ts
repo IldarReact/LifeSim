@@ -8,7 +8,11 @@ import { generateMarketEvent, cleanupExpiredMarketEvents } from '@/core/lib/mark
 import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
 import { checkDefeatConditions } from '@/core/lib/defeat-conditions'
 import { isInFinancialCrisis, generateCrisisEconomicEvent, applyCrisisToCountry } from '@/core/lib/financial-crisis'
-import { SHOP_ITEMS } from '@/core/lib/shop-data'
+import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
+import { calculateLifestyleExpenses, calculateMemberExpenses } from '@/core/lib/lifestyle-expenses'
+import { applyYearlyInflation, shouldShowInflationNotification } from '@/core/lib/calculations/inflation-system'
+import { getCountry } from '@/core/lib/data-loaders/economy-loader'
+import traitsData from '@/shared/data/world/commons/human-traits.json'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -26,15 +30,10 @@ export function processTurn(get: GetState, set: SetState): void {
   const protectedSkills = new Set<string>()
 
   // 0. Process Global Market Events (каждый квартал)
-  // Очистить истекшие события
   let marketEvents = cleanupExpiredMarketEvents(prev.marketEvents, prev.turn)
-
-  // Генерировать новое событие с определенной вероятностью
   const newMarketEvent = generateMarketEvent(prev.turn, prev.year)
   if (newMarketEvent) {
     marketEvents.push(newMarketEvent)
-
-    // Уведомить игрока о событии рынка
     const eventIcon = newMarketEvent.type === 'positive' ? '📈' :
       newMarketEvent.type === 'negative' ? '📉' : '📊'
 
@@ -46,10 +45,6 @@ export function processTurn(get: GetState, set: SetState): void {
       date: `${prev.year} Q${(prev.turn % 4) || 4}`,
       isRead: false
     })
-
-    console.log(`[MARKET] Новое событие: ${newMarketEvent.title}`)
-    console.log(`[MARKET] Влияние: ${newMarketEvent.impact > 0 ? '+' : ''}${newMarketEvent.impact.toFixed(2)}`)
-    console.log(`[MARKET] Длительность: ${newMarketEvent.duration} кварталов`)
   }
 
   // 1. Process Active Courses
@@ -63,7 +58,6 @@ export function processTurn(get: GetState, set: SetState): void {
 
     if (course.remainingDuration <= 0) {
       finishedCourses.push(course.id)
-
       const levelsGained = Math.ceil(course.totalDuration)
       let skillIdx = updatedSkills.findIndex(s => s.name === course.skillName)
 
@@ -91,7 +85,6 @@ export function processTurn(get: GetState, set: SetState): void {
         skill.progress = 0
         skill.lastPracticedTurn = prev.turn
         updatedSkills[skillIdx] = skill
-
         newNotifications.push({
           id: `course_end_${Date.now()}_${Math.random()}`,
           type: 'success',
@@ -102,7 +95,6 @@ export function processTurn(get: GetState, set: SetState): void {
         })
       }
     }
-
     return course
   }).filter(c => !finishedCourses.includes(c.id))
 
@@ -117,7 +109,6 @@ export function processTurn(get: GetState, set: SetState): void {
 
     if (uni.remainingDuration <= 0) {
       finishedUni.push(uni.id)
-
       const levelsGained = Math.ceil(uni.totalDuration)
       let skillIdx = updatedSkills.findIndex(s => s.name === uni.skillName)
 
@@ -145,7 +136,6 @@ export function processTurn(get: GetState, set: SetState): void {
         skill.progress = 0
         skill.lastPracticedTurn = prev.turn
         updatedSkills[skillIdx] = skill
-
         newNotifications.push({
           id: `uni_end_${Date.now()}_${Math.random()}`,
           type: 'success',
@@ -156,26 +146,22 @@ export function processTurn(get: GetState, set: SetState): void {
         })
       }
     }
-
     return uni
   }).filter(u => !finishedUni.includes(u.id))
 
-  // 3. Process Jobs (Skills used at work)
+  // 3. Process Jobs
   prev.player.jobs.forEach(job => {
-    if (job.requirements) {
-      job.requirements.forEach(req => {
-        const skillName = req.skillId
+    if (job.requirements?.skills) {
+      job.requirements.skills.forEach(req => {
+        const skillName = req.name
         protectedSkills.add(skillName)
-
         let skillIdx = updatedSkills.findIndex(s => s.name === skillName)
         if (skillIdx !== -1) {
           const skill = { ...updatedSkills[skillIdx] }
-          // If level < 4 (Senior), add progress
           if (skill.level < 4) {
-            skill.progress += 15 // Moderate progress at work
+            skill.progress += 15
             skill.lastPracticedTurn = prev.turn
             skill.isBeingUsedAtWork = true
-
             if (skill.progress >= 100) {
               skill.level = (skill.level + 1) as SkillLevel
               skill.progress = 0
@@ -200,15 +186,12 @@ export function processTurn(get: GetState, set: SetState): void {
   prev.pendingApplications.forEach(app => {
     let skillsMatch = true
     let matchScore = 0
-
     if (app.requirements && app.requirements.length > 0) {
       app.requirements.forEach(req => {
         const reqName = req.skillId
         const reqLevel = req.minLevel
-
         const playerSkill = updatedSkills.find(s => s.name === reqName)
         const playerLevel = playerSkill ? playerSkill.level : 0
-
         if (playerLevel < reqLevel) {
           skillsMatch = false
         } else {
@@ -216,12 +199,9 @@ export function processTurn(get: GetState, set: SetState): void {
         }
       })
     }
-
     let chance = skillsMatch ? 0.6 + (matchScore * 0.1) : 0.05
     if (chance > 0.95) chance = 0.95
-
     const isOffer = Math.random() < chance
-
     if (isOffer) {
       newNotifications.push({
         id: `offer_${Date.now()}_${Math.random()}`,
@@ -246,7 +226,6 @@ export function processTurn(get: GetState, set: SetState): void {
         : matchScore === 0
           ? 'К сожалению, был выбран другой кандидат с большим опытом.'
           : 'Высокая конкуренция на эту позицию.'
-
       newNotifications.push({
         id: `reject_${Date.now()}_${Math.random()}`,
         type: 'info',
@@ -260,43 +239,30 @@ export function processTurn(get: GetState, set: SetState): void {
 
   // 5. Skill Decay
   updatedSkills = updatedSkills.map(skill => {
-    // Skip if protected
     if (protectedSkills.has(skill.name) || skill.isBeingStudied || skill.isBeingUsedAtWork) {
       return { ...skill, lastPracticedTurn: prev.turn }
     }
-
     const turnsSinceLastPractice = prev.turn - skill.lastPracticedTurn
-
     if (turnsSinceLastPractice > 4) {
       const decayAmount = Math.floor((turnsSinceLastPractice - 4) * 5)
       const newProgress = Math.max(0, skill.progress - decayAmount)
-
       if (newProgress === 0 && skill.progress > 0) {
         if (skill.level > 0) {
-          return {
-            ...skill,
-            level: (skill.level - 1) as SkillLevel,
-            progress: 50
-          }
+          return { ...skill, level: (skill.level - 1) as SkillLevel, progress: 50 }
         }
       }
-
       return { ...skill, progress: newProgress }
     }
-
     return skill
   })
 
-  // 5. Dating Logic
+  // 6. Dating Logic
   let potentialPartner = prev.player.personal.potentialPartner
   let isDating = prev.player.personal.isDating
-
   if (isDating && !potentialPartner) {
-    // 30% chance to find someone
     if (Math.random() < 0.3) {
       const names = ['Мария', 'Анна', 'Елена', 'Виктория', 'София', 'Алиса', 'Дарья', 'Полина']
       const occupations = ['Дизайнер', 'Врач', 'Учитель', 'Менеджер', 'Юрист', 'Программист']
-
       potentialPartner = {
         id: `partner_${Date.now()}`,
         name: names[Math.floor(Math.random() * names.length)],
@@ -304,7 +270,6 @@ export function processTurn(get: GetState, set: SetState): void {
         occupation: occupations[Math.floor(Math.random() * occupations.length)],
         income: 1000 + Math.floor(Math.random() * 3000)
       }
-
       newNotifications.push({
         id: `dating_success_${Date.now()}`,
         type: 'success',
@@ -313,8 +278,7 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
-
-      isDating = false // Stop searching automatically
+      isDating = false
     } else {
       newNotifications.push({
         id: `dating_fail_${Date.now()}`,
@@ -327,18 +291,14 @@ export function processTurn(get: GetState, set: SetState): void {
     }
   }
 
-  // 6. Pregnancy Logic
+  // 7. Pregnancy Logic
   let pregnancy = prev.player.personal.pregnancy
   let familyMembers = [...prev.player.personal.familyMembers]
-
   if (pregnancy) {
     pregnancy = { ...pregnancy, turnsLeft: pregnancy.turnsLeft - 1 }
-
     if (pregnancy.turnsLeft <= 0) {
-      // Childbirth
       const childCount = pregnancy.isTwins ? 2 : 1
       const names = ['Макс', 'Александр', 'Михаил', 'Артем', 'Иван', 'Дмитрий']
-
       for (let i = 0; i < childCount; i++) {
         familyMembers.push({
           id: `child_${Date.now()}_${i}`,
@@ -348,13 +308,9 @@ export function processTurn(get: GetState, set: SetState): void {
           relationLevel: 100,
           income: 0,
           expenses: 500,
-          passiveEffects: {
-            happiness: 10,
-            sanity: -2
-          }
+          passiveEffects: { happiness: 10, sanity: -2, health: 0 }
         })
       }
-
       newNotifications.push({
         id: `birth_${Date.now()}`,
         type: 'success',
@@ -363,31 +319,24 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
-
-      console.log(`[Family] 👶 Рождение ребенка! Двойня: ${pregnancy.isTwins}`)
-
       pregnancy = null
     }
   }
 
-  // 7. Calculate Energy for Next Turn
-  const totalActiveEnergyCost = activeCourses.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
-    activeUniversity.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
-    prev.player.jobs.reduce((acc, j) => acc + (j.cost.energy || 0), 0)
+  // 8. Business Logic
+  const businessResult = processBusinessTurn(
+    prev.player.businesses,
+    updatedSkills,
+    prev.turn,
+    prev.year,
+    prev.globalMarket.value
+  );
+  updatedSkills = businessResult.updatedSkills;
+  newNotifications.push(...businessResult.notifications);
+  businessResult.protectedSkills.forEach(skill => protectedSkills.add(skill));
 
-  const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
-
-  console.log(`[Turn] Energy: Recovered=${recoveredEnergy}, ActiveCost=${totalActiveEnergyCost}`)
-
-  // Calculate business sanity impact
-  const businessSanityImpact = 0
-
-
-  // 8. Process Buffs
+  // 9. Process Buffs
   let activeBuffs = [...(prev.player.personal.buffs || [])]
-  const expiredBuffs: string[] = []
-
-  // Apply buff effects and decrement duration
   let buffHappinessMod = 0
   let buffHealthMod = 0
   let buffSanityMod = 0
@@ -397,8 +346,6 @@ export function processTurn(get: GetState, set: SetState): void {
 
   activeBuffs = activeBuffs.map(buff => {
     const newBuff = { ...buff, duration: buff.duration - 1 }
-
-    // Accumulate modifiers
     if (buff.effects.happiness) buffHappinessMod += buff.effects.happiness;
     if (buff.effects.health) buffHealthMod += buff.effects.health;
     if (buff.effects.sanity) buffSanityMod += buff.effects.sanity;
@@ -407,7 +354,6 @@ export function processTurn(get: GetState, set: SetState): void {
     if (buff.effects.money) buffIncomeMod += buff.effects.money;
 
     if (newBuff.duration <= 0) {
-      expiredBuffs.push(newBuff.id)
       newNotifications.push({
         id: `buff_end_${Date.now()}_${Math.random()}`,
         type: 'info',
@@ -416,114 +362,163 @@ export function processTurn(get: GetState, set: SetState): void {
         date: `${prev.year} Q${(prev.turn % 4) || 4}`,
         isRead: false
       })
-      console.log(`[Buff] Expired: ${buff.description}`)
     }
     return newBuff
   }).filter(b => b.duration > 0)
 
-  // 9. Calculate stat modifiers from all sources
-  const tempPlayer = {
-    ...prev.player,
-    personal: {
-      ...prev.player.personal,
-      familyMembers,
-      activeCourses,
-      activeUniversity
-    }
-  }
-
-  const statMods = calculateStatModifiers(tempPlayer)
-
-  // Apply modifiers to stats (Base + Buffs + Business)
-  const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
-  const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
-  const sanityMod = getTotalModifier(statMods.sanity, 'sanity') + buffSanityMod - businessSanityImpact
-  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence') + buffIntelligenceMod
-
-  // Process Lifestyle
-  let lifestyleExpenses = 0
+  // 10. Lifestyle & Expenses
   let lifestyleHappiness = 0
   let lifestyleHealth = 0
   let lifestyleEnergy = 0
   let lifestyleSanity = 0
   let lifestyleIntelligence = 0
 
-  // Player's lifestyle (food + housing)
-  if (prev.player.activeLifestyle) {
-    Object.values(prev.player.activeLifestyle).forEach(itemId => {
-      const item = SHOP_ITEMS.find(i => i.id === itemId)
-      if (item && item.isRecurring) {
-        lifestyleExpenses += (item.costPerTurn || item.price)
-        if (item.effects) {
-          if (item.effects.happiness) lifestyleHappiness += item.effects.happiness
-          if (item.effects.health) lifestyleHealth += item.effects.health
-          if (item.effects.energy) lifestyleEnergy += item.effects.energy
-          if (item.effects.sanity) lifestyleSanity += item.effects.sanity
-          if (item.effects.intelligence) lifestyleIntelligence += item.effects.intelligence
-        }
+  // 10.1 Update family members expenses
+  const countryId = prev.player.countryId
+  const country = prev.countries[countryId] || getCountry(countryId) || {
+    id: countryId,
+    name: 'Unknown',
+    archetype: 'poor',
+    gdpGrowth: 0,
+    inflation: 2,
+    keyRate: 5,
+    interestRate: 5,
+    unemployment: 5,
+    taxRate: 13,
+    corporateTaxRate: 20,
+    salaryModifier: 1,
+    costOfLivingModifier: 1.0,
+    activeEvents: []
+  }
+  const costModifier = country.costOfLivingModifier || 1.0
+
+  const updatedFamilyMembers = familyMembers.map(member => {
+    const memberExpenses = calculateMemberExpenses(member, prev.player!.countryId, costModifier);
+    return {
+      ...member,
+      expenses: memberExpenses
+    };
+  });
+
+  // Create temp player for lifestyle calculation
+  const playerWithUpdatedMembers = {
+    ...prev.player,
+    personal: {
+      ...prev.player.personal,
+      familyMembers: updatedFamilyMembers
+    }
+  };
+
+  const lifestyleExpensesBreakdown = calculateLifestyleExpenses(playerWithUpdatedMembers, costModifier);
+  const lifestyleExpenses = lifestyleExpensesBreakdown.total;
+
+  // 10.2 Calculate lifestyle effects
+  // Housing (обязательно)
+  if (prev.player.housingId) {
+    const housing = getShopItemById(prev.player.housingId, prev.player.countryId)
+    if (housing && housing.effects) {
+      if (housing.effects.happiness) lifestyleHappiness += housing.effects.happiness
+      if (housing.effects.sanity) lifestyleSanity += housing.effects.sanity
+      if (housing.effects.health) lifestyleHealth += housing.effects.health
+    }
+  }
+
+  // Food (обязательно)
+  const foodId = prev.player.activeLifestyle?.food
+  if (foodId) {
+    const food = getShopItemById(foodId, prev.player.countryId)
+    if (food && food.effects) {
+      if (food.effects.happiness) lifestyleHappiness += food.effects.happiness
+      if (food.effects.health) lifestyleHealth += food.effects.health
+      if (food.effects.energy) lifestyleEnergy += food.effects.energy
+      if (food.effects.sanity) lifestyleSanity += food.effects.sanity
+      if (food.effects.intelligence) lifestyleIntelligence += food.effects.intelligence
+    }
+  }
+
+  // Transport
+  if (prev.player.activeLifestyle?.transport) {
+    const transport = getShopItemById(prev.player!.activeLifestyle!.transport, prev.player.countryId)
+    if (transport && transport.effects) {
+      if (transport.effects.happiness) lifestyleHappiness += transport.effects.happiness
+      if (transport.effects.health) lifestyleHealth += transport.effects.health
+      if (transport.effects.energy) lifestyleEnergy += transport.effects.energy
+      if (transport.effects.sanity) lifestyleSanity += transport.effects.sanity
+      if (transport.effects.intelligence) lifestyleIntelligence += transport.effects.intelligence
+    }
+  }
+
+  // Traits Effects
+  if (prev.player.traits) {
+    prev.player.traits.forEach(traitId => {
+      const trait = traitsData.find(t => t.id === traitId)
+      if (trait && trait.effects) {
+        if (trait.effects.happiness) lifestyleHappiness += trait.effects.happiness
+        if (trait.effects.health) lifestyleHealth += trait.effects.health
+        if (trait.effects.sanity) lifestyleSanity += trait.effects.sanity
+        if (trait.effects.intelligence) lifestyleIntelligence += trait.effects.intelligence
       }
     })
   }
 
-  // Family members' lifestyle (food only, housing shared)
-  familyMembers.forEach(member => {
-    if (member.foodPreference) {
-      const foodItem = SHOP_ITEMS.find(i => i.id === member.foodPreference)
-      if (foodItem && foodItem.isRecurring) {
-        lifestyleExpenses += (foodItem.costPerTurn || foodItem.price)
-        // Effects apply to player indirectly through family happiness
-      }
-    } else {
-      // Default food if not set
-      const defaultFood = SHOP_ITEMS.find(i => i.id === 'food_homemade')
-      if (defaultFood && defaultFood.isRecurring) {
-        lifestyleExpenses += (defaultFood.costPerTurn || defaultFood.price)
-      }
+  // 11. Stat Modifiers
+  const tempPlayer = {
+    ...prev.player,
+    personal: {
+      ...prev.player.personal,
+      familyMembers: updatedFamilyMembers,
+      activeCourses,
+      activeUniversity
     }
-  })
+  }
 
+  const statMods = calculateStatModifiers(tempPlayer)
+  const happinessMod = getTotalModifier(statMods.happiness, 'happiness') + buffHappinessMod
+  const healthMod = getTotalModifier(statMods.health, 'health') + buffHealthMod
+  const sanityMod = getTotalModifier(statMods.sanity, 'sanity') + buffSanityMod - businessResult.playerRoleSanityCost
+  const intelligenceMod = getTotalModifier(statMods.intelligence, 'intelligence') + buffIntelligenceMod
 
-  // 9.5. Business Logic - обработка всех бизнесов за квартал
-  const businessResult = processBusinessTurn(
-    prev.player.businesses,
-    updatedSkills,
-    prev.turn,
-    prev.year,
-    prev.globalMarket.value  // ✅ НОВОЕ: передаем глобальное состояние рынка
-  );
-
-  // Обновить навыки с учетом роста от бизнеса
-  updatedSkills = businessResult.updatedSkills;
-
-  // Добавить уведомления от бизнеса
-  newNotifications.push(...businessResult.notifications);
-
-  // Добавить защищенные навыки
-  businessResult.protectedSkills.forEach(skill => protectedSkills.add(skill));
-
-  // Apply lifestyle effects (after business calculation)
   const finalHappinessMod = happinessMod + lifestyleHappiness
   const finalHealthMod = healthMod + lifestyleHealth
-  const finalSanityMod = sanityMod + lifestyleSanity - businessResult.playerRoleSanityCost
+  const finalSanityMod = sanityMod + lifestyleSanity
   const finalIntelligenceMod = intelligenceMod + lifestyleIntelligence
   const finalEnergyMod = buffEnergyMod + lifestyleEnergy
 
+  // 12. Energy Calculation
+  const totalActiveEnergyCost = activeCourses.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
+    activeUniversity.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
+    prev.player.jobs.reduce((acc, j) => acc + (j.cost.energy || 0), 0)
 
-  // Пересчитать sanity с учетом ролей игрока в бизнесе
-  // const finalSanityMod = sanityMod - businessResult.playerRoleSanityCost; // Moved up
+  const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
 
+  // 13. Financial Calculations
 
-  // 10. Financial Calculations (Quarterly)
-  const country = prev.countries[prev.player.countryId] || { taxRate: 0, costOfLivingModifier: 1.0 }
+  const familyIncome = updatedFamilyMembers.reduce((acc, m) => acc + m.income, 0)
+  const familyExpenses = updatedFamilyMembers.reduce((acc, m) => acc + m.expenses, 0)
+  // Расчет дохода от активов и вкладов
+  let totalAssetIncome = 0
 
-  // Gather financial data
-  const familyIncome = familyMembers.reduce((acc, m) => acc + m.income, 0)
-  const familyExpenses = familyMembers.reduce((acc, m) => acc + m.expenses, 0)
-  const assetIncome = prev.player.assets.reduce((acc, a) => acc + (a.income * 3), 0)
+  // 1. Доход от обычных активов (недвижимость и т.д.)
+  // Умножаем на 3, так как income в ассете обычно месячный, а ход - квартал
+  totalAssetIncome += prev.player.assets
+    .filter(a => a.type !== 'deposit')
+    .reduce((acc, a) => acc + (a.income * 3), 0)
+
+  // 2. Доход от вкладов (зависит от ключевой ставки)
+  // Ставка по вкладу = 70% от ключевой ставки
+  const depositAnnualRate = (country.keyRate * 0.7) / 100
+  const depositQuarterlyRate = depositAnnualRate / 4
+
+  const depositsIncome = prev.player.assets
+    .filter(a => a.type === 'deposit')
+    .reduce((acc, a) => acc + (a.currentValue * depositQuarterlyRate), 0)
+
+  totalAssetIncome += depositsIncome
+
+  const assetIncome = totalAssetIncome
   const assetMaintenance = prev.player.assets.reduce((acc, a) => acc + (a.expenses * 3), 0)
   const debtInterest = prev.player.debts.reduce((acc, d) => acc + d.quarterlyInterest, 0)
 
-  // Calculate quarterly report using new system
   const quarterlyReport = calculateQuarterlyReport({
     player: prev.player,
     country,
@@ -537,12 +532,13 @@ export function processTurn(get: GetState, set: SetState): void {
       income: businessResult.totalIncome,
       expenses: businessResult.totalExpenses
     },
-    lifestyleExpenses
+    lifestyleExpenses,
+    expensesBreakdown: lifestyleExpensesBreakdown
   })
 
   const netProfit = quarterlyReport.netProfit
 
-  // 11. Проверка пороговых эффектов статов
+  // 14. Threshold Effects & Update State
   const currentStats = {
     health: Math.min(100, Math.max(0, prev.player.personal.stats.health - 2 + finalHealthMod)),
     happiness: Math.min(100, Math.max(0, prev.player.personal.stats.happiness - 1 + finalHappinessMod)),
@@ -552,11 +548,8 @@ export function processTurn(get: GetState, set: SetState): void {
   }
 
   const thresholdEffects = checkAllThresholdEffects(currentStats)
-
-  // Генерируем события для низких статов
   const lowStatEvents = generateLowStatEvents(currentStats, prev.turn, prev.year)
 
-  // Добавляем уведомления о пороговых эффектах
   thresholdEffects.events.forEach(event => {
     newNotifications.push({
       id: `threshold_${event.type}_${Date.now()}_${Math.random()}`,
@@ -567,70 +560,74 @@ export function processTurn(get: GetState, set: SetState): void {
       isRead: false
     })
   })
-
-  // Добавляем события низких статов
   newNotifications.push(...lowStatEvents)
 
-  // Добавляем расходы на лечение и терапию к финансовому отчету
   const totalThresholdCosts = thresholdEffects.medicalCosts + thresholdEffects.therapyCosts
   const adjustedNetProfit = netProfit - totalThresholdCosts
 
-  // Логируем пороговые эффекты
-  if (totalThresholdCosts > 0) {
-    console.log(`[Threshold] Medical: $${thresholdEffects.medicalCosts}, Therapy: $${thresholdEffects.therapyCosts}`)
-  }
-  if (thresholdEffects.workEfficiency < 1.0) {
-    console.log(`[Threshold] Work efficiency: ${(thresholdEffects.workEfficiency * 100).toFixed(0)}%`)
-  }
-
   const newTurn = prev.turn + 1
-  // Год увеличивается только когда завершается 4-й квартал (turn кратен 4)
   const newYear = prev.turn % 4 === 0 ? prev.year + 1 : prev.year
 
   setTimeout(() => {
-    // Проверяем условия поражения ПЕРЕД обновлением состояния
     const gameOverReason = checkDefeatConditions(currentStats)
-
     if (gameOverReason) {
-      // Игрок проиграл - завершаем игру
-      console.log(`[GAME OVER] Reason: ${gameOverReason}`)
       set({
         gameStatus: 'ended',
         endReason: gameOverReason,
         isProcessingTurn: false
       })
-      return // Прерываем обновление состояния
+      return
     }
 
-    // Проверка финансового кризиса
     let newGameStatus = 'playing'
-    let updatedCountries = { ...prev.countries }
-
     if (prev.player) {
       const finalMoney = prev.player.stats.money + adjustedNetProfit
-
       if (isInFinancialCrisis(finalMoney)) {
-        // newGameStatus = 'crisis' // Больше не меняем статус игры
-
         newNotifications.push({
           id: `crisis_alert_${Date.now()}`,
           type: 'warning',
           title: '📉 ФИНАНСОВЫЙ КРИЗИС',
-          message: 'Ваш баланс упал до критической отметки! Вы не можете продолжать игру, пока не решите проблему с долгом.',
+          message: 'Ваш баланс упал до критической отметки!',
           date: `${newYear} Q${(newTurn % 4) || 4}`,
           isRead: false
         })
       }
     }
 
-    // Если игрок жив - продолжаем обычное обновление
+    // Проверяем инфляцию (раз в год = каждые 4 квартала)
+    let inflationNotification = null
+    let updatedCountries = prev.countries
+
+    if (prev.player && shouldShowInflationNotification(newTurn)) {
+      const country = getCountry(prev.player.countryId)
+      const { newEconomy, inflationChange, keyRateChange } = applyYearlyInflation(
+        country,
+        false // TODO: связать с игровыми кризисами
+      )
+
+      // Обновляем экономику страны
+      updatedCountries = {
+        ...prev.countries,
+        [prev.player.countryId]: newEconomy
+      }
+
+      inflationNotification = {
+        year: Math.floor(newTurn / 4),
+        inflationRate: newEconomy.inflation,
+        inflationChange,
+        keyRate: newEconomy.keyRate,
+        keyRateChange,
+        countryName: country.name,
+      }
+    }
+
     set(state => ({
-      gameStatus: newGameStatus as any, // TypeScript workaround if needed
-      countries: updatedCountries,
+      gameStatus: newGameStatus as any,
       turn: newTurn,
       year: newYear,
       isProcessingTurn: false,
-      marketEvents: marketEvents, // ✅ НОВОЕ: обновляем события рынка
+      marketEvents: marketEvents,
+      countries: updatedCountries,
       player: state.player ? {
         ...state.player,
         businesses: businessResult.updatedBusinesses,
@@ -639,22 +636,28 @@ export function processTurn(get: GetState, set: SetState): void {
           skills: updatedSkills,
           activeCourses: activeCourses,
           activeUniversity: activeUniversity,
-          familyMembers: familyMembers,
+          familyMembers: updatedFamilyMembers.map(member => {
+            // Update relationship
+            let relationChange = 0
+            if (Math.random() > 0.7) {
+              relationChange = Math.floor(Math.random() * 5) - 2
+            }
+            return {
+              ...member,
+              relationLevel: Math.max(0, Math.min(100, member.relationLevel + relationChange)),
+              age: member.age + (newTurn % 4 === 0 ? 1 : 0)
+            }
+          }),
           buffs: activeBuffs,
           isDating: isDating,
           potentialPartner: potentialPartner,
           pregnancy: pregnancy,
-          energy: Math.min(100, recoveredEnergy + buffEnergyMod - businessResult.playerRoleEnergyCost),
-          // Apply modifiers + natural decay
           stats: {
             ...state.player.personal.stats,
-            health: Math.min(100, Math.max(0, state.player.personal.stats.health - 2 + finalHealthMod)),
-            happiness: Math.min(100, Math.max(0, state.player.personal.stats.happiness - 1 + finalHappinessMod)),
-            sanity: Math.min(100, Math.max(0, state.player.personal.stats.sanity + finalSanityMod)),
-            intelligence: Math.min(100, Math.max(0, state.player.personal.stats.intelligence + finalIntelligenceMod))
+            ...currentStats
           }
         },
-        energy: Math.min(100, recoveredEnergy + finalEnergyMod - businessResult.playerRoleEnergyCost),
+        energy: currentStats.energy,
         stats: {
           ...state.player.stats,
           money: state.player.stats.money + adjustedNetProfit
@@ -662,7 +665,8 @@ export function processTurn(get: GetState, set: SetState): void {
         quarterlyReport
       } : null,
       notifications: [...newNotifications, ...state.notifications],
-      pendingApplications: remainingApplications
+      pendingApplications: remainingApplications,
+      inflationNotification: inflationNotification
     }))
   }, 500)
 }

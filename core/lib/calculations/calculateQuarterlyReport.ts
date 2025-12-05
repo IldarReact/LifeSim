@@ -30,6 +30,14 @@ interface QuarterlyReportParams {
     expenses: number;
   };
   lifestyleExpenses?: number;
+  expensesBreakdown?: {
+    food: number;
+    housing: number;
+    transport: number;
+    credits: number;
+    mortgage: number;
+    other: number;
+  };
 }
 
 /**
@@ -40,7 +48,8 @@ export function calculateEmployeeQuarterlyReport(params: QuarterlyReportParams):
   const { player, country, familyIncome, familyExpenses, assetIncome, assetMaintenance, debtInterest, buffIncomeMod } = params;
 
   // Income
-  const salary = player.quarterlySalary * (1 + buffIncomeMod / 100);
+  const baseSalary = player.jobs.reduce((sum, job) => sum + (job.salary * 3), 0);
+  const salary = baseSalary * (1 + buffIncomeMod / 100);
   const totalIncome = salary + familyIncome + assetIncome;
 
   const income: IncomeBreakdown = {
@@ -55,7 +64,7 @@ export function calculateEmployeeQuarterlyReport(params: QuarterlyReportParams):
   // Taxes (for employees: calculated on gross income BEFORE expenses)
   const incomeTax = totalIncome * (country.taxRate / 100);
   const propertyTax = player.assets
-    .filter(a => a.type === 'real_estate')
+    .filter(a => a.type === 'housing')
     .reduce((sum, a) => sum + (a.currentValue * 0.00125), 0); // 0.5% yearly = 0.125% quarterly
 
   const taxes: TaxesBreakdown = {
@@ -70,15 +79,30 @@ export function calculateEmployeeQuarterlyReport(params: QuarterlyReportParams):
   const netIncome = totalIncome - taxes.total;
 
   // Expenses
-  const baseLiving = 1000 * 3 * country.costOfLivingModifier; // Base cost of living for 3 months
+  // Expenses
+  const breakdown = params.expensesBreakdown || {
+    food: params.lifestyleExpenses || 0,
+    housing: 0,
+    transport: 0,
+    credits: debtInterest,
+    mortgage: 0,
+    other: familyExpenses
+  };
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(baseLiving + (params.lifestyleExpenses || 0)),
-    family: Math.round(familyExpenses),
+    living: Math.round(breakdown.food + breakdown.housing + breakdown.transport + breakdown.other),
+    food: Math.round(breakdown.food),
+    housing: Math.round(breakdown.housing),
+    transport: Math.round(breakdown.transport),
+    credits: Math.round(breakdown.credits),
+    mortgage: Math.round(breakdown.mortgage),
+    other: Math.round(breakdown.other),
+
+    family: Math.round(familyExpenses), // Keep for compatibility
     business: 0,
     debtInterest: Math.round(debtInterest),
     assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(baseLiving + familyExpenses + debtInterest + assetMaintenance)
+    total: Math.round((breakdown.food + breakdown.housing + breakdown.transport + breakdown.other) + debtInterest + assetMaintenance)
   };
 
   // Net profit
@@ -134,14 +158,28 @@ export function calculateBusinessOwnerQuarterlyReport(params: QuarterlyReportPar
 
   // Expenses (for business: expenses BEFORE taxes)
   const baseLiving = 1000 * 3 * country.costOfLivingModifier;
+  const breakdown = params.expensesBreakdown || {
+    food: params.lifestyleExpenses || 0,
+    housing: 0,
+    transport: 0,
+    credits: debtInterest,
+    mortgage: 0,
+    other: familyExpenses
+  };
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(baseLiving + (params.lifestyleExpenses || 0)),
-    family: Math.round(familyExpenses),
+    living: Math.round(baseLiving + breakdown.food + breakdown.housing + breakdown.transport + breakdown.other),
+    food: Math.round(breakdown.food),
+    housing: Math.round(breakdown.housing),
+    transport: Math.round(breakdown.transport),
+    credits: Math.round(breakdown.credits),
+    mortgage: Math.round(breakdown.mortgage),
+    other: Math.round(breakdown.other),
+    family: Math.round(familyExpenses), // Deprecated
     business: Math.round(businessExpenses),
     debtInterest: Math.round(debtInterest),
     assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(baseLiving + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
+    total: Math.round(baseLiving + breakdown.food + breakdown.housing + breakdown.transport + breakdown.other + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
   };
 
   // Profit before tax
@@ -150,7 +188,7 @@ export function calculateBusinessOwnerQuarterlyReport(params: QuarterlyReportPar
   // Taxes (for business: calculated on profit AFTER expenses)
   const businessTax = Math.max(0, profitBeforeTax * (country.taxRate / 100));
   const propertyTax = player.assets
-    .filter(a => a.type === 'real_estate')
+    .filter(a => a.type === 'housing')
     .reduce((sum, a) => sum + (a.currentValue * 0.00125), 0);
 
   const taxes: TaxesBreakdown = {
@@ -200,7 +238,8 @@ export function calculateMixedQuarterlyReport(params: QuarterlyReportParams): Qu
   }
 
   // Income
-  const salary = player.quarterlySalary * (1 + buffIncomeMod / 100);
+  const baseSalary = player.jobs.reduce((sum, job) => sum + (job.salary * 3), 0);
+  const salary = baseSalary * (1 + buffIncomeMod / 100);
   const adjustedBusinessRevenue = businessRevenue * (1 + buffIncomeMod / 100);
   const totalIncome = salary + adjustedBusinessRevenue + familyIncome + assetIncome;
 
@@ -215,14 +254,28 @@ export function calculateMixedQuarterlyReport(params: QuarterlyReportParams): Qu
 
   // Expenses
   const baseLiving = 1000 * 3 * country.costOfLivingModifier;
+  const breakdown = params.expensesBreakdown || {
+    food: params.lifestyleExpenses || 0,
+    housing: 0,
+    transport: 0,
+    credits: debtInterest,
+    mortgage: 0,
+    other: familyExpenses
+  };
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(baseLiving),
-    family: Math.round(familyExpenses),
+    living: Math.round(baseLiving + breakdown.food + breakdown.housing + breakdown.transport + breakdown.other),
+    food: Math.round(breakdown.food),
+    housing: Math.round(breakdown.housing),
+    transport: Math.round(breakdown.transport),
+    credits: Math.round(breakdown.credits),
+    mortgage: Math.round(breakdown.mortgage),
+    other: Math.round(breakdown.other),
+    family: Math.round(familyExpenses), // Deprecated
     business: Math.round(businessExpenses),
     debtInterest: Math.round(debtInterest),
     assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(baseLiving + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
+    total: Math.round(baseLiving + breakdown.food + breakdown.housing + breakdown.transport + breakdown.other + familyExpenses + businessExpenses + debtInterest + assetMaintenance)
   };
 
   // For mixed: tax salary as employee, business profit as business
@@ -230,7 +283,7 @@ export function calculateMixedQuarterlyReport(params: QuarterlyReportParams): Qu
   const businessProfit = adjustedBusinessRevenue - businessExpenses;
   const businessTax = Math.max(0, businessProfit * (country.taxRate / 100));
   const propertyTax = player.assets
-    .filter(a => a.type === 'real_estate')
+    .filter(a => a.type === 'housing')
     .reduce((sum, a) => sum + (a.currentValue * 0.00125), 0);
 
   const taxes: TaxesBreakdown = {

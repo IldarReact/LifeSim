@@ -62,7 +62,8 @@ describe('Business Formulas', () => {
     salary: 1000,
     satisfaction: 100,
     productivity: 100,
-    experience: 4
+    experience: 4,
+    humanTraits: []
   })
 
   describe('calculateBusinessFinancials', () => {

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "fl_de_frontend",
+    "title": "React Frontend для стартапа",
+    "category": "tech",
+    "description": "Нужен лендинг + админка на Next.js",
+    "payment": 8000,
+    "cost": {
+      "energy": -40,
+      "sanity": -10
+    },
+    "requirements": [
+      {
+        "skillId": "react",
+        "minLevel": 3
+      }
+    ]
+  },
+  {
+    "id": "fl_de_python",
+    "title": "Парсер данных с маркетплейсов",
+    "category": "tech",
+    "description": "Python + BeautifulSoup/Scrapy",
+    "payment": 12000,
+    "cost": {
+      "energy": -60,
+      "sanity": -15
+    },
+    "requirements": [
+      {
+        "skillId": "python",
+        "minLevel": 4
+      }
+    ]
+  },
+  {
+    "id": "fl_de_translate",
+    "title": "Перевод сайта на немецкий",
+    "category": "language",
+    "description": "10 000 слов, техническая тематика",
+    "payment": 5000,
+    "cost": {
+      "energy": -30
+    },
+    "requirements": [
+      {
+        "skillId": "german",
+        "minLevel": 4
+      }
+    ]
+  }
+]

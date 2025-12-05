@@ -26,7 +26,8 @@ export const createFamilySlice: StateCreator<
         happiness: type === 'pet' ? 2 : 5,
         sanity: type === 'pet' ? 3 : 1,
         health: 0
-      }
+      },
+      foodPreference: type === 'pet' ? undefined : 'food_homemade', // Дефолт для людей
     }
 
     get().updatePlayer(prev => ({
@@ -157,7 +158,8 @@ export const createFamilySlice: StateCreator<
         happiness: 5,
         sanity: 2,
         health: 0
-      }
+      },
+      foodPreference: 'food_homemade', // Дефолт
     }
 
     get().updatePlayer(prev => ({
@@ -273,6 +275,21 @@ export const createFamilySlice: StateCreator<
         )
       }
     }))
+  },
+
+  // ------------------------------------------------------------
+  // SET MEMBER TRANSPORT PREFERENCE
+  // ------------------------------------------------------------
+  setMemberTransportPreference: (memberId, transportId) => {
+    get().updatePlayer(prev => ({
+      personal: {
+        ...prev.personal,
+        familyMembers: prev.personal.familyMembers.map(m =>
+          m.id === memberId ? { ...m, transportPreference: transportId } : m
+        )
+      }
+    }))
   }
 
 })
+

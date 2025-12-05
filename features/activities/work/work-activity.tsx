@@ -65,7 +65,7 @@ export function WorkActivity(): React.JSX.Element | null {
       minLevel: r.level as SkillLevel
     }))
 
-    applyForJob(title, company, salaryNum, { energy: -energyCost }, reqs)
+    applyForJob(title, company, salaryNum, { energy: energyCost }, reqs)
     setFeedback({ show: true, success: true, message: `Заявка на "${title}" отправлена!` })
   }
 

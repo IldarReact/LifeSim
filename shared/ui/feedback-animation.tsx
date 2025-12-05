@@ -72,15 +72,16 @@ interface ClickFeedbackProps {
   children: React.ReactNode
   onClick?: () => void
   disabled?: boolean
+  className?: string
 }
 
-export function ClickFeedback({ children, onClick, disabled }: ClickFeedbackProps) {
+export function ClickFeedback({ children, onClick, disabled, className }: ClickFeedbackProps) {
   return (
     <motion.div
       whileHover={!disabled ? { scale: 1.02 } : {}}
       whileTap={!disabled ? { scale: 0.98 } : {}}
-      onClick={onClick}
-      className={disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+      onClick={!disabled ? onClick : undefined}
+      className={`${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${className || ""}`}
     >
       {children}
     </motion.div>

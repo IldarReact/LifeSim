@@ -1,0 +1,56 @@
+[
+  {
+    "id": "housing_room",
+    "name": "Комната в аренде",
+    "description": "Скромная комната в общей квартире",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 1200,
+    "effects": {
+      "happiness": 5,
+      "health": 3,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "housing_apartment_rent",
+    "name": "Квартира в аренде",
+    "description": "Однокомнатная квартира в спальном районе",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 3600,
+    "effects": {
+      "happiness": 12,
+      "health": 6,
+      "sanity": 8
+    }
+  },
+  {
+    "id": "housing_apartment_buy",
+    "name": "Квартира (покупка)",
+    "description": "Собственная однокомнатная квартира",
+    "category": "housing",
+    "price": 250000,
+    "assetType": "real_estate",
+    "maintenanceCost": 800,
+    "effects": {
+      "happiness": 20,
+      "health": 8,
+      "sanity": 12
+    }
+  },
+  {
+    "id": "housing_house_buy",
+    "name": "Дом (покупка)",
+    "description": "Собственный дом в пригороде с участком",
+    "category": "housing",
+    "price": 450000,
+    "assetType": "real_estate",
+    "maintenanceCost": 2400,
+    "effects": {
+      "happiness": 30,
+      "health": 12,
+      "sanity": 18
+    }
+  }
+]

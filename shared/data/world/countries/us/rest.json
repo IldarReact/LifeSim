@@ -1,0 +1,115 @@
+[
+  {
+    "id": "walk",
+    "title": "Прогулка в парке",
+    "energyCost": 6,
+    "effects": {
+      "happiness": 3,
+      "health": 1,
+      "sanity": 1
+    },
+    "cost": 0,
+    "icon": "Mountain",
+    "color": "text-emerald-400",
+    "bg": "from-emerald-900/20 to-emerald-800/10"
+  },
+  {
+    "id": "gym",
+    "title": "Тренировка в зале",
+    "energyCost": 15,
+    "effects": {
+      "health": 4,
+      "happiness": 1,
+      "sanity": 1
+    },
+    "cost": 600,
+    "icon": "Activity",
+    "color": "text-orange-400",
+    "bg": "from-orange-900/20 to-orange-800/10"
+  },
+  {
+    "id": "meditation",
+    "title": "Медитация",
+    "energyCost": 5,
+    "effects": {
+      "sanity": 2,
+      "happiness": 1,
+      "intelligence": 1,
+      "health": 1
+    },
+    "cost": 0,
+    "icon": "Brain",
+    "color": "text-purple-400",
+    "bg": "from-purple-900/20 to-purple-800/10"
+  },
+  {
+    "id": "reading",
+    "title": "Чтение книги",
+    "energyCost": 5,
+    "effects": {
+      "intelligence": 2,
+      "happiness": 1,
+      "sanity": 1
+    },
+    "cost": 0,
+    "icon": "Book",
+    "color": "text-blue-400",
+    "bg": "from-blue-900/20 to-blue-800/10"
+  },
+  {
+    "id": "music",
+    "title": "Игра на гитаре",
+    "energyCost": 8,
+    "effects": {
+      "happiness": 3,
+      "sanity": 1,
+      "intelligence": 1
+    },
+    "cost": 0,
+    "icon": "Music",
+    "color": "text-pink-400",
+    "bg": "from-pink-900/20 to-pink-800/10"
+  },
+  {
+    "id": "gaming",
+    "title": "Играть в игры",
+    "energyCost": 18,
+    "effects": {
+      "happiness": 12,
+      "sanity": -3,
+      "health": -2,
+      "intelligence": 1
+    },
+    "cost": 0,
+    "icon": "Gamepad2",
+    "color": "text-cyan-400",
+    "bg": "from-cyan-900/20 to-cyan-800/10"
+  },
+  {
+    "id": "painting",
+    "title": "Рисование",
+    "energyCost": 10,
+    "effects": {
+      "happiness": 3,
+      "sanity": 2,
+      "intelligence": 2
+    },
+    "cost": 800,
+    "icon": "Palette",
+    "color": "text-indigo-400",
+    "bg": "from-indigo-900/20 to-indigo-800/10"
+  },
+  {
+    "id": "coffee",
+    "title": "Встреча с друзьями в кафе",
+    "energyCost": 15,
+    "effects": {
+      "happiness": 10,
+      "sanity": 3
+    },
+    "cost": 2000,
+    "icon": "Coffee",
+    "color": "text-amber-400",
+    "bg": "from-amber-900/20 to-amber-800/10"
+  }
+]

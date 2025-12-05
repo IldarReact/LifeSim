@@ -1,0 +1,86 @@
+[
+  {
+    "id": "br_maria",
+    "name": "Мария Силва",
+    "type": "wife",
+    "age": 29,
+    "relationLevel": 90,
+    "income": 3200,
+    "expenses": 1400,
+    "passiveEffects": {
+      "happiness": 15,
+      "sanity": 10
+    },
+    "tags": [
+      "spouse",
+      "teacher",
+      "brazilian"
+    ]
+  },
+  {
+    "id": "br_mother",
+    "name": "Дона Розана",
+    "type": "parent",
+    "age": 58,
+    "relationLevel": 95,
+    "income": 1800,
+    "expenses": 800,
+    "passiveEffects": {
+      "happiness": 8,
+      "sanity": -5
+    },
+    "tags": [
+      "mother-in-law",
+      "retired"
+    ]
+  },
+  {
+    "id": "br_friend_pedro",
+    "name": "Педро",
+    "type": "friend",
+    "age": 31,
+    "relationLevel": 78,
+    "income": 0,
+    "expenses": 200,
+    "passiveEffects": {
+      "happiness": 6
+    },
+    "tags": [
+      "best_friend",
+      "programmer"
+    ]
+  },
+  {
+    "id": "br_dog_rex",
+    "name": "Рекс",
+    "type": "pet",
+    "age": 4,
+    "relationLevel": 98,
+    "income": 0,
+    "expenses": 350,
+    "passiveEffects": {
+      "happiness": 20,
+      "sanity": 12
+    },
+    "tags": [
+      "dog",
+      "guard"
+    ]
+  },
+  {
+    "id": "br_colleague_ana",
+    "name": "Ана",
+    "type": "colleague",
+    "age": 27,
+    "relationLevel": 65,
+    "income": 0,
+    "expenses": 0,
+    "passiveEffects": {
+      "intelligence": 3
+    },
+    "tags": [
+      "coworker",
+      "mentor"
+    ]
+  }
+]

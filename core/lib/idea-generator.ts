@@ -1,69 +1,7 @@
 import type { BusinessIdea, IdeaTemplate, RiskLevel } from '@/core/types/idea.types'
 import type { Skill } from '@/core/types'
 import type { BusinessType } from '@/core/types/business.types'
-
-/**
- * Шаблоны бизнес-идей по типам
- */
-const IDEA_TEMPLATES: IdeaTemplate[] = [
-  {
-    nameTemplates: ['Онлайн-магазин {category}', '{category} E-commerce', 'Интернет-магазин {category}'],
-    descriptionTemplates: [
-      'Продажа {category} через интернет с доставкой',
-      'Онлайн-платформа для продажи {category}',
-      'Цифровой магазин {category} с быстрой доставкой'
-    ],
-    type: 'retail',
-    requiredSkills: [{ skillId: 'marketing', minLevel: 2 }],
-    riskRange: ['medium', 'high'],
-    returnRange: [0.3, 1.5],
-    investmentRange: [5000, 30000]
-  },
-  {
-    nameTemplates: ['SaaS платформа для {niche}', '{niche} Software', 'Облачный сервис {niche}'],
-    descriptionTemplates: [
-      'Программное обеспечение как услуга для {niche}',
-      'Облачная платформа для автоматизации {niche}',
-      'Подписочный сервис для {niche}'
-    ],
-    type: 'tech',
-    requiredSkills: [{ skillId: 'programming', minLevel: 3 }],
-    riskRange: ['high', 'very_high'],
-    returnRange: [1.0, 3.0],
-    investmentRange: [10000, 100000]
-  },
-  {
-    nameTemplates: ['Консалтинг в {field}', '{field} Consulting', 'Консультации по {field}'],
-    descriptionTemplates: [
-      'Профессиональные консультации в области {field}',
-      'Экспертные услуги по {field}',
-      'Консалтинговое агентство {field}'
-    ],
-    type: 'service',
-    requiredSkills: [{ skillId: 'management', minLevel: 2 }],
-    riskRange: ['low', 'medium'],
-    returnRange: [0.5, 1.2],
-    investmentRange: [2000, 15000]
-  },
-  {
-    nameTemplates: ['Производство {product}', 'Фабрика {product}', '{product} Manufacturing'],
-    descriptionTemplates: [
-      'Производство и продажа {product}',
-      'Изготовление {product} на заказ',
-      'Массовое производство {product}'
-    ],
-    type: 'manufacturing',
-    requiredSkills: [{ skillId: 'engineering', minLevel: 2 }],
-    riskRange: ['medium', 'high'],
-    returnRange: [0.4, 1.8],
-    investmentRange: [20000, 150000]
-  }
-]
-
-const CATEGORIES = ['электроники', 'одежды', 'книг', 'спорттоваров', 'косметики', 'мебели']
-const NICHES = ['бухгалтерии', 'HR', 'маркетинга', 'продаж', 'логистики', 'образования']
-const FIELDS = ['финансах', 'маркетинге', 'IT', 'недвижимости', 'юриспруденции']
-const PRODUCTS = ['мебели', 'одежды', 'электроники', 'упаковки', 'игрушек', 'инструментов']
+import { getIdeaTemplates, getIdeaReplacements } from '@/core/lib/data-loaders/static-data-loader'
 
 /**
  * Генерирует бизнес-идею на основе навыков игрока
@@ -73,6 +11,9 @@ export function generateBusinessIdea(
   currentTurn: number,
   globalMarketValue: number = 1.0
 ): BusinessIdea {
+  const IDEA_TEMPLATES = getIdeaTemplates();
+  const REPLACEMENTS = getIdeaReplacements();
+
   // Выбираем шаблон на основе навыков
   let template = IDEA_TEMPLATES[Math.floor(Math.random() * IDEA_TEMPLATES.length)]
 
@@ -92,20 +33,30 @@ export function generateBusinessIdea(
   const nameTemplate = template.nameTemplates[Math.floor(Math.random() * template.nameTemplates.length)]
   const descTemplate = template.descriptionTemplates[Math.floor(Math.random() * template.descriptionTemplates.length)]
 
-  const replacements: Record<string, string[]> = {
-    '{category}': CATEGORIES,
-    '{niche}': NICHES,
-    '{field}': FIELDS,
-    '{product}': PRODUCTS
-  }
-
   let name = nameTemplate
   let description = descTemplate
 
-  for (const [placeholder, options] of Object.entries(replacements)) {
-    const replacement = options[Math.floor(Math.random() * options.length)]
-    name = name.replace(placeholder, replacement)
-    description = description.replace(placeholder, replacement)
+  // Используем replacements из JSON
+  // Приводим ключи к нижнему регистру для соответствия с JSON (categories -> {category})
+  // В JSON ключи: categories, niches, fields, products
+  // В шаблонах: {category}, {niche}, {field}, {product}
+
+  const mapping: Record<string, string> = {
+    '{category}': 'categories',
+    '{niche}': 'niches',
+    '{field}': 'fields',
+    '{product}': 'products'
+  }
+
+  for (const [placeholder, jsonKey] of Object.entries(mapping)) {
+    if (name.includes(placeholder) || description.includes(placeholder)) {
+      const options = (REPLACEMENTS as any)[jsonKey] as string[]
+      if (options && options.length > 0) {
+        const replacement = options[Math.floor(Math.random() * options.length)]
+        name = name.replace(new RegExp(placeholder, 'g'), replacement)
+        description = description.replace(new RegExp(placeholder, 'g'), replacement)
+      }
+    }
   }
 
   // Определяем риск

@@ -47,7 +47,7 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
       name: randomName,
       isReady: false,
       turnReady: false,
-      isHost: isCreator, // Создатель комнаты = хост
+      isHost: isCreator,
       gameStarted: false,
       selectedArchetype: null,
       color: randomColor,
@@ -57,7 +57,6 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
   roomInstance = room;
 
   console.log(`[Multiplayer] Connected to Liveblocks room: ${id}`);
-  console.log("Мультиплеер: подключено к комнате", id);
 
   return id;
 }
@@ -68,6 +67,12 @@ export const isHost = () => {
   if (!roomInstance) return false;
   const self = roomInstance.getSelf();
   return self?.presence.isHost || false;
+};
+
+export const getMyConnectionId = () => {
+  if (!roomInstance) return null;
+  const self = roomInstance.getSelf();
+  return self ? String(self.connectionId) : null;
 };
 
 export function getOnlinePlayers(): Player[] {

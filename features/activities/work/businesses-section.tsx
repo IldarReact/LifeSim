@@ -116,8 +116,9 @@ export function BusinessesSection({
     partnerName: string,
     playerShare: number
   ) => {
-    const playerInvestment = Math.round((business.cost * playerShare) / 100)
-    const partnerInvestment = business.cost - playerInvestment
+    const cost = business.initialCost || business.cost || 0
+    const playerInvestment = Math.round((cost * playerShare) / 100)
+    const partnerInvestment = cost - playerInvestment
 
     if (playerCash < playerInvestment) {
       onError("Недостаточно средств для вашей доли инвестиций!")
@@ -132,7 +133,7 @@ export function BusinessesSection({
         businessType: business.type,
         businessName: business.name,
         businessDescription: business.description,
-        totalCost: business.cost,
+        totalCost: cost,
         partnerShare: 100 - playerShare,
         partnerInvestment: partnerInvestment,
         yourShare: playerShare,

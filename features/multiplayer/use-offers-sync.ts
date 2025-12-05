@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useGameStore } from '@/core/model/store'
-import { subscribeToEvents } from '@/core/lib/multiplayer'
+import { subscribeToEvents, getMyConnectionId } from '@/core/lib/multiplayer'
 import type { GameOffer } from '@/core/types/game-offers.types'
 
 export function useOffersSync() {
@@ -8,11 +8,13 @@ export function useOffersSync() {
 
   useEffect(() => {
     const unsubscribe = subscribeToEvents(({ type, payload }) => {
+      const myConnectionId = getMyConnectionId()
+
       if (type === 'OFFER_SENT') {
         const offer = payload.offer as GameOffer
 
-        // Если оффер нам
-        if (offer.toPlayerId === player?.id) {
+        // Если оффер нам (сравниваем connectionId)
+        if (offer.toPlayerId === myConnectionId) {
           // Добавляем в store
           useGameStore.setState(state => ({
             offers: [...state.offers, offer]

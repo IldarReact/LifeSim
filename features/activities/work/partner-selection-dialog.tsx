@@ -28,7 +28,7 @@ export function PartnerSelectionDialog({
 
   React.useEffect(() => {
     if (isOpen) {
-      setOnlinePlayers(getOnlinePlayers())
+      setOnlinePlayers(getOnlinePlayers().filter(p => !p.isLocal))
       setSelectedPlayer(null)
       setPlayerShare(50)
     }

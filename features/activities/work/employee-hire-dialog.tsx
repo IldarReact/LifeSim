@@ -79,7 +79,7 @@ export function EmployeeHireDialog({
   React.useEffect(() => {
     if (isOpen) {
       if (activeTab === 'players') {
-        setOnlinePlayers(getOnlinePlayers())
+        setOnlinePlayers(getOnlinePlayers().filter(p => !p.isLocal))
       }
       setSelectedCandidate(null)
     }

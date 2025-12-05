@@ -1,6 +1,6 @@
 "use client";
 
-import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
+import { getOnlinePlayers, setPlayerName, getMyConnectionId } from "@/core/lib/multiplayer";
 import { Button } from "@/shared/ui/button";
 import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,6 +33,8 @@ export function MultiplayerHud() {
     // Дополнительно: обновляем список каждую секунду
     const interval = setInterval(() => {
       setPlayers(getOnlinePlayers());
+      // Log connection ID occasionally for debugging
+      console.log('[MultiplayerHud] My Connection ID:', getMyConnectionId());
     }, 1000);
 
     return () => {

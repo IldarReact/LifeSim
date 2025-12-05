@@ -12,6 +12,8 @@ import { GameOverScreen } from "./game-over-screen"
 import { FinancialCrisisModal } from "./financial-crisis-modal"
 import { isInFinancialCrisis } from "@/core/lib/financial-crisis"
 import { InflationNotification } from "@/features/notifications/inflation-notification"
+import { OffersList } from "@/features/notifications/offers-list"
+import { useOffersSync } from "@/features/multiplayer/use-offers-sync"
 import { Loader2 } from "lucide-react"
 
 export function GameplayLayout() {
@@ -30,6 +32,9 @@ export function GameplayLayout() {
   const [isTurnLocked, setIsTurnLocked] = useState(false)
   const [showLockedModal, setShowLockedModal] = useState(false)
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false)
+
+  // Синхронизация офферов
+  useOffersSync()
 
   // Подписка на готовность всех игроков
   useEffect(() => {
@@ -136,8 +141,8 @@ export function GameplayLayout() {
             onClick={handleNextTurn}
             disabled={isProcessingTurn || isTurnLocked}
             className={`px-8 py-6 text-lg font-semibold rounded-xl transition-all w-full max-w-md backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed ${isCrisis
-                ? 'bg-red-500/20 border-red-500/50 text-red-100 hover:bg-red-500/30 animate-pulse'
-                : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
+              ? 'bg-red-500/20 border-red-500/50 text-red-100 hover:bg-red-500/30 animate-pulse'
+              : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
               }`}
           >
             {isProcessingTurn ? (
@@ -177,6 +182,9 @@ export function GameplayLayout() {
         data={inflationNotification}
         onClose={clearInflationNotification}
       />
+
+      {/* Список входящих предложений */}
+      <OffersList />
     </>
   )
 }

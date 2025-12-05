@@ -655,6 +655,8 @@ export function BusinessManagementDialog({
           candidates={candidates}
           onHire={handleHire}
           availableBudget={availableBudget}
+          businessId={business.id}
+          businessName={business.name}
         />
       )}
     </Dialog>

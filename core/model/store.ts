@@ -16,6 +16,7 @@ import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
 import { saveManager } from '@/core/lib/persistence/save-manager'
 import type { GameState } from '@/core/schemas/game.schema'
 import { createBankSlice } from './slices/bank-slice'
+import { createGameOffersSlice } from './slices/game-offers-slice'
 
 // Custom storage using saveManager for unified validation and checksum
 const validatedStorage = createJSONStorage(() => ({
@@ -59,7 +60,8 @@ export const useGameStore = create<GameStore>()(
       ...createMarketSlice(...a),
       ...createIdeaSlice(...a),
       ...createShopSlice(...a),
-      ...createBankSlice(...a)
+      ...createBankSlice(...a),
+      ...createGameOffersSlice(...a)
     }),
     {
       name: 'lifesim-save-v1',

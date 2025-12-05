@@ -8,6 +8,7 @@ import { Store, TrendingUp, Users, CheckCircle, Star, AlertCircle } from "lucide
 import { Button } from "@/shared/ui/button"
 import { getAllBusinessTypesForCountry } from "@/core/lib/data-loaders/businesses-loader"
 import { useGameStore } from "@/core/model/store"
+import { isMultiplayerActive } from "@/core/lib/multiplayer"
 
 import type { StatEffect } from "@/core/types/stats.types"
 
@@ -72,7 +73,7 @@ export function BusinessesSection({
   onSuccess,
   onError
 }: BusinessesSectionProps) {
-  const player = useGameStore(state => state.player)
+  const { player, sendOffer } = useGameStore()
   const countryId = player?.countryId || 'us'
 
   const businesses = getAllBusinessTypesForCountry(countryId)
@@ -107,6 +108,40 @@ export function BusinessesSection({
     } else {
       onError('Недостаточно средств для открытия бизнеса')
     }
+  }
+
+  const handleOpenWithPartner = (
+    business: any,
+    partnerId: string,
+    partnerName: string,
+    playerShare: number
+  ) => {
+    const playerInvestment = Math.round((business.cost * playerShare) / 100)
+    const partnerInvestment = business.cost - playerInvestment
+
+    if (playerCash < playerInvestment) {
+      onError("Недостаточно средств для вашей доли инвестиций!")
+      return
+    }
+
+    sendOffer(
+      'business_partnership',
+      partnerId,
+      partnerName,
+      {
+        businessType: business.type,
+        businessName: business.name,
+        businessDescription: business.description,
+        totalCost: business.cost,
+        partnerShare: 100 - playerShare,
+        partnerInvestment: partnerInvestment,
+        yourShare: playerShare,
+        yourInvestment: playerInvestment
+      },
+      `Предлагаю открыть ${business.name} вместе!`
+    )
+
+    onSuccess(`Предложение отправлено ${partnerName}!`)
   }
 
   return (
@@ -178,6 +213,9 @@ export function BusinessesSection({
                     energyCost,
                     stressImpact
                   )}
+                  onOpenWithPartner={isMultiplayerActive() ? (partnerId, partnerName, playerShare) =>
+                    handleOpenWithPartner(business, partnerId, partnerName, playerShare)
+                    : undefined}
                 />
               }
               onBuy={() => handleOpenBusiness(

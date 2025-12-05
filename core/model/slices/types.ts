@@ -1,4 +1,5 @@
 import type { StatEffect } from '@/core/types/stats.types'
+import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
 import type { SkillRequirement } from '@/core/types/skill.types'
 import type {
   GameState,
@@ -208,6 +209,28 @@ export interface BankSlice {
   }) => void
 }
 
+export interface GameOffersSlice {
+  offers: GameOffer[]
+
+  // Actions
+  sendOffer: (
+    type: OfferType,
+    toPlayerId: string,
+    toPlayerName: string,
+    details: OfferDetails,
+    message?: string
+  ) => void
+
+  acceptOffer: (offerId: string) => void
+  rejectOffer: (offerId: string) => void
+  cancelOffer: (offerId: string) => void
+  cleanupExpiredOffers: () => void
+
+  // Helpers
+  getIncomingOffers: () => GameOffer[]
+  getOutgoingOffers: () => GameOffer[]
+}
+
 // Combined store type
 export type GameStore =
   GameSlice &
@@ -222,6 +245,7 @@ export type GameStore =
   IdeaSlice &
   ShopSlice &
   BankSlice &
+  GameOffersSlice &
   {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']

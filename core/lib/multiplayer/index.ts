@@ -208,6 +208,16 @@ export function triggerTurnAdvance() {
   // Не используем
 }
 
+export function broadcastEvent(event: any) {
+  if (!roomInstance) return;
+  roomInstance.broadcastEvent(event);
+}
+
+export function subscribeToEvents(callback: (event: any) => void) {
+  if (!roomInstance) return () => { };
+  return roomInstance.subscribe("event", callback);
+}
+
 export const getSharedState = () => ({
   subscribeToPresenceChanges: (cb: () => void) => {
     if (!roomInstance) return () => { };

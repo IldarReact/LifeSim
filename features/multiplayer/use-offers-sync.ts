@@ -9,12 +9,15 @@ export function useOffersSync() {
   useEffect(() => {
     const unsubscribe = subscribeToEvents(({ type, payload }) => {
       const myConnectionId = getMyConnectionId()
+      console.log('[OffersSync] Event received:', type, payload, 'My ID:', myConnectionId)
 
       if (type === 'OFFER_SENT') {
         const offer = payload.offer as GameOffer
+        console.log('[OffersSync] Checking offer recipient:', offer.toPlayerId, 'vs', myConnectionId)
 
         // Если оффер нам (сравниваем connectionId)
         if (offer.toPlayerId === myConnectionId) {
+          console.log('[OffersSync] Offer accepted for me!')
           // Добавляем в store
           useGameStore.setState(state => ({
             offers: [...state.offers, offer]

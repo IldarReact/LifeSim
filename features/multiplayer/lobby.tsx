@@ -235,7 +235,7 @@ export function MultiplayerLobby() {
                 {isReady ? "Вы готовы" : "Готов к игре"}
               </Button>
 
-              {isHost() && (
+              {/* {isHost() && ( */}
                 <Button
                   onClick={handleStartGame}
                   className={`w-full h-14 text-lg font-bold shadow-lg transition-all ${canStart
@@ -246,7 +246,7 @@ export function MultiplayerLobby() {
                   <Play className="w-5 h-5 mr-2" />
                   Начать игру
                 </Button>
-              )}
+              {/* )} */}
             </div>
           </div>
 

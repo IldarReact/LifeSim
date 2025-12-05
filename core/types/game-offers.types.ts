@@ -30,6 +30,7 @@ export interface JobOfferDetails {
 
 // Детали предложения партнерства
 export interface PartnershipOfferDetails {
+  businessId: string        // ID создаваемого/существующего бизнеса
   businessType: string
   businessName: string
   businessDescription: string

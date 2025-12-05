@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useGameStore } from '@/core/model/store'
-import { subscribeToEvents, getMyConnectionId } from '@/core/lib/multiplayer'
-import type { GameOffer } from '@/core/types/game-offers.types'
+import { subscribeToEvents, getMyConnectionId, broadcastEvent } from '@/core/lib/multiplayer'
+import { GameOffer, isJobOffer, isPartnershipOffer, isShareSaleOffer } from '@/core/types/game-offers.types'
 
 export function useOffersSync() {
   const { player, pushNotification } = useGameStore()
@@ -55,11 +55,7 @@ export function useOffersSync() {
             type: "success"
           })
 
-          // Импортируем хелперы динамически или предполагаем их наличие в скоупе (лучше импортировать сверху)
-          // Но так как replace не позволяет легко добавить импорты сверху без замены всего файла,
-          // я добавлю логику проверки типа вручную или использую offer.type
-
-          if (offer.type === 'job_offer') {
+          if (isJobOffer(offer)) {
             state.addEmployeeToBusiness(
               offer.details.businessId,
               offer.toPlayerName,
@@ -67,7 +63,7 @@ export function useOffersSync() {
               offer.details.salary,
               offer.toPlayerId
             )
-          } else if (offer.type === 'business_partnership') {
+          } else if (isPartnershipOffer(offer)) {
             state.addPartnerToBusiness(
               offer.details.businessId,
               offer.toPlayerId,
@@ -79,29 +75,26 @@ export function useOffersSync() {
             // Отправляем обновленный бизнес партнеру
             const updatedBusiness = useGameStore.getState().player?.businesses.find(b => b.id === offer.details.businessId)
             if (updatedBusiness) {
-              // Используем broadcastEvent, который нужно импортировать. 
-              // Но он уже импортирован в этом файле? Нет, только subscribeToEvents.
-              // Придется добавить импорт.
+              broadcastEvent({
+                type: 'BUSINESS_SYNC',
+                payload: { business: updatedBusiness, targetPlayerId: offer.toPlayerId }
+              })
             }
-          } else if (offer.type === 'share_sale') {
+          } else if (isShareSaleOffer(offer)) {
             state.addPartnerToBusiness(
               offer.details.businessId,
               offer.toPlayerId,
               offer.toPlayerName,
-              offer.details.shareAmount,
+              offer.details.sharePercent,
               offer.details.price
             )
-          }
 
-          // Для партнерства и продажи доли нужно синхронизировать бизнес
-          if (offer.type === 'business_partnership' || offer.type === 'share_sale') {
+            // Отправляем обновленный бизнес партнеру
             const updatedBusiness = useGameStore.getState().player?.businesses.find(b => b.id === offer.details.businessId)
             if (updatedBusiness) {
-              import('@/core/lib/multiplayer').then(({ broadcastEvent }) => {
-                broadcastEvent({
-                  type: 'BUSINESS_SYNC',
-                  payload: { business: updatedBusiness, targetPlayerId: offer.toPlayerId }
-                })
+              broadcastEvent({
+                type: 'BUSINESS_SYNC',
+                payload: { business: updatedBusiness, targetPlayerId: offer.toPlayerId }
               })
             }
           }

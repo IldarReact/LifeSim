@@ -135,7 +135,7 @@ export const createJobSlice: StateCreator<
       satisfaction: 70,
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
       description: `Работа в ${company} (онлайн)`,
-      requirements: []
+      requirements: {}
     }
 
     set(state => ({

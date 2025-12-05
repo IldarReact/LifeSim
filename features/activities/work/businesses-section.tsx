@@ -130,6 +130,7 @@ export function BusinessesSection({
       partnerId,
       partnerName,
       {
+        businessId: `biz_${Date.now()}`,
         businessType: business.type,
         businessName: business.name,
         businessDescription: business.description,

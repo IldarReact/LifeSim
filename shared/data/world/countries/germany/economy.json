@@ -4,6 +4,7 @@
   "archetype": "rich_stable",
   "gdpGrowth": 1.1,
   "inflation": 2.4,
+  "stockMarketInflation": 5.2,
   "keyRate": 4.25,
   "unemployment": 3.2,
   "taxRate": 42,

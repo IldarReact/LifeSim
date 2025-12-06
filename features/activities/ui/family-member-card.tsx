@@ -5,7 +5,18 @@ import { useGameStore } from '@/core/model/game-store'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
 import { Progress } from '@/shared/ui/progress'
-import { DollarSign, ChevronRight, Target, Star, Heart, Brain, User, Utensils, Home, Car } from 'lucide-react'
+import {
+  DollarSign,
+  ChevronRight,
+  Target,
+  Star,
+  Heart,
+  Brain,
+  User,
+  Utensils,
+  Home,
+  Car,
+} from 'lucide-react'
 import type { FamilyMember, LifeGoal } from '@/core/types'
 import { getShopItem, getRecurringItemsByCategory } from '@/core/lib/shop-helpers'
 import { ClickFeedback } from '@/shared/ui/feedback-animation'
@@ -18,39 +29,50 @@ interface FamilyMemberCardProps {
 }
 
 export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardProps) {
-  const { player, setLifestyle, setMemberFoodPreference, setMemberTransportPreference } = useGameStore()
+  const { player, setLifestyle, setMemberFoodPreference, setMemberTransportPreference } =
+    useGameStore()
 
   if (!player) return null
 
-  const displayData = isPlayer ? {
-    id: player.id,
-    name: player.name,
-    type: 'player' as const,
-    age: player.age,
-    relationLevel: 100,
-    income: player.quarterlySalary,
-    expenses: 0,
-    passiveEffects: {},
-    goals: player.personal.lifeGoals,
-    foodPreference: player.activeLifestyle?.food,
-    transportPreference: player.activeLifestyle?.transport
-  } : member
+  const displayData = isPlayer
+    ? {
+        id: player.id,
+        name: player.name,
+        type: 'player' as const,
+        age: player.age,
+        relationLevel: 100,
+        income: player.quarterlySalary,
+        expenses: 0,
+        passiveEffects: {},
+        goals: player.personal.lifeGoals,
+        foodPreference: player.activeLifestyle?.food,
+        transportPreference: player.activeLifestyle?.transport,
+      }
+    : member
 
   if (!displayData) return null
 
   const foodItem = displayData.foodPreference ? getShopItem(displayData.foodPreference) : null
-  const transportItem = displayData.transportPreference ? getShopItem(displayData.transportPreference) : null
+  const transportItem = displayData.transportPreference
+    ? getShopItem(displayData.transportPreference)
+    : null
 
   const getTypeLabel = () => {
     if (isPlayer) return 'Вы'
     if (!member) return ''
     switch (member.type) {
-      case 'wife': return 'Жена'
-      case 'husband': return 'Муж'
-      case 'child': return 'Ребенок'
-      case 'pet': return 'Питомец'
-      case 'parent': return 'Родитель'
-      default: return member.type
+      case 'wife':
+        return 'Жена'
+      case 'husband':
+        return 'Муж'
+      case 'child':
+        return 'Ребенок'
+      case 'pet':
+        return 'Питомец'
+      case 'parent':
+        return 'Родитель'
+      default:
+        return member.type
     }
   }
 
@@ -58,18 +80,27 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
     if (isPlayer) return <User className="w-6 h-6" />
     if (!member) return <User className="w-6 h-6" />
     switch (member.type) {
-      case 'pet': return '🐾'
-      case 'child': return '👶'
-      default: return '👤'
+      case 'pet':
+        return '🐾'
+      case 'child':
+        return '👶'
+      default:
+        return '👤'
     }
   }
 
   return (
-    <div className={`bg-white/5 border rounded-2xl p-6 hover:border-white/20 transition-colors flex flex-col h-full ${isPlayer ? 'border-blue-500/30 bg-blue-500/5' : 'border-white/10'
-      }`}>
+    <div
+      className={`bg-white/5 border rounded-2xl p-6 hover:border-white/20 transition-colors flex flex-col h-full ${
+        isPlayer ? 'border-blue-500/30 bg-blue-500/5' : 'border-white/10'
+      }`}
+    >
       <div className="flex items-center gap-4 mb-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0 ${isPlayer ? 'bg-blue-500/20 text-blue-400' : 'bg-white/10'
-          }`}>
+        <div
+          className={`w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0 ${
+            isPlayer ? 'bg-blue-500/20 text-blue-400' : 'bg-white/10'
+          }`}
+        >
           {getIcon()}
         </div>
         <div className="flex-1">
@@ -85,7 +116,9 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
           <div className="flex items-center gap-2 text-xs bg-white/5 rounded-lg p-2">
             <Utensils className="w-3 h-3 text-orange-400" />
             <span className="text-white/70">{foodItem.name}</span>
-            <span className="ml-auto text-green-400">${foodItem.costPerTurn || foodItem.price}/кв</span>
+            <span className="ml-auto text-green-400">
+              ${foodItem.costPerTurn || foodItem.price}/кв
+            </span>
           </div>
         )}
         {transportItem && (
@@ -140,12 +173,19 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className="w-full border-white/10 hover:bg-white/10 text-white text-xs h-8">
+          <Button
+            variant="outline"
+            className="w-full border-white/10 hover:bg-white/10 text-white text-xs h-8"
+          >
             Подробнее
             <ChevronRight className="w-3 h-3 ml-1" />
           </Button>
         </DialogTrigger>
         <DialogContent className="bg-zinc-950/95 backdrop-blur-xl border-white/10 text-white max-w-2xl max-h-[85vh] overflow-y-auto p-0 gap-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{displayData.name}</DialogTitle>
+          </DialogHeader>
+
           {/* Header with Background */}
           <div className="relative h-48 w-full overflow-hidden shrink-0">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-zinc-950/95 z-10" />
@@ -176,23 +216,31 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                   Черты характера
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {player.traits.map(traitId => {
-                    const trait = traitsData.find(t => t.id === traitId)
+                  {player.traits.map((traitId) => {
+                    const trait = traitsData.find((t) => t.id === traitId)
                     if (!trait) return null
                     return (
-                      <div key={traitId} className="bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                      <div
+                        key={traitId}
+                        className="bg-white/5 p-3 rounded-xl border border-white/5 hover:bg-white/10 transition-colors"
+                      >
                         <div className="font-bold text-white text-sm">{trait.name}</div>
-                        <div className="text-xs text-white/50 mt-1 line-clamp-2">{trait.description}</div>
+                        <div className="text-xs text-white/50 mt-1 line-clamp-2">
+                          {trait.description}
+                        </div>
                         {trait.effects && (
                           <div className="flex flex-wrap gap-2 mt-2">
                             {Object.entries(trait.effects).map(([stat, val]) => (
-                              <div key={stat} className={`text-[10px] px-1.5 py-0.5 rounded bg-black/30 ${val > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              <div
+                                key={stat}
+                                className={`text-[10px] px-1.5 py-0.5 rounded bg-black/30 ${val > 0 ? 'text-green-400' : 'text-red-400'}`}
+                              >
                                 {stat === 'happiness' && 'Счастье'}
                                 {stat === 'sanity' && 'Рассудок'}
                                 {stat === 'health' && 'Здоровье'}
                                 {stat === 'energy' && 'Энергия'}
-                                {stat === 'intelligence' && 'Интеллект'}
-                                {' '}{val > 0 ? '+' : ''}{val}
+                                {stat === 'intelligence' && 'Интеллект'} {val > 0 ? '+' : ''}
+                                {val}
                               </div>
                             ))}
                           </div>
@@ -212,7 +260,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                     Цели и Мечты
                   </h4>
                   <div className="space-y-3">
-                    {displayData.goals.map(goal => (
+                    {displayData.goals.map((goal) => (
                       <GoalCard key={goal.id} goal={goal} />
                     ))}
                   </div>
@@ -227,7 +275,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                 <div className="mb-4">
                   <label className="text-xs text-white/60 mb-2 block">Питание</label>
                   <div className="grid grid-cols-1 gap-2">
-                    {getRecurringItemsByCategory('food').map(item => {
+                    {getRecurringItemsByCategory('food').map((item) => {
                       const isActive = displayData.foodPreference === item.id
                       return (
                         <ClickFeedback
@@ -239,10 +287,11 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                               setMemberFoodPreference(member.id, item.id)
                             }
                           }}
-                          className={`text-left p-3 rounded-lg border transition-all w-full ${isActive
-                            ? 'bg-green-500/20 border-green-500/50'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                            }`}
+                          className={`text-left p-3 rounded-lg border transition-all w-full ${
+                            isActive
+                              ? 'bg-green-500/20 border-green-500/50'
+                              : 'bg-white/5 border-white/10 hover:border-white/20'
+                          }`}
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -277,7 +326,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                 <div className="mt-4">
                   <label className="text-xs text-white/60 mb-2 block">Транспорт</label>
                   <div className="grid grid-cols-1 gap-2">
-                    {getRecurringItemsByCategory('transport').map(item => {
+                    {getRecurringItemsByCategory('transport').map((item) => {
                       const isActive = displayData.transportPreference === item.id
 
                       return (
@@ -290,10 +339,11 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                               setMemberTransportPreference(member.id, item.id)
                             }
                           }}
-                          className={`text-left p-3 rounded-lg border transition-all w-full ${isActive
-                            ? 'bg-purple-500/20 border-purple-500/50'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
-                            }`}
+                          className={`text-left p-3 rounded-lg border transition-all w-full ${
+                            isActive
+                              ? 'bg-purple-500/20 border-purple-500/50'
+                              : 'bg-white/5 border-white/10 hover:border-white/20'
+                          }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
@@ -313,7 +363,6 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                   </div>
                 </div>
               )}
-
 
               {!isPlayer && member && (
                 <div>
@@ -348,13 +397,15 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
           </div>
         </DialogContent>
       </Dialog>
-    </div >
+    </div>
   )
 }
 
 function GoalCard({ goal }: { goal: LifeGoal }) {
   return (
-    <div className={`bg-white/5 border ${goal.isCompleted ? 'border-green-500/30' : 'border-white/10'} rounded-xl p-4 relative overflow-hidden`}>
+    <div
+      className={`bg-white/5 border ${goal.isCompleted ? 'border-green-500/30' : 'border-white/10'} rounded-xl p-4 relative overflow-hidden`}
+    >
       {goal.isCompleted && (
         <div className="absolute top-0 right-0 bg-green-500/20 px-3 py-1 rounded-bl-xl text-green-400 text-xs font-bold">
           ВЫПОЛНЕНО

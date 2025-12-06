@@ -67,7 +67,7 @@ describe('Quarterly Calculations', () => {
     businesses: [],
     businessIdeas: [],
     activeLifestyle: {},
-    housingId: 'housing_room'
+    housingId: 'housing_room',
   }
 
   const mockCountry: CountryEconomy = {
@@ -75,20 +75,20 @@ describe('Quarterly Calculations', () => {
     name: 'USA',
     gdpGrowth: 2.5,
     inflation: 2.0,
+    stockMarketInflation: 4.0,
     keyRate: 5.0,
     interestRate: 5.0,
 
-    taxRate: 20,            // налог с зарплаты
-    corporateTaxRate: 20,  // ✅ НОВОЕ — налог с прибыли бизнеса
+    taxRate: 20, // налог с зарплаты
+    corporateTaxRate: 20, // ✅ НОВОЕ — налог с прибыли бизнеса
 
     unemployment: 4.0,
     costOfLivingModifier: 1.0,
     salaryModifier: 1.0,
 
     archetype: 'rich_stable',
-    activeEvents: []
+    activeEvents: [],
   }
-
 
   describe('calculateQuarterlyIncome', () => {
     it('should calculate gross income correctly', () => {
@@ -105,7 +105,7 @@ describe('Quarterly Calculations', () => {
         income,
         assets: mockPlayer.assets,
         country: mockCountry,
-        playerAge: mockPlayer.age
+        playerAge: mockPlayer.age,
       })
 
       // 15000 * 0.20 = 3000
@@ -118,7 +118,7 @@ describe('Quarterly Calculations', () => {
       const result = calculateQuarterlyExpenses({
         personal: mockPlayer.personal,
         assets: mockPlayer.assets,
-        country: mockCountry
+        country: mockCountry,
       })
 
       // Base 1000 * 3 * 1.0 = 3000

@@ -26,14 +26,17 @@ export function calculatePlayerAssetsAndDebts({
     let valueChange = 0
 
     if (asset.type === 'stock') {
-      // Stocks are volatile
-      const volatility = 0.1 // 10%
+      // Stocks use country-specific stock market inflation + volatility
+      const volatility = 0.1 // 10% volatility
       const marketMove = (Math.random() - 0.5) * 2 * volatility
-      valueChange = asset.value * (marketMove + (countryEconomy.gdpGrowth / 100))
+      // Quarterly growth based on annual stockMarketInflation
+      const quarterlyStockGrowth = countryEconomy.stockMarketInflation / 4 / 100
+      valueChange = asset.value * (marketMove + quarterlyStockGrowth)
     } else if (asset.type === 'housing') {
       // Real estate follows inflation + small growth
-      const growth = (countryEconomy.inflation / 100) + 0.01
-      valueChange = asset.value * growth
+      // Quarterly growth based on annual inflation
+      const quarterlyGrowth = countryEconomy.inflation / 4 / 100 + 0.0025 // +0.25% per quarter base growth
+      valueChange = asset.value * quarterlyGrowth
     }
 
     return {

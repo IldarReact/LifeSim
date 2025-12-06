@@ -1,7 +1,8 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, ShopSlice } from './types'
-import { getItemCost, type ShopItem } from '@/core/types/shop.types'
+import { getItemCost, type ShopItem, isRecurringItem } from '@/core/types/shop.types'
 import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
+import { getInflatedShopPrice, getInflatedHousingPrice } from '@/core/lib/calculations/price-helpers'
 
 export const createShopSlice: StateCreator<
   GameStore,
@@ -11,17 +12,37 @@ export const createShopSlice: StateCreator<
 > = (set, get) => ({
   buyItem: (itemId: string) => {
     const player = get().player
+    const state = get()
     if (!player) return
 
     const item = getShopItemById(itemId, player.countryId)
     if (!item) return
 
-    const cost = getItemCost(item)
+    const baseCost = getItemCost(item)
+    const country = state.countries[player.countryId]
+    
+    // Применяем инфляцию к цене
+    let cost = baseCost
+    if (country) {
+      const category = item.category === 'food' ? 'food' :
+                      item.category === 'health' ? 'health' :
+                      item.category === 'services' ? 'services' :
+                      item.category === 'transport' ? 'transport' : 'default'
+      
+      if (isRecurringItem(item)) {
+        cost = getInflatedShopPrice(baseCost, country, category as any, country.baseYear, state.year)
+      } else if (item.category === 'housing' && item.price) {
+        cost = getInflatedHousingPrice(item.price, country, country.baseYear, state.year)
+      } else if (item.price) {
+        cost = getInflatedShopPrice(item.price, country, category as any, country.baseYear, state.year)
+      }
+    }
+    
     if (player.stats.money < cost) {
       get().pushNotification({
         type: 'info',
         title: 'Недостаточно средств',
-        message: `Нужно $${cost}, у вас только $${player.stats.money}`
+        message: `Нужно $${cost.toLocaleString()}, у вас только $${player.stats.money.toLocaleString()}`
       })
       return
     }
@@ -40,7 +61,7 @@ export const createShopSlice: StateCreator<
     get().pushNotification({
       type: 'success',
       title: 'Покупка успешна',
-      message: `Вы купили "${item.name}" за $${cost}`
+      message: `Вы купили "${item.name}" за $${cost.toLocaleString()}`
     })
   },
 
@@ -76,6 +97,7 @@ export const createShopSlice: StateCreator<
 
   setPlayerHousing: (housingId: string) => {
     const player = get().player
+    const state = get()
     if (!player) return
 
     const housing = getShopItemById(housingId, player.countryId)
@@ -88,7 +110,15 @@ export const createShopSlice: StateCreator<
       return
     }
 
-    const cost = housing.price || 0
+    const baseCost = housing.price || 0
+    const country = state.countries[player.countryId]
+    
+    // Применяем инфляцию к цене жилья
+    let cost = baseCost
+    if (country && baseCost > 0) {
+      cost = getInflatedHousingPrice(baseCost, country, country.baseYear, state.year)
+    }
+    
     if (player.stats.money < cost) {
       get().pushNotification({
         type: 'error',

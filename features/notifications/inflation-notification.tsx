@@ -48,15 +48,19 @@ export function InflationNotification({ data, onClose }: InflationNotificationPr
           exit={{ opacity: 0, y: 50, x: 50 }}
           className="fixed bottom-6 right-6 z-[100] w-96"
         >
-          <div className={`relative overflow-hidden rounded-2xl border-2 backdrop-blur-xl shadow-2xl ${isCrisis
-              ? 'bg-red-950/90 border-red-500/50'
-              : 'bg-zinc-900/90 border-zinc-700/50'
-            }`}>
+          <div
+            className={`relative overflow-hidden rounded-2xl border-2 backdrop-blur-xl shadow-2xl ${
+              isCrisis ? 'bg-red-950/90 border-red-500/50' : 'bg-zinc-900/90 border-zinc-700/50'
+            }`}
+          >
             {/* Фоновый градиент */}
-            <div className={`absolute inset-0 ${isCrisis
-                ? 'bg-gradient-to-br from-red-900/40 to-orange-900/40'
-                : 'bg-gradient-to-br from-blue-900/20 to-purple-900/20'
-              }`} />
+            <div
+              className={`absolute inset-0 ${
+                isCrisis
+                  ? 'bg-gradient-to-br from-red-900/40 to-orange-900/40'
+                  : 'bg-gradient-to-br from-blue-900/20 to-purple-900/20'
+              }`}
+            />
 
             {/* Контент */}
             <div className="relative p-6 space-y-4">
@@ -95,9 +99,11 @@ export function InflationNotification({ data, onClose }: InflationNotificationPr
                     ) : (
                       <TrendingDown className="w-4 h-4 text-green-400" />
                     )}
-                    <span className={`font-bold ${isInflationUp ? 'text-red-400' : 'text-green-400'
-                      }`}>
-                      {isInflationUp ? '+' : ''}{data.inflationChange.toFixed(1)}%
+                    <span
+                      className={`font-bold ${isInflationUp ? 'text-red-400' : 'text-green-400'}`}
+                    >
+                      {isInflationUp ? '+' : ''}
+                      {data.inflationChange.toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -121,18 +127,33 @@ export function InflationNotification({ data, onClose }: InflationNotificationPr
                     ) : (
                       <TrendingDown className="w-4 h-4 text-blue-400" />
                     )}
-                    <span className={`font-bold ${isKeyRateUp ? 'text-orange-400' : 'text-blue-400'
-                      }`}>
-                      {isKeyRateUp ? '+' : ''}{data.keyRateChange.toFixed(2)}%
+                    <span
+                      className={`font-bold ${isKeyRateUp ? 'text-orange-400' : 'text-blue-400'}`}
+                    >
+                      {isKeyRateUp ? '+' : ''}
+                      {data.keyRateChange.toFixed(2)}%
                     </span>
                   </div>
                 </div>
-                <div className="text-2xl font-bold text-white">
-                  {data.keyRate.toFixed(2)}%
+                <div className="text-2xl font-bold text-white">{data.keyRate.toFixed(2)}%</div>
+                <p className="text-xs text-zinc-400 mt-2">Влияет на ставки по кредитам и вкладам</p>
+              </div>
+
+              {/* Статус рынка внизу справа */}
+              <div className="flex justify-end">
+                <div className="text-[11px] text-zinc-400 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/5">
+                  <span
+                    className={
+                      isCrisis ? 'text-red-300 font-semibold' : 'text-emerald-300 font-semibold'
+                    }
+                  >
+                    Рынок: {isCrisis ? 'кризис' : 'стабильный'}
+                  </span>
+                  <span className="mx-1 text-zinc-500">•</span>
+                  <span>Инфляция {data.inflationRate.toFixed(1)}%</span>
+                  <span className="mx-1 text-zinc-500">•</span>
+                  <span>Ключевая ставка {data.keyRate.toFixed(2)}%</span>
                 </div>
-                <p className="text-xs text-zinc-400 mt-2">
-                  Влияет на ставки по кредитам и вкладам
-                </p>
               </div>
 
               {/* Кнопка закрытия */}

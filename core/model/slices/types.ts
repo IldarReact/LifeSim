@@ -1,3 +1,4 @@
+import type { StateCreator } from 'zustand'
 import type { StatEffect } from '@/core/types/stats.types'
 import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
 import type { SkillRequirement } from '@/core/types/skill.types'
@@ -20,6 +21,9 @@ export interface InflationNotificationData {
 }
 
 // Slice types for better organization
+// Общий тип middleware для стора (devtools + persist)
+export type GameStoreMiddlewares = [['zustand/devtools', never], ['zustand/persist', unknown]]
+
 export interface GameSlice {
   turn: number
   year: number
@@ -44,9 +48,7 @@ export interface GameSlice {
 export interface PlayerSlice {
   player: PlayerState | null
 
-  updatePlayer: (
-    updater: (prev: PlayerState) => Partial<PlayerState>
-  ) => void
+  updatePlayer: (updater: (prev: PlayerState) => Partial<PlayerState>) => void
 
   // Actions
   applyStatChanges: (effect: StatEffect) => void
@@ -59,14 +61,14 @@ export interface EducationSlice {
     cost: number,
     costPerTurn: StatEffect,
     skillBonus: string,
-    duration: number
+    duration: number,
   ) => void
   applyToUniversity: (
     programName: string,
     cost: number,
     costPerTurn: StatEffect,
     skillBonus: string,
-    duration: number
+    duration: number,
   ) => void
 }
 
@@ -79,7 +81,7 @@ export interface JobSlice {
     company: string,
     salary: number,
     cost: StatEffect,
-    requirements: SkillRequirement[]
+    requirements: SkillRequirement[],
   ) => void
   acceptJobOffer: (applicationId: string) => void
   quitJob: (jobId: string) => void
@@ -97,7 +99,7 @@ export interface FreelanceSlice {
     title: string,
     payment: number,
     cost: StatEffect,
-    requirements: SkillRequirement[]
+    requirements: SkillRequirement[],
   ) => void
   acceptFreelanceGig: (applicationId: string) => void
   completeFreelanceGig: (gigId: string) => void
@@ -110,7 +112,7 @@ export interface FamilySlice {
     type: 'wife' | 'husband' | 'child' | 'pet',
     age: number,
     income: number,
-    expenses: number
+    expenses: number,
   ) => void
   removeFamilyMember: (id: string) => void
   updateLifeGoal: (goalId: string, progress: number) => void
@@ -140,15 +142,21 @@ export interface BusinessSlice {
     monthlyExpenses: number,
     maxEmployees: number,
     minEmployees: number,
-    taxRate: number
+    taxRate: number,
   ) => void
   hireEmployee: (businessId: string, candidate: import('@/core/types').EmployeeCandidate) => void
   fireEmployee: (businessId: string, employeeId: string) => void
   closeBusiness: (businessId: string) => void
 
   // New actions
-  setPlayerManagerialRoles: (businessId: string, roles: import('@/core/types').EmployeeRole[]) => void
-  setPlayerOperationalRole: (businessId: string, role: import('@/core/types').EmployeeRole | null) => void
+  setPlayerManagerialRoles: (
+    businessId: string,
+    roles: import('@/core/types').EmployeeRole[],
+  ) => void
+  setPlayerOperationalRole: (
+    businessId: string,
+    role: import('@/core/types').EmployeeRole | null,
+  ) => void
   freezeBusiness: (businessId: string) => void
   unfreezeBusiness: (businessId: string) => void
   changePrice: (businessId: string, newPrice: number) => void
@@ -157,18 +165,38 @@ export interface BusinessSlice {
   proposeAction: (
     businessId: string,
     type: import('@/core/types/business.types').ProposalType,
-    payload: { newPrice?: number; newQuantity?: number; amount?: number }
+    payload: { newPrice?: number; newQuantity?: number; amount?: number },
   ) => void
-  hireFamilyMember: (businessId: string, familyMemberId: string, role: import('@/core/types').EmployeeRole) => void
+  hireFamilyMember: (
+    businessId: string,
+    familyMemberId: string,
+    role: import('@/core/types').EmployeeRole,
+  ) => void
 
   // ✅ Player Employment in Business
-  joinBusinessAsEmployee: (businessId: string, role: import('@/core/types').EmployeeRole, salary: number) => void
+  joinBusinessAsEmployee: (
+    businessId: string,
+    role: import('@/core/types').EmployeeRole,
+    salary: number,
+  ) => void
   leaveBusinessJob: (businessId: string) => void
 
   // ✅ Multiplayer Business Actions
-  addPartnerToBusiness: (businessId: string, partnerId: string, partnerName: string, share: number, investment: number) => void
+  addPartnerToBusiness: (
+    businessId: string,
+    partnerId: string,
+    partnerName: string,
+    share: number,
+    investment: number,
+  ) => void
   addSharedBusiness: (business: import('@/core/types').Business) => void
-  addEmployeeToBusiness: (businessId: string, employeeName: string, role: import('@/core/types').EmployeeRole, salary: number, playerId?: string) => void
+  addEmployeeToBusiness: (
+    businessId: string,
+    employeeName: string,
+    role: import('@/core/types').EmployeeRole,
+    salary: number,
+    playerId?: string,
+  ) => void
 }
 
 export interface NotificationSlice {
@@ -187,7 +215,11 @@ export interface MarketSlice {
   marketEvents: import('@/core/types').MarketEvent[]
 
   // Actions
-  updateMarketCondition: (newValue: number, description: string, trend: 'rising' | 'falling' | 'stable') => void
+  updateMarketCondition: (
+    newValue: number,
+    description: string,
+    trend: 'rising' | 'falling' | 'stable',
+  ) => void
   addMarketEvent: (event: import('@/core/types').MarketEvent) => void
 }
 
@@ -226,7 +258,7 @@ export interface GameOffersSlice {
     toPlayerId: string,
     toPlayerName: string,
     details: OfferDetails,
-    message?: string
+    message?: string,
   ) => void
 
   acceptOffer: (offerId: string) => void
@@ -240,8 +272,7 @@ export interface GameOffersSlice {
 }
 
 // Combined store type
-export type GameStore =
-  GameSlice &
+export type GameStore = GameSlice &
   PlayerSlice &
   EducationSlice &
   JobSlice &
@@ -253,9 +284,11 @@ export type GameStore =
   IdeaSlice &
   ShopSlice &
   BankSlice &
-  GameOffersSlice &
-  {
+  GameOffersSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']
   }
+
+// Удобный алиас для StateCreator со всеми middleware стора
+export type GameStateCreator<TSlice> = StateCreator<GameStore, GameStoreMiddlewares, [], TSlice>

@@ -602,7 +602,7 @@ export function processTurn(get: GetState, set: SetState): void {
       const country = getCountry(prev.player.countryId)
       const { newEconomy, inflationChange, keyRateChange } = applyYearlyInflation(
         country,
-        false // TODO: связать с игровыми кризисами
+        newYear // TODO: связать с игровыми кризисами
       )
 
       // Обновляем экономику страны

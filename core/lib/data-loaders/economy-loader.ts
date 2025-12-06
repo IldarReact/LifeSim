@@ -30,6 +30,7 @@ export const WORLD_COUNTRIES: Readonly<Record<string, CountryData>> = Object.ent
     archetype: (raw.archetype ?? 'rich_stable') as CountryArchetype,
     gdpGrowth: raw.gdpGrowth ?? 0,
     inflation: raw.inflation ?? 0,
+    stockMarketInflation: raw.stockMarketInflation ?? raw.inflation ?? 0,
     keyRate: raw.keyRate ?? 0,
     interestRate: raw.keyRate ?? 0, // Fallback for deprecated field
     unemployment: raw.unemployment ?? 0,
@@ -38,6 +39,8 @@ export const WORLD_COUNTRIES: Readonly<Record<string, CountryData>> = Object.ent
     salaryModifier: raw.salaryModifier ?? 1,
     costOfLivingModifier: raw.costOfLivingModifier ?? 1,
     activeEvents: [],
+    inflationHistory: raw.inflation ? [raw.inflation] : [],
+    baseYear: 2024,
     imageUrl: raw.imageUrl
   }
 

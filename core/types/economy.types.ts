@@ -32,6 +32,7 @@ export interface CountryEconomy {
   archetype: CountryArchetype;
   gdpGrowth: number; // Рост ВВП (%)
   inflation: number; // Инфляция (% годовых)
+  stockMarketInflation: number; // Инфляция фондового рынка (% годовых)
   keyRate: number; // Ключевая ставка ЦБ (% годовых)
   interestRate: number; // Базовая процентная ставка (deprecated, используем keyRate)
   unemployment: number; // Безработица (%)
@@ -41,6 +42,8 @@ export interface CountryEconomy {
   costOfLivingModifier: number; // Модификатор стоимости жизни
   imageUrl?: string; // URL изображения страны
   activeEvents: EconomicEvent[]; // Активные экономические события
+  inflationHistory?: number[]; // История годовой инфляции для накопленного расчета
+  baseYear?: number; // Базовый год для расчета инфляции (обычно год начала игры)
 }
 
 export type Country = CountryEconomy;

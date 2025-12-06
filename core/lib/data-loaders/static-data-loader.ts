@@ -78,7 +78,8 @@ export const getIdeaReplacements = () => ideaTemplates.replacements
 export const getCrisisOptions = () => crisisOptions
 
 // --- Countries ---
-export const getInitialCountries = () => countries as Record<string, CountryEconomy>
+// Приводим JSON к типу CountryEconomy через unknown, чтобы не ломать типы при добавлении новых полей
+export const getInitialCountries = () => countries as unknown as Record<string, CountryEconomy>
 
 // --- Country Archetypes ---
 export const getCountryArchetypes = () => countryArchetypes

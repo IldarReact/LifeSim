@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist, createJSONStorage, devtools } from 'zustand/middleware'
 import type { GameStore } from './slices/types'
 import { createGameSlice } from './slices/game-slice'
 import { createPlayerSlice } from './slices/player-slice'
@@ -37,47 +37,52 @@ const validatedStorage = createJSONStorage(() => ({
   },
   removeItem: (name: string) => {
     saveManager.clear()
-  }
+  },
 }))
 
 export const useGameStore = create<GameStore>()(
-  persist(
-    (...a) => ({
-      // Shared state
-      countries: WORLD_COUNTRIES,
-      globalEvents: [],
-      history: [],
+  devtools(
+    persist(
+      (...a) => ({
+        // Shared state
+        countries: WORLD_COUNTRIES,
+        globalEvents: [],
+        history: [],
 
-      // Combine all slices
-      ...createGameSlice(...a),
-      ...createPlayerSlice(...a),
-      ...createEducationSlice(...a),
-      ...createJobSlice(...a),
-      ...createFreelanceSlice(...a),
-      ...createFamilySlice(...a),
-      ...createBusinessSlice(...a),
-      ...createNotificationSlice(...a),
-      ...createMarketSlice(...a),
-      ...createIdeaSlice(...a),
-      ...createShopSlice(...a),
-      ...createBankSlice(...a),
-      ...createGameOffersSlice(...a)
-    }),
-    {
-      name: 'lifesim-save-v1',
-      version: 1,
-      storage: validatedStorage,
-      // Only persist when game is actually running
-      partialize: (state) => {
-        // Don't persist during menu, setup, or character selection
-        if (state.gameStatus === 'menu' ||
-          state.gameStatus === 'setup' ||
-          state.gameStatus === 'select_country' ||
-          state.gameStatus === 'select_character') {
-          return {} // Don't persist incomplete state
-        }
-        return state // Persist everything else
-      }
-    }
-  )
+        // Combine all slices
+        ...createGameSlice(...a),
+        ...createPlayerSlice(...a),
+        ...createEducationSlice(...a),
+        ...createJobSlice(...a),
+        ...createFreelanceSlice(...a),
+        ...createFamilySlice(...a),
+        ...createBusinessSlice(...a),
+        ...createNotificationSlice(...a),
+        ...createMarketSlice(...a),
+        ...createIdeaSlice(...a),
+        ...createShopSlice(...a),
+        ...createBankSlice(...a),
+        ...createGameOffersSlice(...a),
+      }),
+      {
+        name: 'lifesim-save-v1',
+        version: 1,
+        storage: validatedStorage,
+        // Only persist when game is actually running
+        partialize: (state) => {
+          // Don't persist during menu, setup, or character selection
+          if (
+            state.gameStatus === 'menu' ||
+            state.gameStatus === 'setup' ||
+            state.gameStatus === 'select_country' ||
+            state.gameStatus === 'select_character'
+          ) {
+            return {} // Don't persist incomplete state
+          }
+          return state // Persist everything else
+        },
+      },
+    ),
+    { name: 'LifeSim Game Store' },
+  ),
 )

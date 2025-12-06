@@ -6,6 +6,7 @@ import { SectionSeparator } from "@/shared/ui/section-separator"
 import { OpportunityCard } from "./ui/opportunity-card"
 import { GraduationCap, BookOpen, Code, DollarSign, Globe, Brain, Clock, Zap, Star, TrendingUp, Palette, Lightbulb } from "lucide-react"
 import { getAllCoursesForCountry } from "@/core/lib/data-loaders/courses-loader"
+import { getInflatedEducationPrice } from "@/core/lib/calculations/price-helpers"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
@@ -31,8 +32,11 @@ function CourseCard({
   intelligenceBonus,
   skillBonus,
   image,
-  onEnroll
-}: CourseCardProps) {
+  onEnroll,
+  inflatedCost
+}: CourseCardProps & { inflatedCost?: number }) {
+  const displayCost = inflatedCost ?? cost
+  
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden flex flex-col md:flex-row mb-4 hover:border-white/20 transition-colors">
       <div className="w-full md:w-1/3 h-48 md:h-auto relative">
@@ -50,7 +54,7 @@ function CourseCard({
             <h3 className="text-xl font-bold text-white">{title}</h3>
             <div className="text-[#004d00] font-bold text-lg flex items-center gap-1">
               <DollarSign className="w-4 h-4" />
-              {cost.toLocaleString()}
+              {displayCost.toLocaleString()}
             </div>
           </div>
 
@@ -164,7 +168,7 @@ function ActiveEducationCard({ title, progress, total, energy }: { title: string
 }
 
 export function EducationActivity(): React.JSX.Element | null {
-  const { player, countries, studyCourse, applyToUniversity } = useGameStore()
+  const { player, countries, studyCourse, applyToUniversity, year } = useGameStore()
   const [feedback, setFeedback] = React.useState<{ show: boolean; success: boolean; message: string }>({
     show: false,
     success: false,
@@ -178,6 +182,12 @@ export function EducationActivity(): React.JSX.Element | null {
 
   // Load courses from data loader
   const availableCourses = getAllCoursesForCountry(countryId)
+  
+  // Функция для получения инфлированной цены курса
+  const getInflatedCoursePrice = (basePrice: number): number => {
+    if (!currentCountry) return basePrice
+    return getInflatedEducationPrice(basePrice, currentCountry, currentCountry.baseYear, year)
+  }
 
   // Filter skills > 0
   const skills = (player.personal.skills || []).filter(s => s.level > 0)
@@ -201,8 +211,9 @@ export function EducationActivity(): React.JSX.Element | null {
     return 1
   }
 
-  const handleCourseEnroll = (courseName: string, cost: number, energyCost: number, skillBonus: string, durationStr: string) => {
+  const handleCourseEnroll = (courseName: string, baseCost: number, energyCost: number, skillBonus: string, durationStr: string) => {
     const duration = parseDuration(durationStr)
+    const inflatedCost = getInflatedCoursePrice(baseCost)
 
     // Check if enough energy for ALL active activities + new one
     const currentEnergyCost = activeCourses.reduce((acc, c) => acc + (c.costPerTurn?.energy || 0), 0) +
@@ -214,17 +225,18 @@ export function EducationActivity(): React.JSX.Element | null {
       return
     }
 
-    if ((player.stats?.money ?? 0) < cost) {
+    if ((player.stats?.money ?? 0) < inflatedCost) {
       setFeedback({ show: true, success: false, message: 'Недостаточно денег для оплаты курса' })
       return
     }
 
-    studyCourse(courseName, cost, { energy: energyCost }, skillBonus, duration)
+    studyCourse(courseName, inflatedCost, { energy: energyCost }, skillBonus, duration)
     setFeedback({ show: true, success: true, message: `Вы записались на курс "${courseName}"` })
   }
 
-  const handleUniversityApply = (programName: string, cost: number, energyCost: number, skillBonus: string, durationStr: string) => {
+  const handleUniversityApply = (programName: string, baseCost: number, energyCost: number, skillBonus: string, durationStr: string) => {
     const duration = parseDuration(durationStr)
+    const inflatedCost = getInflatedCoursePrice(baseCost)
 
     const currentEnergyCost = activeCourses.reduce((acc, c) => acc + (c.costPerTurn?.energy || 0), 0) +
       activeUniversity.reduce((acc, c) => acc + (c.costPerTurn?.energy || 0), 0) +
@@ -235,12 +247,12 @@ export function EducationActivity(): React.JSX.Element | null {
       return
     }
 
-    if ((player.stats?.money ?? 0) < cost) {
+    if ((player.stats?.money ?? 0) < inflatedCost) {
       setFeedback({ show: true, success: false, message: 'Недостаточно денег для оплаты обучения' })
       return
     }
 
-    applyToUniversity(programName, cost, { energy: energyCost }, skillBonus, duration)
+    applyToUniversity(programName, inflatedCost, { energy: energyCost }, skillBonus, duration)
     setFeedback({ show: true, success: true, message: `Документы на "${programName}" поданы` })
   }
 
@@ -321,6 +333,7 @@ export function EducationActivity(): React.JSX.Element | null {
                 title="Бакалавриат: IT и Технологии"
                 description="Фундаментальные знания в области компьютерных наук, алгоритмов и разработки ПО."
                 cost={5000}
+                inflatedCost={getInflatedCoursePrice(5000)}
                 duration="4 года"
                 energyCost={30}
                 intelligenceBonus={15}
@@ -333,6 +346,7 @@ export function EducationActivity(): React.JSX.Element | null {
                 title="Магистратура: Управление Бизнесом"
                 description="Углубленное изучение менеджмента, маркетинга и финансов для будущих руководителей."
                 cost={8000}
+                inflatedCost={getInflatedCoursePrice(8000)}
                 duration="2 года"
                 energyCost={35}
                 intelligenceBonus={10}
@@ -361,6 +375,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Английский язык (Business)"
                   description="Курс делового английского для работы и переговоров."
                   cost={500}
+                  inflatedCost={getInflatedCoursePrice(500)}
                   duration="3 месяца"
                   energyCost={15}
                   intelligenceBonus={5}
@@ -372,6 +387,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Немецкий язык (Intensive)"
                   description="Интенсивный курс немецкого языка для начинающих."
                   cost={600}
+                  inflatedCost={getInflatedCoursePrice(600)}
                   duration="6 месяцев"
                   energyCost={20}
                   intelligenceBonus={5}
@@ -394,6 +410,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Python для Data Science"
                   description="Изучение Python, Pandas и основ машинного обучения."
                   cost={1200}
+                  inflatedCost={getInflatedCoursePrice(1200)}
                   duration="6 месяцев"
                   energyCost={25}
                   intelligenceBonus={10}
@@ -405,6 +422,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Data Science и Аналитика"
                   description="Анализ данных, визуализация и машинное обучение."
                   cost={1800}
+                  inflatedCost={getInflatedCoursePrice(1800)}
                   duration="9 месяцев"
                   energyCost={30}
                   intelligenceBonus={15}
@@ -416,6 +434,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Fullstack JavaScript"
                   description="Разработка веб-приложений на React и Node.js."
                   cost={1500}
+                  inflatedCost={getInflatedCoursePrice(1500)}
                   duration="9 месяцев"
                   energyCost={30}
                   intelligenceBonus={12}
@@ -438,6 +457,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Digital Marketing"
                   description="Интернет-маркетинг, SEO, контекстная реклама и SMM."
                   cost={900}
+                  inflatedCost={getInflatedCoursePrice(900)}
                   duration="6 месяцев"
                   energyCost={20}
                   intelligenceBonus={8}
@@ -460,6 +480,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Graphic Design Basics"
                   description="Основы графического дизайна, композиция, типографика."
                   cost={700}
+                  inflatedCost={getInflatedCoursePrice(700)}
                   duration="3 месяца"
                   energyCost={18}
                   intelligenceBonus={6}
@@ -471,6 +492,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Adobe Photoshop Pro"
                   description="Профессиональная обработка изображений и создание графики."
                   cost={500}
+                  inflatedCost={getInflatedCoursePrice(500)}
                   duration="3 месяца"
                   energyCost={15}
                   intelligenceBonus={5}
@@ -494,6 +516,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Основы инвестирования"
                   description="Как работают акции, облигации и фондовый рынок."
                   cost={300}
+                  inflatedCost={getInflatedCoursePrice(300)}
                   duration="3 месяца"
                   energyCost={10}
                   intelligenceBonus={5}
@@ -505,6 +528,7 @@ export function EducationActivity(): React.JSX.Element | null {
                   title="Управление личными финансами"
                   description="Бюджетирование, планирование и оптимизация расходов."
                   cost={200}
+                  inflatedCost={getInflatedCoursePrice(200)}
                   duration="3 месяца"
                   energyCost={5}
                   intelligenceBonus={3}

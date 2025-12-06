@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useGameStore } from '@/core/model/store'
 import { getShopItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
 import { getItemCost, isRecurringItem, type ShopCategory } from '@/core/types/shop.types'
+import { getInflatedShopPrice, getInflatedHousingPrice } from '@/core/lib/calculations/price-helpers'
 import { Card } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
 import {
@@ -28,7 +29,7 @@ const CATEGORIES: { id: ShopCategory; label: string; icon: React.ReactNode }[] =
 ]
 
 export const ShopActivity = () => {
-  const { player, countries, buyItem, setLifestyle, setPlayerHousing } = useGameStore()
+  const { player, countries, buyItem, setLifestyle, setPlayerHousing, year } = useGameStore()
   const [selectedCategory, setSelectedCategory] = useState<ShopCategory>('housing')
 
   if (!player) return null
@@ -36,7 +37,6 @@ export const ShopActivity = () => {
   const items = getShopItemsByCategory(selectedCategory, player.countryId)
   const currentHousingId = player.housingId
   const country = countries[player.countryId]
-  const costModifier = country?.costOfLivingModifier || 1.0
 
   const getEffectIcon = (key: string) => {
     const icons: Record<string, React.ReactElement> = {
@@ -52,8 +52,8 @@ export const ShopActivity = () => {
   const getHousingTypeLabel = (item: any) => {
     if (isRecurringItem(item)) {
       return 'Аренда'
-    } else if (item.price) {
-      const adjustedPrice = Math.round(item.price * costModifier)
+    } else if (item.price && country) {
+      const adjustedPrice = getInflatedHousingPrice(item.price, country, country.baseYear, year)
       return `Покупка за $${adjustedPrice.toLocaleString()}`
     }
     return 'Жильё'
@@ -96,8 +96,32 @@ export const ShopActivity = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {items.map(item => {
           const baseCost = getItemCost(item)
-          const cost = Math.round(baseCost * costModifier)
-          const price = item.price ? Math.round(item.price * costModifier) : undefined
+          
+          // Применяем инфляцию в зависимости от категории
+          let cost = baseCost
+          let price = item.price
+          
+          if (country) {
+            if (isRecurringItem(item)) {
+              // Для рекуррентных товаров (аренда, еда) используем соответствующую категорию
+              const category = selectedCategory === 'food' ? 'food' : 
+                              selectedCategory === 'health' ? 'health' : 
+                              selectedCategory === 'services' ? 'services' : 'default'
+              cost = getInflatedShopPrice(baseCost, country, category as any, country.baseYear, year)
+            } else if (item.price) {
+              // Для жилья используем специальную функцию
+              if (item.category === 'housing') {
+                price = getInflatedHousingPrice(item.price, country, country.baseYear, year)
+                cost = price
+              } else {
+                const category = selectedCategory === 'food' ? 'food' : 
+                                selectedCategory === 'health' ? 'health' : 
+                                selectedCategory === 'services' ? 'services' : 'default'
+                price = getInflatedShopPrice(item.price, country, category as any, country.baseYear, year)
+                cost = price
+              }
+            }
+          }
 
           const canAffordInitial = player.stats.money >= (price || cost)
           const isHousing = item.category === 'housing'

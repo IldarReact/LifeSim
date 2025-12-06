@@ -1,5 +1,4 @@
-import type { StateCreator } from 'zustand'
-import type { GameStore, BusinessSlice } from './types'
+import type { GameStateCreator, BusinessSlice } from './types'
 import type { Business, Employee, EmployeeCandidate, BusinessType } from '@/core/types'
 import type { BusinessProposal } from '@/core/types/business.types'
 import type { StatEffect } from '@/core/types/stats.types'
@@ -11,16 +10,10 @@ import {
   addBranchToNetwork,
   updateNetworkBonuses,
   canChangePrice,
-  syncPriceToNetwork
+  syncPriceToNetwork,
 } from '@/core/lib/business-network'
 
-export const createBusinessSlice: StateCreator<
-  GameStore,
-  [],
-  [],
-  BusinessSlice
-> = (set, get) => ({
-
+export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) => ({
   openBusiness: (
     name,
     type,
@@ -33,7 +26,7 @@ export const createBusinessSlice: StateCreator<
     monthlyExpenses,
     maxEmployees,
     minEmployees,
-    taxRate
+    taxRate,
   ) => {
     const state = get()
     if (!state.player) return
@@ -58,17 +51,17 @@ export const createBusinessSlice: StateCreator<
       state: openingQuarters > 0 ? 'opening' : 'active',
 
       // ===== НОВОЕ: Ценообразование и производство =====
-      price: 5,  // Средняя цена по умолчанию (1-10)
-      quantity: type === 'service' || type === 'tech' ? 0 : 100,  // 0 для услуг, 100 для товаров
-      isServiceBased: type === 'service' || type === 'tech',  // Услуговые бизнесы
+      price: 5, // Средняя цена по умолчанию (1-10)
+      quantity: type === 'service' || type === 'tech' ? 0 : 100, // 0 для услуг, 100 для товаров
+      isServiceBased: type === 'service' || type === 'tech', // Услуговые бизнесы
 
       // ===== НОВОЕ: Сеть филиалов =====
-      networkId: undefined,  // Пока не в сети
-      isMainBranch: true,    // Первый бизнес всегда главный
+      networkId: undefined, // Пока не в сети
+      isMainBranch: true, // Первый бизнес всегда главный
 
       // ===== НОВОЕ: Кооперативное владение =====
-      partners: [],  // Пока нет партнеров
-      proposals: [],  // Нет предложений
+      partners: [], // Пока нет партнеров
+      proposals: [], // Нет предложений
 
       openingProgress: {
         totalQuarters: openingQuarters,
@@ -99,13 +92,13 @@ export const createBusinessSlice: StateCreator<
 
       employees: [],
       maxEmployees,
-      requiredRoles: [],  // TODO: заполнить из конфига типа бизнеса
+      requiredRoles: [], // TODO: заполнить из конфига типа бизнеса
       minEmployees: minEmployees || 1,
 
       // ✅ новый формат ролей
       playerRoles: {
-        managerialRoles: ['manager', 'accountant'],  // По умолчанию игрок выполняет эти роли
-        operationalRole: null,  // Операционная роль не выбрана
+        managerialRoles: ['manager', 'accountant'], // По умолчанию игрок выполняет эти роли
+        operationalRole: null, // Операционная роль не выбрана
       },
 
       reputation: 50,
@@ -113,7 +106,7 @@ export const createBusinessSlice: StateCreator<
       customerSatisfaction: 50,
 
       eventsHistory: [],
-      foundedTurn: state.turn
+      foundedTurn: state.turn,
     }
 
     // ✅ применяем статы игроку
@@ -121,10 +114,7 @@ export const createBusinessSlice: StateCreator<
       money: -upfrontCost,
     })
 
-    const updatedStatEffect = applyStats(
-      { ...state.player.personal.stats, money: 0 },
-      creationCost
-    )
+    const updatedStatEffect = applyStats({ ...state.player.personal.stats, money: 0 }, creationCost)
 
     // ===== НОВОЕ: Автоматическое создание сети филиалов =====
     let finalBusinesses = [...state.player.businesses]
@@ -134,20 +124,18 @@ export const createBusinessSlice: StateCreator<
     if (shouldCreateNetwork(state.player.businesses, type)) {
       // Находим первый бизнес этого типа
       const existingBusiness = state.player.businesses.find(
-        b => b.type === type && b.state !== 'frozen'
+        (b) => b.type === type && b.state !== 'frozen',
       )
 
       if (existingBusiness) {
         // Создаем сеть
         const { main, branch, networkId } = createNetworkForBusinesses(
           existingBusiness,
-          newBusiness
+          newBusiness,
         )
 
         // Обновляем существующий бизнес (делаем главным)
-        finalBusinesses = finalBusinesses.map(b =>
-          b.id === existingBusiness.id ? main : b
-        )
+        finalBusinesses = finalBusinesses.map((b) => (b.id === existingBusiness.id ? main : b))
 
         // Новый бизнес становится филиалом
         finalNewBusiness = branch
@@ -159,20 +147,20 @@ export const createBusinessSlice: StateCreator<
     } else {
       // Проверяем, есть ли уже сеть этого типа
       const existingNetwork = state.player.businesses.find(
-        b => b.type === type && b.networkId && b.state !== 'frozen'
+        (b) => b.type === type && b.networkId && b.state !== 'frozen',
       )
 
       if (existingNetwork && existingNetwork.networkId) {
         // Добавляем к существующей сети
         const mainBranch = state.player.businesses.find(
-          b => b.networkId === existingNetwork.networkId && b.isMainBranch
+          (b) => b.networkId === existingNetwork.networkId && b.isMainBranch,
         )
 
         if (mainBranch) {
           finalNewBusiness = addBranchToNetwork(
             newBusiness,
             existingNetwork.networkId,
-            mainBranch.price
+            mainBranch.price,
           )
 
           console.log(`[Business Network] Добавлен филиал в сеть ${existingNetwork.networkId}`)
@@ -196,11 +184,11 @@ export const createBusinessSlice: StateCreator<
 
         personal: {
           ...state.player.personal,
-          stats: updatedStatEffect
+          stats: updatedStatEffect,
         },
 
-        businesses: finalBusinesses
-      }
+        businesses: finalBusinesses,
+      },
     })
   },
 
@@ -208,7 +196,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
     if (i === -1) return
 
     const business = state.player.businesses[i]
@@ -233,14 +221,14 @@ export const createBusinessSlice: StateCreator<
       satisfaction: 80,
       productivity: 75,
       experience: candidate.experience,
-      humanTraits: candidate.humanTraits
+      humanTraits: candidate.humanTraits,
     }
 
     const employees = [...business.employees, newEmployee]
 
     const updatedBusiness = updateBusinessMetrics({
       ...business,
-      employees
+      employees,
     })
 
     const updatedBusinesses = [...state.player.businesses]
@@ -248,15 +236,15 @@ export const createBusinessSlice: StateCreator<
 
     // ✅ списание зарплаты
     const updatedStats = applyStats(state.player.stats, {
-      money: -candidate.requestedSalary
+      money: -candidate.requestedSalary,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -264,16 +252,16 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
     if (i === -1) return
 
     const business = state.player.businesses[i]
 
-    const employees = business.employees.filter(e => e.id !== employeeId)
+    const employees = business.employees.filter((e) => e.id !== employeeId)
 
     const updatedBusiness = updateBusinessMetrics({
       ...business,
-      employees
+      employees,
     })
 
     const updatedBusinesses = [...state.player.businesses]
@@ -282,8 +270,8 @@ export const createBusinessSlice: StateCreator<
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -291,33 +279,35 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     const returnValue = Math.round(business.currentValue * 0.5)
 
     const updatedStats = applyStats(state.player.stats, {
-      money: returnValue
+      money: returnValue,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: state.player.businesses.filter(b => b.id !== businessId)
-      }
+        businesses: state.player.businesses.filter((b) => b.id !== businessId),
+      },
     })
   },
 
   hireFamilyMember: (businessId, familyMemberId, role) => {
-    console.log(`[Business] Hire family member ${familyMemberId} as ${role} in ${businessId} - Not implemented yet`)
+    console.log(
+      `[Business] Hire family member ${familyMemberId} as ${role} in ${businessId} - Not implemented yet`,
+    )
   },
 
   unfreezeBusiness: (businessId) => {
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     // Стоимость разморозки: 30% от общей стоимости
@@ -328,29 +318,29 @@ export const createBusinessSlice: StateCreator<
       return
     }
 
-    const updatedBusinesses = state.player.businesses.map(b =>
+    const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          state: 'opening' as const,
-          openingProgress: {
-            ...b.openingProgress,
-            quartersLeft: 1 // Занимает 1 квартал
+            ...b,
+            state: 'opening' as const,
+            openingProgress: {
+              ...b.openingProgress,
+              quartersLeft: 1, // Занимает 1 квартал
+            },
           }
-        }
-        : b
+        : b,
     )
 
     const updatedStats = applyStats(state.player.stats, {
-      money: -unfreezeCost
+      money: -unfreezeCost,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -361,7 +351,7 @@ export const createBusinessSlice: StateCreator<
     // Ограничение цены 1-10
     const clampedPrice = Math.max(1, Math.min(10, Math.round(newPrice)))
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     // Проверка прав на изменение цены в сети (используем утилиту)
@@ -378,24 +368,26 @@ export const createBusinessSlice: StateCreator<
       updatedBusinesses = syncPriceToNetwork(
         state.player.businesses,
         business.networkId,
-        clampedPrice
+        clampedPrice,
       )
-      console.log(`[Business] 💰 Цена изменена для сети ${business.networkId}: ${oldPrice} → ${clampedPrice}`)
+      console.log(
+        `[Business] 💰 Цена изменена для сети ${business.networkId}: ${oldPrice} → ${clampedPrice}`,
+      )
     } else {
       // Одиночный бизнес
-      updatedBusinesses = state.player.businesses.map(b =>
-        b.id === businessId
-          ? { ...b, price: clampedPrice }
-          : b
+      updatedBusinesses = state.player.businesses.map((b) =>
+        b.id === businessId ? { ...b, price: clampedPrice } : b,
       )
-      console.log(`[Business] 💰 Цена изменена для "${business.name}": ${oldPrice} → ${clampedPrice}`)
+      console.log(
+        `[Business] 💰 Цена изменена для "${business.name}": ${oldPrice} → ${clampedPrice}`,
+      )
     }
 
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -403,7 +395,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     if (business.isServiceBased) {
@@ -412,19 +404,19 @@ export const createBusinessSlice: StateCreator<
     }
 
     const oldQuantity = business.quantity
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, quantity: Math.max(0, Math.round(newQuantity)) }
-        : b
+    const updatedBusinesses = state.player.businesses.map((b) =>
+      b.id === businessId ? { ...b, quantity: Math.max(0, Math.round(newQuantity)) } : b,
     )
 
-    console.log(`[Business] 📦 План производства изменен для "${business.name}": ${oldQuantity} → ${Math.round(newQuantity)} единиц`)
+    console.log(
+      `[Business] 📦 План производства изменен для "${business.name}": ${oldQuantity} → ${Math.round(newQuantity)} единиц`,
+    )
 
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -432,7 +424,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const sourceBusiness = state.player.businesses.find(b => b.id === sourceBusinessId)
+    const sourceBusiness = state.player.businesses.find((b) => b.id === sourceBusinessId)
     if (!sourceBusiness) return
 
     // Стоимость открытия филиала (берем initialCost)
@@ -451,15 +443,13 @@ export const createBusinessSlice: StateCreator<
       networkId = `net_${Date.now()}`
 
       // Обновляем исходный бизнес, делаем его главным
-      updatedBusinesses = updatedBusinesses.map(b =>
-        b.id === sourceBusinessId
-          ? { ...b, networkId, isMainBranch: true }
-          : b
+      updatedBusinesses = updatedBusinesses.map((b) =>
+        b.id === sourceBusinessId ? { ...b, networkId, isMainBranch: true } : b,
       )
     }
 
     // Считаем количество филиалов в этой сети для названия
-    const branchCount = updatedBusinesses.filter(b => b.networkId === networkId).length
+    const branchCount = updatedBusinesses.filter((b) => b.networkId === networkId).length
     const branchName = `${sourceBusiness.name.split(' (')[0]} (Филиал ${branchCount})`
 
     const newBranch: Business = {
@@ -477,7 +467,7 @@ export const createBusinessSlice: StateCreator<
       employees: [],
       inventory: {
         ...sourceBusiness.inventory,
-        currentStock: 0 // Пустой склад
+        currentStock: 0, // Пустой склад
       },
 
       // Прогресс открытия
@@ -486,7 +476,7 @@ export const createBusinessSlice: StateCreator<
         quartersLeft: Math.max(1, Math.round(sourceBusiness.openingProgress.totalQuarters * 0.7)), // Открывается на 30% быстрее
         investedAmount: branchCost,
         totalCost: branchCost,
-        upfrontCost: branchCost
+        upfrontCost: branchCost,
       },
 
       // Сбрасываем метрики
@@ -499,21 +489,21 @@ export const createBusinessSlice: StateCreator<
       // Роли игрока сбрасываем (в филиале он может не работать или работать отдельно)
       playerRoles: {
         managerialRoles: [],
-        operationalRole: null
-      }
+        operationalRole: null,
+      },
     }
 
     // Списываем деньги
     const updatedStats = applyStats(state.player.stats, {
-      money: -branchCost
+      money: -branchCost,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: [...updatedBusinesses, newBranch]
-      }
+        businesses: [...updatedBusinesses, newBranch],
+      },
     })
 
     console.log(`[Business] Открыт филиал: ${branchName} в сети ${networkId}`)
@@ -523,11 +513,11 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     // Вычисляем долю игрока
-    const playerPartner = business.partners.find(p => p.type === 'player')
+    const playerPartner = business.partners.find((p) => p.type === 'player')
     const playerShare = playerPartner ? playerPartner.share : 100
 
     // Если у игрока контрольный пакет (>50%), выполняем действие сразу
@@ -557,14 +547,14 @@ export const createBusinessSlice: StateCreator<
       initiatorId: playerPartner?.id || 'player',
       payload,
       votes: {
-        [playerPartner?.id || 'player']: true // Игрок голосует ЗА свое предложение
+        [playerPartner?.id || 'player']: true, // Игрок голосует ЗА свое предложение
       },
       status: 'pending',
-      createdTurn: state.turn
+      createdTurn: state.turn,
     }
 
     // Собираем голоса NPC
-    business.partners.forEach(partner => {
+    business.partners.forEach((partner) => {
       if (partner.type === 'npc') {
         const vote = calculateNPCVote(proposal, business, partner)
         proposal.votes[partner.id] = vote
@@ -575,16 +565,18 @@ export const createBusinessSlice: StateCreator<
     let votesFor = 0
     const voteDetails: string[] = []
 
-    business.partners.forEach(partner => {
+    business.partners.forEach((partner) => {
       const vote = proposal.votes[partner.id]
       if (vote) {
         votesFor += partner.share
       }
-      voteDetails.push(`${partner.name || partner.id}: ${vote ? '✅ ЗА' : '❌ ПРОТИВ'} (${partner.share}%)`)
+      voteDetails.push(
+        `${partner.name || partner.id}: ${vote ? '✅ ЗА' : '❌ ПРОТИВ'} (${partner.share}%)`,
+      )
     })
 
     console.log(`[Business] 🗳️ Голосование по ${type}:`)
-    voteDetails.forEach(detail => console.log(`   - ${detail}`))
+    voteDetails.forEach((detail) => console.log(`   - ${detail}`))
     console.log(`   = ИТОГО: ЗА=${votesFor}%, ПРОТИВ=${100 - votesFor}%`)
 
     // Если >50% ЗА, выполняем действие
@@ -614,17 +606,15 @@ export const createBusinessSlice: StateCreator<
     }
 
     // Сохраняем предложение в историю
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, proposals: [...b.proposals, proposal] }
-        : b
+    const updatedBusinesses = state.player.businesses.map((b) =>
+      b.id === businessId ? { ...b, proposals: [...b.proposals, proposal] } : b,
     )
 
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -632,17 +622,15 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, playerRoles: { ...b.playerRoles, managerialRoles: roles } }
-        : b
+    const updatedBusinesses = state.player.businesses.map((b) =>
+      b.id === businessId ? { ...b, playerRoles: { ...b.playerRoles, managerialRoles: roles } } : b,
     )
 
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -650,17 +638,15 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const updatedBusinesses = state.player.businesses.map(b =>
-      b.id === businessId
-        ? { ...b, playerRoles: { ...b.playerRoles, operationalRole: role } }
-        : b
+    const updatedBusinesses = state.player.businesses.map((b) =>
+      b.id === businessId ? { ...b, playerRoles: { ...b.playerRoles, operationalRole: role } } : b,
     )
 
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -668,7 +654,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) return
 
     // Рассчитать компенсации (зарплата за 1 квартал)
@@ -678,16 +664,16 @@ export const createBusinessSlice: StateCreator<
     const currentMoney = state.player.stats.money
     const newMoney = currentMoney - compensation
 
-    const updatedBusinesses = state.player.businesses.map(b =>
+    const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          state: 'frozen' as const,
-          employees: [], // Увольняем всех сотрудников
-          reputation: Math.max(0, b.reputation - 20), // Штраф к репутации
-          inventory: b.inventory ? { ...b.inventory, currentStock: 0 } : b.inventory // Очищаем склад
-        }
-        : b
+            ...b,
+            state: 'frozen' as const,
+            employees: [], // Увольняем всех сотрудников
+            reputation: Math.max(0, b.reputation - 20), // Штраф к репутации
+            inventory: b.inventory ? { ...b.inventory, currentStock: 0 } : b.inventory, // Очищаем склад
+          }
+        : b,
     )
 
     const updatedStats = { ...state.player.stats, money: newMoney }
@@ -696,8 +682,8 @@ export const createBusinessSlice: StateCreator<
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -706,7 +692,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) {
       console.warn(`[Business] Бизнес ${businessId} не найден`)
       return
@@ -725,25 +711,25 @@ export const createBusinessSlice: StateCreator<
       company: business.name,
       salary: salary / 3, // Конвертируем квартальную зарплату в месячную
       cost: {
-        energy: -20 // Стандартная стоимость энергии за работу
+        energy: -20, // Стандартная стоимость энергии за работу
       },
       satisfaction: 70, // Базовая удовлетворенность
       imageUrl: business.imageUrl || '',
-      description: `Работа в собственном бизнесе на позиции ${role}`
+      description: `Работа в собственном бизнесе на позиции ${role}`,
     }
 
     // Обновляем бизнес
-    const updatedBusinesses = state.player.businesses.map(b =>
+    const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          playerEmployment: {
-            role,
-            salary,
-            startedTurn: state.turn
+            ...b,
+            playerEmployment: {
+              role,
+              salary,
+              startedTurn: state.turn,
+            },
           }
-        }
-        : b
+        : b,
     )
 
     // Добавляем работу в список работ игрока
@@ -753,11 +739,13 @@ export const createBusinessSlice: StateCreator<
       player: {
         ...state.player,
         jobs: updatedJobs,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
 
-    console.log(`[Business] Игрок устроился на работу в ${business.name} как ${role} с зарплатой $${salary}/квартал`)
+    console.log(
+      `[Business] Игрок устроился на работу в ${business.name} как ${role} с зарплатой $${salary}/квартал`,
+    )
   },
 
   // ✅ Игрок увольняется из своего бизнеса
@@ -765,7 +753,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const business = state.player.businesses.find(b => b.id === businessId)
+    const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) {
       console.warn(`[Business] Бизнес ${businessId} не найден`)
       return
@@ -778,24 +766,24 @@ export const createBusinessSlice: StateCreator<
 
     // Удаляем работу из списка работ игрока
     const jobId = `job_business_${businessId}`
-    const updatedJobs = state.player.jobs.filter(j => j.id !== jobId)
+    const updatedJobs = state.player.jobs.filter((j) => j.id !== jobId)
 
     // Обновляем бизнес
-    const updatedBusinesses = state.player.businesses.map(b =>
+    const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          playerEmployment: undefined
-        }
-        : b
+            ...b,
+            playerEmployment: undefined,
+          }
+        : b,
     )
 
     set({
       player: {
         ...state.player,
         jobs: updatedJobs,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
 
     console.log(`[Business] Игрок уволился из ${business.name}`)
@@ -807,13 +795,15 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
     if (i === -1) return
 
     const business = state.player.businesses[i]
 
     // Уменьшаем долю текущего владельца
-    const ownerPartner = business.partners.find(p => p.type === 'player' && p.id === state.player!.id)
+    const ownerPartner = business.partners.find(
+      (p) => p.type === 'player' && p.id === state.player!.id,
+    )
 
     let updatedPartners = [...business.partners]
 
@@ -825,12 +815,12 @@ export const createBusinessSlice: StateCreator<
         type: 'player',
         share: 100,
         investedAmount: business.initialCost,
-        relation: 100
+        relation: 100,
       })
     }
 
     // Обновляем доли
-    updatedPartners = updatedPartners.map(p => {
+    updatedPartners = updatedPartners.map((p) => {
       if (p.id === state.player!.id) {
         return { ...p, share: Math.max(0, p.share - share) }
       }
@@ -844,12 +834,12 @@ export const createBusinessSlice: StateCreator<
       type: 'player',
       share: share,
       investedAmount: investment,
-      relation: 50
+      relation: 50,
     })
 
     const updatedBusiness = {
       ...business,
-      partners: updatedPartners
+      partners: updatedPartners,
     }
 
     const updatedBusinesses = [...state.player.businesses]
@@ -857,15 +847,15 @@ export const createBusinessSlice: StateCreator<
 
     // Добавляем деньги от инвестиции владельцу
     const updatedStats = applyStats(state.player.stats, {
-      money: investment
+      money: investment,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
   },
 
@@ -874,16 +864,16 @@ export const createBusinessSlice: StateCreator<
     if (!state.player) return
 
     // Проверяем, нет ли уже такого
-    if (state.player.businesses.some(b => b.id === business.id)) {
+    if (state.player.businesses.some((b) => b.id === business.id)) {
       // Если есть, обновляем
-      const updatedBusinesses = state.player.businesses.map(b =>
-        b.id === business.id ? business : b
+      const updatedBusinesses = state.player.businesses.map((b) =>
+        b.id === business.id ? business : b,
       )
       set({
         player: {
           ...state.player,
-          businesses: updatedBusinesses
-        }
+          businesses: updatedBusinesses,
+        },
       })
       return
     }
@@ -891,8 +881,8 @@ export const createBusinessSlice: StateCreator<
     set({
       player: {
         ...state.player,
-        businesses: [...state.player.businesses, business]
-      }
+        businesses: [...state.player.businesses, business],
+      },
     })
   },
 
@@ -900,7 +890,7 @@ export const createBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const i = state.player.businesses.findIndex(b => b.id === businessId)
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
     if (i === -1) return
 
     const business = state.player.businesses[i]
@@ -915,18 +905,18 @@ export const createBusinessSlice: StateCreator<
         salesAbility: 50,
         technical: 50,
         management: 50,
-        creativity: 50
+        creativity: 50,
       },
       salary: salary,
       satisfaction: 100,
       productivity: 100,
       experience: 0,
-      humanTraits: []
+      humanTraits: [],
     }
 
     const updatedBusiness = {
       ...business,
-      employees: [...business.employees, newEmployee]
+      employees: [...business.employees, newEmployee],
     }
 
     const updatedBusinesses = [...state.player.businesses]
@@ -935,8 +925,8 @@ export const createBusinessSlice: StateCreator<
     set({
       player: {
         ...state.player,
-        businesses: updatedBusinesses
-      }
+        businesses: updatedBusinesses,
+      },
     })
-  }
+  },
 })

@@ -4,7 +4,18 @@ import React from 'react'
 import { useGameStore } from '@/core/model/game-store'
 import { Card } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
-import { DollarSign, TrendingUp, TrendingDown, Wallet, Utensils, Home, Car, CreditCard, Landmark, HelpCircle } from 'lucide-react'
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Utensils,
+  Home,
+  Car,
+  CreditCard,
+  Landmark,
+  HelpCircle,
+} from 'lucide-react'
 import { getShopItem } from '@/core/lib/shop-helpers'
 import { getItemCost } from '@/core/types/shop.types'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
@@ -24,7 +35,7 @@ export function FamilyFinancesCard() {
   // Доход от бизнесов
   let businessRevenue = 0
   let businessExpensesTotal = 0
-  player.businesses.forEach(b => {
+  player.businesses.forEach((b) => {
     businessRevenue += b.quarterlyIncome
     businessExpensesTotal += b.quarterlyExpenses
   })
@@ -40,7 +51,7 @@ export function FamilyFinancesCard() {
   if (playerFood) {
     foodExpenses += getItemCost(playerFood)
   }
-  familyMembers.forEach(member => {
+  familyMembers.forEach((member) => {
     if (member.type === 'pet') return
     if (member.foodPreference) {
       const item = getShopItem(member.foodPreference, player.countryId)
@@ -74,7 +85,7 @@ export function FamilyFinancesCard() {
   if (transport) {
     const baseCost = getItemCost(transport)
     let commutersCount = 1
-    familyMembers.forEach(m => {
+    familyMembers.forEach((m) => {
       if (m.type !== 'pet' && m.age >= 10) commutersCount++
     })
     transportExpenses = baseCost * commutersCount
@@ -82,19 +93,28 @@ export function FamilyFinancesCard() {
 
   // 4. Кредиты (проценты)
   const creditExpenses = player.debts
-    .filter(d => d.type !== 'mortgage')
+    .filter((d) => d.type !== 'mortgage')
     .reduce((sum, debt) => sum + debt.quarterlyInterest, 0)
 
   // 5. Ипотека
   const mortgageExpenses = player.debts
-    .filter(d => d.type === 'mortgage')
+    .filter((d) => d.type === 'mortgage')
     .reduce((sum, debt) => sum + debt.quarterlyInterest, 0)
 
   // 6. Другое (расходы членов семьи + прочее)
   let otherExpenses = 0
-  familyMembers.forEach(m => {
+  familyMembers.forEach((m) => {
     otherExpenses += m.expenses || 0
   })
+
+  const expensesBreakdown = {
+    food: foodExpenses,
+    housing: housingExpenses,
+    transport: transportExpenses,
+    credits: creditExpenses,
+    mortgage: mortgageExpenses,
+    other: otherExpenses,
+  }
 
   // --- ИТОГОВЫЙ ОТЧЕТ ---
   const report = calculateQuarterlyReport({
@@ -108,16 +128,9 @@ export function FamilyFinancesCard() {
     buffIncomeMod: 0,
     businessFinancialsOverride: {
       income: businessRevenue,
-      expenses: businessExpensesTotal
+      expenses: businessExpensesTotal,
     },
-    expensesBreakdown: {
-      food: foodExpenses,
-      housing: housingExpenses,
-      transport: transportExpenses,
-      credits: creditExpenses,
-      mortgage: mortgageExpenses,
-      other: otherExpenses
-    }
+    expensesBreakdown,
   })
 
   const { income, expenses, taxes, netProfit } = report
@@ -170,7 +183,9 @@ export function FamilyFinancesCard() {
               <Wallet className="w-5 h-5 text-white/80" />
               <span className="font-bold text-white">Прибыль</span>
             </div>
-            <span className={`font-bold text-xl ${netProfit >= 0 ? 'text-emerald-400' : 'text-red-500'}`}>
+            <span
+              className={`font-bold text-xl ${netProfit >= 0 ? 'text-emerald-400' : 'text-red-500'}`}
+            >
               {netProfit >= 0 ? '+' : ''}${netProfit.toLocaleString()}
             </span>
           </div>
@@ -189,42 +204,42 @@ export function FamilyFinancesCard() {
           <ExpenseItem
             icon={<Utensils className="w-4 h-4 text-orange-400" />}
             label="Питание"
-            amount={foodExpenses}
+            amount={expenses.food}
           />
 
           {/* Жилье */}
           <ExpenseItem
             icon={<Home className="w-4 h-4 text-blue-400" />}
             label="Жилье"
-            amount={housingExpenses}
+            amount={expenses.housing}
           />
 
           {/* Транспорт */}
           <ExpenseItem
             icon={<Car className="w-4 h-4 text-purple-400" />}
             label="Транспорт"
-            amount={transportExpenses}
+            amount={expenses.transport}
           />
 
           {/* Кредиты */}
           <ExpenseItem
             icon={<CreditCard className="w-4 h-4 text-red-400" />}
             label="Кредиты"
-            amount={creditExpenses}
+            amount={expenses.credits}
           />
 
           {/* Ипотека */}
           <ExpenseItem
             icon={<Landmark className="w-4 h-4 text-amber-400" />}
             label="Ипотека"
-            amount={mortgageExpenses}
+            amount={expenses.mortgage}
           />
 
           {/* Другое */}
           <ExpenseItem
             icon={<HelpCircle className="w-4 h-4 text-zinc-400" />}
             label="Другое"
-            amount={otherExpenses}
+            amount={expenses.other}
           />
         </div>
 
@@ -232,11 +247,13 @@ export function FamilyFinancesCard() {
         <div className="mt-6">
           <div className="flex justify-between text-xs text-white/40 mb-2">
             <span>Нагрузка на бюджет (Расходы + Налоги)</span>
-            <span>{Math.min(100, Math.round(((totalExpenses + totalTax) / (totalIncome || 1)) * 100))}%</span>
+            <span>
+              {Math.min(100, Math.round(((totalExpenses + totalTax) / (totalIncome || 1)) * 100))}%
+            </span>
           </div>
           <Progress
             value={((totalExpenses + totalTax) / (totalIncome || 1)) * 100}
-            className={`h-2 ${(totalExpenses + totalTax) > totalIncome ? 'bg-red-900' : ''}`}
+            className={`h-2 ${totalExpenses + totalTax > totalIncome ? 'bg-red-900' : ''}`}
           />
         </div>
       </div>
@@ -244,7 +261,15 @@ export function FamilyFinancesCard() {
   )
 }
 
-function ExpenseItem({ icon, label, amount }: { icon: React.ReactNode, label: string, amount: number }) {
+function ExpenseItem({
+  icon,
+  label,
+  amount,
+}: {
+  icon: React.ReactNode
+  label: string
+  amount: number
+}) {
   return (
     <div className="bg-white/5 rounded-xl p-3 border border-white/5">
       <div className="flex items-center gap-2 mb-2">

@@ -1,15 +1,9 @@
-import type { StateCreator } from 'zustand'
-import type { GameStore, GameSlice } from './types'
+import type { GameStateCreator, GameSlice } from './types'
 import { createInitialPlayer } from '@/core/lib/initialState'
 import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
 import { processTurn } from '../logic/turn-logic'
 
-export const createGameSlice: StateCreator<
-  GameStore,
-  [],
-  [],
-  GameSlice
-> = (set, get) => ({
+export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   // State
   turn: 0,
   year: 2024,
@@ -22,28 +16,35 @@ export const createGameSlice: StateCreator<
 
   // Actions
   setSetupCountry: (id: string) => {
-    set({ setupCountryId: id, gameStatus: 'select_character' })
+    ;(set as any)(
+      { setupCountryId: id, gameStatus: 'select_character' },
+      false,
+      'game/setSetupCountry',
+    )
   },
 
   startSinglePlayer: () => {
-    set({ gameStatus: 'setup' })
+    ;(set as any)({ gameStatus: 'setup' }, false, 'game/startSinglePlayer')
   },
 
-  initializeGame: (countryId, archetype) => {
+  initializeGame: (countryId: string, archetype: string) => {
     const cId = countryId || get().setupCountryId
     if (!cId) return
-
-    set({
-      turn: 1,
-      year: 2024,
-      gameStatus: 'playing',
-      countries: WORLD_COUNTRIES,
-      player: createInitialPlayer(archetype, cId),
-      history: [],
-      notifications: [],
-      pendingApplications: [],
-      pendingFreelanceApplications: []
-    })
+    ;(set as any)(
+      {
+        turn: 1,
+        year: 2024,
+        gameStatus: 'playing',
+        countries: WORLD_COUNTRIES,
+        player: createInitialPlayer(archetype, cId),
+        history: [],
+        notifications: [],
+        pendingApplications: [],
+        pendingFreelanceApplications: [],
+      },
+      false,
+      'game/initializeGame',
+    )
   },
 
   resetGame: () => {
@@ -62,12 +63,12 @@ export const createGameSlice: StateCreator<
       setupCountryId: null,
       notifications: [],
       pendingApplications: [],
-      pendingFreelanceApplications: []
+      pendingFreelanceApplications: [],
     })
   },
 
   setActiveActivity: (activity: string | null) => {
-    set({ activeActivity: activity })
+    ;(set as any)({ activeActivity: activity }, false, 'game/setActiveActivity')
   },
 
   nextTurn: () => {
@@ -111,16 +112,16 @@ export const createGameSlice: StateCreator<
         startTurn: get().turn,
         quarterlyPayment: (amount * (1 + 0.25 * 3)) / 12, // Упрощенный расчет
         quarterlyPrincipal: amount / 12,
-        quarterlyInterest: (amount * 0.25) / 4
+        quarterlyInterest: (amount * 0.25) / 4,
       })
     } else if (actionType === 'family_help') {
       const { calculateFamilyHelp } = require('@/core/lib/financial-crisis')
       const amount = calculateFamilyHelp(newFamily)
       newMoney += amount
       // Ухудшаем отношения
-      newFamily = newFamily.map(m => ({
+      newFamily = newFamily.map((m) => ({
         ...m,
-        relationLevel: Math.max(0, m.relationLevel - 30)
+        relationLevel: Math.max(0, m.relationLevel - 30),
       }))
     }
 
@@ -130,26 +131,30 @@ export const createGameSlice: StateCreator<
       gameStatus = 'playing'
     }
 
-    set({
-      gameStatus,
-      endReason,
-      player: {
-        ...player,
-        assets: newAssets,
-        debts: newDebts,
-        personal: {
-          ...player.personal,
-          familyMembers: newFamily
+    set(
+      {
+        gameStatus,
+        endReason,
+        player: {
+          ...player,
+          assets: newAssets,
+          debts: newDebts,
+          personal: {
+            ...player.personal,
+            familyMembers: newFamily,
+          },
+          stats: {
+            ...player.stats,
+            money: newMoney,
+          },
         },
-        stats: {
-          ...player.stats,
-          money: newMoney
-        }
-      }
-    })
+      },
+      false,
+      'game/resolveCrisis',
+    )
   },
 
   clearInflationNotification: () => {
-    set({ inflationNotification: null })
-  }
+    ;(set as any)({ inflationNotification: null }, false, 'game/clearInflationNotification')
+  },
 })

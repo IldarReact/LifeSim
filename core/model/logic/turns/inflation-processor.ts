@@ -41,7 +41,7 @@ export function processInflation(
   // Lazy devLog to avoid circular import issues in tests/environments
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { devLog } = require('../../lib/debug') as { devLog?: (...a: unknown[]) => void }
+    const { devLog } = require('../../../lib/debug') as { devLog?: (...a: unknown[]) => void }
     if (devLog) {
       devLog('[INFLATION UPDATE] Turn', newTurn, `(Q${newTurn % 4 || 4}), Year`, newYear, {
         oldInflation: country.inflation,

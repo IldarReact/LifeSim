@@ -1,0 +1,16 @@
+{
+  "id": "brazil",
+  "name": "Бразилия",
+  "archetype": "growing_resource",
+  "gdpGrowth": 3.8,
+  "inflation": 8.9,
+  "stockMarketInflation": 12.3,
+  "keyRate": 13.75,
+  "unemployment": 9.3,
+  "taxRate": 27,
+  "corporateTaxRate": 0.34,
+  "salaryModifier": 0.48,
+  "costOfLivingModifier": 0.6,
+  "imageUrl": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=2000&h=1200&fit=crop",
+  "activeEvents": []
+}

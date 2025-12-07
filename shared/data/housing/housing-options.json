@@ -1,0 +1,102 @@
+[
+  {
+    "id": "rent_apartment_1br",
+    "name": "Съемная квартира (1 комната)",
+    "description": "Небольшая однокомнатная квартира. Свое пространство, но аренда дорогая.",
+    "type": "rent",
+    "subtype": "apartment",
+    "marketValue": 150000,
+    "rentCostPerQuarter": 6000,
+    "maintenanceCost": 0,
+    "capacity": 2,
+    "effects": {
+      "happiness": 0,
+      "sanity": 0
+    },
+    "attractiveness": 50,
+    "nearbyConstructions": [],
+    "isRentable": false,
+    "rentalIncomePerQuarter": 0
+  },
+  {
+    "id": "rent_apartment_2br",
+    "name": "Съемная квартира (2 комнаты)",
+    "description": "Просторная двухкомнатная квартира. Комфортно для небольшой семьи.",
+    "type": "rent",
+    "subtype": "apartment",
+    "marketValue": 220000,
+    "rentCostPerQuarter": 9000,
+    "maintenanceCost": 0,
+    "capacity": 4,
+    "effects": {
+      "happiness": 5,
+      "sanity": 3
+    },
+    "attractiveness": 60,
+    "nearbyConstructions": [],
+    "isRentable": false,
+    "rentalIncomePerQuarter": 0
+  },
+  {
+    "id": "mortgage_apartment",
+    "name": "Своя квартира (ипотека)",
+    "description": "Квартира в ипотеку. Большой первоначальный взнос, но это ваша собственность.",
+    "type": "mortgage",
+    "subtype": "apartment",
+    "marketValue": 250000,
+    "rentCostPerQuarter": 7500,
+    "maintenanceCost": 600,
+    "capacity": 4,
+    "effects": {
+      "happiness": 10,
+      "sanity": 5
+    },
+    "attractiveness": 70,
+    "nearbyConstructions": [],
+    "isRentable": true,
+    "rentalIncomePerQuarter": 6000,
+    "yearBuilt": 2015
+  },
+  {
+    "id": "own_house",
+    "name": "Свой дом",
+    "description": "Частный дом, полностью выкуплен. Много пространства, но высокие расходы на содержание.",
+    "type": "own",
+    "subtype": "house",
+    "marketValue": 500000,
+    "rentCostPerQuarter": 0,
+    "maintenanceCost": 1500,
+    "capacity": 8,
+    "effects": {
+      "happiness": 20,
+      "sanity": 10,
+      "health": 5
+    },
+    "attractiveness": 85,
+    "nearbyConstructions": [],
+    "isRentable": true,
+    "rentalIncomePerQuarter": 12000,
+    "yearBuilt": 2010
+  },
+  {
+    "id": "premium_penthouse",
+    "name": "Премиум пентхаус",
+    "description": "Роскошный пентхаус в центре города. Максимальный комфорт и престиж.",
+    "type": "own",
+    "subtype": "penthouse",
+    "marketValue": 1200000,
+    "rentCostPerQuarter": 0,
+    "maintenanceCost": 3000,
+    "capacity": 6,
+    "effects": {
+      "happiness": 30,
+      "sanity": 15,
+      "health": 10
+    },
+    "attractiveness": 95,
+    "nearbyConstructions": [],
+    "isRentable": true,
+    "rentalIncomePerQuarter": 18000,
+    "yearBuilt": 2020
+  }
+]

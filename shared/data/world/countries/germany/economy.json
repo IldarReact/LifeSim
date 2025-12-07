@@ -1,0 +1,16 @@
+{
+  "id": "germany",
+  "name": "Германия",
+  "archetype": "rich_stable",
+  "gdpGrowth": 1.1,
+  "inflation": 2.4,
+  "stockMarketInflation": 5.2,
+  "keyRate": 4.25,
+  "unemployment": 3.2,
+  "taxRate": 42,
+  "corporateTaxRate": 0.30,
+  "salaryModifier": 1.55,
+  "costOfLivingModifier": 1.4,
+  "imageUrl": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=2000&h=1200&fit=crop",
+  "activeEvents": []
+}

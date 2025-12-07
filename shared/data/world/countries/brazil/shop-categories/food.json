@@ -1,0 +1,26 @@
+[
+  {
+    "id": "food_home",
+    "name": "Feijão, arroz e carne",
+    "description": "Классическая домашняя еда",
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 720,
+    "effects": {
+      "health": 10,
+      "happiness": 6
+    }
+  },
+  {
+    "id": "food_churrasco",
+    "name": "Churrascaria 2x в неделю",
+    "description": "Мясо, пиво, футбол",
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 2400,
+    "effects": {
+      "happiness": 18,
+      "health": -5
+    }
+  }
+]

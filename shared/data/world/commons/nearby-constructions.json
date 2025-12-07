@@ -1,0 +1,156 @@
+[
+  {
+    "id": "metro_station",
+    "name": "Станция метро",
+    "buildTime": 8,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -5,
+      "sanity": -3,
+      "health": -2
+    },
+    "effectOnCompletion": {
+      "happiness": 10,
+      "sanity": 5
+    },
+    "attractivenessBonus": 25
+  },
+  {
+    "id": "hospital",
+    "name": "Больница",
+    "buildTime": 12,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -3,
+      "sanity": -2
+    },
+    "effectOnCompletion": {
+      "health": 15,
+      "sanity": 5
+    },
+    "attractivenessBonus": 20
+  },
+  {
+    "id": "shopping_mall",
+    "name": "Торговый центр",
+    "buildTime": 10,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -4,
+      "sanity": -3
+    },
+    "effectOnCompletion": {
+      "happiness": 15
+    },
+    "attractivenessBonus": 30
+  },
+  {
+    "id": "factory",
+    "name": "Завод",
+    "buildTime": 6,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -8,
+      "sanity": -5,
+      "health": -5
+    },
+    "effectOnCompletion": {
+      "happiness": -10,
+      "health": -5
+    },
+    "attractivenessBonus": -15
+  },
+  {
+    "id": "park",
+    "name": "Парк",
+    "buildTime": 4,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -2,
+      "sanity": -1
+    },
+    "effectOnCompletion": {
+      "happiness": 8,
+      "sanity": 8,
+      "health": 10
+    },
+    "attractivenessBonus": 18
+  },
+  {
+    "id": "school",
+    "name": "Школа",
+    "buildTime": 8,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -3,
+      "sanity": -2
+    },
+    "effectOnCompletion": {
+      "happiness": 5,
+      "sanity": 3
+    },
+    "attractivenessBonus": 22
+  },
+  {
+    "id": "stadium",
+    "name": "Стадион",
+    "buildTime": 14,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -6,
+      "sanity": -4,
+      "health": -3
+    },
+    "effectOnCompletion": {
+      "happiness": 12,
+      "health": 8
+    },
+    "attractivenessBonus": 28
+  },
+  {
+    "id": "airport",
+    "name": "Аэропорт",
+    "buildTime": 16,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -10,
+      "sanity": -8,
+      "health": -6
+    },
+    "effectOnCompletion": {
+      "happiness": -5,
+      "sanity": -3
+    },
+    "attractivenessBonus": 35
+  },
+  {
+    "id": "university",
+    "name": "Университет",
+    "buildTime": 12,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -4,
+      "sanity": -2
+    },
+    "effectOnCompletion": {
+      "happiness": 8,
+      "sanity": 10
+    },
+    "attractivenessBonus": 26
+  },
+  {
+    "id": "tech_hub",
+    "name": "Технопарк",
+    "buildTime": 10,
+    "currentProgress": 0,
+    "effectDuringConstruction": {
+      "happiness": -5,
+      "sanity": -3
+    },
+    "effectOnCompletion": {
+      "happiness": 10,
+      "sanity": 8
+    },
+    "attractivenessBonus": 32
+  }
+]

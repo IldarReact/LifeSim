@@ -1,0 +1,16 @@
+{
+  "id": "us",
+  "name": "США",
+  "archetype": "rich_stable",
+  "gdpGrowth": 2.4,
+  "inflation": 3.1,
+  "stockMarketInflation": 7.5,
+  "keyRate": 5.33,
+  "unemployment": 4.1,
+  "taxRate": 24,
+  "corporateTaxRate": 0.21,
+  "salaryModifier": 1.8,
+  "costOfLivingModifier": 1.6,
+  "imageUrl": "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=2000&h=1200&fit=crop",
+  "activeEvents": []
+}

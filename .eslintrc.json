@@ -1,0 +1,49 @@
+{
+  "extends": ["next/core-web-vitals", "prettier"],
+  "plugins": ["boundaries"],
+  "settings": {
+    "boundaries/elements": [
+      { "type": "app", "pattern": "app/*" },
+      { "type": "features", "pattern": "features/*" },
+      { "type": "shared", "pattern": "shared/*" },
+      { "type": "store", "pattern": "store/*" },
+      { "type": "lib", "pattern": "lib/*" },
+      { "type": "types", "pattern": "types/*" },
+      { "type": "countries", "pattern": "shared/data/world/countries/*", "mode": "folder" },
+      { "type": "country", "pattern": "shared/data/world/countries/**", "mode": "full" }
+    ]
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+
+    "boundaries/element-types": [
+      2,
+      {
+        "default": "allow",
+        "rules": [
+          {
+            "from": ["shared"],
+            "disallow": ["app", "features", "store"],
+            "message": "Shared module should not import from upper layers"
+          },
+          {
+            "from": ["features"],
+            "disallow": ["app"],
+            "message": "Features should not import from App"
+          },
+          {
+            "from": ["lib"],
+            "disallow": ["app", "features", "store"],
+            "message": "Lib should be pure and independent"
+          },
+
+          {
+            "from": [{ "type": "country" }],
+            "disallow": [{ "type": "country", "not": "{{from.pattern}}" }],
+            "message": "Country modules must not import from other countries. Use shared constants or data mappers instead."
+          }
+        ]
+      }
+    ]
+  }
+}

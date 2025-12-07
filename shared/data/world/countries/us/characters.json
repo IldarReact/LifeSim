@@ -1,0 +1,118 @@
+[
+  {
+    "id": "us_investor",
+    "archetype": "investor",
+    "name": "Wall Street Analyst",
+    "description": "Вы работаете финансовым аналитиком в Нью-Йорке. У вас есть стартовый капитал и опыт в инвестициях.",
+    "startingMoney": 50000,
+    "startingJobId": "job_investor_start",
+    "startingStats": {
+      "intelligence": 70,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "finance",
+        "name": "Финансовый анализ",
+        "level": 3
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "us_specialist",
+    "archetype": "specialist",
+    "name": "Silicon Valley Developer",
+    "description": "Вы IT-специалист в Кремниевой долине. Высокая зарплата, но конкурентная среда и стресс.",
+    "startingMoney": 10000,
+    "startingJobId": "job_specialist_start",
+    "startingStats": {
+      "intelligence": 80,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "programming",
+        "name": "Программирование",
+        "level": 4
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "us_entrepreneur",
+    "archetype": "entrepreneur",
+    "name": "Startup Founder",
+    "description": "Вы основатель стартапа в США. Небольшой начальный капитал, но огромный потенциал роста.",
+    "startingMoney": 5000,
+    "startingJobId": "job_entrepreneur_start",
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [
+      {
+        "id": "business",
+        "name": "Бизнес-управление",
+        "level": 2
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "us_worker",
+    "archetype": "worker",
+    "name": "Blue Collar Worker",
+    "description": "Вы работаете на производстве или в сфере услуг. Стабильная зарплата, физический труд.",
+    "startingMoney": 2000,
+    "startingJobId": "job_worker_start",
+    "startingStats": {
+      "intelligence": 50,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop"
+  },
+  {
+    "id": "us_indebted",
+    "archetype": "indebted",
+    "name": "College Graduate",
+    "description": "Вы недавно закончили колледж с большим студенческим долгом. Нужно выплачивать кредит.",
+    "startingMoney": 1000,
+    "startingJobId": "job_indebted_start",
+    "startingStats": {
+      "intelligence": 60,
+      "happiness": 50,
+      "energy": 100,
+      "health": 100,
+      "sanity": 80
+    },
+    "startingSkills": [],
+    "startingDebts": [
+      {
+        "id": "student_loan",
+        "name": "Student Loan",
+        "type": "student_loan",
+        "principalAmount": 20000,
+        "remainingAmount": 20000,
+        "interestRate": 5,
+        "quarterlyPayment": 600,
+        "termQuarters": 40,
+        "remainingQuarters": 40
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&h=600&fit=crop"
+  }
+]

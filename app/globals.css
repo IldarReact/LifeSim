@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #000000;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --muted: #e5e3e0;
+  --muted-foreground: #6b6b6b;
+  --accent-primary: #1e3a5f;
+  --accent-secondary: #8b7355;
+  --accent-outline: #d4ccc3;
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: #0f0f0f;
+  --foreground: #faf9f7;
+  --card: #1a1a1a;
+  --card-foreground: #faf9f7;
+  --muted: #2d2d2d;
+  --muted-foreground: #a0a0a0;
+  --accent-primary: #4a7ab8;
+  --accent-secondary: #b8956a;
+  --accent-outline: #3a3a3a;
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent-primary);
+  --color-secondary: var(--accent-secondary);
+  --color-border: var(--accent-outline);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply outline-accent/20;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Apply globally to all scrollable elements if desired, or use utility class */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+}

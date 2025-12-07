@@ -1,0 +1,29 @@
+[
+  {
+    "id": "bus_doner",
+    "name": "Döner-Imbiss",
+    "type": "food",
+    "description": "Классический немецкий кебаб",
+    "price": 6,
+    "quantity": 800,
+    "isServiceBased": false,
+    "initialCost": 45000,
+    "upfrontCost": 30000,
+    "openingQuarters": 2,
+    "monthlyIncome": 18000,
+    "monthlyExpenses": 12000,
+    "maxEmployees": 4,
+    "minEmployees": 2,
+    "inventory": {
+      "maxStock": 3000,
+      "pricePerUnit": 6.5,
+      "purchaseCost": 2.8,
+      "autoPurchaseAmount": 1000
+    },
+    "requiredRoles": [
+      "worker",
+      "salesperson"
+    ],
+    "risk": "medium"
+  }
+]

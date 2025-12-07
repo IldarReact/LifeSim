@@ -1,0 +1,57 @@
+[
+  {
+    "id": "bus_acai",
+    "name": "Açaí Shop",
+    "type": "food",
+    "description": "Магазин асаи — тренд в Рио и Сан-Паулу",
+    "price": 12,
+    "quantity": 600,
+    "isServiceBased": false,
+    "initialCost": 55000,
+    "upfrontCost": 35000,
+    "openingQuarters": 2,
+    "monthlyIncome": 28000,
+    "monthlyExpenses": 16000,
+    "maxEmployees": 6,
+    "minEmployees": 3,
+    "inventory": {
+      "maxStock": 4000,
+      "pricePerUnit": 12,
+      "purchaseCost": 5.5,
+      "autoPurchaseAmount": 1000
+    },
+    "requiredRoles": [
+      "salesperson",
+      "worker"
+    ],
+    "risk": "medium"
+  },
+  {
+    "id": "bus_lavajato",
+    "name": "Lava Jato",
+    "type": "service",
+    "description": "Ручная автомойка — бразильская классика",
+    "price": 25,
+    "quantity": 0,
+    "isServiceBased": true,
+    "initialCost": 180000,
+    "upfrontCost": 120000,
+    "openingQuarters": 3,
+    "monthlyIncome": 32000,
+    "monthlyExpenses": 18000,
+    "maxEmployees": 10,
+    "minEmployees": 5,
+    "inventory": {
+      "maxStock": 0,
+      "pricePerUnit": 0,
+      "purchaseCost": 0,
+      "autoPurchaseAmount": 0
+    },
+    "requiredRoles": [
+      "worker",
+      "salesperson",
+      "manager"
+    ],
+    "risk": "low"
+  }
+]

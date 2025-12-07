@@ -1,0 +1,57 @@
+[
+  {
+    "id": "course_english",
+    "name": "Бизнес-английский",
+    "cost": 450,
+    "duration": 1,
+    "skillName": "Английский",
+    "skillGain": 1,
+    "costPerTurn": {
+      "energy": -12
+    }
+  },
+  {
+    "id": "course_python",
+    "name": "Python для Data Science",
+    "cost": 2200,
+    "duration": 3,
+    "skillName": "Python",
+    "skillGain": 2,
+    "costPerTurn": {
+      "energy": -28
+    }
+  },
+  {
+    "id": "course_analyst",
+    "name": "Google Data Analytics",
+    "cost": 310,
+    "duration": 2,
+    "skillName": "Аналитика данных",
+    "skillGain": 2,
+    "costPerTurn": {
+      "energy": -25
+    }
+  },
+  {
+    "id": "course_fullstack",
+    "name": "Full-Stack Bootcamp",
+    "cost": 12500,
+    "duration": 4,
+    "skillName": "Full-Stack",
+    "skillGain": 3,
+    "costPerTurn": {
+      "energy": -35
+    }
+  },
+  {
+    "id": "course_university",
+    "name": "Университет (CS)",
+    "cost": 18000,
+    "duration": 12,
+    "skillName": "Computer Science",
+    "skillGain": 4,
+    "costPerTurn": {
+      "energy": -40
+    }
+  }
+]

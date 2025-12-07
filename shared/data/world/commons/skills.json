@@ -1,0 +1,26 @@
+[
+  {
+    "id": "skill_frontend",
+    "name": "Frontend",
+    "description": "React, TypeScript, Next.js",
+    "category": "technical"
+  },
+  {
+    "id": "skill_python",
+    "name": "Python",
+    "description": "Data Science, автоматизация, бэкенд",
+    "category": "technical"
+  },
+  {
+    "id": "skill_sales",
+    "name": "Продажи",
+    "description": "B2B/B2C, переговоры, холодные звонки",
+    "category": "social"
+  },
+  {
+    "id": "skill_management",
+    "name": "Менеджмент",
+    "description": "Управление командами, Agile, OKR",
+    "category": "social"
+  }
+]

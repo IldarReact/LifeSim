@@ -1,0 +1,33 @@
+[
+  {
+    "id": "fl_us_ios",
+    "title": "SwiftUI приложение для фитнес-стартапа",
+    "category": "tech",
+    "payment": 18000,
+    "cost": {
+      "energy": -70,
+      "sanity": -20
+    },
+    "requirements": [
+      {
+        "skillId": "swift",
+        "minLevel": 4
+      }
+    ]
+  },
+  {
+    "id": "fl_us_dropshipping",
+    "title": "Настройка Shopify магазина",
+    "category": "business",
+    "payment": 10000,
+    "cost": {
+      "energy": -50
+    },
+    "requirements": [
+      {
+        "skillId": "marketing",
+        "minLevel": 3
+      }
+    ]
+  }
+]

@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "name", "type", "initialCost", "monthlyRevenue", "monthlyExpenses"],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "imageUrl": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string",
+        "enum": ["retail", "service", "production", "tech", "food"]
+      },
+      "initialCost": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Initial investment required"
+      },
+      "monthlyRevenue": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Expected monthly revenue"
+      },
+      "monthlyExpenses": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Expected monthly expenses"
+      },
+      "requiredSkills": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["name", "level"],
+          "properties": {
+            "name": { "type": "string" },
+            "level": { "type": "integer", "minimum": 1, "maximum": 5 }
+          }
+        }
+      },
+      "requiredEmployees": {
+        "type": "object",
+        "properties": {
+          "min": { "type": "integer", "minimum": 0 },
+          "recommended": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "employeeRoles": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["role", "priority", "description"],
+          "properties": {
+            "role": { "type": "string" },
+            "priority": { "type": "string", "enum": ["required", "recommended", "optional"] },
+            "description": { "type": "string" }
+          }
+        }
+      },
+      "risk": {
+        "type": "string",
+        "enum": ["low", "medium", "high"]
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "course_portuguese",
+    "name": "Португальский",
+    "cost": 400,
+    "duration": 2,
+    "skillName": "Португальский",
+    "skillGain": 1,
+    "costPerTurn": {
+      "energy": -15
+    }
+  },
+  {
+    "id": "course_python",
+    "name": "Python для Data Science",
+    "cost": 1200,
+    "duration": 3,
+    "skillName": "Python",
+    "skillGain": 2,
+    "costPerTurn": {
+      "energy": -25
+    }
+  },
+  {
+    "id": "course_fullstack",
+    "name": "Full-Stack Bootcamp",
+    "cost": 6000,
+    "duration": 4,
+    "skillName": "Full-Stack",
+    "skillGain": 3,
+    "costPerTurn": {
+      "energy": -30
+    }
+  },
+  {
+    "id": "course_university",
+    "name": "Университет",
+    "cost": 8000,
+    "duration": 12,
+    "skillName": "Ciência da Computação",
+    "skillGain": 4,
+    "costPerTurn": {
+      "energy": -35
+    }
+  }
+]

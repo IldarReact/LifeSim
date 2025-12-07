@@ -1,0 +1,78 @@
+[
+  {
+    "id": "health_meds",
+    "name": "💊 Лекарства",
+    "description": "Аптека: витамины, базовые медикаменты",
+    "price": 200,
+    "category": "health",
+    "effects": {
+      "health": 6,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "health_doctor",
+    "name": "👨‍⚕️ Врач (Krankenkasse)",
+    "description": "Консультация с государственной страховкой",
+    "price": 400,
+    "category": "health",
+    "effects": {
+      "health": 18,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_gym_basic",
+    "name": "🏋️‍♂️ Fitnessstudio Basic",
+    "description": "McFit или локальный зал 20–30€/мес",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 150,
+    "effects": {
+      "health": 8,
+      "energy": 6,
+      "happiness": 4
+    }
+  },
+  {
+    "id": "health_gym_premium",
+    "name": "🏋️ Fitness Premium",
+    "description": "Сауна, бассейн, 50–70€/мес",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 600,
+    "effects": {
+      "health": 12,
+      "energy": 10,
+      "happiness": 8,
+      "sanity": 5
+    }
+  },
+  {
+    "id": "health_therapy",
+    "name": "🧠 Терапия",
+    "description": "Психолог, 80–120€/сеанс",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 750,
+    "effects": {
+      "sanity": 25,
+      "happiness": 12
+    }
+  },
+  {
+    "id": "health_insurance",
+    "name": "🏥 Gesetzliche Krankenversicherung",
+    "description": "Обязательная страховка ~15% зарплаты",
+    "price": 0,
+    "category": "health",
+    "isRecurring": true,
+    "costPerTurn": 1500,
+    "effects": {
+      "sanity": 15
+    }
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "name", "description"],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "maxLevel": {
+        "type": "integer",
+        "minimum": 1,
+        "default": 5
+      },
+      "category": {
+        "type": "string",
+        "enum": ["technical", "creative", "social", "physical", "language"]
+      }
+    }
+  }
+}

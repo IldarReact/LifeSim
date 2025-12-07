@@ -1,0 +1,54 @@
+[
+  {
+    "id": "transport_public",
+    "name": "Deutschland-Ticket 58€",
+    "description": "Безлимит по всей Германии",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 174,
+    "effects": {
+      "happiness": -4,
+      "energy": -6,
+      "sanity": 3
+    }
+  },
+  {
+    "id": "transport_bike",
+    "name": "Велосипед + Nextbike",
+    "description": "Экологично и быстро",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 90,
+    "effects": {
+      "happiness": 8,
+      "energy": 5,
+      "health": 8
+    }
+  },
+  {
+    "id": "transport_used_car",
+    "name": "Gebrauchtwagen (Golf)",
+    "description": "Свобода передвижения",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 1200,
+    "effects": {
+      "happiness": 15,
+      "energy": 4,
+      "sanity": 6
+    }
+  },
+  {
+    "id": "transport_new_car",
+    "name": "Neuwagen (BMW/Audi)",
+    "description": "Статус и комфорт",
+    "category": "transport",
+    "isRecurring": true,
+    "costPerTurn": 3200,
+    "effects": {
+      "happiness": 25,
+      "sanity": 12,
+      "energy": 8
+    }
+  }
+]

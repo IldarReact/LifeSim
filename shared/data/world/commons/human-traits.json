@@ -1,0 +1,106 @@
+[
+  {
+    "id": "empathetic",
+    "name": "Эмпат",
+    "description": "Хорошо понимает чувства других людей",
+    "type": "positive",
+    "effects": {
+      "happiness": 5,
+      "sanity": 3
+    },
+    "productivity": 0,
+    "socialSkills": 20,
+    "stressResistance": -10,
+    "learningSpeed": 0,
+    "relationshipModifier": 15,
+    "isDynamic": false,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "workaholic",
+    "name": "Трудоголик",
+    "description": "Одержим работой, жертвует личной жизнью",
+    "type": "neutral",
+    "effects": {
+      "happiness": -10,
+      "sanity": -8,
+      "health": -5
+    },
+    "productivity": 30,
+    "socialSkills": 0,
+    "stressResistance": -15,
+    "learningSpeed": 0,
+    "relationshipModifier": -10,
+    "isDynamic": true,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "addicted_alcohol",
+    "name": "Алкоголизм",
+    "description": "Зависимость от алкоголя",
+    "type": "medical",
+    "effects": {
+      "health": -25,
+      "sanity": -20,
+      "happiness": -15
+    },
+    "productivity": -35,
+    "socialSkills": -20,
+    "stressResistance": 0,
+    "learningSpeed": 0,
+    "relationshipModifier": -25,
+    "isDynamic": true,
+    "rarity": "uncommon"
+  },
+  {
+    "id": "resilient",
+    "name": "Стойкий",
+    "description": "Быстро восстанавливается после неудач",
+    "type": "positive",
+    "effects": {
+      "sanity": 12,
+      "health": 8
+    },
+    "productivity": 0,
+    "socialSkills": 0,
+    "stressResistance": 30,
+    "learningSpeed": 0,
+    "relationshipModifier": 8,
+    "isDynamic": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "ambitious",
+    "name": "Амбициозный",
+    "description": "Стремится к карьерному росту и богатству. Быстрее получает повышения, но быстрее накапливает стресс.",
+    "type": "positive",
+    "effects": {
+      "intelligence": 5,
+      "sanity": -2
+    },
+    "productivity": 15,
+    "socialSkills": 5,
+    "stressResistance": -5,
+    "learningSpeed": 10,
+    "relationshipModifier": -5,
+    "isDynamic": false,
+    "rarity": "common"
+  },
+  {
+    "id": "creative",
+    "name": "Творческий",
+    "description": "Имеет богатое воображение. Успешен в творческих профессиях.",
+    "type": "positive",
+    "effects": {
+      "intelligence": 3,
+      "happiness": 2
+    },
+    "productivity": 5,
+    "socialSkills": 5,
+    "stressResistance": -5,
+    "learningSpeed": 15,
+    "relationshipModifier": 5,
+    "isDynamic": false,
+    "rarity": "common"
+  }
+]

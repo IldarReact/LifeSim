@@ -1,0 +1,56 @@
+[
+  {
+    "id": "housing_room",
+    "name": "Zimmer zur Miete",
+    "description": "Einfaches Zimmer in einer WG",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 1800,
+    "effects": {
+      "happiness": 5,
+      "health": 3,
+      "sanity": 2
+    }
+  },
+  {
+    "id": "housing_apartment_rent",
+    "name": "Wohnung zur Miete",
+    "description": "Ein-Zimmer-Wohnung im Stadtrand",
+    "category": "housing",
+    "isRecurring": true,
+    "costPerTurn": 4200,
+    "effects": {
+      "happiness": 12,
+      "health": 6,
+      "sanity": 8
+    }
+  },
+  {
+    "id": "housing_apartment_buy",
+    "name": "Eigentumswohnung",
+    "description": "Eigene Ein-Zimmer-Wohnung",
+    "category": "housing",
+    "price": 320000,
+    "assetType": "real_estate",
+    "maintenanceCost": 1000,
+    "effects": {
+      "happiness": 20,
+      "health": 8,
+      "sanity": 12
+    }
+  },
+  {
+    "id": "housing_house_buy",
+    "name": "Einfamilienhaus",
+    "description": "Eigenes Haus in der Vorstadt mit Garten",
+    "category": "housing",
+    "price": 580000,
+    "assetType": "real_estate",
+    "maintenanceCost": 2800,
+    "effects": {
+      "happiness": 30,
+      "health": 12,
+      "sanity": 18
+    }
+  }
+]

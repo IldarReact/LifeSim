@@ -1,0 +1,42 @@
+[
+  {
+    "id": "food_home",
+    "name": "Готовлю сам",
+    "description": "Домашняя еда — дешёво и полезно",
+    "price": 0,
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 900,
+    "effects": {
+      "health": 9,
+      "happiness": 3
+    }
+  },
+  {
+    "id": "food_doner",
+    "name": "Döner / Imbiss",
+    "description": "Классика немецких улиц",
+    "price": 0,
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 1800,
+    "effects": {
+      "health": -8,
+      "happiness": 9
+    }
+  },
+  {
+    "id": "food_hellofresh",
+    "name": "HelloFresh",
+    "description": "Наборы для готовки дома",
+    "price": 0,
+    "category": "food",
+    "isRecurring": true,
+    "costPerTurn": 1500,
+    "effects": {
+      "health": 7,
+      "happiness": 6,
+      "sanity": 4
+    }
+  }
+]

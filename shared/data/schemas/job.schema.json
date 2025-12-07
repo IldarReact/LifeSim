@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "title", "company", "salary", "cost", "satisfaction"],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "company": {
+        "type": "string"
+      },
+      "salary": {
+        "type": "number",
+        "minimum": 0
+      },
+      "cost": {
+        "type": "object",
+        "properties": {
+          "energy": { "type": "number" },
+          "sanity": { "type": "number" },
+          "health": { "type": "number" }
+        }
+      },
+      "satisfaction": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "description": {
+        "type": "string"
+      },
+      "imageUrl": {
+        "type": "string"
+      },
+      "requirements": {
+        "type": "object",
+        "properties": {
+          "education": {
+            "type": "string",
+            "enum": ["none", "high_school", "bachelor", "master", "phd"]
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "level"],
+              "properties": {
+                "name": { "type": "string" },
+                "level": { "type": "integer", "minimum": 1, "maximum": 5 }
+              }
+            }
+          },
+          "experience": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Years of experience required"
+          }
+        }
+      }
+    }
+  }
+}

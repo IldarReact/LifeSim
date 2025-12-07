@@ -39,7 +39,9 @@ function createMockState(initial: any) {
 
 describe('offers partnership flow', () => {
   it('recipient acceptOffer deducts recipient money and marks offer accepted', () => {
-    const recipientPlayer = createMockPlayer({ stats: { money: 50000 } })
+    const recipientPlayer = createMockPlayer()
+    // ensure full stat shape
+    ;(recipientPlayer as any).stats = { money: 50000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
 
     const offerDetails: PartnershipOfferDetails = {
       businessId: 'biz_1',
@@ -68,7 +70,8 @@ describe('offers partnership flow', () => {
 
     const { get, set, getState } = createMockState({ player: recipientPlayer, offers: [offer], turn: 1 })
 
-    const slice = createGameOffersSlice(set as any, get as any)
+    // Zustand slice creators expect (set, get, store) — pass a dummy store
+    const slice = createGameOffersSlice(set as any, get as any, {} as any)
 
     // Call acceptOffer as recipient
     slice.acceptOffer('offer_test_1')
@@ -82,7 +85,11 @@ describe('offers partnership flow', () => {
 
   it('sender handles OFFER_ACCEPTED: deducts partnerInvestment and adds partner to business, then shared business can be added to recipient', () => {
     // Sender initial state
-    const senderPlayer = createMockPlayer({ id: 'sender_1', stats: { money: 50000 }, businesses: [{ id: 'biz_1', name: 'Cell Phone Store', partners: [{ id: 'sender_1', name: 'Alice', type: 'player', share: 100, investedAmount: 85000, relation: 100 }], proposals: [] }] })
+    const senderPlayer = createMockPlayer()
+    ;(senderPlayer as any).id = 'sender_1'
+    ;(senderPlayer as any).stats = { money: 50000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
+    // Minimal business shape for test — cast to any to avoid full Business type
+    ;(senderPlayer as any).businesses = [{ id: 'biz_1', name: 'Cell Phone Store', partners: [{ id: 'sender_1', name: 'Alice', type: 'player', share: 100, investedAmount: 85000, relation: 100 }], proposals: [] } as any]
 
     const offerDetails: PartnershipOfferDetails = {
       businessId: 'biz_1',
@@ -110,7 +117,7 @@ describe('offers partnership flow', () => {
     }
 
     // Mock sender state
-    const sender = { player: senderPlayer, offers: [offer], turn: 2 }
+    const sender = { player: senderPlayer as any, offers: [offer], turn: 2 }
     let senderState = { ...sender }
     const senderGet = () => senderState
     const senderSet = (p: any) => {
@@ -119,7 +126,7 @@ describe('offers partnership flow', () => {
     }
 
     // Create partnership slice for sender and call addPartnerToBusiness after deducting funds
-    const partnershipSlice = createPartnershipsSlice(senderSet as any, senderGet as any)
+    const partnershipSlice = createPartnershipsSlice(senderSet as any, senderGet as any, {} as any) as any
 
     // Simulate deduction of partnerInvestment (what our feature does on OFFER_ACCEPTED)
     const needed = offerDetails.partnerInvestment
@@ -141,9 +148,12 @@ describe('offers partnership flow', () => {
     expect(partner.share).toBe(offerDetails.yourShare)
 
     // Now simulate recipient receiving BUSINESS_SYNC and adding shared business
-    const recipientPlayer = createMockPlayer({ id: 'recipient_conn', stats: { money: 75000 }, businesses: [] })
-    const { get: rGet, set: rSet, getState: rGetState } = createMockState({ player: recipientPlayer, offers: [] })
-    const sharedSlice = createSharedBusinessSlice(rSet as any, rGet as any)
+    const recipientPlayer = createMockPlayer()
+    ;(recipientPlayer as any).id = 'recipient_conn'
+    ;(recipientPlayer as any).stats = { money: 75000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
+    ;(recipientPlayer as any).businesses = []
+    const { get: rGet, set: rSet, getState: rGetState } = createMockState({ player: recipientPlayer as any, offers: [] })
+    const sharedSlice = createSharedBusinessSlice(rSet as any, rGet as any, {} as any) as any
 
     // Shared business object (as broadcasted)
     const sharedBusiness = { ...biz }

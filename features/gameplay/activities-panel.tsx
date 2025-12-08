@@ -1,84 +1,84 @@
-"use client"
+'use client'
 
-import { useGameStore } from "@/core/model/game-store"
-import { ExpandableCard } from "@/shared/ui/expandable-card"
-import { Button } from "@/shared/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { useGameStore } from '@/core/model/game-store'
+import { ExpandableCard } from '@/shared/ui/expandable-card'
+import { Button } from '@/shared/ui/button'
+import { ArrowLeft } from 'lucide-react'
 
 // Import activities
-import { FamilyActivity } from "../activities/family-activity"
-import { WorkActivity } from "../activities/work/work-activity"
-import { InvestmentsActivity } from "../activities/investments-activity"
-import { BanksActivity } from "../activities/bank/BanksActivity"
-import { RelocationActivity } from "../activities/relocation-activity"
-import { RestActivity } from "../activities/rest-activity"
-import { EducationActivity } from "../activities/education-activity"
-import { ShopActivity } from "../activities/shop/shop-activity"
+import { FamilyActivity } from '../activities/family-activity'
+import { WorkActivity } from '../activities/work/work-activity'
+import { InvestmentsActivity } from '../activities/investments-activity'
+import { BanksActivity } from '../activities/bank/BanksActivity'
+import { RelocationActivity } from '../activities/relocation-activity'
+import { RestActivity } from '../activities/rest-activity'
+import { EducationActivity } from '../activities/education-activity'
+import { ShopActivity } from '../activities/shop/ShopActivity'
 
 const ACTIVITIES = [
   {
-    id: "shop",
-    title: "МАГАЗИНы",
-    description: "Покупай товары и услуги",
-    icon: "🛒",
-    details: "Еда, здоровье, развлечения, транспорт",
-    component: ShopActivity
+    id: 'shop',
+    title: 'МАГАЗИНы',
+    description: 'Покупай товары и услуги',
+    icon: '🛒',
+    details: 'Еда, здоровье, развлечения, транспорт',
+    component: ShopActivity,
   },
   {
-    id: "family",
-    title: "СЕМЬЯ",
-    description: "Управляй семьёй и отношениями",
-    icon: "👨‍👩‍👧‍👦",
-    details: "Управление семьей, брак, дети, поддержка родителей",
-    component: FamilyActivity
+    id: 'family',
+    title: 'СЕМЬЯ',
+    description: 'Управляй семьёй и отношениями',
+    icon: '👨‍👩‍👧‍👦',
+    details: 'Управление семьей, брак, дети, поддержка родителей',
+    component: FamilyActivity,
   },
   {
-    id: "work",
-    title: "РАБОТА",
-    description: "Зарабатывай основной доход",
-    icon: "💼",
-    details: "Зарплата, карьерный рост, переквалификация",
-    component: WorkActivity
+    id: 'work',
+    title: 'РАБОТА',
+    description: 'Зарабатывай основной доход',
+    icon: '💼',
+    details: 'Зарплата, карьерный рост, переквалификация',
+    component: WorkActivity,
   },
   {
-    id: "education",
-    title: "ОБРАЗОВАНИЕ",
-    description: "Учись и повышай квалификацию",
-    icon: "🎓",
-    details: "Университеты, курсы, навыки",
-    component: EducationActivity
+    id: 'education',
+    title: 'ОБРАЗОВАНИЕ',
+    description: 'Учись и повышай квалификацию',
+    icon: '🎓',
+    details: 'Университеты, курсы, навыки',
+    component: EducationActivity,
   },
   {
-    id: "investments",
-    title: "ИНВЕСТИЦИИ",
-    description: "Инвестируй в акции и недвижимость",
-    icon: "📈",
-    details: "Биржа, портфель, дивиденды, аренда",
-    component: InvestmentsActivity
+    id: 'investments',
+    title: 'ИНВЕСТИЦИИ',
+    description: 'Инвестируй в акции и недвижимость',
+    icon: '📈',
+    details: 'Биржа, портфель, дивиденды, аренда',
+    component: InvestmentsActivity,
   },
   {
-    id: "banking",
-    title: "БАНКИ",
-    description: "Кредиты, ипотека, депозиты",
-    icon: "🏦",
-    details: "Займы, переводы, вклады",
-    component: BanksActivity
+    id: 'banking',
+    title: 'БАНКИ',
+    description: 'Кредиты, ипотека, депозиты',
+    icon: '🏦',
+    details: 'Займы, переводы, вклады',
+    component: BanksActivity,
   },
   {
-    id: "relocation",
-    title: "ПЕРЕЕЗД",
-    description: "Смена страны жительства",
-    icon: "✈️",
-    details: "Переезд в новую страну с новыми возможностями",
-    component: RelocationActivity
+    id: 'relocation',
+    title: 'ПЕРЕЕЗД',
+    description: 'Смена страны жительства',
+    icon: '✈️',
+    details: 'Переезд в новую страну с новыми возможностями',
+    component: RelocationActivity,
   },
   {
-    id: "leisure",
-    title: "ОТДЫХ",
-    description: "Расслабление и восстановление",
-    icon: "🏖️",
-    details: "Путешествия, хобби, медитация",
-    component: RestActivity
+    id: 'leisure',
+    title: 'ОТДЫХ',
+    description: 'Расслабление и восстановление',
+    icon: '🏖️',
+    details: 'Путешествия, хобби, медитация',
+    component: RestActivity,
   },
 ]
 
@@ -86,7 +86,7 @@ export function ActivitiesPanel() {
   const { activeActivity, setActiveActivity } = useGameStore()
 
   if (activeActivity) {
-    const activity = ACTIVITIES.find(a => a.id === activeActivity)
+    const activity = ACTIVITIES.find((a) => a.id === activeActivity)
     const Component = activity?.component
 
     return (

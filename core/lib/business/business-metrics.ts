@@ -13,7 +13,7 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
   const staffingCheck = checkMinimumStaffing(business);
   if (!staffingCheck.isValid) {
     console.log(`[Business ${business.name}] Staffing requirements not met. Efficiency: 0`);
-    return 0; // Бизнес не работает без минимума
+    return 0;
   }
 
   // 2. Базовая эффективность от сотрудников

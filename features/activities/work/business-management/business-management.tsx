@@ -1,13 +1,12 @@
-"use client"
+'use client'
 
-import React from "react"
-import { InfoCard } from "@/shared/ui/info-card"
-import { Button } from "@/shared/ui/button"
-import type { Business, EmployeeCandidate } from "@/core/types"
-import { TrendingUp, TrendingDown, Zap, Brain, Users, Info } from "lucide-react"
-import { calculateBusinessFinancials } from "@/core/lib/business-utils"
-
-import { BusinessManagementDialog } from "./components/BusinessManagementDialog"
+import React from 'react'
+import { InfoCard } from '@/shared/ui/info-card'
+import { Button } from '@/shared/ui/button'
+import type { Business, EmployeeCandidate } from '@/core/types'
+import { TrendingUp, TrendingDown, Zap, Brain, Users, Info } from 'lucide-react'
+import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { BusinessManagementDialog } from './business-management-dialog'
 
 interface BusinessManagementProps {
   business: Business
@@ -17,16 +16,21 @@ interface BusinessManagementProps {
   onChangePrice: (businessId: string, newPrice: number) => void
   onSetQuantity: (businessId: string, newQuantity: number) => void
   onOpenBranch: (sourceBusinessId: string) => void
-  onJoinAsEmployee: (businessId: string, role: import('@/core/types').EmployeeRole, salary: number) => void
+  onJoinAsEmployee: (
+    businessId: string,
+    role: import('@/core/types').EmployeeRole,
+    salary: number,
+  ) => void
   onLeaveJob: (businessId: string) => void
 }
 
 const BUSINESS_IMAGES: Record<string, string> = {
-  'retail': 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop',
-  'service': 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop',
-  'cafe': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop',
-  'tech': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-  'manufacturing': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop'
+  retail: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop',
+  service: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop',
+  cafe: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop',
+  tech: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+  manufacturing:
+    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop',
 }
 
 export function BusinessManagement({
@@ -38,7 +42,7 @@ export function BusinessManagement({
   onSetQuantity,
   onOpenBranch,
   onJoinAsEmployee,
-  onLeaveJob
+  onLeaveJob,
 }: BusinessManagementProps) {
   const { income, expenses, profit } = calculateBusinessFinancials(business, true)
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
@@ -52,23 +56,23 @@ export function BusinessManagement({
         imageUrl={image}
         details={[
           {
-            label: "Доход",
+            label: 'Доход',
             value: `+$${income.toLocaleString()}`,
             icon: <TrendingUp className="w-4 h-4" />,
-            color: "text-emerald-400"
+            color: 'text-emerald-400',
           },
           {
-            label: "Расходы",
+            label: 'Расходы',
             value: `-$${expenses.toLocaleString()}`,
             icon: <TrendingDown className="w-4 h-4" />,
-            color: "text-rose-400"
+            color: 'text-rose-400',
           },
           {
-            label: "Сотрудники",
+            label: 'Сотрудники',
             value: `${business.employees.length}/${business.maxEmployees}`,
             icon: <Users className="w-4 h-4" />,
-            color: "text-blue-400"
-          }
+            color: 'text-blue-400',
+          },
         ]}
         modalContent={
           <div className="space-y-6">
@@ -101,7 +105,9 @@ export function BusinessManagement({
                   <Users className="w-5 h-5 text-blue-400" />
                   <span className="font-semibold">Сотрудники</span>
                 </div>
-                <p className="text-3xl font-bold">{business.employees.length}/{business.maxEmployees}</p>
+                <p className="text-3xl font-bold">
+                  {business.employees.length}/{business.maxEmployees}
+                </p>
               </div>
 
               <div className="bg-white/5 rounded-lg p-4">

@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Smile, // Счастье
 } from "lucide-react"
+import { useInflatedPrices } from "@/core/hooks"
 
 import type { Job } from "@/core/types"
 
@@ -29,6 +30,9 @@ interface CurrentJobsSectionProps {
 }
 
 export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
+  // Apply inflation to all jobs at once
+  const jobsWithInflation = useInflatedPrices(jobs)
+
   if (jobs.length === 0) {
     return (
       <div className="text-center py-8 bg-white/5 rounded-xl border border-white/10">
@@ -40,13 +44,12 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
   // Функция: показывать ли эффект (не 0 и не undefined)
   const isVisible = (value: number | undefined): boolean => value != null && value !== 0
 
-  // Форматирование значения с плюсом при положительном
-  const formatValue = (value: number, suffix: string = "") =>
-    value > 0 ? `+${value}${suffix}` : `${value}${suffix}`
+  // Форматирование значения
+  const formatValue = (value: number, suffix: string = "") => `${value}${suffix}`
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {jobs.map((job) => {
+      {jobsWithInflation.map((job) => {
         const cost = job.cost || {}
 
         const details: DetailItem[] = []
@@ -63,9 +66,9 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
         if (isVisible(cost.happiness)) {
           details.push({
             label: "Счастье",
-            value: formatValue(cost.happiness!, "%"),
+            value: formatValue(cost.happiness!),
             icon: <Smile className="w-4 h-4" />,
-            color: cost.happiness! >= 0 ? "text-green-400" : "text-rose-400",
+            color: cost.happiness! < 0 ? "text-rose-400" : "text-green-400",
           })
         }
 
@@ -101,7 +104,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
             <InfoCard
               title={job.title}
               subtitle={job.company}
-              value={`$${job.salary.toLocaleString()}/мес`}
+              value={`$${job.inflatedPrice.toLocaleString()}/мес`}
               imageUrl={job.imageUrl}
               details={details}
               modalContent={

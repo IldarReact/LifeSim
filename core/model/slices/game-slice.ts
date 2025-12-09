@@ -24,7 +24,10 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   startSinglePlayer: () => {
-    ;(set as any)({ gameStatus: 'setup' }, false, 'game/startSinglePlayer')
+    ;(set as any)({ 
+      gameStatus: 'setup',
+      countries: WORLD_COUNTRIES 
+    }, false, 'game/startSinglePlayer')
   },
 
   initializeGame: (countryId: string, archetype: string) => {

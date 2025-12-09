@@ -4,6 +4,9 @@ import React from "react"
 import { OpportunityCard } from "../ui/opportunity-card"
 import { FreelanceDetailCard } from "../ui/freelance-detail-card"
 import { Laptop } from "lucide-react"
+import { useInflatedPrices } from "@/core/hooks"
+import { getFreelanceGigs } from "@/core/lib/data-loaders/freelance-loader"
+import { useGameStore } from "@/core/model/store"
 import type { SkillLevel } from "@/core/types"
 
 interface FreelanceSectionProps {
@@ -17,6 +20,12 @@ interface FreelanceSectionProps {
 }
 
 export function FreelanceSection({ onTakeOrder }: FreelanceSectionProps) {
+  const player = useGameStore(state => state.player)
+  const countryId = player?.countryId || 'us'
+
+  const gigs = getFreelanceGigs(countryId)
+  const gigsWithInflation = useInflatedPrices(gigs.map(g => ({ ...g, salary: g.payment })))
+
   return (
     <OpportunityCard
       title="Фриланс"
@@ -31,81 +40,31 @@ export function FreelanceSection({ onTakeOrder }: FreelanceSectionProps) {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <FreelanceDetailCard
-            title="Лендинг"
-            category="Веб"
-            description="Создание одностраничного сайта для продажи курса по йоге."
-            payment={500}
-            energyCost={20}
-            requirements={[
-              { skill: "Frontend", level: 1 }
-            ]}
-            image="/images/jobs/freelance_landing.png"
-            onTakeOrder={() => onTakeOrder(
-              "gig_1",
-              "Лендинг",
-              500,
-              20,
-              [{ skill: "Frontend", level: 1 as SkillLevel }]
-            )}
-          />
-
-          <FreelanceDetailCard
-            title="Логотип"
-            category="Дизайн"
-            description="Разработка логотипа и фирменного стиля для новой сети кофеен."
-            payment={300}
-            energyCost={15}
-            requirements={[
-              { skill: "Дизайн", level: 1 }
-            ]}
-            image="/images/jobs/freelance_logo.png"
-            onTakeOrder={() => onTakeOrder(
-              "gig_2",
-              "Логотип",
-              300,
-              15,
-              [{ skill: "Дизайн", level: 1 as SkillLevel }]
-            )}
-          />
-
-          <FreelanceDetailCard
-            title="Статьи"
-            category="Копирайтинг"
-            description="Серия статей для блога о здоровом питании."
-            payment={200}
-            energyCost={10}
-            requirements={[
-              { skill: "English", level: 2 }
-            ]}
-            image="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=600&fit=crop"
-            onTakeOrder={() => onTakeOrder(
-              "gig_3",
-              "Статьи",
-              200,
-              10,
-              [{ skill: "English", level: 2 as SkillLevel }]
-            )}
-          />
-
-          <FreelanceDetailCard
-            title="Скрипт парсинга"
-            category="Python"
-            description="Скрипт для сбора данных с сайта объявлений."
-            payment={400}
-            energyCost={25}
-            requirements={[
-              { skill: "Python", level: 2 }
-            ]}
-            image="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&h=600&fit=crop"
-            onTakeOrder={() => onTakeOrder(
-              "gig_4",
-              "Скрипт парсинга",
-              400,
-              25,
-              [{ skill: "Python", level: 2 as SkillLevel }]
-            )}
-          />
+          {gigsWithInflation.map(gig => (
+            <FreelanceDetailCard
+              key={gig.id}
+              title={gig.title}
+              category={gig.category}
+              description={gig.title}
+              payment={gig.inflatedPrice}
+              energyCost={Math.abs(gig.cost.energy || 0)}
+              requirements={gig.requirements.map(r => ({
+                skill: r.skillId,
+                level: r.minLevel
+              }))}
+              image="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop"
+              onTakeOrder={() => onTakeOrder(
+                gig.id,
+                gig.title,
+                gig.inflatedPrice,
+                Math.abs(gig.cost.energy || 0),
+                gig.requirements.map(r => ({
+                  skill: r.skillId,
+                  level: r.minLevel as SkillLevel
+                }))
+              )}
+            />
+          ))}
         </div>
       </div>
     </OpportunityCard>

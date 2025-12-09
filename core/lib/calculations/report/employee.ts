@@ -6,6 +6,7 @@ import type {
   TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
+import { getInflatedPrice } from '../price-helpers'
 
 export function calculateEmployeeQuarterlyReport(params: {
   player: PlayerState
@@ -30,8 +31,13 @@ export function calculateEmployeeQuarterlyReport(params: {
     buffIncomeMod,
   } = params as any
 
-  // Income
-  const baseSalary = player.jobs.reduce((sum: number, job: any) => sum + job.salary * 3, 0)
+  // Income (с инфляцией)
+  const baseSalary = player.jobs.reduce((sum: number, job: any) => {
+    const monthlySalary = job.salary
+    // Применить инфляцию к зарплате
+    const inflatedMonthlySalary = getInflatedPrice(monthlySalary, country, 'salaries')
+    return sum + inflatedMonthlySalary * 3
+  }, 0)
   const salary = baseSalary * (1 + buffIncomeMod / 100)
   const totalIncome = salary + familyIncome + assetIncome
 

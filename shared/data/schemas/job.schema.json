@@ -3,7 +3,7 @@
   "type": "array",
   "items": {
     "type": "object",
-    "required": ["id", "title", "company", "salary", "cost", "satisfaction"],
+    "required": ["id", "title", "company", "salary", "cost"],
     "properties": {
       "id": {
         "type": "string"
@@ -25,11 +25,6 @@
           "sanity": { "type": "number" },
           "health": { "type": "number" }
         }
-      },
-      "satisfaction": {
-        "type": "number",
-        "minimum": 0,
-        "maximum": 100
       },
       "description": {
         "type": "string"

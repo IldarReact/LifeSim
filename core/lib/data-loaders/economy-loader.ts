@@ -38,6 +38,7 @@ export const WORLD_COUNTRIES: Readonly<Record<string, CountryData>> = Object.ent
     corporateTaxRate: raw.corporateTaxRate ?? 0,
     salaryModifier: raw.salaryModifier ?? 1,
     costOfLivingModifier: raw.costOfLivingModifier ?? 1,
+    baseSalaries: (raw as any).baseSalaries,
     activeEvents: [],
     inflationHistory: raw.inflation ? [raw.inflation] : [],
     baseYear: 2024,

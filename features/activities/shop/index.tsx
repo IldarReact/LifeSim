@@ -4,18 +4,17 @@ import { useState } from 'react'
 import { useGameStore } from '@/core/model/store'
 import { getShopItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
 import type { ShopCategory } from '@/core/types/shop.types'
-import { ShopHeader } from './ShopHeader'
-import { CategoryTabs } from './CategoryTabs'
-import { ShopItemCard } from './ShopItemCard'
+import { ShopHeader } from './components/ShopHeader'
+import { CategoryTabs } from './components/CategoryTabs'
+import { ShopItemCard } from './components/ShopItemCard'
 
 export const ShopActivity = () => {
-  const { player, countries, buyItem, setLifestyle, setPlayerHousing } = useGameStore()
+  const { player, buyItem, setLifestyle, setPlayerHousing } = useGameStore()
   const [selectedCategory, setSelectedCategory] = useState<ShopCategory>('housing')
 
   if (!player) return null
 
   const items = getShopItemsByCategory(selectedCategory, player.countryId)
-  const country = countries[player.countryId]
 
   return (
     <div className="space-y-6">
@@ -28,7 +27,6 @@ export const ShopActivity = () => {
             key={item.id}
             item={item}
             category={selectedCategory}
-            country={country}
             playerMoney={player.stats.money}
             isCurrentHousing={player.housingId === item.id}
             isActiveLifestyle={player.activeLifestyle?.[item.category] === item.id}

@@ -13,10 +13,10 @@ export function MainMenu() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-6xl font-bold text-white mb-2 tracking-tighter">LifeSim</h1>
+          <h1 className="text-6xl font-bold text-white mb-2 tracking-tighter">ArtSurv</h1>
           <p className="text-white/60 text-xl">Симулятор жизни и карьеры</p>
         </div>
 

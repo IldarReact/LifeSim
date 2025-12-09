@@ -22,6 +22,7 @@ import { getShopItem, getRecurringItemsByCategory } from '@/core/lib/shop-helper
 import { ClickFeedback } from '@/shared/ui/feedback-animation'
 import { isRecurringItem } from '@/core/types/shop.types'
 import traitsData from '@/shared/data/world/commons/human-traits.json'
+import { useInflatedPrice } from '@/core/hooks'
 
 interface FamilyMemberCardProps {
   member?: FamilyMember
@@ -39,7 +40,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
         id: player.id,
         name: player.name,
         type: 'player' as const,
-        age: player.age,
+        age: Math.floor(player.age),
         relationLevel: 100,
         income: player.quarterlySalary,
         expenses: 0,
@@ -52,10 +53,14 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
 
   if (!displayData) return null
 
-  const foodItem = displayData.foodPreference ? getShopItem(displayData.foodPreference) : null
+  const foodItem = displayData.foodPreference ? getShopItem(displayData.foodPreference, player.countryId) : null
   const transportItem = displayData.transportPreference
-    ? getShopItem(displayData.transportPreference)
+    ? getShopItem(displayData.transportPreference, player.countryId)
     : null
+  
+  // Применить инфляцию к ценам
+  const foodPrice = useInflatedPrice(foodItem || { price: 0, category: 'food' })
+  const transportPrice = useInflatedPrice(transportItem || { price: 0, category: 'transport' })
 
   const getTypeLabel = () => {
     if (isPlayer) return 'Вы'
@@ -117,7 +122,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
             <Utensils className="w-3 h-3 text-orange-400" />
             <span className="text-white/70">{foodItem.name}</span>
             <span className="ml-auto text-green-400">
-              ${foodItem.costPerTurn || foodItem.price}/кв
+              ${foodPrice.toLocaleString()}/кв
             </span>
           </div>
         )}
@@ -126,7 +131,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
             <Car className="w-3 h-3 text-purple-400" />
             <span className="text-white/70">{transportItem.name}</span>
             <span className="ml-auto text-green-400">
-              ${isRecurringItem(transportItem) ? transportItem.costPerTurn : transportItem.price}/кв
+              ${transportPrice.toLocaleString()}/кв
             </span>
           </div>
         )}
@@ -188,7 +193,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
 
           {/* Header with Background */}
           <div className="relative h-48 w-full overflow-hidden shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-zinc-950/95 z-10" />
+            <div className="absolute inset-0 bg-linear-to-b from-transparent via-zinc-950/50 to-zinc-950/95 z-10" />
             <img
               src={isPlayer ? '/placeholder-player.jpg' : '/placeholder-family.jpg'}
               alt="Background"
@@ -277,6 +282,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                   <div className="grid grid-cols-1 gap-2">
                     {getRecurringItemsByCategory('food').map((item) => {
                       const isActive = displayData.foodPreference === item.id
+                      const itemPrice = useInflatedPrice(item)
                       return (
                         <ClickFeedback
                           key={item.id}
@@ -300,7 +306,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                             </div>
                             <div className="text-right">
                               <div className="text-sm font-bold text-green-400">
-                                ${item.costPerTurn || item.price}
+                                ${itemPrice.toLocaleString()}
                               </div>
                               <div className="text-xs text-white/40">/квартал</div>
                             </div>
@@ -328,6 +334,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                   <div className="grid grid-cols-1 gap-2">
                     {getRecurringItemsByCategory('transport').map((item) => {
                       const isActive = displayData.transportPreference === item.id
+                      const itemPrice = useInflatedPrice(item)
 
                       return (
                         <ClickFeedback
@@ -352,7 +359,7 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
                             </div>
                             <div className="text-right ml-4">
                               <div className="text-sm font-bold text-green-400">
-                                ${item.costPerTurn || item.price}
+                                ${itemPrice.toLocaleString()}
                               </div>
                               <div className="text-xs text-white/40">/кв</div>
                             </div>
@@ -365,30 +372,44 @@ export function FamilyMemberCard({ member, isPlayer = false }: FamilyMemberCardP
               )}
 
               {!isPlayer && member && (
-                <div>
-                  <h4 className="text-sm font-bold text-white/80 uppercase tracking-wider mb-3">
-                    Влияние на жизнь
-                  </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/5 p-3 rounded-lg">
-                      <div className="text-xs text-white/50 mb-1">Счастье</div>
-                      <div className="text-lg font-bold text-rose-400">
-                        +{member.passiveEffects?.happiness || 0}/ход
+                <div className="space-y-6">
+                  {member.jobId && (
+                    <div>
+                      <h4 className="text-sm font-bold text-white/80 uppercase tracking-wider mb-3">
+                        Работа
+                      </h4>
+                      <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                        <div className="font-medium text-white mb-1">{member.occupation}</div>
+                        <div className="text-sm text-white/60">+${member.income.toLocaleString()}/квартал</div>
                       </div>
                     </div>
-                    <div className="bg-white/5 p-3 rounded-lg">
-                      <div className="text-xs text-white/50 mb-1">Рассудок</div>
-                      <div className="text-lg font-bold text-purple-400">
-                        +{member.passiveEffects?.sanity || 0}/ход
+                  )}
+                  
+                  <div>
+                    <h4 className="text-sm font-bold text-white/80 uppercase tracking-wider mb-3">
+                      Влияние на жизнь
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <div className="text-xs text-white/50 mb-1">Счастье</div>
+                        <div className="text-lg font-bold text-rose-400">
+                          +{member.passiveEffects?.happiness || 0}/ход
+                        </div>
                       </div>
-                    </div>
-                    <div className="bg-white/5 p-3 rounded-lg">
-                      <div className="text-xs text-white/50 mb-1">Доход</div>
-                      <div className="text-lg font-bold text-green-400">+${member.income}</div>
-                    </div>
-                    <div className="bg-white/5 p-3 rounded-lg">
-                      <div className="text-xs text-white/50 mb-1">Расходы</div>
-                      <div className="text-lg font-bold text-red-400">-${member.expenses}</div>
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <div className="text-xs text-white/50 mb-1">Рассудок</div>
+                        <div className="text-lg font-bold text-purple-400">
+                          +{member.passiveEffects?.sanity || 0}/ход
+                        </div>
+                      </div>
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <div className="text-xs text-white/50 mb-1">Доход</div>
+                        <div className="text-lg font-bold text-green-400">+${member.income.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <div className="text-xs text-white/50 mb-1">Расходы</div>
+                        <div className="text-lg font-bold text-red-400">-${member.expenses.toLocaleString()}</div>
+                      </div>
                     </div>
                   </div>
                 </div>

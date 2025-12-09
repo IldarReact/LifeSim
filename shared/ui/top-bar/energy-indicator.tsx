@@ -12,6 +12,10 @@ export function EnergyIndicator() {
 
   const actualEnergy = player?.personal?.stats?.energy || 0
   const statMods = calculateStatModifiers(player)
+  
+  // Расчёт итоговой энергии: 100 (восстановление) + все модификаторы
+  const totalEnergyMods = statMods.energy.reduce((sum, mod) => sum + (mod.energy || 0), 0)
+  const calculatedEnergy = 100 + totalEnergyMods
 
   return (
     <div className="relative flex flex-col items-center">
@@ -21,7 +25,7 @@ export function EnergyIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">⚡</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(actualEnergy)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">{Math.max(0, Math.min(100, calculatedEnergy))}</span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Энергия</span>
       </button>
@@ -67,7 +71,7 @@ export function EnergyIndicator() {
                       <Zap className="w-4 h-4" />
                       Итого
                     </span>
-                    <span className="text-white text-sm">{Math.round(actualEnergy)}</span>
+                    <span className="text-white text-sm">{Math.max(0, Math.min(100, calculatedEnergy))}</span>
                   </div>
                 </div>
               </div>

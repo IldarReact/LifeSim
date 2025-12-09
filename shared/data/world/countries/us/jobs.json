@@ -26,7 +26,6 @@
     "cost": {
       "energy": -30
     },
-    "satisfaction": 82,
     "imageUrl": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop",
     "requirements": {
       "skills": [
@@ -45,7 +44,6 @@
     "cost": {
       "energy": -40
     },
-    "satisfaction": 90,
     "imageUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop",
     "requirements": {
       "skills": [
@@ -60,12 +58,14 @@
     "id": "job_worker_start",
     "title": "Рабочий",
     "company": "Производство",
-    "salary": 15000,
+    "salary": 3000,
     "cost": {
-      "happiness": -2,
-      "energy": -35
+      "happiness": -1,
+      "energy": -35,
+      "health": -4,
+      "sanity": -4,
+      "intelligence": -1
     },
-    "satisfaction": 60,
     "imageUrl": "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop",
     "requirements": {
       "skills": []
@@ -79,7 +79,6 @@
     "cost": {
       "energy": -25
     },
-    "satisfaction": 48,
     "imageUrl": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800&h=600&fit=crop",
     "requirements": {
       "skills": [
@@ -98,7 +97,6 @@
     "cost": {
       "energy": -60
     },
-    "satisfaction": 68,
     "imageUrl": "/images/jobs/junior_frontend.png",
     "requirements": {
       "skills": [
@@ -117,7 +115,6 @@
     "cost": {
       "energy": -60
     },
-    "satisfaction": 78,
     "imageUrl": "/images/jobs/python_dev.png",
     "requirements": {
       "skills": [
@@ -136,7 +133,6 @@
     "cost": {
       "energy": -75
     },
-    "satisfaction": 80,
     "imageUrl": "/images/jobs/data_analyst.png",
     "requirements": {
       "skills": [
@@ -155,7 +151,6 @@
     "cost": {
       "energy": -45
     },
-    "satisfaction": 72,
     "imageUrl": "/images/jobs/marketing.png",
     "requirements": {
       "skills": [
@@ -174,7 +169,6 @@
     "cost": {
       "energy": -90
     },
-    "satisfaction": 88,
     "imageUrl": "/images/jobs/senior_fullstack.png",
     "requirements": {
       "skills": [

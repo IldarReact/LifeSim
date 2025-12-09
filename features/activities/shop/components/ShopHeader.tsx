@@ -1,4 +1,4 @@
-import { formatPrice } from './utils/formatters'
+import { formatPrice } from '../utils/formatters'
 
 interface ShopHeaderProps {
   balance: number

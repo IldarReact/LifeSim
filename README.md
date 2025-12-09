@@ -435,7 +435,215 @@ graph TD
 
 ---
 
-## 8. 🌐 Multiplayer Offers System (Система Предложений)
+## 8. 🔄 Пример потока данных: Цены в магазине
+*Детальный разбор как данные проходят через все 5 слоёв архитектуры.*
+
+### Layer 1: Static Data (JSON)
+**Источник:** `shared/data/world/countries/{country}/shop-categories/*.json`
+
+```json
+// food.json - базовые цены товаров
+{
+  "id": "food_cheap_burger",
+  "name": "Дешёвый бургер",
+  "price": 5,           // ← Базовая цена
+  "category": "food",
+  "effects": { "energy": 5, "health": -1 }
+}
+
+// economy.json - экономика страны
+{
+  "inflation": 2.5,     // ← Текущая инфляция
+  "inflationHistory": [2.5, 2.3, 2.7]  // ← История для кумулятивного расчёта
+}
+```
+
+### Layer 2: Data Loaders (Zod)
+**Путь:** `core/lib/data-loaders/`
+
+```typescript
+// shop-categories-loader.ts
+export function loadShopItemsForCountry(countryId: string): ShopItem[] {
+  const items = JSON.parse(fs.readFileSync(`.../${countryId}/shop-categories/food.json`))
+  return ShopItemSchema.array().parse(items) // Zod валидация
+}
+
+// economy-loader.ts
+export function getCountry(countryId: string): CountryEconomy {
+  const data = JSON.parse(fs.readFileSync(`.../countries/${countryId}/economy.json`))
+  return EconomySchema.parse(data)
+}
+```
+
+### Layer 3: Core Logic (Calculations)
+**Путь:** `core/lib/calculations/price-helpers.ts`
+
+```typescript
+// Применение инфляции к ценам
+export function getInflatedPrice(
+  basePrice: number,
+  economy: CountryEconomy,
+  category: 'food' | 'housing' | 'education' = 'default'
+): number {
+  const history = economy.inflationHistory || []
+  
+  // Категорийные мультипликаторы
+  const multipliers = {
+    housing: 1.5,    // Недвижимость растёт быстрее
+    food: 0.5,       // Еда медленнее
+    education: 1.2,
+    default: 1.0
+  }
+  
+  const multiplier = multipliers[category]
+  
+  // Кумулятивная инфляция за все годы
+  let inflatedPrice = basePrice
+  for (const yearInflation of history) {
+    inflatedPrice *= (1 + (yearInflation / 100) * multiplier)
+  }
+  
+  return Math.round(inflatedPrice)
+}
+
+// Специализированная функция для товаров
+export function getInflatedShopPrice(item: ShopItem, economy: CountryEconomy): number {
+  return getInflatedPrice(item.price, economy, 'food')
+}
+```
+
+**Пример расчёта:**
+```typescript
+// Базовая цена: $5
+// Инфляция год 1: 2.5%, год 2: 2.7%
+// Категория: food (multiplier 0.5)
+
+// Год 1: $5 * (1 + 2.5% * 0.5) = $5.06
+// Год 2: $5.06 * (1 + 2.7% * 0.5) = $5.13
+```
+
+### Layer 4: State Management (Zustand)
+**Путь:** `core/model/store.ts`
+
+```typescript
+// Состояние игры
+interface GameState {
+  game: {
+    countries: Record<string, CountryEconomy> // Экономика с инфляцией
+  }
+  player: {
+    stats: { money: number }
+    countryId: string
+  }
+}
+
+// Обновление инфляции (только в Q1)
+// core/model/logic/turns/inflation-processor.ts
+export function processInflation(state: GameState) {
+  const country = state.game.countries[state.player.countryId]
+  const newInflation = generateYearlyInflation(country) // Layer 3
+  
+  country.inflation = newInflation
+  country.inflationHistory = [newInflation, ...country.inflationHistory.slice(0, 9)]
+}
+```
+
+### Layer 5: UI Components (React)
+
+#### 5.1 UI Hook (React логика)
+**Путь:** `features/activities/shop/useShopPricing.ts`
+
+```typescript
+export function useShopPricing(
+  item: ShopItem,
+  category: ShopCategory,
+  country: CountryEconomy | undefined,
+  playerMoney: number
+) {
+  const displayPrice = useMemo(() => {
+    if (!country) return item.price
+    
+    // Вызов domain функции из Layer 3
+    if (item.category === 'housing') {
+      return getInflatedHousingPrice(item, country)
+    }
+    return getInflatedShopPrice(item, country)
+  }, [item, country])
+  
+  const canAfford = playerMoney >= displayPrice
+  const isRecurring = category.isRecurring || false
+  
+  return { displayPrice, canAfford, isRecurring }
+}
+```
+
+#### 5.2 UI Formatter (Отображение)
+**Путь:** `features/activities/shop/utils/formatters.ts`
+
+```typescript
+export function formatPrice(price: number): string {
+  return `$${price.toLocaleString()}`
+}
+```
+
+#### 5.3 UI Component (Рендер)
+**Путь:** `features/activities/shop/components/ShopItemCard.tsx`
+
+```tsx
+export function ShopItemCard({ item, category, country, playerMoney }: Props) {
+  // UI хук вызывает domain логику
+  const { displayPrice, canAfford, isRecurring } = useShopPricing(
+    item,
+    category,
+    country,
+    playerMoney
+  )
+  
+  return (
+    <Card>
+      {/* Форматирование для отображения */}
+      <Button disabled={!canAfford}>
+        Купить за {formatPrice(displayPrice)}
+      </Button>
+      
+      {isRecurring && (
+        <span>{formatPrice(displayPrice)}/квартал</span>
+      )}
+    </Card>
+  )
+}
+```
+
+### Полная схема потока данных
+
+```
+Layer 1: JSON файлы (food.json, economy.json)
+   ↓ (fs.readFileSync)
+Layer 2: Data Loaders (Zod validation)
+   ↓ (типизированные объекты: ShopItem[], CountryEconomy)
+Layer 3: Core Logic (getInflatedPrice, getInflatedShopPrice)
+   ↓ (чистые функции, domain расчёты)
+Layer 4: State Management (Zustand store)
+   ↓ (useGameStore селекторы)
+Layer 5: UI
+   ├─ useShopPricing (хук) → вызывает Layer 3
+   ├─ formatPrice (форматтер) → отображение
+   └─ ShopItemCard (компонент) → рендер
+```
+
+### Ключевые правила разделения
+
+| Слой | Ответственность | Пример |
+|------|----------------|--------|
+| **Layer 3 (core/lib/)** | Domain расчёты | `getInflatedPrice()` |
+| **Layer 5 (features/)** | UI логика | `useShopPricing()` вызывает Layer 3 |
+| **Layer 5 (features/)** | Форматирование | `formatPrice()` для отображения |
+
+**Правило:** UI хуки **вызывают** domain функции, но **НЕ содержат** domain расчёты.
+
+---
+
+## 9. 🌐 Multiplayer Offers System (Система Предложений)
 *Единая система для обработки взаимодействий между игроками в реальном времени.*
 
 ### Типы Предложений (`GameOffer`)

@@ -24,7 +24,7 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
     const contribution = emp.skills.efficiency * (emp.productivity / 100);
 
     if (emp.role === 'manager') {
-      managerBonus += (emp.skills.management / 100) * 10; // До +10% от каждого менеджера
+      managerBonus += (emp.skills.efficiency / 100) * 10; // До +10% от каждого менеджера
     }
 
     totalEfficiency += contribution;
@@ -75,7 +75,7 @@ export function calculateReputation(business: Business, currentEfficiency: numbe
   // 3. Маркетологи (вес 20%)
   const marketers = business.employees.filter(e => e.role === 'marketer');
   const marketingImpact = marketers.length > 0
-    ? (marketers.reduce((sum, m) => sum + m.skills.creativity, 0) / marketers.length) * 0.2
+    ? (marketers.reduce((sum, m) => sum + m.skills.efficiency, 0) / marketers.length) * 0.2
     : 0;
 
   // 4. ✅ НОВОЕ: Влияние навыков игрока на репутацию

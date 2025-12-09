@@ -19,6 +19,7 @@ import {
 import { getShopItem } from '@/core/lib/shop-helpers'
 import { getItemCost } from '@/core/types/shop.types'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function FamilyFinancesCard() {
   const { player, countries } = useGameStore()
@@ -40,55 +41,67 @@ export function FamilyFinancesCard() {
     businessExpensesTotal += b.quarterlyExpenses
   })
 
-  const familyIncome = familyMembers.reduce((sum, m) => sum + (m.income || 0), 0)
+  // Доход от членов семьи (с инфляцией для зарплат)
+  const familyIncome = familyMembers.reduce((sum, m) => {
+    if (!m.income) return sum
+    // Применить инфляцию к доходам партнёров (зарплаты)
+    const inflatedIncome = country ? getInflatedPrice(m.income, country, 'salaries') : m.income
+    return sum + inflatedIncome
+  }, 0)
 
   // --- РАСЧЕТ РАСХОДОВ ---
 
-  // 1. Еда
+  // 1. Еда (с инфляцией)
   let foodExpenses = 0
   const playerFoodId = player.activeLifestyle?.food
   const playerFood = playerFoodId ? getShopItem(playerFoodId, player.countryId) : null
   if (playerFood) {
-    foodExpenses += getItemCost(playerFood)
+    const basePrice = getItemCost(playerFood)
+    foodExpenses += country ? getInflatedPrice(basePrice, country, 'food') : basePrice
   }
   familyMembers.forEach((member) => {
     if (member.type === 'pet') return
     if (member.foodPreference) {
       const item = getShopItem(member.foodPreference, player.countryId)
       if (item) {
-        foodExpenses += getItemCost(item)
+        const basePrice = getItemCost(item)
+        foodExpenses += country ? getInflatedPrice(basePrice, country, 'food') : basePrice
       }
     } else {
       const defaultFood = getShopItem('food_homemade', player.countryId)
       if (defaultFood) {
-        foodExpenses += getItemCost(defaultFood)
+        const basePrice = getItemCost(defaultFood)
+        foodExpenses += country ? getInflatedPrice(basePrice, country, 'food') : basePrice
       }
     }
   })
 
-  // 2. Жилье
+  // 2. Жилье (с инфляцией)
   let housingExpenses = 0
   const housingId = player.housingId
   const housing = housingId ? getShopItem(housingId, player.countryId) : null
   if (housing) {
     if (housing.isRecurring) {
-      housingExpenses = housing.costPerTurn || 0
+      const basePrice = housing.costPerTurn || 0
+      housingExpenses = country ? getInflatedPrice(basePrice, country, 'housing') : basePrice
     } else {
-      housingExpenses = housing.maintenanceCost || 0
+      const baseMaintenance = housing.maintenanceCost || 0
+      housingExpenses = country ? getInflatedPrice(baseMaintenance, country, 'housing') : baseMaintenance
     }
   }
 
-  // 3. Транспорт
+  // 3. Транспорт (с инфляцией)
   let transportExpenses = 0
   const transportId = player.activeLifestyle?.transport
   const transport = transportId ? getShopItem(transportId, player.countryId) : null
   if (transport) {
     const baseCost = getItemCost(transport)
+    const inflatedCost = country ? getInflatedPrice(baseCost, country, 'transport') : baseCost
     let commutersCount = 1
     familyMembers.forEach((m) => {
       if (m.type !== 'pet' && m.age >= 10) commutersCount++
     })
-    transportExpenses = baseCost * commutersCount
+    transportExpenses = inflatedCost * commutersCount
   }
 
   // 4. Кредиты (проценты)
@@ -144,7 +157,7 @@ export function FamilyFinancesCard() {
       <div className="bg-zinc-900/90 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">
         <div className="flex items-center gap-2 mb-6">
           <Wallet className="w-5 h-5 text-green-400" />
-          <h3 className="font-bold text-white">Финансы (Квартал)</h3>
+          <h3 className="font-bold text-white">{familyMembers.length > 0 ? 'Семейные финансы (квартал)' : 'Финансы (квартал)'}</h3>
         </div>
 
         <div className="space-y-4">
@@ -196,7 +209,7 @@ export function FamilyFinancesCard() {
       <div className="bg-white/5 border border-white/10 rounded-2xl p-5 md:col-span-2">
         <h3 className="font-bold text-white mb-4 flex items-center gap-2">
           <TrendingDown className="w-4 h-4 text-white/60" />
-          Структура расходов
+          {familyMembers.length > 0 ? 'Структура расходов семьи' : 'Структура расходов'}
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

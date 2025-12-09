@@ -25,7 +25,6 @@ describe('Business Pricing & Market Tests', () => {
     minEmployees: 1,
     reputation: 50,
     efficiency: 50,
-    customerSatisfaction: 50,
     taxRate: 0.2,
     hasInsurance: false,
     insuranceCost: 0,
@@ -51,14 +50,9 @@ describe('Business Pricing & Market Tests', () => {
     role,
     stars: stars as any,
     skills: {
-      efficiency: 50,
-      salesAbility: 50,
-      technical: 50,
-      management: 50,
-      creativity: 50
+      efficiency: 50
     },
     salary: 1000,
-    satisfaction: 100,
     productivity: 100,
     experience: 4,
     humanTraits: []

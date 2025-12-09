@@ -5,13 +5,18 @@ import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculation
 import { useState } from "react"
 
 export function HealthIndicator() {
-  const { player } = useGameStore()
+  const { player, countries } = useGameStore()
   const [isOpen, setIsOpen] = useState(false)
 
   if (!player) return null
 
   const statMods = calculateStatModifiers(player)
   const healthMod = getTotalModifier(statMods.health, 'health')
+  
+  // Lifestyle modifiers
+  const { processLifestyle } = require('@/core/model/logic/turns/lifestyle-processor')
+  const lifestyleResult = processLifestyle(player, countries)
+  const lifestyleHealthMod = lifestyleResult.modifiers.health
 
   return (
     <div className="relative flex flex-col items-center">
@@ -41,21 +46,41 @@ export function HealthIndicator() {
                 <span>Факторы здоровья</span>
               </div>
               <div className="space-y-2">
-                {statMods.health.length === 0 ? (
-                  <div className="text-white/50 italic px-2">Нет активных факторов</div>
-                ) : (
-                  statMods.health.map((mod, index) => (
-                    <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                      <span className={mod.health && mod.health > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
-                        {mod.health && mod.health > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                        {mod.source}
-                      </span>
-                      <span className="text-white font-medium">
-                        {mod.health && mod.health > 0 ? "+" : ""}{mod.health}
-                      </span>
-                    </div>
-                  ))
+                {statMods.health.map((mod, index) => (
+                  <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <span className={mod.health && mod.health > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
+                      {mod.health && mod.health > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      {mod.source}
+                    </span>
+                    <span className="text-white font-medium">
+                      {mod.health && mod.health > 0 ? "+" : ""}{mod.health}
+                    </span>
+                  </div>
+                ))}
+                
+                {lifestyleHealthMod !== 0 && (
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <span className={lifestyleHealthMod > 0 ? "text-[#004d00] flex items-center gap-2" : "text-rose-400 flex items-center gap-2"}>
+                      {lifestyleHealthMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      Образ жизни (еда, жильё, транспорт)
+                    </span>
+                    <span className="text-white font-medium">
+                      {lifestyleHealthMod > 0 ? "+" : ""}{lifestyleHealthMod}
+                    </span>
+                  </div>
                 )}
+                
+                <div className="border-t border-white/20 pt-2 mt-2">
+                  <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-white/10">
+                    <span className="text-white flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      Итого изменение
+                    </span>
+                    <span className={`text-white text-sm ${(healthMod + lifestyleHealthMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
+                      {(healthMod + lifestyleHealthMod) > 0 ? "+" : ""}{healthMod + lifestyleHealthMod}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

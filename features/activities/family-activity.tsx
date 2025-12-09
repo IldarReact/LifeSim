@@ -21,9 +21,12 @@ import {
 import type { FamilyMember } from "@/core/types";
 import { FamilyMemberCard } from "./ui/family-member-card";
 import { FamilyFinancesCard } from "./ui/family-finances-card";
+import { useFamilyPricing } from "./family/useFamilyPricing";
+import { FAMILY_PRICES } from "@/core/lib/calculations/family-prices";
 
 export function FamilyActivity(): React.JSX.Element | null {
   const { player, startDating, acceptPartner, rejectPartner, tryForBaby, adoptPet } = useGameStore();
+  const prices = useFamilyPricing();
 
   if (!player) return null;
 
@@ -133,7 +136,7 @@ export function FamilyActivity(): React.JSX.Element | null {
             title="Найти партнера"
             description="Начать активный поиск второй половинки. Требует времени и денег на свидания."
             icon={<Heart className="w-6 h-6 text-rose-400" />}
-            actionLabel="Искать ($200, 30 эн.)"
+            actionLabel={`Искать ($${prices.datingSearch.toLocaleString()}, ${FAMILY_PRICES.DATING_ENERGY_COST} эн.)`}
             onAction={startDating}
           />
         )}
@@ -159,7 +162,9 @@ export function FamilyActivity(): React.JSX.Element | null {
               { type: "dog" as const, name: "Собака", price: 500 },
               { type: "cat" as const, name: "Кот", price: 300 },
               { type: "hamster" as const, name: "Хомяк", price: 50 },
-            ].map((pet) => (
+            ].map((pet) => {
+              const petPrice = pet.type === 'dog' ? prices.petDog : pet.type === 'cat' ? prices.petCat : prices.petHamster
+              return (
               <div key={pet.type} className="bg-white/5 p-4 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">{pet.type === "dog" ? "🐕" : pet.type === "cat" ? "🐈" : "🐹"}</div>
@@ -172,13 +177,13 @@ export function FamilyActivity(): React.JSX.Element | null {
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => adoptPet(pet.type, "Имя", pet.price)}
+                  onClick={() => adoptPet(pet.type, "Имя", petPrice)}
                   className="bg-white/10 hover:bg-white/20"
                 >
-                  ${pet.price}
+                  ${petPrice.toLocaleString()}
                 </Button>
               </div>
-            ))}
+            )})})
           </div>
         </OpportunityCard>
       </div>

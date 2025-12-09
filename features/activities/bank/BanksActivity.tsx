@@ -23,12 +23,18 @@ export function BanksActivity() {
   if (!player || !bank) return null
 
   const country = getCountry(player.countryId)
+  const countries = useGameStore((s) => s.countries)
+  const currentCountry = countries[player.countryId]
   const deposits = player.assets.filter(a => a.type === "deposit")
   const debts = player.debts
 
   const totalDeposits = deposits.reduce((s, d) => s + d.currentValue, 0)
   const totalDebt = debts.reduce((s, d) => s + d.remainingAmount, 0)
-  const depositRate = (country.keyRate * 0.7).toFixed(1)
+  
+  // Используем актуальную ключевую ставку из state
+  const keyRate = currentCountry?.keyRate || country.keyRate
+  const depositRate = (keyRate * 0.7).toFixed(1)
+  const loanRate = (keyRate * 1.3).toFixed(1)
 
   const handleOpenDeposit = () => {
     const amount = Number(depositAmount)
@@ -89,9 +95,12 @@ export function BanksActivity() {
             {/* НОВАЯ КАРТОЧКА - Ключевая ставка */}
             <Card className="bg-blue-500/10 border-blue-500/20 p-8 text-center">
               <Percent className="w-12 h-12 mx-auto mb-3 text-blue-400" />
-              <p className="text-zinc-400">Ключевая ставка</p>
-              <p className="text-4xl font-bold text-blue-400">{country.keyRate.toFixed(2)}%</p>
-              <p className="text-xs text-zinc-500 mt-2">Влияет на кредиты и вклады</p>
+              <p className="text-zinc-400">Ключевая ставка ЦБ</p>
+              <p className="text-4xl font-bold text-blue-400">{keyRate.toFixed(2)}%</p>
+              <div className="mt-3 space-y-1">
+                <p className="text-xs text-emerald-400">Вклады: {depositRate}%</p>
+                <p className="text-xs text-red-400">Кредиты: {loanRate}%</p>
+              </div>
             </Card>
 
             <Card className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-500/30 p-8 text-center">
@@ -128,7 +137,7 @@ export function BanksActivity() {
                   <Card key={d.id} className="bg-emerald-500/5 border-emerald-500/20 p-6 flex justify-between items-center">
                     <div>
                       <h3 className="text-xl font-semibold">{d.name}</h3>
-                      <p className="text-zinc-400">Срочный вклад • {depositRate}% годовых</p>
+                      <p className="text-zinc-400">Срочный вклад • {depositRate}% годовых (ставка ЦБ {keyRate.toFixed(2)}%)</p>
                     </div>
                     <div className="text-right">
                       <p className="text-3xl font-bold text-emerald-400">${d.currentValue.toLocaleString()}</p>
@@ -215,14 +224,19 @@ export function BanksActivity() {
               </p>
             </div>
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-              <p className="text-emerald-400 font-semibold">
-                Ставка: {depositRate}% годовых
-              </p>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-emerald-400 font-semibold">
+                  Ставка: {depositRate}% годовых
+                </p>
+                <p className="text-xs text-blue-400">
+                  ЦБ: {keyRate.toFixed(2)}%
+                </p>
+              </div>
               <p className="text-sm text-zinc-400">
                 Срок — бессрочный, закрытие в любой момент
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
-                Ключевая ставка ЦБ: {country.keyRate.toFixed(2)}%
+              <p className="text-xs text-zinc-500 mt-2">
+                💡 Ставка по вкладу = 70% от ключевой ставки ЦБ
               </p>
             </div>
             <Button

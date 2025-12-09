@@ -94,6 +94,14 @@ export function getInflatedShopPrice(
 }
 
 /**
+ * Получает базовую зарплату с учетом инфляции
+ * Зарплаты растут почти как инфляция (multiplier 0.95)
+ */
+export function getInflatedBaseSalary(baseSalary: number, economy: CountryEconomy): number {
+  return getInflatedPrice(baseSalary, economy, 'salaries')
+}
+
+/**
  * Рассчитывает индексированную зарплату с учетом инфляции
  * В реальном мире зарплаты индексируются на 70-90% от инфляции
  * @param baseSalary - Базовая зарплата (при устройстве на работу)

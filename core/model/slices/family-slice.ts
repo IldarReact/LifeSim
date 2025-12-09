@@ -2,6 +2,9 @@ import type { StateCreator } from 'zustand'
 import type { GameStore, FamilySlice } from './types'
 import type { FamilyMember } from '@/core/types'
 import type { PlayerState } from '@/core/types/game.types'
+import { FAMILY_PRICES } from '@/core/lib/calculations/family-prices'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { applyStats } from '@/core/helpers/applyStats'
 
 export const createFamilySlice: StateCreator<
   GameStore,
@@ -80,21 +83,24 @@ export const createFamilySlice: StateCreator<
     const goal = player.personal.lifeGoals.find(g => g.id === goalId)
     if (!goal || goal.isCompleted) return
 
-    get().updatePlayer(prev => ({
-      personal: {
-        ...prev.personal,
-        lifeGoals: prev.personal.lifeGoals.map(g =>
-          g.id === goalId
-            ? { ...g, isCompleted: true, progress: g.target }
-            : g
-        ),
-        stats: {
-          ...prev.personal.stats,
-          happiness: Math.min(100, prev.personal.stats.happiness + 10),
-          sanity: Math.min(100, prev.personal.stats.sanity + 10)
+    get().updatePlayer(prev => {
+      const updatedStats = applyStats(prev.personal.stats, { happiness: 10, sanity: 10 })
+      return {
+        personal: {
+          ...prev.personal,
+          lifeGoals: prev.personal.lifeGoals.map(g =>
+            g.id === goalId
+              ? { ...g, isCompleted: true, progress: g.target }
+              : g
+          ),
+          stats: {
+            ...updatedStats,
+            happiness: Math.min(100, updatedStats.happiness),
+            sanity: Math.min(100, updatedStats.sanity)
+          }
         }
       }
-    }))
+    })
 
     get().pushNotification({
       type: 'success',
@@ -107,25 +113,31 @@ export const createFamilySlice: StateCreator<
   // START DATING
   // ------------------------------------------------------------
   startDating: () => {
-    const { player } = get()
+    const { player, countries } = get()
     if (!player) return
 
     const energy = player.personal.stats.energy
     const money = player.stats.money
+    
+    // Применить инфляцию к цене
+    const economy = countries[player.countryId]
+    const datingCost = economy 
+      ? getInflatedPrice(FAMILY_PRICES.DATING_SEARCH, economy, 'services')
+      : FAMILY_PRICES.DATING_SEARCH
 
-    if (energy < 30 || money < 200) return
+    if (energy < FAMILY_PRICES.DATING_ENERGY_COST || money < datingCost) return
 
     get().updatePlayer(prev => ({
       stats: {
         ...prev.stats,
-        money: prev.stats.money - 200
+        money: prev.stats.money - datingCost
       },
       personal: {
         ...prev.personal,
         isDating: true,
         stats: {
           ...prev.personal.stats,
-          energy: prev.personal.stats.energy - 30
+          energy: prev.personal.stats.energy - FAMILY_PRICES.DATING_ENERGY_COST
         }
       }
     }))
@@ -141,11 +153,24 @@ export const createFamilySlice: StateCreator<
   // ACCEPT PARTNER
   // ------------------------------------------------------------
   acceptPartner: () => {
-    const { player } = get()
+    const { player, countries } = get()
     if (!player || !player.personal.potentialPartner) return
 
     const partner = player.personal.potentialPartner
+    
+    // Применить инфляцию к расходам партнёра
+    const economy = countries[player.countryId]
+    const partnerExpenses = economy
+      ? getInflatedPrice(FAMILY_PRICES.PARTNER_QUARTERLY_EXPENSES, economy, 'services')
+      : FAMILY_PRICES.PARTNER_QUARTERLY_EXPENSES
 
+    const jobs = [
+      { id: 'job_worker_start', title: 'Рабочий', income: 3000 },
+      { id: 'job_indebted_start', title: 'Офисный работник', income: 18000 },
+      { id: 'job_marketing', title: 'Digital Marketing Specialist', income: 22500 },
+    ]
+    const partnerJob = jobs.find(j => j.title === partner.occupation) || jobs[0]
+    
     const newMember: FamilyMember = {
       id: partner.id,
       name: partner.name,
@@ -153,14 +178,22 @@ export const createFamilySlice: StateCreator<
       age: partner.age,
       relationLevel: 50,
       income: partner.income,
-      expenses: 1500,
+      expenses: 0,
       passiveEffects: {
         happiness: 5,
         sanity: 2,
         health: 0
       },
-      foodPreference: 'food_homemade', // Дефолт
+      foodPreference: 'food_homemade',
+      transportPreference: 'transport_public',
+      occupation: partner.occupation,
+      jobId: partnerJob.id,
     }
+    
+    // Рассчитать расходы партнера
+    const { calculateMemberExpenses } = require('@/core/lib/lifestyle-expenses')
+    const costModifier = economy?.costOfLivingModifier || 1.0
+    newMember.expenses = calculateMemberExpenses(newMember, player.countryId, costModifier)
 
     get().updatePlayer(prev => ({
       personal: {
@@ -225,10 +258,16 @@ export const createFamilySlice: StateCreator<
   // ADOPT PET
   // ------------------------------------------------------------
   adoptPet: (petType, name, cost) => {
-    const { player } = get()
+    const { player, countries } = get()
     if (!player) return
 
     if (player.stats.money < cost) return
+    
+    // Применить инфляцию к расходам питомца
+    const economy = countries[player.countryId]
+    const petExpenses = economy
+      ? getInflatedPrice(FAMILY_PRICES.PET_QUARTERLY_EXPENSES, economy, 'services')
+      : FAMILY_PRICES.PET_QUARTERLY_EXPENSES
 
     const newPet: FamilyMember = {
       id: `pet_${Date.now()}`,
@@ -237,7 +276,7 @@ export const createFamilySlice: StateCreator<
       age: 1,
       relationLevel: 80,
       income: 0,
-      expenses: 100,
+      expenses: petExpenses,
       passiveEffects: {
         happiness: 3,
         sanity: 2,

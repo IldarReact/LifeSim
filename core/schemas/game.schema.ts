@@ -106,7 +106,6 @@ export const JobSchema = z.object({
   company: z.string(),
   salary: z.number().finite().min(0),
   cost: StatEffectSchema,
-  satisfaction: z.number().finite().min(0).max(100),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
   requirements: z.object({
@@ -216,13 +215,34 @@ export const PlayerStateSchema = z.object({
 
 // --- Game State ---
 
+const CountryEconomySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  archetype: z.string(),
+  gdpGrowth: z.number(),
+  inflation: z.number(),
+  stockMarketInflation: z.number(),
+  keyRate: z.number(),
+  interestRate: z.number(),
+  unemployment: z.number(),
+  taxRate: z.number(),
+  corporateTaxRate: z.number(),
+  salaryModifier: z.number(),
+  costOfLivingModifier: z.number(),
+  baseSalaries: z.record(z.string(), z.number()).optional(),
+  imageUrl: z.string().optional(),
+  activeEvents: z.array(z.any()),
+  inflationHistory: z.array(z.number()).optional(),
+  baseYear: z.number().optional(),
+}).passthrough()
+
 export const GameStateSchema = z.object({
   turn: z.number().int().min(0),
   year: z.number().int().min(0),
   isProcessingTurn: z.boolean(),
   gameStatus: z.enum(["menu", "setup", "select_country", "select_character", "playing", "ended"]),
   globalEvents: z.array(z.any()), // TODO: Define GlobalEventSchema
-  countries: z.record(z.string(), z.any()), // TODO: Define CountryEconomySchema
+  countries: z.record(z.string(), CountryEconomySchema),
   player: PlayerStateSchema.nullable(),
   history: z.array(z.object({
     turn: z.number().int().min(0),

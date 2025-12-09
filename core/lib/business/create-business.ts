@@ -131,7 +131,6 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     // Metrics & Performance
     reputation: 50,
     efficiency: 50,
-    customerSatisfaction: 50,
 
     // History
     eventsHistory: [],

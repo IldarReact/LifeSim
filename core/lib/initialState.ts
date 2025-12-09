@@ -53,7 +53,6 @@ export function createInitialPlayer(
     cost: {
       energy: -20
     },
-    satisfaction: 70,
     imageUrl: characterData.imageUrl,
     description: characterData.description,
   }

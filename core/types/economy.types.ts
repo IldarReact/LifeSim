@@ -40,6 +40,7 @@ export interface CountryEconomy {
   corporateTaxRate: number; // Налог на прибыль бизнеса (%)
   salaryModifier: number; // Модификатор зарплат
   costOfLivingModifier: number; // Модификатор стоимости жизни
+  baseSalaries?: Record<string, number>; // Базовые зарплаты по ролям
   imageUrl?: string; // URL изображения страны
   activeEvents: EconomicEvent[]; // Активные экономические события
   inflationHistory?: number[]; // История годовой инфляции для накопленного расчета

@@ -6,6 +6,7 @@ import { VacancyDetailCard } from "../ui/vacancy-detail-card"
 import { Briefcase } from "lucide-react"
 import { getAllJobsForCountry } from "@/core/lib/data-loaders/jobs-loader"
 import { useGameStore } from "@/core/model/store"
+import { useInflatedPrices } from "@/core/hooks"
 
 interface VacanciesSectionProps {
   onApply: (title: string, company: string, salary: string, energyCost: number, requirements: Array<{ skill: string; level: number }>) => void
@@ -16,6 +17,7 @@ export function VacanciesSection({ onApply }: VacanciesSectionProps) {
   const countryId = player?.countryId || 'us'
 
   const jobs = getAllJobsForCountry(countryId)
+  const jobsWithInflation = useInflatedPrices(jobs)
 
   return (
     <OpportunityCard
@@ -33,12 +35,12 @@ export function VacanciesSection({ onApply }: VacanciesSectionProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-3">
-          {jobs.map(job => (
+          {jobsWithInflation.map(job => (
             <VacancyDetailCard
               key={job.id}
               title={job.title}
               company={job.company}
-              salary={`$${job.salary.toLocaleString()}/мес`}
+              salary={`$${job.inflatedPrice.toLocaleString()}/мес`}
               energyCost={Math.abs(job.cost.energy || 0)}
               requirements={job.requirements?.skills?.map(s => ({ skill: s.name, level: s.level })) || []}
               image={job.imageUrl}
@@ -46,7 +48,7 @@ export function VacanciesSection({ onApply }: VacanciesSectionProps) {
               onApply={() => onApply(
                 job.title,
                 job.company,
-                `$${job.salary.toLocaleString()}/мес`,
+                `$${job.inflatedPrice.toLocaleString()}/мес`,
                 Math.abs(job.cost.energy || 0),
                 job.requirements?.skills?.map(s => ({ skill: s.name, level: s.level })) || []
               )}

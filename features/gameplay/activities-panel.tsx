@@ -13,7 +13,7 @@ import { BanksActivity } from '../activities/bank/BanksActivity'
 import { RelocationActivity } from '../activities/relocation-activity'
 import { RestActivity } from '../activities/rest-activity'
 import { EducationActivity } from '../activities/education-activity'
-import { ShopActivity } from '../activities/shop/ShopActivity'
+import { ShopActivity } from '../activities/shop'
 
 const ACTIVITIES = [
   {

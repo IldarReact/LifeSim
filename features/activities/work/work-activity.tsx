@@ -4,7 +4,7 @@ import React from "react"
 import { useGameStore } from "@/core/model/game-store"
 import { SectionSeparator } from "@/shared/ui/section-separator"
 import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
-import { BusinessManagement } from "./business-management"
+import { BusinessManagement } from "./business-management/business-management"
 import { BusinessesSection } from "./businesses-section"
 import { VacanciesSection } from "./vacancies-section"
 import { StartupsSection } from "./startups-section"
@@ -49,7 +49,6 @@ export function WorkActivity(): React.JSX.Element | null {
     energyCost: number,
     requirements: Array<{ skill: string; level: number }>
   ) => {
-    // ✅ ENERGY CHECK
     if (player.personal.stats.energy < energyCost) {
       setFeedback({
         show: true,
@@ -59,11 +58,9 @@ export function WorkActivity(): React.JSX.Element | null {
       return
     }
 
-    // Parse "$8,000/мес" → 8000
     const salaryNum = parseInt(salary.replace(/[^0-9]/g, ''))
-
     const reqs = requirements.map(r => ({
-      skillId: r.skill, // Assuming skill name is ID for now, or mapping needed
+      skillId: r.skill,
       minLevel: r.level as SkillLevel
     }))
 
@@ -78,7 +75,6 @@ export function WorkActivity(): React.JSX.Element | null {
     energyCost: number,
     requirements: Array<{ skill: string; level: SkillLevel }>
   ) => {
-    // ✅ ENERGY CHECK
     if (player.personal.stats.energy < energyCost) {
       setFeedback({
         show: true,

@@ -40,7 +40,6 @@ export const createJobSlice: StateCreator<
       company,
       salary,
       cost,
-      satisfaction: 70,
       requirements,
       daysPending: 0
     }
@@ -87,7 +86,6 @@ export const createJobSlice: StateCreator<
       company: appData.company,
       salary: appData.salary,
       cost: appData.cost,
-      satisfaction: appData.satisfaction,
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
       description: "Новая работа",
       requirements: appData.requirements
@@ -132,7 +130,6 @@ export const createJobSlice: StateCreator<
       company: company,
       salary: monthlySalary,
       cost: { energy: -20 },
-      satisfaction: 70,
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
       description: `Работа в ${company} (онлайн)`,
       requirements: {}

@@ -63,7 +63,6 @@ export const createBranchesSlice: GameStateCreator<{
 
       reputation: 50,
       efficiency: 50,
-      customerSatisfaction: 50,
       eventsHistory: [],
       foundedTurn: state.turn,
 

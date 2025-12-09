@@ -84,7 +84,6 @@ export function processJobs(
           company: app.company,
           salary: app.salary,
           energyCost: app.cost?.energy || 0,
-          satisfaction: app.satisfaction,
           requirements: app.requirements,
         },
       } as unknown as Notification)

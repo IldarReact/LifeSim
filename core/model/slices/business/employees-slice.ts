@@ -34,7 +34,6 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       stars: candidate.stars,
       skills: candidate.skills,
       salary: candidate.requestedSalary,
-      satisfaction: 80,
       productivity: 75,
       experience: candidate.experience,
       humanTraits: candidate.humanTraits,
@@ -121,14 +120,9 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       role: role as any,
       stars: 3,
       skills: {
-        efficiency: 50,
-        salesAbility: 50,
-        technical: 50,
-        management: 50,
-        creativity: 50,
+        efficiency: 50
       },
       salary: salary,
-      satisfaction: 100,
       productivity: 100,
       experience: 0,
       humanTraits: [],
@@ -176,7 +170,6 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       company: business.name,
       salary: salary / 3,
       cost: { energy: -20 },
-      satisfaction: 70,
       imageUrl: business.imageUrl || '',
       description: `Работа в собственном бизнесе на позиции ${role}`,
     }

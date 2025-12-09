@@ -259,7 +259,6 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
       },
       reputation: 50,
       efficiency: 50,
-      customerSatisfaction: 50,
       eventsHistory: [],
       foundedTurn: state.turn,
       playerRoles: {

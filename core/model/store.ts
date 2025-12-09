@@ -77,7 +77,7 @@ export const useGameStore = create<GameStore>()(
         ...createGameOffersSlice(...a),
       }),
       {
-        name: 'lifesim-save-v1',
+        name: 'artsurv-save-v1',
         version: 1,
         storage: validatedStorage,
         // Only persist when game is actually running
@@ -95,6 +95,6 @@ export const useGameStore = create<GameStore>()(
         },
       },
     ),
-    { name: 'LifeSim Game Store' },
+    { name: 'ArtSurv Game Store' },
   ),
 )

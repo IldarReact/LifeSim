@@ -15,13 +15,18 @@ export function processPersonal(
   if (isDating && !potentialPartner) {
     if (Math.random() < 0.3) {
       const names = ['Мария', 'Анна', 'Елена', 'Виктория', 'София', 'Алиса', 'Дарья', 'Полина']
-      const occupations = ['Дизайнер', 'Врач', 'Учитель', 'Менеджер', 'Юрист', 'Программист']
+      const jobs = [
+        { id: 'job_worker_start', title: 'Рабочий', income: 3000 },
+        { id: 'job_indebted_start', title: 'Офисный работник', income: 18000 },
+        { id: 'job_marketing', title: 'Digital Marketing Specialist', income: 22500 },
+      ]
+      const selectedJob = jobs[Math.floor(Math.random() * jobs.length)]
       potentialPartner = {
         id: `partner_${Date.now()}`,
         name: names[Math.floor(Math.random() * names.length)],
         age: playerAge - 2 + Math.floor(Math.random() * 5),
-        occupation: occupations[Math.floor(Math.random() * occupations.length)],
-        income: 1000 + Math.floor(Math.random() * 3000),
+        occupation: selectedJob.title,
+        income: selectedJob.income,
       }
       notifications.push({
         id: `dating_success_${Date.now()}`,

@@ -1,15 +1,24 @@
-"use client"
+'use client'
 
-import React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
+import React from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Badge } from '@/shared/ui/badge'
 import {
-  Store, Users, TrendingUp, DollarSign, Zap, Brain,
-  CheckCircle, AlertCircle, Info, Star, Globe
-} from "lucide-react"
-import type { BusinessType } from "@/core/types"
-import { PartnerSelectionDialog } from "./partner-selection-dialog"
+  Store,
+  Users,
+  TrendingUp,
+  DollarSign,
+  Zap,
+  Brain,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Star,
+  Globe,
+} from 'lucide-react'
+import type { BusinessType } from '@/core/types'
+import { PartnerSelectionDialog } from '../partner-selection-dialog'
 
 interface BusinessRequirement {
   role: string
@@ -47,7 +56,7 @@ export function BusinessDetailDialog({
   requirements,
   onBuy,
   trigger,
-  onOpenWithPartner
+  onOpenWithPartner,
 }: BusinessDetailDialogProps) {
   const [partnerDialogOpen, setPartnerDialogOpen] = React.useState(false)
 
@@ -161,7 +170,7 @@ export function BusinessDetailDialog({
           {/* Tips */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <Info className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
               <div>
                 <h4 className="font-bold text-blue-300 mb-2">Совет</h4>
                 <p className="text-white/80 text-sm">
@@ -214,68 +223,73 @@ export function BusinessDetailDialog({
 export const BUSINESS_REQUIREMENTS = {
   gadget_store: [
     {
-      role: "Продавец",
+      role: 'Продавец',
       priority: 'required' as const,
-      description: "Необходим для обслуживания клиентов и продаж. Напрямую влияет на доход магазина.",
-      icon: <TrendingUp className="w-5 h-5 text-red-400" />
+      description:
+        'Необходим для обслуживания клиентов и продаж. Напрямую влияет на доход магазина.',
+      icon: <TrendingUp className="w-5 h-5 text-red-400" />,
     },
     {
-      role: "Техник",
+      role: 'Техник',
       priority: 'recommended' as const,
-      description: "Обеспечивает техническую поддержку и ремонт гаджетов. Повышает доверие клиентов.",
-      icon: <CheckCircle className="w-5 h-5 text-blue-400" />
+      description:
+        'Обеспечивает техническую поддержку и ремонт гаджетов. Повышает доверие клиентов.',
+      icon: <CheckCircle className="w-5 h-5 text-blue-400" />,
     },
     {
-      role: "Маркетолог",
+      role: 'Маркетолог',
       priority: 'optional' as const,
-      description: "Привлекает новых клиентов через рекламу и продвижение. Увеличивает узнаваемость.",
-      icon: <Star className="w-5 h-5 text-green-400" />
-    }
+      description:
+        'Привлекает новых клиентов через рекламу и продвижение. Увеличивает узнаваемость.',
+      icon: <Star className="w-5 h-5 text-green-400" />,
+    },
   ],
   car_wash: [
     {
-      role: "Рабочий",
+      role: 'Рабочий',
       priority: 'required' as const,
-      description: "Выполняет основную работу по мойке автомобилей. Минимум 2-3 человека для эффективной работы.",
-      icon: <Users className="w-5 h-5 text-red-400" />
+      description:
+        'Выполняет основную работу по мойке автомобилей. Минимум 2-3 человека для эффективной работы.',
+      icon: <Users className="w-5 h-5 text-red-400" />,
     },
     {
-      role: "Управляющий",
+      role: 'Управляющий',
       priority: 'recommended' as const,
-      description: "Организует рабочий процесс и контролирует качество. Повышает эффективность на 20%.",
-      icon: <CheckCircle className="w-5 h-5 text-blue-400" />
+      description:
+        'Организует рабочий процесс и контролирует качество. Повышает эффективность на 20%.',
+      icon: <CheckCircle className="w-5 h-5 text-blue-400" />,
     },
     {
-      role: "Техник",
+      role: 'Техник',
       priority: 'recommended' as const,
-      description: "Обслуживает оборудование и следит за его исправностью. Предотвращает простои.",
-      icon: <AlertCircle className="w-5 h-5 text-blue-400" />
+      description: 'Обслуживает оборудование и следит за его исправностью. Предотвращает простои.',
+      icon: <AlertCircle className="w-5 h-5 text-blue-400" />,
     },
     {
-      role: "Маркетолог",
+      role: 'Маркетолог',
       priority: 'optional' as const,
-      description: "Привлекает корпоративных клиентов и организует акции.",
-      icon: <Star className="w-5 h-5 text-green-400" />
-    }
+      description: 'Привлекает корпоративных клиентов и организует акции.',
+      icon: <Star className="w-5 h-5 text-green-400" />,
+    },
   ],
   cafe: [
     {
-      role: "Рабочий",
+      role: 'Рабочий',
       priority: 'required' as const,
-      description: "Бариста и официанты для обслуживания гостей. Минимум 2 человека.",
-      icon: <Users className="w-5 h-5 text-red-400" />
+      description: 'Бариста и официанты для обслуживания гостей. Минимум 2 человека.',
+      icon: <Users className="w-5 h-5 text-red-400" />,
     },
     {
-      role: "Продавец",
+      role: 'Продавец',
       priority: 'recommended' as const,
-      description: "Увеличивает средний чек через допродажи и создание приятной атмосферы.",
-      icon: <TrendingUp className="w-5 h-5 text-blue-400" />
+      description: 'Увеличивает средний чек через допродажи и создание приятной атмосферы.',
+      icon: <TrendingUp className="w-5 h-5 text-blue-400" />,
     },
     {
-      role: "Маркетолог",
+      role: 'Маркетолог',
       priority: 'optional' as const,
-      description: "Продвигает кофейню в социальных сетях и привлекает постоянных клиентов.",
-      icon: <Star className="w-5 h-5 text-green-400" />
-    }
-  ]
+      description: 'Продвигает кофейню в социальных сетях и привлекает постоянных клиентов.',
+      icon: <Star className="w-5 h-5 text-green-400" />,
+    },
+  ],
 }

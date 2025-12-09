@@ -11,42 +11,17 @@ import {
   Star, Zap, Brain, UserPlus, Trash2, Award, Activity, Info,
   Globe, Plus
 } from "lucide-react"
-import { EmployeeHireDialog } from "../employee-hire-dialog"
+import { EmployeeHireDialog } from "../employee-hire"
 import { calculateBusinessFinancials } from "@/core/lib/business-utils"
 import { checkMinimumStaffing } from "@/features/business/lib/player-roles"
 
 import { generateCandidates } from "@/core/lib/business-utils"
-
-interface BusinessManagementDialogProps {
-  business: Business
-  playerCash: number
-  onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
-  onFireEmployee: (businessId: string, employeeId: string) => void
-  onChangePrice: (businessId: string, newPrice: number) => void
-  onSetQuantity: (businessId: string, newQuantity: number) => void
-  onOpenBranch: (sourceBusinessId: string) => void
-  onJoinAsEmployee: (businessId: string, role: EmployeeRole, salary: number) => void
-  onLeaveJob: (businessId: string) => void
-  trigger?: React.ReactNode
-}
-
-const ROLE_LABELS: Record<EmployeeRole, string> = {
-  manager: "Управляющий",
-  salesperson: "Продавец",
-  accountant: "Бухгалтер",
-  marketer: "Маркетолог",
-  technician: "Техник",
-  worker: "Рабочий"
-}
-
-const ROLE_ICONS: Record<EmployeeRole, React.ReactNode> = {
-  manager: <Award className="w-4 h-4" />,
-  salesperson: <TrendingUp className="w-4 h-4" />,
-  accountant: <DollarSign className="w-4 h-4" />,
-  marketer: <Star className="w-4 h-4" />,
-  technician: <Activity className="w-4 h-4" />,
-  worker: <Users className="w-4 h-4" />
-}
+import type { BusinessManagementDialogProps } from './types'
+import { ROLE_LABELS, ROLE_ICONS, DEFAULT_CANDIDATES_COUNT, CONTROL_THRESHOLD } from './constants'  
+import { getAvailablePositions } from './utils/salary-utils'
+import { calculatePlayerShare, hasControlOverBusiness, canHireMoreEmployees } from './utils/business-calculations'
+import { useGameStore } from '@/core/model/game-store'
+import { calculateEmployeeSalary } from './hooks/useEmployeeSalary'
 
 export function BusinessManagementDialog({
   business,
@@ -64,13 +39,10 @@ export function BusinessManagementDialog({
   const [selectedRole, setSelectedRole] = React.useState<EmployeeRole | null>(null)
   const [candidates, setCandidates] = React.useState<EmployeeCandidate[]>([])
 
-  // ✅ Доступные позиции для игрока (временно хардкод, потом из данных)
-  const availablePositions = [
-    { role: 'manager' as EmployeeRole, salary: 8000, description: 'Управление бизнесом' },
-    { role: 'salesperson' as EmployeeRole, salary: 5500, description: 'Продажи и работа с клиентами' },
-    { role: 'worker' as EmployeeRole, salary: 4000, description: 'Работа в бизнесе' },
-    { role: 'accountant' as EmployeeRole, salary: 7000, description: 'Бухгалтерия и финансы' }
-  ]
+  const { player, countries } = useGameStore()
+  const countryId = player?.countryId || 'us'
+  const country = countries?.[countryId]
+  const availablePositions = getAvailablePositions(country)
 
   // Локальное состояние для слайдеров
   const [price, setPrice] = React.useState(business.price || 5)
@@ -99,19 +71,14 @@ export function BusinessManagementDialog({
 
   const { income, expenses } = calculateBusinessFinancials(business, true)
   const availableBudget = playerCash
-  const canHireMore = business.employees.length < business.maxEmployees
-
-  // ✅ Проверка минимального персонала
+  const canHireMore = canHireMoreEmployees(business)
   const staffingCheck = checkMinimumStaffing(business)
-
-  // ✅ Вычисление доли владения игрока
-  const playerPartner = business.partners.find(p => p.type === 'player')
-  const playerShare = playerPartner ? playerPartner.share : 100
-  const hasControl = playerShare > 50
+  const playerShare = calculatePlayerShare(business)
+  const hasControl = hasControlOverBusiness(business, CONTROL_THRESHOLD)
 
   const openHireDialog = (role: EmployeeRole) => {
     setSelectedRole(role)
-    setCandidates(generateCandidates(role, 3))
+    setCandidates(generateCandidates(role, DEFAULT_CANDIDATES_COUNT, country))
     setHireDialogOpen(true)
   }
 
@@ -275,7 +242,7 @@ export function BusinessManagementDialog({
           {/* ✅ НОВОЕ: Предупреждение о минимальном персонале */}
           {!staffingCheck.isValid && (
             <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20 flex-shrink-0">
+              <div className="p-2 rounded-lg bg-amber-500/20 shrink-0">
                 <Users className="w-5 h-5 text-amber-400" />
               </div>
               <div className="flex-1">
@@ -453,7 +420,7 @@ export function BusinessManagementDialog({
           )}
 
           {/* ✅ НОВОЕ: Работа игрока в бизнесе */}
-          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
+          <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-purple-400" />
               Работа в своем бизнесе
@@ -544,7 +511,9 @@ export function BusinessManagementDialog({
             {/* Employee List */}
             {business.employees.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                {business.employees.map((employee) => (
+                {business.employees.map((employee) => {
+                  const indexedSalary = calculateEmployeeSalary(employee, country)
+                  return (
                   <div key={employee.id} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -553,17 +522,20 @@ export function BusinessManagementDialog({
                         </div>
                         <div>
                           <h4 className="font-bold text-white text-lg">{employee.name}</h4>
-                          <p className="text-xs text-white/60 uppercase tracking-wide">
-                            {ROLE_LABELS[employee.role]} • {
-                              {
-                                1: "Intern",
-                                2: "Junior",
-                                3: "Middle",
-                                4: "Senior",
-                                5: "Lead"
-                              }[employee.stars] || "Junior"
-                            }
-                          </p>
+                          <div className="flex items-center gap-1">
+                            <p className="text-xs text-white/60 uppercase tracking-wide">
+                              {ROLE_LABELS[employee.role]}
+                            </p>
+                            <span className="text-white/40">•</span>
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3 h-3 ${star <= employee.stars ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
+                                />
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -580,7 +552,7 @@ export function BusinessManagementDialog({
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="bg-white/5 rounded-lg p-2.5">
                         <p className="text-xs text-white/50 mb-1">Зарплата</p>
-                        <p className="text-base font-bold text-green-400">${employee.salary}</p>
+                        <p className="text-base font-bold text-green-400">${indexedSalary.toLocaleString()}</p>
                       </div>
                       <div className="bg-white/5 rounded-lg p-2.5">
                         <p className="text-xs text-white/50 mb-1">Опыт</p>
@@ -596,17 +568,10 @@ export function BusinessManagementDialog({
                         </div>
                         <Progress value={employee.productivity} className="h-1.5 bg-white/10" />
                       </div>
-
-                      <div>
-                        <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="text-white/60">Удовлетворенность</span>
-                          <span className="text-white font-bold">{employee.satisfaction}%</span>
-                        </div>
-                        <Progress value={employee.satisfaction} className="h-1.5 bg-white/10" />
-                      </div>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="text-center py-12 mb-6 bg-white/5 rounded-xl border border-dashed border-white/10">

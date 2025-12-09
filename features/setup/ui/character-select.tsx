@@ -150,7 +150,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 className={cn(
-                  "relative h-[70vh] aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl transition-all duration-500",
+                  "relative h-[70vh] aspect-2/3 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500",
                   "border border-white/10 bg-black/40 backdrop-blur-sm",
                 )}
               >
@@ -161,7 +161,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
                     alt={archetype}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-90" />
                 </div>
 
                 {/* Content */}
@@ -234,7 +234,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl"
+            className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -425,7 +425,7 @@ function CategoryCard({ title, icon, count, onClick, image }: CategoryCardProps)
           alt={title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-80"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent transition-colors" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 to-transparent transition-colors" />
       </div>
       <div className="absolute inset-0 p-6 flex flex-col justify-between">
         <div className="bg-white/10 w-fit p-3 rounded-xl backdrop-blur-md border border-white/10 group-hover:bg-white/20 transition-colors">
@@ -443,13 +443,13 @@ function CategoryCard({ title, icon, count, onClick, image }: CategoryCardProps)
 function DetailCard({ title, subtitle, image, tags = [], details = [], isRed = false }: DetailCardProps): React.JSX.Element {
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col md:flex-row h-full group hover:border-white/20 transition-colors">
-      <div className="w-full md:w-40 h-48 md:h-auto relative flex-shrink-0 overflow-hidden">
+      <div className="w-full md:w-40 h-48 md:h-auto relative shrink-0 overflow-hidden">
         <img
           src={image || "/placeholder.svg"}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:hidden" />
       </div>
       <div className="p-5 flex-1 flex flex-col justify-center">
         <h3 className={cn("text-xl font-bold mb-1", isRed ? "text-red-400" : "text-white")}>{title}</h3>

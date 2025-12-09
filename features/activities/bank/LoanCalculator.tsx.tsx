@@ -29,7 +29,7 @@ const LOAN_TYPES = {
 } as const
 
 export function LoanCalculator() {
-  const { player } = useGameStore()
+  const { player, countries } = useGameStore()
   const bank = useBank()
 
   if (!player || !bank) return null
@@ -40,7 +40,11 @@ export function LoanCalculator() {
 
   const loanAmount = Number(amount) || 0
   const quarters = Math.round(Number(termMonths) / 3)
-  const interestRate = 18.5 // потом можно сделать динамику
+  
+  // Используем актуальную ключевую ставку ЦБ
+  const currentCountry = countries[player.countryId]
+  const keyRate = currentCountry?.keyRate || 4.0
+  const interestRate = Number((keyRate * 1.3).toFixed(2)) // Кредиты = 130% от ключевой ставки
   const quarterlyPayment = loanAmount > 0 && quarters > 0
     ? calculateQuarterlyPayment(loanAmount, interestRate, quarters)
     : 0
@@ -128,6 +132,7 @@ export function LoanCalculator() {
             <div className="p-4 bg-white/5 rounded-xl border border-white/10">
               <div className="text-xs text-white/60">Ставка</div>
               <div className="text-2xl font-bold text-white">{interestRate}%</div>
+              <div className="text-[10px] text-white/40 mt-1">ЦБ: {keyRate.toFixed(2)}%</div>
             </div>
             <div className="p-4 bg-white/5 rounded-xl border border-white/10">
               <div className="text-xs text-white/60">Платёж</div>

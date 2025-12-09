@@ -10,9 +10,9 @@ export function clearAllSaves() {
   }
 
   const keys = [
-    'lifesim-save-v1',
-    'lifesim-checksum',
-    'lifesim-backup'
+    'artsurv-save-v1',
+    'artsurv-checksum',
+    'artsurv-backup'
   ]
 
   keys.forEach(key => {

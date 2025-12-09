@@ -66,7 +66,10 @@ export function calculateBusinessOwnerQuarterlyReport(params: {
     total: totalIncome,
   }
 
-  const baseLiving = 1000 * 3 * country.costOfLivingModifier
+  // Базовые расходы на жизнь с инфляцией (категория services)
+  const baseLifestyleCost = 1000 * 3 * country.costOfLivingModifier
+  const baseLiving = getInflatedPrice(baseLifestyleCost, country, 'services')
+  
   const breakdown = params.expensesBreakdown || {
     food: params.lifestyleExpenses || 0,
     housing: 0,

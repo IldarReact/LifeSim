@@ -38,6 +38,7 @@ export interface FamilyMember {
   goals?: LifeGoal[]; // Personal goals of the family member
   employedInBusinessId?: string; // ID бизнеса, где работает
   occupation?: string; // Название работы (если работает не в бизнесе игрока)
+  jobId?: string; // ID работы из jobs.json для отображения деталей
 
   // Lifestyle preferences (references to shop items)
   foodPreference?: string; // ID товара из категории 'food'

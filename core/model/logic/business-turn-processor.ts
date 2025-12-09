@@ -1,5 +1,6 @@
 import type { Business, BusinessEvent } from '@/core/types/business.types';
 import type { Skill, SkillLevel, Notification } from '@/core/types';
+import type { CountryEconomy } from '@/core/types/economy.types';
 import {
   updateAutoAssignedRoles,
   calculatePlayerRoleEffects,
@@ -29,7 +30,8 @@ export function processBusinessTurn(
   playerSkills: Skill[],
   currentTurn: number,
   currentYear: number,
-  globalMarketValue: number = 1.0  // ✅ НОВОЕ: глобальное состояние рынка
+  globalMarketValue: number = 1.0,  // ✅ НОВОЕ: глобальное состояние рынка
+  economy?: CountryEconomy  // ✅ НОВОЕ: экономика для инфляции
 ): BusinessTurnResult {
   const updatedBusinesses: Business[] = [];
   let updatedSkills = [...playerSkills];
@@ -148,7 +150,7 @@ export function processBusinessTurn(
     updatedBiz = updateBusinessMetrics(updatedBiz, playerSkills);
 
     // 6. Financials & Inventory
-    const financials = calculateBusinessFinancials(updatedBiz, false, playerSkills, globalMarketValue);
+    const financials = calculateBusinessFinancials(updatedBiz, false, playerSkills, globalMarketValue, economy);
 
     // Add event money effects
     const eventMoney = events.reduce((sum, e) => sum + (e.effects.money || 0), 0);
@@ -159,6 +161,12 @@ export function processBusinessTurn(
 
     totalIncome += financials.income;
     totalExpenses += financials.expenses;
+
+    // 7. Update employee experience (+3 months per quarter)
+    updatedBiz.employees = updatedBiz.employees.map(emp => ({
+      ...emp,
+      experience: emp.experience + 3
+    }));
 
     // Update Business with new state
     updatedBusinesses.push({

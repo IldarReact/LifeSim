@@ -14,10 +14,6 @@ export type EmployeeStars = 1 | 2 | 3 | 4 | 5;
 
 export interface EmployeeSkills {
   efficiency: number;      // 0-100 - общая эффективность
-  salesAbility: number;    // 0-100 - способность продавать
-  technical: number;       // 0-100 - технические навыки
-  management: number;      // 0-100 - управленческие навыки
-  creativity: number;      // 0-100 - креативность
 }
 
 export interface Employee {
@@ -27,7 +23,6 @@ export interface Employee {
   stars: EmployeeStars;
   skills: EmployeeSkills;
   salary: number;          // Ежеквартальная зарплата (базовая)
-  satisfaction: number;    // 0-100 - удовлетворенность работой
   productivity: number;    // 0-100 - текущая продуктивность (влияет на KPI)
   experience: number;      // Кварталы работы в компании
   avatar?: string;
@@ -198,7 +193,6 @@ export interface Business {
   // Характеристики
   reputation: number;           // 0-100
   efficiency: number;           // 0-100
-  customerSatisfaction: number; // 0-100
 
   // История и события
   eventsHistory: BusinessEvent[];

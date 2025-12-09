@@ -37,12 +37,18 @@ export const saveManager = {
         return
       }
 
-      // Skip if in setup/menu phase
+      // Skip if in setup/menu phase (before game fully initialized)
       if (state.gameStatus === 'menu' ||
         state.gameStatus === 'setup' ||
         state.gameStatus === 'select_country' ||
         state.gameStatus === 'select_character') {
         console.log(`⏭️ Skipping save (game status: ${state.gameStatus})`)
+        return
+      }
+
+      // Skip if player not initialized yet
+      if (!state.player) {
+        console.log('⏭️ Skipping save (player not initialized)')
         return
       }
 

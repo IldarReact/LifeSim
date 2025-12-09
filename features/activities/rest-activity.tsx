@@ -4,6 +4,7 @@ import { useGameStore } from "@/core/model/game-store";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { getRestActivitiesForCountry } from "@/core/lib/data-loaders/rest-loader";
+import { getInflatedPrice } from "@/core/lib/calculations/price-helpers";
 import {
   Heart,
   Brain,
@@ -31,21 +32,22 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export function RestActivity(): React.JSX.Element | null {
-  const { player, applyStatChanges } = useGameStore();
+  const { player, applyStatChanges, countries } = useGameStore();
 
   if (!player) return null;
 
   const activities = getRestActivitiesForCountry(player.countryId || 'us');
   const energy = player.personal.stats.energy;
   const money = player.stats.money;
+  const currentCountry = countries[player.countryId];
 
-  const applyRest = (activity: any) => {
+  const applyRest = (activity: any, inflatedCost: number) => {
     if (energy < activity.energyCost) return;
-    if (money < activity.cost) return;
+    if (money < inflatedCost) return;
 
     applyStatChanges({
       energy: -activity.energyCost,
-      money: -activity.cost,
+      money: -inflatedCost,
       ...activity.effects,
     });
   };
@@ -76,7 +78,11 @@ export function RestActivity(): React.JSX.Element | null {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {activities.map((activity) => {
             const Icon = ICON_MAP[activity.icon] || Activity;
-            const canDo = energy >= activity.energyCost && money >= activity.cost;
+            // Применить инфляцию (категория services ×0.9)
+            const inflatedCost = currentCountry && activity.cost > 0
+              ? getInflatedPrice(activity.cost, currentCountry, 'services')
+              : activity.cost;
+            const canDo = energy >= activity.energyCost && money >= inflatedCost;
 
             return (
               <Card
@@ -100,8 +106,8 @@ export function RestActivity(): React.JSX.Element | null {
                       <span className="flex items-center gap-1 text-amber-300">
                         <Zap className="w-4 h-4" /> -{activity.energyCost}
                       </span>
-                      <span className={`flex items-center gap-1 ${activity.cost > 0 ? 'text-red-300' : 'text-emerald-300'}`}>
-                        {activity.cost > 0 ? `-$${activity.cost.toLocaleString()}` : "Бесплатно"}
+                      <span className={`flex items-center gap-1 ${inflatedCost > 0 ? 'text-red-300' : 'text-emerald-300'}`}>
+                        {inflatedCost > 0 ? `-$${inflatedCost.toLocaleString()}` : "Бесплатно"}
                       </span>
                     </div>
 
@@ -132,7 +138,7 @@ export function RestActivity(): React.JSX.Element | null {
                       : "bg-white/10 text-white/40 border border-white/10"
                       }`}
                     disabled={!canDo}
-                    onClick={() => applyRest(activity)}
+                    onClick={() => applyRest(activity, inflatedCost)}
                   >
                     {canDo ? "Заняться" : energy < activity.energyCost ? "Нет энергии" : "Нет денег"}
                   </Button>

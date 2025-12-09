@@ -32,27 +32,15 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
 
   // Модификаторы от работы
   player.jobs?.forEach(job => {
-    // Стоимость работы (обычно отрицательная энергия/здоровье)
     if (job.cost) {
-      const effects: StatEffect = {}
-      effects.happiness = job.cost.happiness
-      effects.energy = job.cost.energy
-      effects.health = job.cost.health
-      effects.sanity = job.cost.sanity
-      effects.intelligence = job.cost.intelligence
-
-      pushEffects(`Работа: ${job.title}`, effects)
-    }
-
-    // Удовлетворение от работы влияет на счастье
-    if (job.satisfaction) {
-      const happinessMod = Math.round((job.satisfaction - 50) / 10)
-      if (happinessMod !== 0) {
-        modifiers.happiness.push({
-          source: `Работа: ${job.title}`,
-          happiness: happinessMod
-        })
+      const effects: StatEffect = {
+        happiness: job.cost.happiness,
+        energy: job.cost.energy,
+        health: job.cost.health,
+        sanity: job.cost.sanity,
+        intelligence: job.cost.intelligence
       }
+      pushEffects(`Работа: ${job.title}`, effects)
     }
   })
 

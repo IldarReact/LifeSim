@@ -153,7 +153,6 @@ export const createIdeaSlice: StateCreator<
 
       reputation: Math.max(0, Math.min(100, 50 + (idea.marketDemand * 0.3) + (idea.riskLevel === 'low' ? 5 : idea.riskLevel === 'high' ? -5 : idea.riskLevel === 'very_high' ? -10 : 0) + ((Math.random() - 0.5) * (idea.riskLevel === 'very_high' ? 40 : 20)))),
       efficiency: Math.max(0, Math.min(100, 50 + (idea.potentialReturn * 10))),
-      customerSatisfaction: Math.max(0, Math.min(100, 50 + (idea.marketDemand * 0.3))),
 
       taxRate: 0.2, // Базовая ставка
       hasInsurance: false,

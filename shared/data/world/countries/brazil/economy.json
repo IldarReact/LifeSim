@@ -11,6 +11,14 @@
   "corporateTaxRate": 0.34,
   "salaryModifier": 0.48,
   "costOfLivingModifier": 0.6,
+  "baseSalaries": {
+    "manager": 4500,
+    "salesperson": 3000,
+    "accountant": 4000,
+    "marketer": 3500,
+    "technician": 3000,
+    "worker": 2200
+  },
   "imageUrl": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=2000&h=1200&fit=crop",
   "activeEvents": []
 }

@@ -1,4 +1,5 @@
 import type { EmployeeCandidate, EmployeeRole, EmployeeStars, EmployeeSkills } from "@/core/types/business.types";
+import type { CountryEconomy } from '@/core/types/economy.types';
 import {
   getRoleModifiers,
   getBaseSalary,
@@ -7,58 +8,51 @@ import {
   getRandomLastName,
   getRandomHumanTraits
 } from '@/core/lib/data-loaders/static-data-loader';
+import { getInflatedBaseSalary } from '../calculations/price-helpers';
 
 /**
  * Генерирует случайные навыки для сотрудника на основе роли и звезд
  */
 export function generateSkills(role: EmployeeRole, stars: EmployeeStars): EmployeeSkills {
-  const baseSkills = {
-    efficiency: 40,
-    salesAbility: 40,
-    technical: 40,
-    management: 40,
-    creativity: 40
-  };
-
-  // Модификаторы по звездам (1 звезда = +10 к базе, 5 звезд = +50)
+  // Базовая эффективность: 40 + (звезды * 10) + рандом
+  const baseEfficiency = 40;
   const starBonus = stars * 10;
+  const randomVariation = Math.random() * 20 - 10;
+  
+  const efficiency = Math.min(100, Math.max(10, baseEfficiency + starBonus + randomVariation));
 
-  // Модификаторы по роли
-  const modifiers = getRoleModifiers(role) as Partial<EmployeeSkills> || {};
-
-  const skills = { ...baseSkills };
-
-  // Применяем модификаторы роли
-  Object.keys(modifiers).forEach(key => {
-    const skillKey = key as keyof EmployeeSkills;
-    skills[skillKey] += modifiers[skillKey] || 0;
-  });
-
-  // Применяем бонус звезд ко всем навыкам с рандомом
-  Object.keys(skills).forEach(key => {
-    const skillKey = key as keyof EmployeeSkills;
-    skills[skillKey] = Math.min(100, Math.max(10, skills[skillKey] + starBonus + (Math.random() * 20 - 10)));
-  });
-
-  return skills;
+  return { efficiency };
 }
 
 /**
- * Рассчитывает зарплату на основе роли и звезд
+ * Рассчитывает зарплату на основе роли и звезд с учетом инфляции
  */
-export function calculateSalary(role: EmployeeRole, stars: EmployeeStars): number {
+export function calculateSalary(
+  role: EmployeeRole,
+  stars: EmployeeStars,
+  economy?: CountryEconomy
+): number {
   const baseSalary = getBaseSalary(role) || 1000;
+
+  // Применяем инфляцию к базовой зарплате
+  const inflatedBaseSalary = economy
+    ? getInflatedBaseSalary(baseSalary, economy)
+    : baseSalary;
 
   // Множитель зарплаты от звезд (экспоненциальный рост)
   const starMultiplier = getStarMultiplier(stars);
 
-  return Math.round(baseSalary * starMultiplier);
+  return Math.round(inflatedBaseSalary * starMultiplier);
 }
 
 /**
  * Генерирует кандидата на работу
  */
-export function generateEmployeeCandidate(role: EmployeeRole, stars?: EmployeeStars): EmployeeCandidate {
+export function generateEmployeeCandidate(
+  role: EmployeeRole,
+  stars?: EmployeeStars,
+  economy?: CountryEconomy
+): EmployeeCandidate {
   // Распределение звезд если не указано: 1★ (40%), 2★ (30%), 3★ (20%), 4★ (8%), 5★ (2%)
   let candidateStars: EmployeeStars = 1;
   if (stars) {
@@ -74,7 +68,7 @@ export function generateEmployeeCandidate(role: EmployeeRole, stars?: EmployeeSt
   const firstName = getRandomFirstName();
   const lastName = getRandomLastName();
   const skills = generateSkills(role, candidateStars);
-  const salary = calculateSalary(role, candidateStars);
+  const salary = calculateSalary(role, candidateStars, economy);
 
   const experience = {
     1: Math.floor(Math.random() * 4),
@@ -103,10 +97,14 @@ export function generateEmployeeCandidate(role: EmployeeRole, stars?: EmployeeSt
 /**
  * Генерирует несколько кандидатов для выбора
  */
-export function generateCandidates(role: EmployeeRole, count: number = 3): EmployeeCandidate[] {
+export function generateCandidates(
+  role: EmployeeRole,
+  count: number = 3,
+  economy?: CountryEconomy
+): EmployeeCandidate[] {
   const candidates: EmployeeCandidate[] = [];
   for (let i = 0; i < count; i++) {
-    candidates.push(generateEmployeeCandidate(role));
+    candidates.push(generateEmployeeCandidate(role, undefined, economy));
   }
   return candidates;
 }

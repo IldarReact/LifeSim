@@ -94,10 +94,29 @@ export function calculateLifestyleExpenses(player: PlayerState, costModifier: nu
 
 export function calculateMemberExpenses(member: any, countryId?: string, costModifier: number = 1.0): number {
   let total = 0
-  const foodId = member.foodPreference
-  if (foodId) {
+  
+  // Питание
+  if (member.type !== 'pet') {
+    const foodId = member.foodPreference || 'food_homemade'
     const item = getShopItem(foodId, countryId)
     if (item) total += getItemCost(item) * costModifier
   }
-  return total
+  
+  // Транспорт
+  if (member.type !== 'pet' && member.age >= 10) {
+    const transportId = member.transportPreference || 'transport_public'
+    const item = getShopItem(transportId, countryId)
+    if (item) total += getItemCost(item) * costModifier
+  }
+  
+  // Другое (страховки, мелочи)
+  if (member.type === 'wife' || member.type === 'husband') {
+    total += 300 * costModifier // Базовые расходы партнера
+  } else if (member.type === 'child') {
+    total += 500 * costModifier // Расходы на ребенка
+  } else if (member.type === 'pet') {
+    total += 200 * costModifier // Расходы на питомца
+  }
+  
+  return Math.round(total)
 }

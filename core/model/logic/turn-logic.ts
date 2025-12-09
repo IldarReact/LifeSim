@@ -259,7 +259,7 @@ export function processTurn(get: GetState, set: SetState): void {
   const totalActiveEnergyCost =
     activeCourses.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
     activeUniversity.reduce((acc, c) => acc + (c.costPerTurn.energy || 0), 0) +
-    prev.player.jobs.reduce((acc, j) => acc + (j.cost.energy || 0), 0)
+    prev.player.jobs.reduce((acc, j) => acc + (j.cost?.energy || 0), 0)
 
   const recoveredEnergy = Math.max(0, 100 - totalActiveEnergyCost)
 
@@ -327,18 +327,15 @@ export function processTurn(get: GetState, set: SetState): void {
   }
 
   // 14. Threshold Effects & Update State
+  // Apply stat changes using proper clamping
+  const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
+  
   const currentStats = {
-    health: Math.min(100, Math.max(0, prev.player.personal.stats.health - 2 + finalHealthMod)),
-    happiness: Math.min(
-      100,
-      Math.max(0, prev.player.personal.stats.happiness - 1 + finalHappinessMod),
-    ),
-    sanity: Math.min(100, Math.max(0, prev.player.personal.stats.sanity + finalSanityMod)),
-    intelligence: Math.min(
-      100,
-      Math.max(0, prev.player.personal.stats.intelligence + finalIntelligenceMod),
-    ),
-    energy: Math.min(100, recoveredEnergy + finalEnergyMod - businessResult.playerRoleEnergyCost),
+    health: clamp(prev.player.personal.stats.health + finalHealthMod, 0, 100),
+    happiness: clamp(prev.player.personal.stats.happiness + finalHappinessMod, 0, 100),
+    sanity: clamp(prev.player.personal.stats.sanity + finalSanityMod, 0, 100),
+    intelligence: clamp(prev.player.personal.stats.intelligence + finalIntelligenceMod, 0, 100),
+    energy: clamp(recoveredEnergy + finalEnergyMod - businessResult.playerRoleEnergyCost, 0, 100),
   }
 
   const thresholdEffects = checkAllThresholdEffects(currentStats)
@@ -401,7 +398,15 @@ export function processTurn(get: GetState, set: SetState): void {
       )
       updatedCountries = inflationResult.updatedCountries
       inflationNotification = inflationResult.inflationNotification
-      if (inflationResult.notification) newNotifications.push(inflationResult.notification)
+      if (inflationResult.notification) {
+        console.log('💰 Inflation applied:', {
+          turn: newTurn,
+          year: newYear,
+          country: prev.player.countryId,
+          newInflation: inflationResult.inflationNotification?.inflationRate
+        })
+        newNotifications.push(inflationResult.notification)
+      }
     }
 
     set((state) => ({
@@ -414,6 +419,7 @@ export function processTurn(get: GetState, set: SetState): void {
       player: state.player
         ? {
             ...state.player,
+            age: newTurn % 4 === 0 ? state.player.age + 1 : state.player.age,
             businesses: businessResult.updatedBusinesses,
             personal: {
               ...state.player.personal,
@@ -436,10 +442,7 @@ export function processTurn(get: GetState, set: SetState): void {
               isDating: isDating,
               potentialPartner: potentialPartner,
               pregnancy: pregnancy,
-              stats: {
-                ...state.player.personal.stats,
-                ...currentStats,
-              },
+              stats: currentStats,
             },
             energy: currentStats.energy,
             stats: {

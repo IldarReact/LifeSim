@@ -1,7 +1,9 @@
 import type { Business, BusinessInventory } from "@/core/types/business.types";
 import type { Skill } from '@/core/types';
+import type { CountryEconomy } from '@/core/types/economy.types';
 import { calculateEmployeeKPI } from './employee-calculations';
 import { getPlayerRoleBusinessImpact } from '@/features/business/lib/player-roles';
+import { getInflatedPrice, getQuarterlyInflatedSalary } from '../calculations/price-helpers';
 
 /**
  * Рассчитывает детальные финансовые показатели бизнеса за квартал
@@ -10,7 +12,8 @@ export function calculateBusinessFinancials(
   business: Business,
   isPreview: boolean = false,
   playerSkills?: Skill[],
-  globalMarketValue: number = 1.0  // ✅ НОВОЕ: глобальное состояние рынка
+  globalMarketValue: number = 1.0,  // ✅ НОВОЕ: глобальное состояние рынка
+  economy?: CountryEconomy  // ✅ НОВОЕ: экономика для инфляции
 ): {
   income: number;
   expenses: number;
@@ -36,11 +39,26 @@ export function calculateBusinessFinancials(
 
   // 1. Base Expenses
   const employeesCost = business.employees.reduce((sum, emp) => {
+    // Применяем индексацию зарплаты с учетом опыта сотрудника
+    const indexedSalary = economy
+      ? getQuarterlyInflatedSalary(emp.salary, economy, emp.experience)
+      : emp.salary;
+    
     const kpi = calculateEmployeeKPI(emp);
-    return sum + emp.salary + kpi;
+    return sum + indexedSalary + kpi;
   }, 0);
-  const rent = business.maxEmployees * 200;
-  const utilities = business.maxEmployees * 50;
+  
+  // Применяем инфляцию к операционным расходам
+  const baseRentPerEmployee = 200;
+  const baseUtilitiesPerEmployee = 50;
+  
+  const rent = economy
+    ? getInflatedPrice(baseRentPerEmployee * business.maxEmployees, economy, 'services')
+    : baseRentPerEmployee * business.maxEmployees;
+    
+  const utilities = economy
+    ? getInflatedPrice(baseUtilitiesPerEmployee * business.maxEmployees, economy, 'services')
+    : baseUtilitiesPerEmployee * business.maxEmployees;
 
   let baseExpenses = employeesCost + rent + utilities;
 

@@ -1,6 +1,7 @@
 import type { PlayerState, QuarterlyReport } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { getInflatedPrice } from '../price-helpers'
 
 export function calculateMixedQuarterlyReport(params: {
   player: PlayerState
@@ -48,7 +49,12 @@ export function calculateMixedQuarterlyReport(params: {
     businessExpenses = financials.expenses
   }
 
-  const baseSalary = player.jobs.reduce((sum: number, job: any) => sum + job.salary * 3, 0)
+  const baseSalary = player.jobs.reduce((sum: number, job: any) => {
+    const monthlySalary = job.salary
+    // Применить инфляцию к зарплате
+    const inflatedMonthlySalary = getInflatedPrice(monthlySalary, country, 'salaries')
+    return sum + inflatedMonthlySalary * 3
+  }, 0)
   const salary = baseSalary * (1 + buffIncomeMod / 100)
   const adjustedBusinessRevenue = businessRevenue * (1 + buffIncomeMod / 100)
   const totalIncome = salary + adjustedBusinessRevenue + familyIncome + assetIncome
@@ -62,7 +68,10 @@ export function calculateMixedQuarterlyReport(params: {
     total: totalIncome,
   }
 
-  const baseLiving = 1000 * 3 * country.costOfLivingModifier
+  // Базовые расходы на жизнь с инфляцией (категория services)
+  const baseLifestyleCost = 1000 * 3 * country.costOfLivingModifier
+  const baseLiving = getInflatedPrice(baseLifestyleCost, country, 'services')
+  
   const breakdown = params.expensesBreakdown || {
     food: params.lifestyleExpenses || 0,
     housing: 0,

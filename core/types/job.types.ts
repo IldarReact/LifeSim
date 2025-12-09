@@ -14,7 +14,6 @@ export interface Job {
   company: string;
   salary: number; // Monthly salary
   cost: StatEffect;
-  satisfaction: number;
   imageUrl: string;
   description: string;
   requirements?: JobRequirements;
@@ -26,7 +25,6 @@ export interface JobApplication {
   company: string;
   salary: number;
   cost: StatEffect;
-  satisfaction: number;
   requirements: SkillRequirement[];
   daysPending: number;
 }

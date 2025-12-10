@@ -32,7 +32,6 @@ export function MultiplayerLobby() {
   const [roomId, setRoomId] = useState("");
   const [isReady, setIsReady] = useState(false);
 
-  // Загружаем архетипы для выбранной страны
   const characters = getCharactersForCountry(selectedCountry);
 
   const [isCountryModalOpen, setIsCountryModalOpen] = useState(false);
@@ -42,36 +41,25 @@ export function MultiplayerLobby() {
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room");
 
-    // Логирование для отладки
-    console.log("[Lobby] Checking room params:", room);
-
     if (!room) {
-      console.log("[Lobby] Creating new room...");
-      const newRoomId = initMultiplayer(undefined, true);
-      setRoomId(newRoomId);
-      // Сохраняем права хоста для этой комнаты
-      sessionStorage.setItem(`life_sim_host_${newRoomId}`, 'true');
-      console.log("[Lobby] Host rights saved for room:", newRoomId);
-    } else {
-      setRoomId(room);
-      // Проверяем, были ли мы хостом этой комнаты
-      const isStoredHost = sessionStorage.getItem(`life_sim_host_${room}`) === 'true';
-      console.log("[Lobby] Joining room:", room, "Is stored host:", isStoredHost);
-      initMultiplayer(room, isStoredHost);
+      router.push("/");
+      return;
     }
+
+    setRoomId(room);
+    const isStoredHost = sessionStorage.getItem(`life_sim_host_${room}`) === 'true';
+    initMultiplayer(room, isStoredHost);
 
     const updatePlayerHost = () => {
       const currentPlayers = getOnlinePlayers();
       const amIHost = isHost();
-      console.log("[Lobby] Update players:", currentPlayers.length, "Am I host:", amIHost);
       setPlayers(currentPlayers);
     };
 
-    const interval = setInterval(updatePlayerHost, 6000); // Реже обновляем, чтобы не спамить, но достаточно часто
+    const interval = setInterval(updatePlayerHost, 6000);
     updatePlayerHost();
 
     const unsubscribeGameStart = subscribeToGameStart(() => {
-      // Хост сам обрабатывает свой редирект в handleStartGame
       if (isHost()) return;
 
       const myPlayer = getOnlinePlayers().find(p => p.isLocal);
@@ -105,8 +93,6 @@ export function MultiplayerLobby() {
   };
 
   const handleStartGame = () => {
-    // if (!isHost()) return;
-
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
       alert("Не все игроки готовы! Все игроки должны выбрать персонажа и нажать 'Готов'.");
@@ -133,28 +119,39 @@ export function MultiplayerLobby() {
   const selectedCountryName = countryList.find(c => c.id === selectedCountry)?.name || "Не выбрано";
   const selectedArchetypeName = characters.find(c => c.archetype === selectedArchetype)?.name || "Не выбрано";
 
-  // Full screen modals
-  if (isCountryModalOpen) {
-    return (
-      <WorldSelectUI
-        countries={countryList}
-        onSelect={handleCountrySelect}
-        onBack={() => setIsCountryModalOpen(false)}
-      />
-    );
-  }
-
-  if (isArchetypeModalOpen) {
-    return (
-      <CharacterSelectUI
-        setupCountryId={selectedCountry}
-        onSelect={handleArchetypeSelect}
-        onBack={() => setIsArchetypeModalOpen(false)}
-      />
-    );
-  }
+  const ModalOverlay = ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {children}
+      </div>
+    </div>
+  );
 
   return (
+    <>
+      {isCountryModalOpen && (
+        <ModalOverlay onClose={() => setIsCountryModalOpen(false)}>
+          <div className="p-8">
+            <WorldSelectUI
+              countries={countryList}
+              onSelect={handleCountrySelect}
+              onBack={() => setIsCountryModalOpen(false)}
+            />
+          </div>
+        </ModalOverlay>
+      )}
+      {isArchetypeModalOpen && (
+        <ModalOverlay onClose={() => setIsArchetypeModalOpen(false)}>
+          <div className="p-8">
+            <CharacterSelectUI
+              setupCountryId={selectedCountry}
+              onSelect={handleArchetypeSelect}
+              onBack={() => setIsArchetypeModalOpen(false)}
+            />
+          </div>
+        </ModalOverlay>
+      )}
     <div className="min-h-screen bg-slate-950 p-6 text-slate-200 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -235,15 +232,13 @@ export function MultiplayerLobby() {
                 {isReady ? "Вы готовы" : "Готов к игре"}
               </Button>
 
-              {/* {isHost() && ( */}
-                <Button
-                  onClick={handleStartGame}
-                  className={`w-full h-14 text-lg font-bold shadow-lg transition-all bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse`}
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Начать игру
-                </Button>
-              {/* )} */}
+              <Button
+                onClick={handleStartGame}
+                className={`w-full h-14 text-lg font-bold shadow-lg transition-all bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/20 animate-pulse`}
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Начать игру
+              </Button>
             </div>
           </div>
 
@@ -310,5 +305,6 @@ export function MultiplayerLobby() {
         </div>
       </div>
     </div>
+    </>
   );
 }

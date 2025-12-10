@@ -76,6 +76,11 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     type,
     description,
     state: openingQuarters > 0 ? 'opening' : 'active',
+    lastQuarterlyUpdate: currentTurn,
+    createdAt: currentTurn,
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
+    autoPurchaseAmount: 0,
 
     // Pricing & Production
     price: 5, // Default mid-range price (1-10)

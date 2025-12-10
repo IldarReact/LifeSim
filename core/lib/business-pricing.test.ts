@@ -16,6 +16,11 @@ describe('Business Pricing & Market Tests', () => {
     isMainBranch: true,
     partners: [],
     proposals: [],
+    lastQuarterlyUpdate: 0,
+    createdAt: 0,
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
+    autoPurchaseAmount: 0,
     initialCost: 10000,
     quarterlyIncome: 0,
     quarterlyExpenses: 0,
@@ -36,12 +41,18 @@ describe('Business Pricing & Market Tests', () => {
       maxStock: 1000,
       pricePerUnit: 50,
       purchaseCost: 20,
-      autoPurchaseAmount: 0
+      autoPurchaseAmount: 0,
     },
-    openingProgress: { totalQuarters: 0, quartersLeft: 0, investedAmount: 0, totalCost: 0, upfrontCost: 0 },
+    openingProgress: {
+      totalQuarters: 0,
+      quartersLeft: 0,
+      investedAmount: 0,
+      totalCost: 0,
+      upfrontCost: 0,
+    },
     eventsHistory: [],
     foundedTurn: 1,
-    ...overrides
+    ...overrides,
   })
 
   const createMockEmployee = (role: Employee['role'], stars: number = 3): Employee => ({

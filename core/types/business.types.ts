@@ -115,43 +115,16 @@ export interface Business {
   type: BusinessType
   description: string
   state: BusinessState
-
-  // ===== НОВОЕ: Ценообразование и производство =====
-  /**
-   * Цена товара/услуги (1-10)
-   * 10 = очень дорого, 1 = очень дёшево
-   * Управляется только в главном филиале сети
-   */
+  lastQuarterlyUpdate: number
+  createdAt: number
   price: number
-
-  /**
-   * Количество производимого товара за квартал
-   * Используется только для товарных бизнесов
-   * Для услуг всегда = 0 (не используется)
-   */
   quantity: number
-
-  /**
-   * Является ли бизнес услуговым
-   * true = услуги (quantity не используется)
-   * false = товары (quantity используется)
-   */
   isServiceBased: boolean
-
-  // ===== НОВОЕ: Сеть филиалов =====
-  /**
-   * ID сети, к которой принадлежит бизнес
-   * Все филиалы одной сети имеют одинаковый networkId
-   */
   networkId?: string
-
-  /**
-   * Является ли этот бизнес главным в сети
-   * Только главный филиал может менять цену
-   */
   isMainBranch: boolean
-
-  // ===== НОВОЕ: Кооперативное владение =====
+  monthlyIncome: number
+  monthlyExpenses: number
+  autoPurchaseAmount: number
   partners: BusinessPartner[]
   proposals: BusinessProposal[]
 

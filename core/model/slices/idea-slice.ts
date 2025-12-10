@@ -134,6 +134,12 @@ export const createIdeaSlice: StateCreator<
       description: idea.description,
       state: 'active',
 
+      lastQuarterlyUpdate: state.turn,
+      createdAt: state.turn,
+      monthlyIncome: 0,
+      monthlyExpenses: 0,
+      autoPurchaseAmount: 0,
+
       price: 5,
       quantity: 100,
       isServiceBased: idea.type === 'service' || idea.type === 'tech',
@@ -151,8 +157,23 @@ export const createIdeaSlice: StateCreator<
       maxEmployees: 5, // Начальный лимит
       minEmployees: 1,
 
-      reputation: Math.max(0, Math.min(100, 50 + (idea.marketDemand * 0.3) + (idea.riskLevel === 'low' ? 5 : idea.riskLevel === 'high' ? -5 : idea.riskLevel === 'very_high' ? -10 : 0) + ((Math.random() - 0.5) * (idea.riskLevel === 'very_high' ? 40 : 20)))),
-      efficiency: Math.max(0, Math.min(100, 50 + (idea.potentialReturn * 10))),
+      reputation: Math.max(
+        0,
+        Math.min(
+          100,
+          50 +
+            idea.marketDemand * 0.3 +
+            (idea.riskLevel === 'low'
+              ? 5
+              : idea.riskLevel === 'high'
+                ? -5
+                : idea.riskLevel === 'very_high'
+                  ? -10
+                  : 0) +
+            (Math.random() - 0.5) * (idea.riskLevel === 'very_high' ? 40 : 20),
+        ),
+      ),
+      efficiency: Math.max(0, Math.min(100, 50 + idea.potentialReturn * 10)),
 
       taxRate: 0.2, // Базовая ставка
       hasInsurance: false,
@@ -162,7 +183,7 @@ export const createIdeaSlice: StateCreator<
 
       playerRoles: {
         managerialRoles: [],
-        operationalRole: null
+        operationalRole: null,
       },
       requiredRoles: [], // Будет заполнено логикой бизнеса
 
@@ -171,7 +192,7 @@ export const createIdeaSlice: StateCreator<
         maxStock: 500,
         pricePerUnit: 0,
         purchaseCost: 0,
-        autoPurchaseAmount: 0
+        autoPurchaseAmount: 0,
       },
 
       openingProgress: {
@@ -179,11 +200,11 @@ export const createIdeaSlice: StateCreator<
         quartersLeft: 0,
         investedAmount: idea.investedAmount,
         totalCost: idea.investedAmount,
-        upfrontCost: 0
+        upfrontCost: 0,
       },
 
       eventsHistory: [],
-      foundedTurn: state.turn
+      foundedTurn: state.turn,
     }
 
     set({

@@ -24,54 +24,72 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 
     if (!state.player) return
 
-    // Создаем бизнес для инициатора партнерства
-    const business = createPartnerBusiness(
+    // Create business for the initiator
+    const initiatorBusiness = createPartnerBusiness(
       {
         details: {
           businessName: payload.businessName,
           businessType: payload.businessType,
           businessDescription: payload.businessDescription,
           totalCost: payload.totalCost,
-          yourInvestment: payload.yourInvestment,
-          yourShare: payload.yourShare,
+          yourInvestment: payload.partnerInvestment,
+          yourShare: payload.partnerShare,
         },
         fromPlayerId: payload.partnerId,
         fromPlayerName: payload.partnerName,
       },
       state.turn,
       state.player.id,
+      true,
     )
 
-    // Связываем бизнесы
-    business.partnerBusinessId = payload.businessId
+    // Link businesses
+    initiatorBusiness.partnerBusinessId = payload.businessId
 
-    // Списываем инвестиции у инициатора
-    state.applyStatChanges({ money: -payload.yourInvestment })
+    // Deduct money from initiator
+    state.applyStatChanges({ money: -payload.partnerInvestment })
 
-    // Добавляем бизнес инициатору
+    // Add business to initiator
     set((state) => ({
       player: {
         ...state.player!,
-        businesses: [...state.player!.businesses, business],
+        businesses: [...state.player!.businesses, initiatorBusiness],
       },
     }))
 
-    // Обновляем партнерские ссылки
+    // Update partner's business with the link
     broadcastEvent({
       type: 'PARTNERSHIP_UPDATED',
       payload: {
         businessId: payload.businessId,
-        partnerBusinessId: business.id,
+        partnerBusinessId: initiatorBusiness.id,
       },
       toPlayerId: payload.partnerId,
     })
 
-    // Уведомляем игрока
-    state.pushNotification({
+    // Notify the player
+    state.pushNotification?.({
       type: 'success',
       title: 'Партнерство создано',
       message: `Вы стали партнером с ${payload.partnerName} в бизнесе "${payload.businessName}"`,
     })
+  },
+
+  onPartnershipUpdated: (event: GameEvent<{ businessId: string; partnerBusinessId: string }>) => {
+    const { payload } = event
+    const state = get()
+
+    if (!state.player) return
+
+    // Update the business with partner's business ID
+    set((state) => ({
+      player: {
+        ...state.player!,
+        businesses: state.player!.businesses.map((b) =>
+          b.id === payload.businessId ? { ...b, partnerBusinessId: payload.partnerBusinessId } : b,
+        ),
+      },
+    }))
   },
 
   sendOffer: (type, toPlayerId, toPlayerName, details, message) => {
@@ -131,8 +149,8 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         return
       }
 
-      // Создаем бизнес для текущего игрока (партнера)
-      const business = createPartnerBusiness(
+      // Create business for the accepting player
+      const acceptingBusiness = createPartnerBusiness(
         {
           details: {
             businessName: offer.details.businessName,
@@ -149,31 +167,31 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         state.player!.id,
       )
 
-      // Списываем инвестиции у принимающего игрока
+      // Deduct money from accepting player
       state.applyStatChanges({ money: -offer.details.yourInvestment })
 
-      // Добавляем бизнес принимающему игроку
+      // Add business to accepting player
       set((state) => ({
         player: {
           ...state.player!,
-          businesses: [...state.player!.businesses, business],
+          businesses: [...state.player!.businesses, acceptingBusiness],
         },
       }))
 
       console.log('[GameOffers] Принято партнёрство:', offer.details)
 
-      // Уведомляем отправителя о принятии оффера
+      // Notify the initiator
       broadcastEvent({
         type: 'PARTNERSHIP_ACCEPTED',
         payload: {
-          businessId: business.id,
+          businessId: acceptingBusiness.id,
           partnerId: state.player!.id,
           partnerName: state.player!.name,
-          partnerBusinessId: business.partnerBusinessId!,
-          businessName: business.name,
-          businessType: business.type,
-          businessDescription: business.description,
-          totalCost: business.initialCost,
+          partnerBusinessId: acceptingBusiness.partnerBusinessId!,
+          businessName: acceptingBusiness.name,
+          businessType: acceptingBusiness.type,
+          businessDescription: acceptingBusiness.description,
+          totalCost: acceptingBusiness.initialCost,
           partnerShare: 100 - offer.details.yourShare,
           partnerInvestment: offer.details.yourInvestment,
           yourShare: offer.details.yourShare,

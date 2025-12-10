@@ -1,10 +1,4 @@
-import type {
-  Business,
-  BusinessType,
-  EmployeeRole,
-  BusinessPartner,
-  BusinessInventory,
-} from '@/core/types/business.types'
+import type { Business, BusinessType, EmployeeRole } from '@/core/types/business.types'
 
 export function createPartnerBusiness(
   offer: {
@@ -21,16 +15,18 @@ export function createPartnerBusiness(
   },
   currentTurn: number,
   playerId: string,
-): Business & { partnerBusinessId: string } {
+  isInitiator: boolean = false,
+): Business & { partnerBusinessId?: string } {
   const now = Date.now()
-  const partnerBusinessId = `biz_${now + 1}`
+  const businessId = `biz_${now}`
+  const partnerBusinessId = isInitiator ? undefined : `biz_${now + 1}`
 
-  const business: Business & { partnerBusinessId: string } = {
-    id: `biz_${now}`,
+  return {
+    id: businessId,
     name: offer.details.businessName,
     type: offer.details.businessType,
     description: offer.details.businessDescription,
-    state: 'active' as const,
+    state: 'active',
     price: Math.floor(offer.details.totalCost * 0.8),
     quantity: 1,
     isServiceBased: false,
@@ -52,8 +48,6 @@ export function createPartnerBusiness(
       },
     ],
     proposals: [],
-
-    // Остальные обязательные поля
     openingProgress: {
       totalQuarters: 0,
       quartersLeft: 0,
@@ -93,7 +87,5 @@ export function createPartnerBusiness(
     monthlyIncome: 0,
     monthlyExpenses: 0,
     autoPurchaseAmount: 0,
-  } as Business & { partnerBusinessId: string }
-
-  return business
+  }
 }

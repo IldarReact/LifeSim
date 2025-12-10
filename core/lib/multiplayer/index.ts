@@ -15,15 +15,6 @@ type Presence = {
 let client: ReturnType<typeof createClient> | null = null;
 let roomInstance: any = null;
 
-function getClient() {
-  if (!client) {
-    client = createClient({
-      publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
-    });
-  }
-  return client;
-}
-
 async function getAuthToken(room: string) {
   const res = await fetch('/api/liveblocks-auth', {
     method: 'POST',
@@ -31,6 +22,15 @@ async function getAuthToken(room: string) {
   });
   const data = await res.json();
   return data.token;
+}
+
+async function getClient(token: string) {
+  if (!client) {
+    client = createClient({
+      authEndpoint: async () => ({ token }),
+    });
+  }
+  return client;
 }
 
 export async function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): Promise<string> {
@@ -45,14 +45,15 @@ export async function initMultiplayer(inputRoomId?: string, isCreator: boolean =
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
 
-  const clientInstance = getClient()
-  if (!clientInstance) {
-    console.info('[Multiplayer] Liveblocks client not available — multiplayer disabled')
-    return id
-  }
-
   try {
     const token = await getAuthToken(id);
+    const clientInstance = await getClient(token);
+    
+    if (!clientInstance) {
+      console.info('[Multiplayer] Liveblocks client not available — multiplayer disabled')
+      return id
+    }
+
     const { room } = clientInstance.enterRoom<Presence, any, any, any>(id, {
       initialPresence: {
         name: randomName,
@@ -231,7 +232,6 @@ export function broadcastEvent(event: any) {
 
 export function subscribeToEvents(callback: (event: any) => void) {
   if (!roomInstance) return () => { };
-  // FIX: Unwrap the event object from Liveblocks
   return roomInstance.subscribe("event", ({ event }: { event: any }) => callback(event));
 }
 

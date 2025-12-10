@@ -32,22 +32,22 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           businessType: payload.businessType,
           businessDescription: payload.businessDescription,
           totalCost: payload.totalCost,
-          yourInvestment: payload.partnerInvestment,
-          yourShare: payload.partnerShare,
+          yourInvestment: payload.yourInvestment,
+          yourShare: payload.yourShare,
         },
         fromPlayerId: payload.partnerId,
         fromPlayerName: payload.partnerName,
       },
       state.turn,
       state.player.id,
-      true,
+      true, // Mark as initiator
     )
 
     // Link businesses
     initiatorBusiness.partnerBusinessId = payload.businessId
 
     // Deduct money from initiator
-    state.applyStatChanges({ money: -payload.partnerInvestment })
+    state.applyStatChanges({ money: -payload.yourInvestment })
 
     // Add business to initiator
     set((state) => ({
@@ -67,10 +67,10 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       toPlayerId: payload.partnerId,
     })
 
-    // Notify the player
+    // Notify the initiator
     state.pushNotification?.({
       type: 'success',
-      title: 'Партнерство создано',
+      title: 'Партнёрство создано',
       message: `Вы стали партнером с ${payload.partnerName} в бизнесе "${payload.businessName}"`,
     })
   },
@@ -123,6 +123,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     console.log('[GameOffers] Offer sent:', newOffer)
   },
 
+  // In game-offers-slice.ts, update the acceptOffer method
   acceptOffer: (offerId) => {
     const state = get()
     const offerIndex = state.offers.findIndex((o) => o.id === offerId)
@@ -131,19 +132,11 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 
     const offer = state.offers[offerIndex]
 
-    // Проверка: можно ли принять (статус pending)
+    // Check if the offer is pending
     if (offer.status !== 'pending') return
 
-    // Логика принятия в зависимости от типа
-    if (isJobOffer(offer)) {
-      // 1. Устроиться на работу
-      state.acceptExternalJob(
-        offer.details.role,
-        offer.details.businessName,
-        offer.details.salary,
-        offer.details.businessId,
-      )
-    } else if (isPartnershipOffer(offer)) {
+    if (isPartnershipOffer(offer)) {
+      // Check if player has enough money
       if (state.player!.stats.money < offer.details.yourInvestment) {
         console.warn('Not enough money to accept partnership')
         return
@@ -187,7 +180,6 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           businessId: acceptingBusiness.id,
           partnerId: state.player!.id,
           partnerName: state.player!.name,
-          partnerBusinessId: acceptingBusiness.partnerBusinessId!,
           businessName: acceptingBusiness.name,
           businessType: acceptingBusiness.type,
           businessDescription: acceptingBusiness.description,
@@ -199,31 +191,19 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         },
         toPlayerId: offer.fromPlayerId,
       })
-    } else if (isShareSaleOffer(offer)) {
-      // 3. Купить долю
-      if (state.player!.stats.money < offer.details.price) {
-        console.warn('Not enough money to buy share')
-        return
-      }
 
-      // Списываем стоимость доли
-      state.applyStatChanges({ money: -offer.details.price })
+      // Update offer status
+      set((state) => ({
+        offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'accepted' } : o)),
+      }))
 
-      console.log('[GameOffers] Accepting share sale:', offer.details)
+      // Notify the accepting player
+      state.pushNotification?.({
+        type: 'success',
+        title: 'Партнёрство создано',
+        message: `Вы стали партнером с ${offer.fromPlayerName} в бизнесе "${offer.details.businessName}"`,
+      })
     }
-
-    // Обновляем статус
-    set((state) => {
-      const newOffers = [...state.offers]
-      newOffers[offerIndex] = { ...newOffers[offerIndex], status: 'accepted' }
-      return { offers: newOffers }
-    })
-
-    // Уведомляем отправителя
-    broadcastEvent({
-      type: 'OFFER_ACCEPTED',
-      payload: { offerId, acceptedBy: state.player!.id },
-    })
   },
 
   rejectOffer: (offerId) => {

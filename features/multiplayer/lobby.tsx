@@ -322,6 +322,5 @@ export function MultiplayerLobby() {
           </div>
         </div>
       </div>
-    </div>
   )
 }

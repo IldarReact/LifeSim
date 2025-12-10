@@ -12,28 +12,9 @@ type Presence = {
   color: string;
 };
 
-let client: ReturnType<typeof createClient> | null = null;
 let roomInstance: any = null;
 
-async function getAuthToken(room: string) {
-  const res = await fetch('/api/liveblocks-auth', {
-    method: 'POST',
-    body: JSON.stringify({ room }),
-  });
-  const data = await res.json();
-  return data.token;
-}
-
-async function getClient(token: string) {
-  if (!client) {
-    client = createClient({
-      authEndpoint: async () => ({ token }),
-    });
-  }
-  return client;
-}
-
-export async function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): Promise<string> {
+export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): string {
   const id = inputRoomId || Math.random().toString(36).slice(2, 10);
 
   if (typeof window !== 'undefined') {
@@ -45,30 +26,30 @@ export async function initMultiplayer(inputRoomId?: string, isCreator: boolean =
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
 
-  try {
-    const token = await getAuthToken(id);
-    const clientInstance = await getClient(token);
-    
-    if (!clientInstance) {
-      console.info('[Multiplayer] Liveblocks client not available — multiplayer disabled')
-      return id
-    }
+  fetch('/api/liveblocks-auth', {
+    method: 'POST',
+    body: JSON.stringify({ room: id }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      const client = createClient({
+        authEndpoint: async () => ({ token: data.token }),
+      });
 
-    const { room } = clientInstance.enterRoom<Presence, any, any, any>(id, {
-      initialPresence: {
-        name: randomName,
-        isReady: false,
-        turnReady: false,
-        isHost: isCreator,
-        gameStarted: false,
-        selectedArchetype: null,
-        color: randomColor,
-      },
-    });
-    roomInstance = room;
-  } catch (error) {
-    console.error('Failed to init multiplayer:', error);
-  }
+      const { room } = client.enterRoom<Presence, any, any, any>(id, {
+        initialPresence: {
+          name: randomName,
+          isReady: false,
+          turnReady: false,
+          isHost: isCreator,
+          gameStarted: false,
+          selectedArchetype: null,
+          color: randomColor,
+        },
+      });
+      roomInstance = room;
+    })
+    .catch(error => console.error('Failed to init multiplayer:', error));
 
   return id;
 }

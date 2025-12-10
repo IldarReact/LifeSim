@@ -39,44 +39,41 @@ export function MultiplayerLobby() {
   const [isArchetypeModalOpen, setIsArchetypeModalOpen] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const room = urlParams.get("room");
+    const urlParams = new URLSearchParams(window.location.search);
+    const room = urlParams.get("room");
 
-      if (!room) {
-        router.push("/");
-        return;
-      }
+    if (!room) {
+      router.push("/");
+      return;
+    }
 
-      setRoomId(room);
-      const isStoredHost = sessionStorage.getItem(`life_sim_host_${room}`) === 'true';
-      await initMultiplayer(room, isStoredHost);
+    setRoomId(room);
+    const isStoredHost = sessionStorage.getItem(`life_sim_host_${room}`) === 'true';
+    initMultiplayer(room, isStoredHost);
 
-      const updatePlayerHost = () => {
-        const currentPlayers = getOnlinePlayers();
-        const amIHost = isHost();
-        setPlayers(currentPlayers);
-      };
-
-      const interval = setInterval(updatePlayerHost, 6000);
-      updatePlayerHost();
-
-      const unsubscribeGameStart = subscribeToGameStart(() => {
-        if (isHost()) return;
-
-        const myPlayer = getOnlinePlayers().find(p => p.isLocal);
-        if (myPlayer?.selectedArchetype) {
-          initializeGame(selectedCountry, myPlayer.selectedArchetype);
-          router.push("/");
-        }
-      });
-
-      return () => {
-        clearInterval(interval);
-        unsubscribeGameStart();
-      };
+    const updatePlayerHost = () => {
+      const currentPlayers = getOnlinePlayers();
+      const amIHost = isHost();
+      setPlayers(currentPlayers);
     };
-    init();
+
+    const interval = setInterval(updatePlayerHost, 6000);
+    updatePlayerHost();
+
+    const unsubscribeGameStart = subscribeToGameStart(() => {
+      if (isHost()) return;
+
+      const myPlayer = getOnlinePlayers().find(p => p.isLocal);
+      if (myPlayer?.selectedArchetype) {
+        initializeGame(selectedCountry, myPlayer.selectedArchetype);
+        router.push("/");
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribeGameStart();
+    };
   }, [initializeGame, router, selectedCountry]);
 
   const handleArchetypeSelect = (archetype: string) => {

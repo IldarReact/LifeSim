@@ -14,7 +14,7 @@ import {
   setPlayerReady
 } from "@/core/lib/multiplayer";
 import { useGameStore } from "@/core/model/game-store";
-import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from "lucide-react";
+import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User, X } from "lucide-react";
 import { WorldSelectUI } from "@/features/setup/components/world-select";
 import { CharacterSelectUI } from "@/features/setup/components/character-select";
 import type { CountryEconomy } from "@/core/types";
@@ -31,6 +31,7 @@ export function MultiplayerLobby() {
   const [selectedCountry, setSelectedCountry] = useState<string>("us");
   const [roomId, setRoomId] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [notificationModal, setNotificationModal] = useState<{ title: string; message: string } | null>(null);
 
   const characters = getCharactersForCountry(selectedCountry);
 
@@ -95,7 +96,10 @@ export function MultiplayerLobby() {
   const handleStartGame = () => {
     const allReady = players.every(p => p.isReady && p.selectedArchetype);
     if (!allReady) {
-      alert("Не все игроки готовы! Все игроки должны выбрать персонажа и нажать 'Готов'.");
+      setNotificationModal({
+        title: "Не все готовы",
+        message: "Все игроки должны выбрать персонажа и нажать 'Готов'."
+      });
       return;
     }
 
@@ -110,7 +114,10 @@ export function MultiplayerLobby() {
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert("Ссылка скопирована!");
+    setNotificationModal({
+      title: "Скопировано",
+      message: "Ссылка на комнату скопирована в буфер обмена!"
+    });
   };
 
   const canStart = isHost() && players.every(p => p.isReady && p.selectedArchetype) && players.length > 0;
@@ -124,6 +131,24 @@ export function MultiplayerLobby() {
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {children}
+      </div>
+    </div>
+  );
+
+  const NotificationModal = ({ title, message, onClose }: { title: string; message: string; onClose: () => void }) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-md p-6">
+        <div className="flex items-start justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-slate-300 mb-6">{message}</p>
+        <Button onClick={onClose} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+          Закрыть
+        </Button>
       </div>
     </div>
   );
@@ -151,6 +176,13 @@ export function MultiplayerLobby() {
             />
           </div>
         </ModalOverlay>
+      )}
+      {notificationModal && (
+        <NotificationModal
+          title={notificationModal.title}
+          message={notificationModal.message}
+          onClose={() => setNotificationModal(null)}
+        />
       )}
     <div className="min-h-screen bg-slate-950 p-6 text-slate-200 font-sans">
       <div className="max-w-7xl mx-auto">

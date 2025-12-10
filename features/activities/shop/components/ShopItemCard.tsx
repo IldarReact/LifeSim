@@ -90,11 +90,11 @@ export function ShopItemCard({
               <span className="text-xs text-blue-300">
                 {getHousingTypeLabel(item, country)}
               </span>
-              {'capacity' in item && item.capacity && (
+              {('capacity' in item && item.capacity) ? (
                 <span className="text-xs text-white/60">
                   • {(item.capacity as number)} мест
                 </span>
-              )}
+              ) : null}
             </div>
           )}
         </div>

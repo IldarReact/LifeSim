@@ -19,6 +19,7 @@ function getClient() {
   if (!client) {
     const publicKey = process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY;
     if (!publicKey) {
+      // Do not throw here — allow app to run with multiplayer disabled
       console.warn(
         'NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY is not set. Multiplayer features are disabled.'
       );
@@ -46,6 +47,7 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
   const clientInstance = getClient()
   if (!clientInstance) {
     console.info('[Multiplayer] Liveblocks client not available — multiplayer disabled')
+    // Still return the id so UI can show a room param if desired, but do not attempt to connect
     return id
   }
 
@@ -62,6 +64,8 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
   });
 
   roomInstance = room;
+
+  console.log(`[Multiplayer] Connected to Liveblocks room: ${id}`);
 
   return id;
 }
@@ -225,6 +229,7 @@ export function broadcastEvent(event: any) {
 
 export function subscribeToEvents(callback: (event: any) => void) {
   if (!roomInstance) return () => { };
+  // FIX: Unwrap the event object from Liveblocks
   return roomInstance.subscribe("event", ({ event }: { event: any }) => callback(event));
 }
 

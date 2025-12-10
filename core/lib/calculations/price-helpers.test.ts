@@ -15,11 +15,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     const basePrice = 1200
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'default')
 
-    console.log('Multi-year test:')
-    console.log(`Base price: ${basePrice}`)
-    console.log(`Inflation history: ${economy.inflationHistory}`)
-    console.log(`Current price: ${price}`)
-
     // Price must not fall
     expect(price).toBeGreaterThanOrEqual(basePrice)
   })
@@ -40,10 +35,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     const basePrice = 1200
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'food')
 
-    console.log('Food category test:')
-    console.log(`Base: ${basePrice}, Final: ${price}`)
-    console.log(`Expected: >= ${basePrice}`)
-
     expect(price).toBeGreaterThanOrEqual(basePrice)
     expect(price).toBeGreaterThan(1200) // Should actually increase
   })
@@ -63,7 +54,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'default')
 
     // Manual: 1000 * 1.02 * 1.025 * 1.03 = 1077.31 ≈ 1077
-    console.log(`With history [3, 2.5, 2]: ${basePrice} -> ${price}`)
 
     expect(price).toBeCloseTo(1077, -1) // ±1
     expect(price).toBeGreaterThanOrEqual(basePrice)
@@ -80,7 +70,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'default')
 
     // With only one value, should apply (length === 0 is now the skip condition)
-    console.log(`Single value [2.5]: ${basePrice} -> ${price}`)
     expect(price).toBeCloseTo(1025, 0) // Should apply 2.5% inflation
   })
 
@@ -95,7 +84,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'default')
 
     // Should apply: 1000 * 1.025 * 1.03 = 1055.75 ≈ 1056
-    console.log(`Two values [3, 2.5]: ${basePrice} -> ${price}`)
 
     expect(price).toBeGreaterThan(basePrice)
     expect(price).toBeCloseTo(1056, 0)
@@ -111,9 +99,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
 
     const basePrice = 1000
     const price = getInflatedPrice(basePrice, economy as CountryEconomy, 'default')
-
-    console.log(`Single year inflation test:`)
-    console.log(`Base: ${basePrice}, Inflation: 2.5%, Price: ${price}`)
 
     // Should apply the inflation!
     expect(price).toBeGreaterThan(basePrice)
@@ -157,8 +142,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
 
       const price = getInflatedPrice(testCase.base, economy as CountryEconomy, testCase.category)
 
-      console.log(`${testCase.name}: ${testCase.base} -> ${price}`)
-
       expect(
         price,
         `FAIL: ${testCase.name} - price fell from ${testCase.base} to ${price}`,
@@ -176,10 +159,6 @@ describe('Price Helpers - Multi-Year Inflation', () => {
       activeEvents: [],
     } as any
 
-    console.log('\n10-Year Price Test:')
-    console.log(`Base prices: $1000, $1200, $100000`)
-    console.log(`Inflation history: ${tenYearInflation.join('%, ')}%`)
-
     const testCases = [
       { base: 1000, category: 'default' as const, expected: 1273 },
       { base: 1200, category: 'food' as const, expected: 1350 },
@@ -189,14 +168,11 @@ describe('Price Helpers - Multi-Year Inflation', () => {
     for (const { base, category, expected } of testCases) {
       const price = getInflatedPrice(base, economy as CountryEconomy, category)
 
-      console.log(`${category} $${base} → $${price} (expected ~$${expected})`)
-
       // Price must increase
       expect(price).toBeGreaterThanOrEqual(base)
       // Should be close to expected (within 10%)
       expect(price).toBeGreaterThan(expected * 0.9)
     }
 
-    console.log('✅ All 10-year prices only increased!')
   })
 })

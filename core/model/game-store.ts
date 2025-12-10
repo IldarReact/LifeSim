@@ -31,7 +31,6 @@ export function enableMultiplayerSync() {
 
   // Инициализируем Liveblocks
   const roomId = initMultiplayer(room);
-  console.log("Мультиплеер: подключено к комнате", roomId);
 
   const shared = getSharedState();
 

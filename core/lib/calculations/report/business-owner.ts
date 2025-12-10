@@ -7,6 +7,7 @@ import type {
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function calculateBusinessOwnerQuarterlyReport(params: {
   player: PlayerState

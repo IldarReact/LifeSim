@@ -1,6 +1,6 @@
 "use client";
 
-import { getOnlinePlayers, setPlayerName, getMyConnectionId } from "@/core/lib/multiplayer";
+import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
 import { Button } from "@/shared/ui/button";
 import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -50,11 +50,6 @@ export function MultiplayerHud() {
     window.location.href = `/lobby?room=${roomId}`;
   };
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert("Ссылка скопирована!");
-  };
-
   const handleSaveName = () => {
     if (newName.trim()) {
       setPlayerName(newName.trim());
@@ -70,19 +65,7 @@ export function MultiplayerHud() {
 
   return (
     <div className="fixed top-20 right-4 md:top-24 md:right-6 bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl z-40 max-w-xs shadow-xl transition-all hover:bg-black/30">
-      {/* Если ещё нет комнаты — показываем кнопку создания */}
-      {!hasRoom ? (
-        <div className="text-center p-4">
-          <p className="text-white/60 mb-3 text-sm font-medium">Одиночная игра</p>
-          <Button
-            onClick={createRoom}
-            className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm transition-all"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Создать лобби
-          </Button>
-        </div>
-      ) : (
+      {hasRoom && (
         <>
           {/* Header - всегда видим */}
           <div
@@ -178,16 +161,6 @@ export function MultiplayerHud() {
                   </div>
                 ))}
               </div>
-
-              {/* Кнопка пригласить */}
-              <Button
-                onClick={copyLink}
-                size="sm"
-                className="w-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white border border-white/5 hover:border-white/10 transition-all"
-              >
-                <Link className="w-3 h-3 mr-2" />
-                Пригласить
-              </Button>
             </div>
           )}
         </>

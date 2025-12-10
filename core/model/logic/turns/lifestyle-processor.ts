@@ -66,6 +66,22 @@ export function processLifestyle(
       if (housing.effects.sanity) sanity += housing.effects.sanity
       if (housing.effects.health) health += housing.effects.health
     }
+    
+    // Overcrowding penalty
+    if (housing && 'capacity' in housing && housing.capacity) {
+      const familySize = 1 + (player.personal.familyMembers?.length || 0)
+      const capacity = (housing.capacity as number) || 2
+      
+      if (familySize > capacity) {
+        const overcrowdingPercent = ((familySize - capacity) / capacity) * 100
+        // Formula: -1 per 10% overcrowding (rounded up)
+        const penalty = Math.ceil(overcrowdingPercent / 10)
+        
+        happiness -= penalty
+        sanity -= penalty
+        intelligence -= Math.floor(penalty / 2)
+      }
+    }
   }
 
   // Food

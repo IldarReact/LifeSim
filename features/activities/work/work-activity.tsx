@@ -46,9 +46,10 @@ export function WorkActivity(): React.JSX.Element | null {
     title: string,
     company: string,
     salary: string,
-    energyCost: number,
+    cost: any,
     requirements: Array<{ skill: string; level: number }>
   ) => {
+    const energyCost = Math.abs(cost.energy || 0)
     if (player.personal.stats.energy < energyCost) {
       setFeedback({
         show: true,
@@ -64,7 +65,7 @@ export function WorkActivity(): React.JSX.Element | null {
       minLevel: r.level as SkillLevel
     }))
 
-    applyForJob(title, company, salaryNum, { energy: energyCost }, reqs)
+    applyForJob(title, company, salaryNum, cost, reqs)
     setFeedback({ show: true, success: true, message: `Заявка на "${title}" отправлена!` })
   }
 
@@ -89,7 +90,7 @@ export function WorkActivity(): React.JSX.Element | null {
       minLevel: r.level
     }))
 
-    applyForFreelance(gigId, title, payment, { energy: -energyCost }, reqs)
+    applyForFreelance(gigId, title, payment, { energy: energyCost }, reqs)
     setFeedback({ show: true, success: true, message: `Заявка на заказ "${title}" отправлена!` })
   }
 
@@ -147,7 +148,7 @@ export function WorkActivity(): React.JSX.Element | null {
         <div className="space-y-4">
           <SectionSeparator title="Текущие работы" />
           <CurrentJobsSection
-            jobs={player.jobs || []}
+            jobs={player?.jobs || []}
             onQuit={quitJob}
           />
         </div>

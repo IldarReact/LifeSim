@@ -57,7 +57,7 @@ export function ShopItemCard({
           alt={item.name}
           className="w-full h-full object-cover transform rotate-1 scale-110 group-hover:scale-115 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/60 to-blue-950/90" />
+        <div className="absolute inset-0 bg-black/40" />
         
         {/* Значок для жилья */}
         {isHousing && (
@@ -79,16 +79,23 @@ export function ShopItemCard({
         )}
       </div>
 
-      {/* Маттовое тёмно-синее покрытие с текстом */}
-      <div className="relative bg-gradient-to-br from-blue-950/95 via-blue-900/95 to-blue-950/95 backdrop-blur-sm p-5 space-y-4">
+      {/* Маттовое покрытие с текстом */}
+      <div className="relative bg-zinc-950/95 backdrop-blur-sm p-5 space-y-4">
         <div>
           <h3 className="text-xl font-bold text-white mb-1">
             {item.name}
           </h3>
           {isHousing && (
-            <span className="text-xs text-blue-300">
-              {getHousingTypeLabel(item, country)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-blue-300">
+                {getHousingTypeLabel(item, country)}
+              </span>
+              {'capacity' in item && item.capacity && (
+                <span className="text-xs text-white/60">
+                  • {(item.capacity as number)} мест
+                </span>
+              )}
+            </div>
           )}
         </div>
 

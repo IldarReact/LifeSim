@@ -62,9 +62,9 @@ export function NotificationsMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-[80vh] overflow-y-auto bg-black/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50"
+            className="absolute right-0 top-full mt-2 w-80 md:w-96 max-h-[80vh] overflow-y-auto bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl z-50"
           >
-            <div className="p-4 border-b border-white/10 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-10">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center sticky top-0 bg-black/95 backdrop-blur-xl z-10">
               <h3 className="font-bold text-white">Уведомления</h3>
               {unreadCount > 0 && (
                 <button
@@ -101,14 +101,14 @@ export function NotificationsMenu() {
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className={cn("font-semibold text-sm", notif.isRead ? "text-white/80" : "text-white")}>
+                            <h4 className={cn("font-semibold text-sm", notif.isRead ? "text-white/90" : "text-white")}>
                               {notif.title}
                             </h4>
                             {!notif.isRead && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                             )}
                           </div>
-                          <p className="text-xs text-white/60 leading-relaxed mb-2">
+                          <p className="text-xs text-white/70 leading-relaxed mb-2">
                             {notif.message}
                           </p>
                           <div className="flex items-center justify-between">

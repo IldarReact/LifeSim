@@ -1,7 +1,7 @@
 "use client"
 
 import { useGameStore } from "@/core/model/game-store"
-import { WorldSelect, CharacterSelect } from "@/features/setup/ui"
+import { WorldSelect, CharacterSelect } from "@/features/setup/components"
 import { GameEnd } from "@/features/end/ui"
 import { TopStatusBar } from "@/shared/ui/top-bar/top-status-bar"
 import { ActivityNavigation, ActivityContent } from "@/features/gameplay/ui"

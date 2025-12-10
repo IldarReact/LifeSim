@@ -12,7 +12,6 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
   // 1. Проверка минимального персонала
   const staffingCheck = checkMinimumStaffing(business);
   if (!staffingCheck.isValid) {
-    console.log(`[Business ${business.name}] Staffing requirements not met. Efficiency: 0`);
     return 0;
   }
 
@@ -50,8 +49,6 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
 
   // Итоговая эффективность
   const finalEfficiency = Math.min(100, Math.max(0, avgEfficiency + eventImpact));
-
-  console.log(`[Business ${business.name}] Efficiency Calc: Avg=${avgEfficiency.toFixed(1)}, ManagerBonus=${managerBonus.toFixed(1)}, PlayerBonus=${playerBonus.toFixed(1)}, EventImpact=${eventImpact}, Final=${finalEfficiency.toFixed(1)}`);
 
   return Math.round(finalEfficiency);
 }
@@ -94,8 +91,6 @@ export function calculateReputation(business: Business, currentEfficiency: numbe
 
   // Плавное изменение (сдвиг на 10% к цели каждый ход)
   const newReputation = business.reputation + (targetReputation - business.reputation) * 0.1;
-
-  console.log(`[Business ${business.name}] Reputation Calc: Target=${targetReputation.toFixed(1)}, PlayerBonus=${playerReputationBonus.toFixed(1)}, Current=${business.reputation.toFixed(1)}, New=${newReputation.toFixed(1)}`);
 
   return Math.min(100, Math.max(0, Math.round(newReputation)));
 }

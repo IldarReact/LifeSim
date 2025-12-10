@@ -18,17 +18,13 @@ export function clearAllSaves() {
   keys.forEach(key => {
     try {
       localStorage.removeItem(key)
-      console.log(`✅ Cleared: ${key}`)
     } catch (error) {
-      console.error(`❌ Failed to clear ${key}:`, error)
     }
   })
 
-  console.log('🎉 All saves cleared! Refresh the page to start fresh.')
 }
 
 // Экспортируем в window для удобства вызова из консоли браузера
 if (typeof window !== 'undefined') {
   (window as any).clearAllSaves = clearAllSaves
-  console.log('💡 To clear all saves, run: clearAllSaves()')
 }

@@ -44,13 +44,12 @@ export function migrateState(state: any, fromVersion: number, toVersion: number)
   for (let v = fromVersion + 1; v <= toVersion; v++) {
     const migrationFn = migrations[v]
     if (migrationFn) {
-      console.log(`📦 Migrating save from v${v - 1} to v${v}`)
       migratedState = migrationFn(migratedState)
     } else {
       console.warn(`⚠️ No migration defined for version ${v}, skipping`)
     }
   }
 
-  console.log(`✅ Migration complete: v${fromVersion} → v${toVersion}`)
+  (`✅ Migration complete: v${fromVersion} → v${toVersion}`)
   return migratedState
 }

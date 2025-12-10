@@ -39,11 +39,3 @@ export function getCharacterById(
   const characters = getCharactersForCountry(countryId)
   return characters.find(char => char.id === id)
 }
-
-/**
- * Get all available archetypes for a country
- */
-export function getAvailableArchetypes(countryId: string = 'us'): string[] {
-  const characters = getCharactersForCountry(countryId)
-  return characters.map(char => char.archetype)
-}

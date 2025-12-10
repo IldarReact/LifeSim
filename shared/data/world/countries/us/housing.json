@@ -6,6 +6,7 @@
     "category": "housing",
     "isRecurring": true,
     "costPerTurn": 1200,
+    "capacity": 2,
     "effects": {
       "happiness": 5,
       "health": 3,
@@ -19,6 +20,7 @@
     "category": "housing",
     "isRecurring": true,
     "costPerTurn": 3600,
+    "capacity": 4,
     "effects": {
       "happiness": 12,
       "health": 6,
@@ -33,6 +35,7 @@
     "price": 250000,
     "assetType": "real_estate",
     "maintenanceCost": 800,
+    "capacity": 4,
     "effects": {
       "happiness": 20,
       "health": 8,
@@ -47,6 +50,7 @@
     "price": 450000,
     "assetType": "real_estate",
     "maintenanceCost": 2400,
+    "capacity": 8,
     "effects": {
       "happiness": 30,
       "health": 12,

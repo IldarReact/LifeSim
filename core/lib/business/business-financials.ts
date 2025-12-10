@@ -108,7 +108,6 @@ export function calculateBusinessFinancials(
     const pricePerService = 1000 * price;
     salesIncome = Math.floor(serviceDemand * pricePerService);
 
-    console.log(`[Business ${business.name}] SERVICE: Demand=${serviceDemand.toFixed(1)}, Price=${price}, Market=${marketMod.toFixed(2)}, Income=$${salesIncome}`);
 
   } else if (inventory) {
     // === ТОВАРНЫЙ БИЗНЕС ===
@@ -148,7 +147,6 @@ export function calculateBusinessFinancials(
 
     purchaseCost = purchaseAmount * inventory.purchaseCost;
 
-    console.log(`[Business ${business.name}] PRODUCT: BaseDemand=${baseProductDemand.toFixed(1)}, Price=${price}, Market=${marketMod.toFixed(2)}, FinalDemand=${finalDemand.toFixed(1)}, Sales=${salesVolume}, Income=$${salesIncome}`);
   }
 
   const totalIncome = salesIncome;
@@ -171,7 +169,6 @@ export function calculateBusinessFinancials(
       const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0);
       const taxReduction = Math.min(0.20, 0.05 + (totalStars * 0.02)); // 5-20%
       taxAmount = Math.round(taxAmount * (1 - taxReduction));
-      console.log(`[Business ${business.name}] Accountant reduced tax by ${(taxReduction * 100).toFixed(1)}%`);
     }
 
     totalExpenses += taxAmount;
@@ -187,12 +184,6 @@ export function calculateBusinessFinancials(
     purchaseCost: 50,
     autoPurchaseAmount: 0
   };
-
-  if (playerSkills && playerSkills.length > 0) {
-    console.log(`[Business ${business.name}] Player impact on financials: ExpenseReduction=${(playerExpenseReduction * 100).toFixed(1)}%`);
-  }
-
-  console.log(`[Business ${business.name}] Global Market: ${globalMarketValue.toFixed(2)}, Income=$${totalIncome}, Expenses=$${totalExpenses} (Tax: ${taxAmount}), Profit=$${totalIncome - totalExpenses}`);
 
   return {
     income: Math.round(totalIncome),

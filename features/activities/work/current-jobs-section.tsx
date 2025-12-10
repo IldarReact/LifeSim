@@ -36,7 +36,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
   if (jobs.length === 0) {
     return (
       <div className="text-center py-8 bg-white/5 rounded-xl border border-white/10">
-        <p className="text-white/50">Вы пока нигде не работаете</p>
+        <p className="text-white/50">Вы пока что нигде не работаете</p>
       </div>
     )
   }

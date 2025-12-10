@@ -79,17 +79,21 @@ export const createJobSlice: StateCreator<
     if (!notification || !state.player) return
 
     const appData = notification.data
+    
+    console.log('acceptJobOffer - appData:', appData)
 
     const newJob: Job = {
       id: `job_${Date.now()}`,
       title: appData.jobTitle,
       company: appData.company,
       salary: appData.salary,
-      cost: appData.cost,
+      cost: appData.cost || {},
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&h=600&fit=crop",
       description: "Новая работа",
       requirements: appData.requirements
     }
+    
+    console.log('acceptJobOffer - newJob.cost:', newJob.cost)
 
     set(state => ({
       player: state.player ? {

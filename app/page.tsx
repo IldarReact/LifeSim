@@ -2,8 +2,8 @@
 
 import { TopStatusBar } from "@/shared/ui/top-bar/top-status-bar"
 import { GameEnd } from "@/features/end/ui"
-import { WorldSelect } from "@/features/setup/ui"
-import { CharacterSelect } from "@/features/setup/ui"
+import { WorldSelect } from "@/features/setup/components"
+import { CharacterSelect } from "@/features/setup/components"
 import { ActivityNavigation, ActivityContent } from "@/features/gameplay/ui"
 import { EventModal } from "@/features/events/event-modal"
 import { MultiplayerHud } from "@/features/multiplayer/MultiplayerHub"

@@ -65,8 +65,6 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
 
   roomInstance = room;
 
-  console.log(`[Multiplayer] Connected to Liveblocks room: ${id}`);
-
   return id;
 }
 

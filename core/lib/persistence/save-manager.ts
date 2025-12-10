@@ -33,7 +33,6 @@ export const saveManager = {
     try {
       // Skip saving if state is empty or incomplete (during setup/menu)
       if (!state || Object.keys(state).length === 0) {
-        console.log('⏭️ Skipping save (empty state)')
         return
       }
 
@@ -42,13 +41,11 @@ export const saveManager = {
         state.gameStatus === 'setup' ||
         state.gameStatus === 'select_country' ||
         state.gameStatus === 'select_character') {
-        console.log(`⏭️ Skipping save (game status: ${state.gameStatus})`)
         return
       }
 
       // Skip if player not initialized yet
       if (!state.player) {
-        console.log('⏭️ Skipping save (player not initialized)')
         return
       }
 
@@ -86,7 +83,6 @@ export const saveManager = {
 
       // 5. Write
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveData))
-      console.log('✅ Game saved successfully')
     } catch (error) {
       console.error('❌ Failed to save game:', error)
       throw error
@@ -156,12 +152,10 @@ export const saveManager = {
           if (typeof window !== 'undefined') {
             (window as any).__saveClearedFlag = true
           }
-          console.log('✅ Save cleared. Please refresh the page to start fresh.')
           return null
         }
       }
 
-      console.log('✅ Game loaded successfully')
       return validation.data
     } catch (error) {
       console.error('❌ Failed to load game:', error)
@@ -180,6 +174,5 @@ export const saveManager = {
       return
     }
     localStorage.removeItem(SAVE_KEY)
-    console.log('🗑️ Save cleared')
   }
 }

@@ -6,7 +6,7 @@ import { createEmptyQuarterlyReport } from "@/core/lib/calculations/financial-he
 import { createDebt } from "@/core/lib/calculations/debt-helpers"
 import type { Stats } from "@/core/types/stats.types"
 import { getCharacterByArchetype } from "@/core/lib/data-loaders/characters-loader"
-import { getStartingJob } from "@/core/lib/data-loaders/jobs-loader"
+import { getStartingJob, getJobById } from "@/core/lib/data-loaders/jobs-loader"
 
 // Deprecated: use getCountry(id) instead
 export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
@@ -24,12 +24,12 @@ export function createInitialPlayer(
   }
 
   const baseStats: Stats = {
-    money: characterData.startingMoney ?? 0,
-    happiness: characterData.startingStats.happiness ?? 50,
-    energy: characterData.startingStats.energy ?? 100,
-    health: characterData.startingStats.health ?? 100,
-    sanity: characterData.startingStats.sanity ?? 80,
-    intelligence: characterData.startingStats.intelligence ?? 50,
+    money: characterData.startingMoney,
+    happiness: characterData.startingStats.happiness,
+    energy: characterData.startingStats.energy,
+    health: characterData.startingStats.health,
+    sanity: characterData.startingStats.sanity,
+    intelligence: characterData.startingStats.intelligence,
   }
 
   const statEffect = {
@@ -41,8 +41,10 @@ export function createInitialPlayer(
     intelligence: baseStats.intelligence,
   }
 
-  // Получаем реальную стартовую вакансию из jobs.json
-  const startingJob = getStartingJob(countryId, characterData.startingSkills)
+  // Получаем стартовую вакансию по ID из characters.json
+  const startingJob = characterData.startingJobId
+    ? getJobById(characterData.startingJobId, countryId)
+    : getStartingJob(countryId, characterData.startingSkills)
 
   const initialJob: Job = startingJob || {
     // Fallback если вакансий нет (не должно случиться)

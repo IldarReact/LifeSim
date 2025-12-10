@@ -101,6 +101,35 @@ export function calculateStatModifiers(player: PlayerState): StatModifiers {
   // Модификаторы от бизнеса (пока пропускаем, так как нет явных полей в типе Business)
   // Если нужно, можно добавить логику на основе playerRoles
 
+  // Штраф за переполненность жилья
+  if (player.housingId) {
+    const { getShopItem } = require('@/core/lib/shop-helpers')
+    const housing = getShopItem(player.housingId, player.countryId)
+    
+    if (housing && 'capacity' in housing && housing.capacity) {
+      const familySize = 1 + (player.personal.familyMembers?.length || 0)
+      const capacity = housing.capacity
+      
+      if (familySize > capacity) {
+        const overcrowdingPercent = ((familySize - capacity) / capacity) * 100
+        const penalty = Math.ceil(overcrowdingPercent / 10)
+        
+        modifiers.happiness.push({
+          source: 'Переполненность жилья',
+          happiness: -penalty
+        })
+        modifiers.sanity.push({
+          source: 'Переполненность жилья',
+          sanity: -penalty
+        })
+        modifiers.intelligence.push({
+          source: 'Переполненность жилья',
+          intelligence: -Math.floor(penalty / 2)
+        })
+      }
+    }
+  }
+
   return modifiers
 }
 

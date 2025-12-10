@@ -212,7 +212,15 @@ export function processTurn(get: GetState, set: SetState): void {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { processLifestyle } =
       require('./turns/lifestyle-processor') as typeof import('./turns/lifestyle-processor')
-    const lifestyleResult = processLifestyle(prev.player, prev.countries)
+    // Pass familyMembers from personal processor (includes newborns)
+    const playerWithUpdatedFamily = {
+      ...prev.player,
+      personal: {
+        ...prev.player.personal,
+        familyMembers: familyMembers
+      }
+    }
+    const lifestyleResult = processLifestyle(playerWithUpdatedFamily, prev.countries)
     updatedFamilyMembers = lifestyleResult.updatedFamilyMembers
     lifestyleExpensesBreakdown = lifestyleResult.lifestyleExpensesBreakdown
     lifestyleExpenses = lifestyleResult.lifestyleExpenses
@@ -331,6 +339,7 @@ export function processTurn(get: GetState, set: SetState): void {
   const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
   
   const currentStats = {
+    money: prev.player.stats.money,
     health: clamp(prev.player.personal.stats.health + finalHealthMod, 0, 100),
     happiness: clamp(prev.player.personal.stats.happiness + finalHappinessMod, 0, 100),
     sanity: clamp(prev.player.personal.stats.sanity + finalSanityMod, 0, 100),

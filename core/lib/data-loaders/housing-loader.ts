@@ -103,7 +103,6 @@ function loadHousing(data: unknown[], source: string): HousingOption[] {
     throw new Error(`Housing data validation failed for ${source}. See console for details.`);
   }
 
-  console.log(`Loaded ${valid.length} valid housing options from ${source}`);
   return valid;
 }
 

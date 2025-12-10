@@ -111,6 +111,62 @@ export function FamilyActivity(): React.JSX.Element | null {
         )
       }
 
+      {/* Housing Capacity Warning */}
+      {player.housingId && (() => {
+        const { useHousingCapacity } = require('./family/useHousingCapacity')
+        const housing = useHousingCapacity()
+        
+        if (housing.status === 'critical') {
+          return (
+            <div className="bg-red-500/10 border-2 border-red-500/30 rounded-2xl p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-2xl">
+                ⚠️
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-white">Жильё критически переполнено!</h4>
+                <p className="text-white/60 text-sm mb-2">
+                  Занято {housing.familySize}/{housing.capacity} мест (+{Math.round(housing.overcrowdingPercent)}% переполнения)
+                </p>
+                <div className="flex gap-3 text-xs">
+                  <span className="text-red-400">Счастье: -{housing.penalty}</span>
+                  <span className="text-red-400">Рассудок: -{housing.penalty}</span>
+                  <span className="text-red-400">Интеллект: -{Math.floor(housing.penalty / 2)}</span>
+                </div>
+              </div>
+            </div>
+          )
+        }
+        
+        if (housing.status === 'warning') {
+          return (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">
+                ⚠️
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-white">Жильё переполнено</h4>
+                <p className="text-white/60 text-sm mb-2">
+                  Занято {housing.familySize}/{housing.capacity} мест (+{Math.round(housing.overcrowdingPercent)}% переполнения)
+                </p>
+                <div className="flex gap-3 text-xs">
+                  <span className="text-amber-400">Счастье: -{housing.penalty}</span>
+                  <span className="text-amber-400">Рассудок: -{housing.penalty}</span>
+                  <span className="text-amber-400">Интеллект: -{Math.floor(housing.penalty / 2)}</span>
+                </div>
+              </div>
+            </div>
+          )
+        }
+        
+        return (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <p className="text-white/60 text-sm">
+              Занято {housing.familySize}/{housing.capacity} мест в жилье
+            </p>
+          </div>
+        )
+      })()}
+
       {/* Family Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Player Card */}

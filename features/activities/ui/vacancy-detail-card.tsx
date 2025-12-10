@@ -21,7 +21,8 @@ interface VacancyDetailCardProps {
   requirements: Array<{ skill: string; level: number }>
   image: string
   onApply?: () => void
-  jobCost?: Job['cost'] // Добавляем полный cost
+  jobCost?: Job['cost']
+  isApplied?: boolean
 }
 
 export function VacancyDetailCard({
@@ -32,7 +33,8 @@ export function VacancyDetailCard({
   requirements,
   image,
   onApply,
-  jobCost
+  jobCost,
+  isApplied = false
 }: VacancyDetailCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
@@ -42,6 +44,7 @@ export function VacancyDetailCard({
       energy: <Zap className="w-3 h-3" />,
       sanity: <Brain className="w-3 h-3" />,
       happiness: <Smile className="w-3 h-3" />,
+      intelligence: <Brain className="w-3 h-3" />,
     }
     return icons[key] || null
   }
@@ -52,18 +55,27 @@ export function VacancyDetailCard({
       energy: 'text-amber-400',
       sanity: 'text-purple-400',
       happiness: 'text-pink-400',
+      intelligence: 'text-blue-400',
     }
     return colors[key] || 'text-gray-400'
   }
 
   return (
     <>
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-colors">
+      <div className={`bg-white/5 border rounded-xl overflow-hidden transition-colors ${
+        isApplied 
+          ? 'border-blue-500/50 bg-blue-500/10 opacity-60' 
+          : 'border-white/10 hover:border-white/20'
+      }`}>
         <div className="relative h-32">
           <img src={image} alt={title} className="w-full h-full object-cover" />
           <div className="absolute top-2 left-2">
-            <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white border-white/10">
-              Вакансия
+            <Badge variant="secondary" className={`backdrop-blur-md border-white/10 ${
+              isApplied 
+                ? 'bg-blue-500/80 text-white' 
+                : 'bg-black/60 text-white'
+            }`}>
+              {isApplied ? '✓ Заявка отправлена' : 'Вакансия'}
             </Badge>
           </div>
         </div>
@@ -127,9 +139,14 @@ export function VacancyDetailCard({
             </Button>
             <Button
               onClick={onApply}
-              className="flex-1 text-xs h-8 bg-white text-black hover:bg-white/90 font-bold"
+              disabled={isApplied}
+              className={`flex-1 text-xs h-8 font-bold ${
+                isApplied
+                  ? 'bg-white/20 text-white/50 cursor-not-allowed'
+                  : 'bg-white text-black hover:bg-white/90'
+              }`}
             >
-              Откликнуться
+              {isApplied ? '✓ Отправлено' : 'Откликнуться'}
             </Button>
           </div>
         </div>

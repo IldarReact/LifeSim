@@ -67,18 +67,10 @@ export function CandidateCard({ candidate, isSelected, canAfford, onClick }: Can
       <div className="space-y-2 mb-4">
         <h4 className="text-xs font-semibold text-white/70 uppercase tracking-wider">Навыки</h4>
         <div className="space-y-1.5">
-          {[
-            { label: 'Эффективность', value: candidate.skills.efficiency },
-            { label: 'Продажи', value: candidate.skills.salesAbility },
-            { label: 'Технические', value: candidate.skills.technical },
-            { label: 'Управление', value: candidate.skills.management },
-            { label: 'Креативность', value: candidate.skills.creativity }
-          ].map(({ label, value }) => (
-            <div key={label} className="flex justify-between items-center">
-              <span className="text-sm text-white/90">{label}</span>
-              <div className="flex gap-0.5">{renderSkillStars(value)}</div>
-            </div>
-          ))}
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-white/90">Эффективность</span>
+            <div className="flex gap-0.5">{renderSkillStars(candidate.skills.efficiency)}</div>
+          </div>
         </div>
       </div>
 

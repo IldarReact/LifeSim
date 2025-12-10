@@ -15,8 +15,8 @@ import {
 } from "@/core/lib/multiplayer";
 import { useGameStore } from "@/core/model/game-store";
 import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from "lucide-react";
-import { WorldSelectUI } from "@/features/setup/ui/world-select";
-import { CharacterSelectUI } from "@/features/setup/ui/character-select";
+import { WorldSelectUI } from "@/features/setup/components/world-select";
+import { CharacterSelectUI } from "@/features/setup/components/character-select";
 import type { CountryEconomy } from "@/core/types";
 import { Player } from "./MultiplayerHub";
 import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader";

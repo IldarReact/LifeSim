@@ -147,11 +147,6 @@ describe('Inflation Engine', () => {
       const basePrice = 1200
       const finalPrice = Math.round(basePrice * multiplier)
 
-      console.log('Food price progression with 0.5x multiplier:')
-      console.log(`Base: ${basePrice}`)
-      console.log(`Multiplier: ${multiplier}`)
-      console.log(`Final: ${finalPrice}`)
-
       expect(finalPrice).toBeGreaterThan(1200)
       expect(finalPrice).toBeGreaterThanOrEqual(1310)
     })
@@ -299,27 +294,16 @@ describe('Inflation Engine', () => {
       let currentPrice = basePrice
       const priceProgression = [currentPrice]
 
-      console.log('\n10-Year Inflation Scenario:')
-      console.log(`Base price: ${basePrice}`)
-      console.log(`Inflation rates: ${tenYearInflation.join('%→')}%`)
-      console.log('\nYear-by-year progression:')
-      console.log(`Year 0 (Base): $${currentPrice}`)
-
       // Simulate year by year
       for (let year = 0; year < tenYearInflation.length; year++) {
         const yearInflation = tenYearInflation[year]
         currentPrice = Math.round(currentPrice * (1 + yearInflation / 100))
         priceProgression.push(currentPrice)
-        console.log(`Year ${year + 1} (${yearInflation}%): $${currentPrice}`)
       }
 
       // Verify using getCumulativeInflationMultiplier
       const multiplier = getCumulativeInflationMultiplier(tenYearInflation, 'default')
       const finalPriceViaMultiplier = Math.round(basePrice * multiplier)
-
-      console.log(`\nMultiplier approach: $${finalPriceViaMultiplier}`)
-      console.log(`Step-by-step approach: $${currentPrice}`)
-      console.log(`Both equal: ${finalPriceViaMultiplier === currentPrice}`)
 
       // CRITICAL: Check that each step is >= previous
       for (let i = 1; i < priceProgression.length; i++) {
@@ -332,10 +316,6 @@ describe('Inflation Engine', () => {
       // CRITICAL: Final price must be significantly > base
       expect(finalPriceViaMultiplier).toBeGreaterThan(basePrice)
       expect(finalPriceViaMultiplier).toBeGreaterThan(1200) // Should be around 1245+
-
-      console.log(
-        `\n✅ Over 10 years: $${basePrice} → $${finalPriceViaMultiplier} (only growth, no falls)`,
-      )
     })
 
     it('should handle 10 years of housing inflation (1.5x multiplier)', () => {
@@ -345,11 +325,6 @@ describe('Inflation Engine', () => {
       const basePrice = 100000
       const multiplier = getCumulativeInflationMultiplier(tenYearInflation, 'housing')
       const finalPrice = Math.round(basePrice * multiplier)
-
-      console.log('\n10-Year Housing Inflation:')
-      console.log(`Base: $${basePrice}`)
-      console.log(`Category: housing (1.5x multiplier)`)
-      console.log(`Final: $${finalPrice}`)
 
       // Housing should be significantly more expensive
       expect(finalPrice).toBeGreaterThan(basePrice)
@@ -363,11 +338,6 @@ describe('Inflation Engine', () => {
       const multiplier = getCumulativeInflationMultiplier(tenYearInflation, 'food')
       const finalPrice = Math.round(basePrice * multiplier)
 
-      console.log('\n10-Year Food Inflation:')
-      console.log(`Base: $${basePrice}`)
-      console.log(`Category: food (0.5x multiplier)`)
-      console.log(`Final: $${finalPrice}`)
-
       // Food prices rise slower but still increase
       expect(finalPrice).toBeGreaterThan(basePrice)
       expect(finalPrice).toBeGreaterThan(1050) // Should be ~1120
@@ -380,11 +350,6 @@ describe('Inflation Engine', () => {
       const basePrice = 10000
       const multiplier = getCumulativeInflationMultiplier(twentyYearInflation, 'default')
       const finalPrice = Math.round(basePrice * multiplier)
-
-      console.log('\n20-Year Extreme Test (constant 2.5%):')
-      console.log(`Base: $${basePrice}`)
-      console.log(`Final: $${finalPrice}`)
-      console.log(`Total growth: ${(((finalPrice - basePrice) / basePrice) * 100).toFixed(1)}%`)
 
       // After 20 years: (1.025)^20 ≈ 1.6386
       expect(finalPrice).toBeGreaterThan(basePrice)
@@ -408,8 +373,6 @@ describe('Inflation Engine', () => {
         currentPrice = Math.round(currentPrice * (1 + (rate * 0.5) / 100))
         priceProgression.push(currentPrice)
       }
-
-      console.log('Food price progression:', priceProgression)
 
       // Check: each step should be >= previous
       for (let i = 1; i < priceProgression.length; i++) {

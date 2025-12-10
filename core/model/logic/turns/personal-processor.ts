@@ -67,6 +67,8 @@ export function processPersonal(
           income: 0,
           expenses: 500,
           passiveEffects: { happiness: 10, sanity: -2, health: 0 },
+          foodPreference: undefined,
+          transportPreference: undefined,
         })
       }
       notifications.push({

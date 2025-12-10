@@ -11,11 +11,9 @@ type GameStore = CoreGameStore &
   Pick<
     GameSlice,
     'inflationNotification' | 'setSetupCountry' | 'initializeGame' | 'resetGame'
-    // Add any other required GameSlice properties here
   > & {
-    // Add any test-specific properties
     stats: any
-    businesses: any[] // Add this line
+    businesses: any[]
 
     broadcastEvent: (event: any) => void
     pushNotification: (notification: any) => void

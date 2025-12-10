@@ -12,10 +12,7 @@ import { broadcastEvent } from '@/core/lib/multiplayer'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 import { GameEvent } from '@/core/types/events.types'
 
-export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
-  set,
-  get,
-) => ({
+export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (set, get) => ({
   offers: [],
 
   onPartnershipAccepted: (event: GameEvent) => {
@@ -76,17 +73,16 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
   },
 
   onPartnershipUpdated: (event: GameEvent<{ businessId: string; partnerBusinessId: string }>) => {
-    const { payload } = event
     const state = get()
-
     if (!state.player) return
 
-    // Update the business with partner's business ID
+    const { businessId, partnerBusinessId } = event.payload
+
     set((state) => ({
       player: {
         ...state.player!,
-        businesses: state.player!.businesses.map((b) =>
-          b.id === payload.businessId ? { ...b, partnerBusinessId: payload.partnerBusinessId } : b,
+        businesses: state.player!.businesses.map((business) =>
+          business.id === businessId ? { ...business, partnerBusinessId } : business,
         ),
       },
     }))
@@ -137,12 +133,12 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 
     if (isPartnershipOffer(offer)) {
       // Check if player has enough money
-      if (state.player!.stats.money < offer.details.yourInvestment) {
+      if (state.player!.stats.money < offer.details.partnerInvestment) {
         console.warn('Not enough money to accept partnership')
         return
       }
 
-      // Create business for the accepting player
+      // 1. Create business for the accepting player
       const acceptingBusiness = createPartnerBusiness(
         {
           details: {
@@ -150,30 +146,33 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
             businessType: offer.details.businessType as BusinessType,
             businessDescription: offer.details.businessDescription,
             totalCost: offer.details.totalCost,
-            yourInvestment: offer.details.yourInvestment,
-            yourShare: offer.details.yourShare,
+            yourInvestment: offer.details.partnerInvestment,
+            yourShare: offer.details.partnerShare,
           },
           fromPlayerId: offer.fromPlayerId,
           fromPlayerName: offer.fromPlayerName,
         },
         state.turn,
         state.player!.id,
+        false, // isInitiator is false for accepting player
       )
 
-      // Deduct money from accepting player
-      state.applyStatChanges({ money: -offer.details.yourInvestment })
+      // 2. Deduct money from accepting player
+      state.applyStatChanges({ money: -offer.details.partnerInvestment })
 
-      // Add business to accepting player
+      // 3. Add business to accepting player
       set((state) => ({
         player: {
           ...state.player!,
+          stats: {
+            ...state.player!.stats,
+            money: state.player!.stats.money - offer.details.partnerInvestment,
+          },
           businesses: [...state.player!.businesses, acceptingBusiness],
         },
       }))
 
-      console.log('[GameOffers] Принято партнёрство:', offer.details)
-
-      // Notify the initiator
+      // 4. Notify the initiator
       broadcastEvent({
         type: 'PARTNERSHIP_ACCEPTED',
         payload: {
@@ -183,21 +182,21 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           businessName: acceptingBusiness.name,
           businessType: acceptingBusiness.type,
           businessDescription: acceptingBusiness.description,
-          totalCost: acceptingBusiness.initialCost,
-          partnerShare: 100 - offer.details.yourShare,
-          partnerInvestment: offer.details.yourInvestment,
+          totalCost: offer.details.totalCost,
+          partnerShare: offer.details.partnerShare,
+          partnerInvestment: offer.details.partnerInvestment,
           yourShare: offer.details.yourShare,
           yourInvestment: offer.details.yourInvestment,
         },
         toPlayerId: offer.fromPlayerId,
       })
 
-      // Update offer status
+      // 5. Update offer status
       set((state) => ({
         offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'accepted' } : o)),
       }))
 
-      // Notify the accepting player
+      // 6. Notify the accepting player
       state.pushNotification?.({
         type: 'success',
         title: 'Партнёрство создано',

@@ -43,7 +43,7 @@ export function StartupsSection() {
           <Button
             onClick={handleGenerate}
             disabled={(player.stats?.energy ?? 0) < 20}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg group"
+            className="w-full bg-gradient-to-red from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg group"
           >
             <Brain className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
             Генерировать идею

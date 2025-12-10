@@ -1,10 +1,20 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, GameOffersSlice } from './types'
 import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
-import { generateOfferId, isJobOffer, isPartnershipOffer, isShareSaleOffer } from '@/core/types/game-offers.types'
+import type { Business, BusinessType } from '@/core/types/business.types'
+import {
+  generateOfferId,
+  isJobOffer,
+  isPartnershipOffer,
+  isShareSaleOffer,
+} from '@/core/types/game-offers.types'
 import { broadcastEvent } from '@/core/lib/multiplayer'
+import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 
-export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (set, get) => ({
+export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
+  set,
+  get,
+) => ({
   offers: [],
 
   sendOffer: (type, toPlayerId, toPlayerName, details, message) => {
@@ -22,17 +32,17 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       message,
       status: 'pending',
       createdTurn: state.turn, // Fixed: currentTurn -> turn
-      expiresInTurns: 4 // Оффер действует 1 год (4 квартала)
+      expiresInTurns: 1, // Оффер действует 1 год (4 квартала)
     }
 
     set((state) => ({
-      offers: [...state.offers, newOffer]
+      offers: [...state.offers, newOffer],
     }))
 
     // Отправляем событие всем игрокам
     broadcastEvent({
       type: 'OFFER_SENT',
-      payload: { offer: newOffer }
+      payload: { offer: newOffer },
     })
 
     console.log('[GameOffers] Offer sent:', newOffer)
@@ -40,7 +50,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 
   acceptOffer: (offerId) => {
     const state = get()
-    const offerIndex = state.offers.findIndex(o => o.id === offerId)
+    const offerIndex = state.offers.findIndex((o) => o.id === offerId)
 
     if (offerIndex === -1) return
 
@@ -50,32 +60,75 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     if (offer.status !== 'pending') return
 
     // Логика принятия в зависимости от типа
-    // Логика принятия в зависимости от типа
     if (isJobOffer(offer)) {
       // 1. Устроиться на работу
       state.acceptExternalJob(
         offer.details.role,
         offer.details.businessName,
         offer.details.salary,
-        offer.details.businessId
+        offer.details.businessId,
       )
-    }
-    else if (isPartnershipOffer(offer)) {
+    } else if (isPartnershipOffer(offer)) {
       // 2. Открыть бизнес с партнером
       if (state.player!.stats.money < offer.details.yourInvestment) {
-        console.warn("Not enough money to accept partnership")
+        console.warn('Not enough money to accept partnership')
         return
       }
+
+      // Создаем бизнес для текущего игрока (партнера)
+      const business = createPartnerBusiness(
+        {
+          details: {
+            businessName: offer.details.businessName,
+            businessType: offer.details.businessType as BusinessType,
+            businessDescription: offer.details.businessDescription,
+            totalCost: offer.details.totalCost,
+            yourInvestment: offer.details.yourInvestment,
+            yourShare: offer.details.yourShare,
+          },
+          fromPlayerId: offer.fromPlayerId,
+          fromPlayerName: offer.fromPlayerName,
+        },
+        state.turn,
+        state.player!.id,
+      )
 
       // Списываем инвестиции
       state.applyStatChanges({ money: -offer.details.yourInvestment })
 
-      console.log('[GameOffers] Accepting partnership:', offer.details)
-    }
-    else if (isShareSaleOffer(offer)) {
+      // Добавляем бизнес игроку
+      set((state) => ({
+        player: {
+          ...state.player!,
+          businesses: [...state.player!.businesses, business],
+        },
+      }))
+
+      console.log('[GameOffers] Принято партнёрство:', offer.details)
+
+      // Уведомляем отправителя о принятии оффера
+      broadcastEvent({
+        type: 'PARTNERSHIP_ACCEPTED',
+        payload: {
+          businessId: business.id,
+          partnerId: state.player!.id,
+          partnerName: state.player!.name,
+          partnerBusinessId: business.partnerBusinessId!,
+          businessName: business.name,
+          businessType: business.type,
+          businessDescription: business.description,
+          totalCost: business.initialCost,
+          partnerShare: 100 - offer.details.yourShare,
+          partnerInvestment: offer.details.partnerInvestment,
+          yourShare: offer.details.yourShare,
+          yourInvestment: offer.details.yourInvestment,
+        },
+        toPlayerId: offer.fromPlayerId,
+      })
+    } else if (isShareSaleOffer(offer)) {
       // 3. Купить долю
       if (state.player!.stats.money < offer.details.price) {
-        console.warn("Not enough money to buy share")
+        console.warn('Not enough money to buy share')
         return
       }
 
@@ -95,54 +148,50 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     // Уведомляем отправителя
     broadcastEvent({
       type: 'OFFER_ACCEPTED',
-      payload: { offerId, acceptedBy: state.player!.id }
+      payload: { offerId, acceptedBy: state.player!.id },
     })
   },
 
   rejectOffer: (offerId) => {
     const state = get()
     set((state) => ({
-      offers: state.offers.map(o =>
-        o.id === offerId ? { ...o, status: 'rejected' } : o
-      )
+      offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'rejected' } : o)),
     }))
 
     // Уведомляем отправителя
     broadcastEvent({
       type: 'OFFER_REJECTED',
-      payload: { offerId, rejectedBy: state.player!.id }
+      payload: { offerId, rejectedBy: state.player!.id },
     })
   },
 
   cancelOffer: (offerId) => {
     set((state) => ({
-      offers: state.offers.map(o =>
-        o.id === offerId ? { ...o, status: 'cancelled' } : o
-      )
+      offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'cancelled' } : o)),
     }))
   },
 
   cleanupExpiredOffers: () => {
     const currentTurn = get().turn
     set((state) => ({
-      offers: state.offers.map(o => {
-        if (o.status === 'pending' && (currentTurn - o.createdTurn >= o.expiresInTurns)) {
+      offers: state.offers.map((o) => {
+        if (o.status === 'pending' && currentTurn - o.createdTurn >= o.expiresInTurns) {
           return { ...o, status: 'expired' }
         }
         return o
-      })
+      }),
     }))
   },
 
   getIncomingOffers: () => {
     const state = get()
     if (!state.player) return []
-    return state.offers.filter(o => o.toPlayerId === state.player!.id)
+    return state.offers.filter((o) => o.toPlayerId === state.player!.id)
   },
 
   getOutgoingOffers: () => {
     const state = get()
     if (!state.player) return []
-    return state.offers.filter(o => o.fromPlayerId === state.player!.id)
-  }
+    return state.offers.filter((o) => o.fromPlayerId === state.player!.id)
+  },
 })

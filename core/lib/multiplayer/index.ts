@@ -17,22 +17,23 @@ let roomInstance: any = null;
 
 function getClient() {
   if (!client) {
-    const publicKey = process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY;
-    if (!publicKey) {
-      // Do not throw here — allow app to run with multiplayer disabled
-      console.warn(
-        'NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY is not set. Multiplayer features are disabled.'
-      );
-      return null;
-    }
     client = createClient({
-      publicApiKey: publicKey,
+      publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
     });
   }
   return client;
 }
 
-export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): string {
+async function getAuthToken(room: string) {
+  const res = await fetch('/api/liveblocks-auth', {
+    method: 'POST',
+    body: JSON.stringify({ room }),
+  });
+  const data = await res.json();
+  return data.token;
+}
+
+export async function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): Promise<string> {
   const id = inputRoomId || Math.random().toString(36).slice(2, 10);
 
   if (typeof window !== 'undefined') {
@@ -47,23 +48,26 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
   const clientInstance = getClient()
   if (!clientInstance) {
     console.info('[Multiplayer] Liveblocks client not available — multiplayer disabled')
-    // Still return the id so UI can show a room param if desired, but do not attempt to connect
     return id
   }
 
-  const { room } = clientInstance.enterRoom<Presence, any, any, any>(id, {
-    initialPresence: {
-      name: randomName,
-      isReady: false,
-      turnReady: false,
-      isHost: isCreator,
-      gameStarted: false,
-      selectedArchetype: null,
-      color: randomColor,
-    },
-  });
-
-  roomInstance = room;
+  try {
+    const token = await getAuthToken(id);
+    const { room } = clientInstance.enterRoom<Presence, any, any, any>(id, {
+      initialPresence: {
+        name: randomName,
+        isReady: false,
+        turnReady: false,
+        isHost: isCreator,
+        gameStarted: false,
+        selectedArchetype: null,
+        color: randomColor,
+      },
+    });
+    roomInstance = room;
+  } catch (error) {
+    console.error('Failed to init multiplayer:', error);
+  }
 
   return id;
 }

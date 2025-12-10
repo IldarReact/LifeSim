@@ -1,6 +1,7 @@
 // core/lib/multiplayer/index.ts
 import { Player } from "@/features/multiplayer/MultiplayerHub";
-import { createClient } from "@liveblocks/client";
+import * as Y from "yjs";
+import { WebrtcProvider } from "y-webrtc";
 
 type Presence = {
   name: string;
@@ -10,9 +11,13 @@ type Presence = {
   gameStarted: boolean;
   selectedArchetype: string | null;
   color: string;
+  clientId: string;
 };
 
-let roomInstance: any = null;
+let doc: Y.Doc | null = null;
+let provider: WebrtcProvider | null = null;
+let awareness: any = null;
+let localClientId: string = "";
 
 export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false): string {
   const id = inputRoomId || Math.random().toString(36).slice(2, 10);
@@ -25,180 +30,152 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
 
   const randomColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
   const randomName = `Игрок ${Date.now().toString().slice(-4)}`;
+  localClientId = Math.random().toString(36).slice(2, 11);
 
-  fetch('/api/liveblocks-auth', {
-    method: 'POST',
-    body: JSON.stringify({ room: id }),
-  })
-    .then(res => res.json())
-    .then(data => {
-      const client = createClient({
-        authEndpoint: async () => ({ token: data.token }),
-      });
+  doc = new Y.Doc();
+  provider = new WebrtcProvider(id, doc, {
+    signaling: ['wss://signaling.yjs.dev'],
+  });
 
-      const { room } = client.enterRoom<Presence, any, any, any>(id, {
-        initialPresence: {
-          name: randomName,
-          isReady: false,
-          turnReady: false,
-          isHost: isCreator,
-          gameStarted: false,
-          selectedArchetype: null,
-          color: randomColor,
-        },
-      });
-      roomInstance = room;
-    })
-    .catch(error => console.error('Failed to init multiplayer:', error));
+  awareness = provider.awareness;
+  awareness.setLocalState({
+    name: randomName,
+    isReady: false,
+    turnReady: false,
+    isHost: isCreator,
+    gameStarted: false,
+    selectedArchetype: null,
+    color: randomColor,
+    clientId: localClientId,
+  });
 
   return id;
 }
 
-export const isMultiplayerActive = () => !!roomInstance;
+export const isMultiplayerActive = () => !!provider;
 
 export const isHost = () => {
-  if (!roomInstance) return false;
-  const self = roomInstance.getSelf();
-  return self?.presence.isHost || false;
+  if (!awareness) return false;
+  const state = awareness.getLocalState();
+  return state?.isHost || false;
 };
 
-export const getMyConnectionId = () => {
-  if (!roomInstance) return null;
-  const self = roomInstance.getSelf();
-  return self ? String(self.connectionId) : null;
-};
+export const getMyConnectionId = () => localClientId;
 
 export function getOnlinePlayers(): Player[] {
-  if (!roomInstance) return [];
+  if (!awareness) return [];
 
-  const others = roomInstance.getOthers();
-  const self = roomInstance.getSelf();
+  const players: Player[] = [];
+  const states = awareness.getStates();
 
-  const players: Player[] = others.map((other: any) => ({
-    clientId: String(other.connectionId),
-    name: other.presence.name || "Игрок",
-    color: other.presence.color || "#94a3b8",
-    isReady: other.presence.isReady || false,
-    turnReady: other.presence.turnReady || false,
-    isHost: other.presence.isHost || false,
-    gameStarted: other.presence.gameStarted || false,
-    selectedArchetype: other.presence.selectedArchetype || null,
-    isLocal: false,
-  }));
-
-  if (self) {
-    players.unshift({
-      clientId: String(self.connectionId),
-      name: self.presence.name || "Игрок",
-      color: self.presence.color || "#94a3b8",
-      isReady: self.presence.isReady || false,
-      turnReady: self.presence.turnReady || false,
-      isHost: self.presence.isHost || false,
-      gameStarted: self.presence.gameStarted || false,
-      selectedArchetype: self.presence.selectedArchetype || null,
-      isLocal: true,
+  states.forEach((state: any, clientId: number) => {
+    const isLocal = state.clientId === localClientId;
+    players.push({
+      clientId: state.clientId || String(clientId),
+      name: state.name || "Игрок",
+      color: state.color || "#94a3b8",
+      isReady: state.isReady || false,
+      turnReady: state.turnReady || false,
+      isHost: state.isHost || false,
+      gameStarted: state.gameStarted || false,
+      selectedArchetype: state.selectedArchetype || null,
+      isLocal,
     });
-  }
+  });
 
   return players;
 }
 
 export function setPlayerName(name: string) {
-  if (!roomInstance) return;
-  roomInstance.updatePresence({ name });
+  if (!awareness) return;
+  const state = awareness.getLocalState();
+  awareness.setLocalState({ ...state, name });
 }
 
 export function setPlayerReady(ready: boolean) {
-  if (!roomInstance) return;
-  roomInstance.updatePresence({ isReady: ready });
+  if (!awareness) return;
+  const state = awareness.getLocalState();
+  awareness.setLocalState({ ...state, isReady: ready });
 }
 
 export function setTurnReady(ready: boolean) {
-  if (!roomInstance) return;
-  roomInstance.updatePresence({ turnReady: ready });
+  if (!awareness) return;
+  const state = awareness.getLocalState();
+  awareness.setLocalState({ ...state, turnReady: ready });
 }
 
 export function setSelectedArchetype(archetype: string | null) {
-  if (!roomInstance) return;
-  roomInstance.updatePresence({ selectedArchetype: archetype });
+  if (!awareness) return;
+  const state = awareness.getLocalState();
+  awareness.setLocalState({ ...state, selectedArchetype: archetype });
 }
 
 export function startGame() {
-  if (!roomInstance) return;
+  if (!awareness) return;
   if (!isHost()) {
     console.warn("Only host can start the game");
     return;
   }
-  roomInstance.updatePresence({ gameStarted: true });
+  const state = awareness.getLocalState();
+  awareness.setLocalState({ ...state, gameStarted: true });
 }
 
 export function subscribeToReadyStatus(
   callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void
 ) {
-  if (!roomInstance) return () => { };
+  if (!awareness) return () => { };
 
   const handler = () => {
     const players = getOnlinePlayers();
     const readyCount = players.filter((p: Player) => p.isReady).length;
     const totalPlayers = players.length;
     const allReady = totalPlayers > 1 && readyCount === totalPlayers;
-
     callback(readyCount, totalPlayers, allReady);
   };
 
-  const unsubscribe = roomInstance.subscribe("others", handler);
+  awareness.on('change', handler);
   handler();
 
-  return unsubscribe;
+  return () => awareness.off('change', handler);
 }
 
 export function subscribeToTurnReadyStatus(
   callback: (readyCount: number, totalPlayers: number, allReady: boolean) => void
 ) {
-  if (!roomInstance) return () => { };
+  if (!awareness) return () => { };
 
   const handler = () => {
     const players = getOnlinePlayers();
     const readyCount = players.filter((p: Player) => p.turnReady).length;
     const totalPlayers = players.length;
     const allReady = totalPlayers > 1 && readyCount === totalPlayers;
-
     callback(readyCount, totalPlayers, allReady);
   };
 
-  const unsubscribe = roomInstance.subscribe("others", handler);
-  const unsubscribeSelf = roomInstance.subscribe("my-presence", handler);
+  awareness.on('change', handler);
   handler();
 
-  return () => {
-    unsubscribe();
-    unsubscribeSelf();
-  };
+  return () => awareness.off('change', handler);
 }
 
 export function subscribeToGameStart(callback: () => void) {
-  if (!roomInstance) return () => { };
+  if (!awareness) return () => { };
 
   const handler = () => {
     const players = getOnlinePlayers();
     const hostPlayer = players.find(p => p.isHost);
-
     if (hostPlayer?.gameStarted) {
       callback();
     }
   };
 
-  const unsubscribe = roomInstance.subscribe("others", handler);
-  const unsubscribeSelf = roomInstance.subscribe("my-presence", handler);
+  awareness.on('change', handler);
 
-  return () => {
-    unsubscribe();
-    unsubscribeSelf();
-  };
+  return () => awareness.off('change', handler);
 }
 
 export function syncTurnAdvance(callback: () => void) {
-  if (!roomInstance) return () => { };
+  if (!awareness) return () => { };
   return () => { };
 }
 
@@ -207,26 +184,38 @@ export function triggerTurnAdvance() {
 }
 
 export function broadcastEvent(event: any) {
-  if (!roomInstance) return;
-  roomInstance.broadcastEvent(event);
+  if (!doc) return;
+  const events = doc.getArray('events');
+  events.push([{ ...event, timestamp: Date.now() }]);
 }
 
 export function subscribeToEvents(callback: (event: any) => void) {
-  if (!roomInstance) return () => { };
-  return roomInstance.subscribe("event", ({ event }: { event: any }) => callback(event));
+  if (!doc) return () => { };
+  const events = doc.getArray('events');
+  
+  const handler = () => {
+    const lastEvent = events.get(events.length - 1);
+    if (lastEvent) callback(lastEvent);
+  };
+  
+  events.observe(handler);
+  return () => events.unobserve(handler);
 }
 
 export const getSharedState = () => ({
   subscribeToPresenceChanges: (cb: () => void) => {
-    if (!roomInstance) return () => { };
-    return roomInstance.subscribe("others", cb);
+    if (!awareness) return () => { };
+    awareness.on('change', cb);
+    return () => awareness.off('change', cb);
   },
   subscribeToStorageChanges: (cb: () => void) => {
-    if (!roomInstance) return () => { };
-    return roomInstance.subscribe("others", cb);
+    if (!doc) return () => { };
+    const d = doc;
+    d.on('update', cb);
+    return () => d.off('update', cb);
   },
   getStorage: () => {
-    return null;
+    return doc;
   },
   setStorage: () => {
     // Не используем storage

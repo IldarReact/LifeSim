@@ -21,12 +21,11 @@ export function createPartnerBusiness(
   },
   currentTurn: number,
   playerId: string,
-): Business {
+): Business & { partnerBusinessId: string } {
   const now = Date.now()
   const partnerBusinessId = `biz_${now + 1}`
 
-  // Update the business object to remove duplicates
-  const business: Business = {
+  const business: Business & { partnerBusinessId: string } = {
     id: `biz_${now}`,
     name: offer.details.businessName,
     type: offer.details.businessType,
@@ -37,15 +36,11 @@ export function createPartnerBusiness(
     isServiceBased: false,
     networkId: undefined,
     isMainBranch: false,
-
-    // Партнерские отношения
     partnerBusinessId,
     partnerId: offer.fromPlayerId,
     partnerName: offer.fromPlayerName,
     playerShare: offer.details.yourShare,
     playerInvestment: offer.details.yourInvestment,
-
-    // Партнеры
     partners: [
       {
         id: offer.fromPlayerId,

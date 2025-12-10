@@ -10,12 +10,69 @@ import {
 } from '@/core/types/game-offers.types'
 import { broadcastEvent } from '@/core/lib/multiplayer'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
+import { GameEvent } from '@/core/types/events.types'
 
 export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
   set,
   get,
 ) => ({
   offers: [],
+
+  onPartnershipAccepted: (event: GameEvent) => {
+    const { payload } = event
+    const state = get()
+
+    if (!state.player) return
+
+    // Создаем бизнес для инициатора партнерства
+    const business = createPartnerBusiness(
+      {
+        details: {
+          businessName: payload.businessName,
+          businessType: payload.businessType,
+          businessDescription: payload.businessDescription,
+          totalCost: payload.totalCost,
+          yourInvestment: payload.yourInvestment,
+          yourShare: payload.yourShare,
+        },
+        fromPlayerId: payload.partnerId,
+        fromPlayerName: payload.partnerName,
+      },
+      state.turn,
+      state.player.id,
+    )
+
+    // Связываем бизнесы
+    business.partnerBusinessId = payload.businessId
+
+    // Списываем инвестиции у инициатора
+    state.applyStatChanges({ money: -payload.yourInvestment })
+
+    // Добавляем бизнес инициатору
+    set((state) => ({
+      player: {
+        ...state.player!,
+        businesses: [...state.player!.businesses, business],
+      },
+    }))
+
+    // Обновляем партнерские ссылки
+    broadcastEvent({
+      type: 'PARTNERSHIP_UPDATED',
+      payload: {
+        businessId: payload.businessId,
+        partnerBusinessId: business.id,
+      },
+      toPlayerId: payload.partnerId,
+    })
+
+    // Уведомляем игрока
+    state.pushNotification({
+      type: 'success',
+      title: 'Партнерство создано',
+      message: `Вы стали партнером с ${payload.partnerName} в бизнесе "${payload.businessName}"`,
+    })
+  },
 
   sendOffer: (type, toPlayerId, toPlayerName, details, message) => {
     const state = get()
@@ -69,7 +126,6 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         offer.details.businessId,
       )
     } else if (isPartnershipOffer(offer)) {
-      // 2. Открыть бизнес с партнером
       if (state.player!.stats.money < offer.details.yourInvestment) {
         console.warn('Not enough money to accept partnership')
         return
@@ -93,10 +149,10 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         state.player!.id,
       )
 
-      // Списываем инвестиции
+      // Списываем инвестиции у принимающего игрока
       state.applyStatChanges({ money: -offer.details.yourInvestment })
 
-      // Добавляем бизнес игроку
+      // Добавляем бизнес принимающему игроку
       set((state) => ({
         player: {
           ...state.player!,
@@ -119,7 +175,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           businessDescription: business.description,
           totalCost: business.initialCost,
           partnerShare: 100 - offer.details.yourShare,
-          partnerInvestment: offer.details.partnerInvestment,
+          partnerInvestment: offer.details.yourInvestment,
           yourShare: offer.details.yourShare,
           yourInvestment: offer.details.yourInvestment,
         },

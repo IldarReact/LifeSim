@@ -1,6 +1,6 @@
 import type { GameStateCreator } from '../types'
 import { canChangePrice, syncPriceToNetwork } from '@/core/lib/business-network'
-import { applyStats } from '@/core/helpers/applyStats'
+import { applyStats } from '@/core/helpers/apply-stats'
 
 export const createPricingProductionSlice: GameStateCreator<Record<string, unknown>> = (
   set,

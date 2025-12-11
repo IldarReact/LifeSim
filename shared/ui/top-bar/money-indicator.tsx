@@ -1,12 +1,12 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { Wallet, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { cn } from "@/shared/utils/utils"
-import { useState, useMemo } from "react"
-import { calculateQuarterlyReport } from "@/core/lib/calculations/calculateQuarterlyReport"
-import { getShopItem } from "@/core/lib/shop-helpers"
-import { getItemCost } from "@/core/types/shop.types"
-import { getInflatedPrice } from "@/core/lib/calculations/price-helpers"
+import { motion, AnimatePresence } from 'framer-motion'
+import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { useGameStore } from '@/core/model/game-store'
+import { cn } from '@/shared/utils/utils'
+import { useState, useMemo } from 'react'
+import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
+import { getShopItem } from '@/core/lib/shop-helpers'
+import { getItemCost } from '@/core/types/shop.types'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function MoneyIndicator() {
   const { player, countries } = useGameStore()
@@ -18,28 +18,30 @@ export function MoneyIndicator() {
 
   const report = useMemo(() => {
     const { familyMembers } = player.personal
-    
+
     const familyIncome = familyMembers.reduce((sum, m) => {
       if (!m.income) return sum
       const inflatedIncome = country ? getInflatedPrice(m.income, country, 'salaries') : m.income
       return sum + inflatedIncome
     }, 0)
-    
+
     let businessRevenue = 0
     let businessExpenses = 0
-    player.businesses.forEach(b => {
+    player.businesses.forEach((b) => {
       businessRevenue += b.quarterlyIncome
       businessExpenses += b.quarterlyExpenses
     })
 
     // Расчёт расходов по категориям
     let foodExpenses = 0
-    const playerFood = player.activeLifestyle?.food ? getShopItem(player.activeLifestyle.food, player.countryId) : null
+    const playerFood = player.activeLifestyle?.food
+      ? getShopItem(player.activeLifestyle.food, player.countryId)
+      : null
     if (playerFood) {
       const basePrice = getItemCost(playerFood)
       foodExpenses += country ? getInflatedPrice(basePrice, country, 'food') : basePrice
     }
-    familyMembers.forEach(m => {
+    familyMembers.forEach((m) => {
       if (m.type === 'pet') return
       if (m.foodPreference) {
         const item = getShopItem(m.foodPreference, player.countryId)
@@ -64,24 +66,32 @@ export function MoneyIndicator() {
         housingExpenses = country ? getInflatedPrice(basePrice, country, 'housing') : basePrice
       } else {
         const baseMaintenance = housing.maintenanceCost || 0
-        housingExpenses = country ? getInflatedPrice(baseMaintenance, country, 'housing') : baseMaintenance
+        housingExpenses = country
+          ? getInflatedPrice(baseMaintenance, country, 'housing')
+          : baseMaintenance
       }
     }
 
     let transportExpenses = 0
-    const transport = player.activeLifestyle?.transport ? getShopItem(player.activeLifestyle.transport, player.countryId) : null
+    const transport = player.activeLifestyle?.transport
+      ? getShopItem(player.activeLifestyle.transport, player.countryId)
+      : null
     if (transport) {
       const baseCost = getItemCost(transport)
       const inflatedCost = country ? getInflatedPrice(baseCost, country, 'transport') : baseCost
       let commutersCount = 1
-      familyMembers.forEach(m => {
+      familyMembers.forEach((m) => {
         if (m.type !== 'pet' && m.age >= 10) commutersCount++
       })
       transportExpenses = inflatedCost * commutersCount
     }
 
-    const creditExpenses = player.debts.filter(d => d.type !== 'mortgage').reduce((sum, d) => sum + d.quarterlyInterest, 0)
-    const mortgageExpenses = player.debts.filter(d => d.type === 'mortgage').reduce((sum, d) => sum + d.quarterlyInterest, 0)
+    const creditExpenses = player.debts
+      .filter((d) => d.type !== 'mortgage')
+      .reduce((sum, d) => sum + d.quarterlyInterest, 0)
+    const mortgageExpenses = player.debts
+      .filter((d) => d.type === 'mortgage')
+      .reduce((sum, d) => sum + d.quarterlyInterest, 0)
     const otherExpenses = familyMembers.reduce((sum, m) => sum + (m.expenses || 0), 0)
 
     return calculateQuarterlyReport({
@@ -116,7 +126,9 @@ export function MoneyIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg text-green-500">$</span>
-          <span className="text-lg font-bold text-white tabular-nums tracking-tight">{(player?.stats?.money ?? 0).toLocaleString()}</span>
+          <span className="text-lg font-bold text-white tabular-nums tracking-tight">
+            {(player?.stats?.money ?? 0).toLocaleString()}
+          </span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Деньги</span>
       </button>
@@ -141,21 +153,27 @@ export function MoneyIndicator() {
                     <TrendingUp className="w-3.5 h-3.5" />
                     Доходы
                   </span>
-                  <span className="text-white/70 font-medium">+${report.income.total.toLocaleString()}</span>
+                  <span className="text-white/70 font-medium">
+                    +${report.income.total.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
                   <span className="text-red-500 flex items-center gap-2">
                     <TrendingDown className="w-3.5 h-3.5" />
                     Расходы
                   </span>
-                  <span className="text-white/70 font-medium">-${report.expenses.total.toLocaleString()}</span>
+                  <span className="text-white/70 font-medium">
+                    -${report.expenses.total.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
                   <span className="text-red-500 flex items-center gap-2">
                     <DollarSign className="w-3.5 h-3.5" />
                     Налоги
                   </span>
-                  <span className="text-white/70 font-medium">-${report.taxes.total.toLocaleString()}</span>
+                  <span className="text-white/70 font-medium">
+                    -${report.taxes.total.toLocaleString()}
+                  </span>
                 </div>
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
@@ -163,8 +181,14 @@ export function MoneyIndicator() {
                       <Wallet className="w-4 h-4" />
                       Прибыль
                     </span>
-                    <span className={cn("text-sm", report.netProfit >= 0 ? "text-green-400" : "text-rose-400")}>
-                      {report.netProfit > 0 ? "+" : ""}{report.netProfit.toLocaleString()}
+                    <span
+                      className={cn(
+                        'text-sm',
+                        report.netProfit >= 0 ? 'text-green-400' : 'text-rose-400',
+                      )}
+                    >
+                      {report.netProfit > 0 ? '+' : ''}
+                      {report.netProfit.toLocaleString()}
                     </span>
                   </div>
                 </div>

@@ -2,7 +2,7 @@ import type { GameStore } from '../slices/types'
 import type { Notification, Skill, SkillLevel, JobApplication } from '@/core/types'
 import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
 import { calculateBusinessFinancials } from '@/core/lib/business-utils'
-import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
+import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
 import { processBusinessTurn } from './business-turn-processor'
 import { processMarket } from './turns/market-processor'
 import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
@@ -217,8 +217,8 @@ export function processTurn(get: GetState, set: SetState): void {
       ...prev.player,
       personal: {
         ...prev.player.personal,
-        familyMembers: familyMembers
-      }
+        familyMembers: familyMembers,
+      },
     }
     const lifestyleResult = processLifestyle(playerWithUpdatedFamily, prev.countries)
     updatedFamilyMembers = lifestyleResult.updatedFamilyMembers
@@ -337,7 +337,7 @@ export function processTurn(get: GetState, set: SetState): void {
   // 14. Threshold Effects & Update State
   // Apply stat changes using proper clamping
   const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
-  
+
   const currentStats = {
     money: prev.player.stats.money,
     health: clamp(prev.player.personal.stats.health + finalHealthMod, 0, 100),
@@ -412,7 +412,7 @@ export function processTurn(get: GetState, set: SetState): void {
           turn: newTurn,
           year: newYear,
           country: prev.player.countryId,
-          newInflation: inflationResult.inflationNotification?.inflationRate
+          newInflation: inflationResult.inflationNotification?.inflationRate,
         })
         newNotifications.push(inflationResult.notification)
       }

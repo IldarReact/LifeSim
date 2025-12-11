@@ -11,7 +11,7 @@ import {
   createBusinessObject,
   createBusinessBranch,
 } from '@/core/lib/business'
-import { applyStats } from '@/core/helpers/applyStats'
+import { applyStats } from '@/core/helpers/apply-stats'
 import {
   shouldCreateNetwork,
   createNetworkForBusinesses,

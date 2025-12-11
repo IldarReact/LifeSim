@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { useGameStore } from '@/core/model/store'
 import { getShopItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
 import type { ShopCategory } from '@/core/types/shop.types'
-import { ShopHeader } from './components/ShopHeader'
-import { CategoryTabs } from './components/CategoryTabs'
-import { ShopItemCard } from './components/ShopItemCard'
+import { ShopHeader } from './components/shop-header'
+import { CategoryTabs } from './components/category-tabs'
+import { ShopItemCard } from './components/shop-item-card'
 
 export const ShopActivity = () => {
   const { player, buyItem, setLifestyle, setPlayerHousing } = useGameStore()

@@ -19,9 +19,14 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     const { payload } = event
     const state = get()
 
+    console.log('[GameOffers] Обработка PARTNERSHIP_ACCEPTED:', {
+      event,
+      currentPlayerId: state.player?.id,
+    })
+
     if (!state.player) return
 
-    // Create business for the initiator
+    // Создаем бизнес для инициатора
     const initiatorBusiness = createPartnerBusiness(
       {
         details: {
@@ -37,16 +42,16 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       },
       state.turn,
       state.player.id,
-      true, // Mark as initiator
+      true, // Отмечаем как инициатора
     )
 
-    // Link businesses
+    // Связываем бизнесы
     initiatorBusiness.partnerBusinessId = payload.businessId
 
-    // Deduct money from initiator
+    // Вычитаем деньги у инициатора
     state.applyStatChanges({ money: -payload.yourInvestment })
 
-    // Add business to initiator
+    // Добавляем бизнес инициатору
     set((state) => ({
       player: {
         ...state.player!,
@@ -54,7 +59,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       },
     }))
 
-    // Update partner's business with the link
+    // Обновляем бизнес партнера с ссылкой
     broadcastEvent({
       type: 'PARTNERSHIP_UPDATED',
       payload: {
@@ -64,7 +69,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       toPlayerId: payload.partnerId,
     })
 
-    // Notify the initiator
+    // Уведомляем инициатора
     state.pushNotification?.({
       type: 'success',
       title: 'Партнёрство создано',
@@ -75,6 +80,11 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
   onPartnershipUpdated: (event: GameEvent<{ businessId: string; partnerBusinessId: string }>) => {
     const state = get()
     if (!state.player) return
+
+    console.log('[GameOffers] Обновление партнерства:', {
+      businessId: event.payload.businessId,
+      partnerBusinessId: event.payload.partnerBusinessId,
+    })
 
     const { businessId, partnerBusinessId } = event.payload
 
@@ -102,8 +112,8 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       details,
       message,
       status: 'pending',
-      createdTurn: state.turn, // Fixed: currentTurn -> turn
-      expiresInTurns: 1, // Оффер действует 1 год (4 квартала)
+      createdTurn: state.turn,
+      expiresInTurns: 1,
     }
 
     set((state) => ({
@@ -116,29 +126,46 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       payload: { offer: newOffer },
     })
 
-    console.log('[GameOffers] Offer sent:', newOffer)
+    console.log('[GameOffers] Отправка предложения:', {
+      offerId: newOffer.id,
+      type: newOffer.type,
+      from: newOffer.fromPlayerId,
+      to: newOffer.toPlayerId,
+      details: newOffer.details,
+    })
   },
 
-  // In game-offers-slice.ts, update the acceptOffer method
   acceptOffer: (offerId) => {
     const state = get()
     const offerIndex = state.offers.findIndex((o) => o.id === offerId)
 
-    if (offerIndex === -1) return
+    console.log('[GameOffers] Принятие предложения:', {
+      offerId,
+      playerMoney: state.player?.stats.money,
+      offer: state.offers.find((o) => o.id === offerId),
+    })
+
+    if (offerIndex === -1) {
+      console.error('Предложение не найдено')
+      return
+    }
 
     const offer = state.offers[offerIndex]
 
-    // Check if the offer is pending
-    if (offer.status !== 'pending') return
+    // Проверяем, что предложение ожидает ответа
+    if (offer.status !== 'pending') {
+      console.error('Предложение не ожидает ответа:', offer.status)
+      return
+    }
 
     if (isPartnershipOffer(offer)) {
-      // Check if player has enough money
+      // Проверяем, хватает ли у игрока денег
       if (state.player!.stats.money < offer.details.partnerInvestment) {
-        console.warn('Not enough money to accept partnership')
+        console.warn('Недостаточно денег для принятия партнерства')
         return
       }
 
-      // 1. Create business for the accepting player
+      // 1. Создаем бизнес для принимающего игрока
       const acceptingBusiness = createPartnerBusiness(
         {
           details: {
@@ -154,25 +181,39 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         },
         state.turn,
         state.player!.id,
-        false, // isInitiator is false for accepting player
+        false, // isInitiator = false для принимающего игрока
       )
 
-      // 2. Deduct money from accepting player
+      // 2. Вычитаем деньги у принимающего игрока
+      // Используем applyStatChanges для обновления состояния
+      const newMoney = state.player!.stats.money - offer.details.partnerInvestment
       state.applyStatChanges({ money: -offer.details.partnerInvestment })
 
-      // 3. Add business to accepting player
+      console.log('[GameOffers] Обновление денег:', {
+        oldMoney: state.player!.stats.money,
+        investment: offer.details.partnerInvestment,
+        newMoney,
+      })
+
+      // 3. Добавляем бизнес принимающему игроку
       set((state) => ({
         player: {
           ...state.player!,
           stats: {
             ...state.player!.stats,
-            money: state.player!.stats.money - offer.details.partnerInvestment,
+            money: newMoney,
           },
           businesses: [...state.player!.businesses, acceptingBusiness],
         },
       }))
 
-      // 4. Notify the initiator
+      // 4. Уведомляем инициатора
+      console.log('[GameOffers] Отправка PARTNERSHIP_ACCEPTED для инициатора:', {
+        businessId: acceptingBusiness.id,
+        partnerId: state.player!.id,
+        partnerName: state.player!.name,
+      })
+
       broadcastEvent({
         type: 'PARTNERSHIP_ACCEPTED',
         payload: {
@@ -191,12 +232,12 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         toPlayerId: offer.fromPlayerId,
       })
 
-      // 5. Update offer status
+      // 5. Обновляем статус предложения
       set((state) => ({
         offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'accepted' } : o)),
       }))
 
-      // 6. Notify the accepting player
+      // 6. Уведомляем принимающего игрока
       state.pushNotification?.({
         type: 'success',
         title: 'Партнёрство создано',

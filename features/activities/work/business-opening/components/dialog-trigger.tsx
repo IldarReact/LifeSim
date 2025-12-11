@@ -1,6 +1,6 @@
 import { Button } from '@/shared/ui/button'
 import { Store, Info } from 'lucide-react'
-import { BUSINESS_OPTIONS } from './BusinessOptions'
+import { BUSINESS_OPTIONS } from './business-options'
 
 export function BusinessOpeningTrigger() {
   return (

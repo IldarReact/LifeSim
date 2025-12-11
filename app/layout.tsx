@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { MultiplayerInit } from "@/features/multiplayer/MultiplayerInit";
+import { MultiplayerInit } from "@/features/multiplayer/multiplayer-init";
 import { SaveClearedNotification } from "@/features/setup/save-cleared-notification";
 
 const geistSans = Geist({

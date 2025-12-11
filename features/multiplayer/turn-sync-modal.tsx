@@ -1,55 +1,55 @@
-"use client";
+'use client'
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Loader2, Users, CheckCircle2, Circle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getOnlinePlayers, subscribeToTurnReadyStatus, setTurnReady } from "@/core/lib/multiplayer";
-import { Player } from "./MultiplayerHub";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button'
+import { Loader2, Users, CheckCircle2, Circle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { getOnlinePlayers, subscribeToTurnReadyStatus, setTurnReady } from '@/core/lib/multiplayer'
+import { Player } from './multiplayer-hub'
 
 interface TurnSyncModalProps {
-  isOpen: boolean;
-  onCancel: () => void;
-  onAllReady: () => void;
+  isOpen: boolean
+  onCancel: () => void
+  onAllReady: () => void
 }
 
 export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [readyCount, setReadyCount] = useState(0);
-  const [totalPlayers, setTotalPlayers] = useState(0);
+  const [players, setPlayers] = useState<Player[]>([])
+  const [readyCount, setReadyCount] = useState(0)
+  const [totalPlayers, setTotalPlayers] = useState(0)
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     // Обновляем список игроков
     const updateListPlayers = () => {
-      setPlayers(getOnlinePlayers());
-    };
+      setPlayers(getOnlinePlayers())
+    }
 
     // Подписываемся на изменения статуса готовности
     const unsubscribe = subscribeToTurnReadyStatus((ready, total, allReady) => {
-      setReadyCount(ready);
-      setTotalPlayers(total);
-      updateListPlayers();
+      setReadyCount(ready)
+      setTotalPlayers(total)
+      updateListPlayers()
 
       // Если все готовы, вызываем callback
       if (allReady) {
-        onAllReady();
+        onAllReady()
       }
-    });
+    })
 
     // Обновляем сразу
-    updateListPlayers();
+    updateListPlayers()
 
     return () => {
-      unsubscribe();
-    };
-  }, [isOpen, onAllReady]);
+      unsubscribe()
+    }
+  }, [isOpen, onAllReady])
 
   const handleCancel = () => {
-    setTurnReady(false);
-    onCancel();
-  };
+    setTurnReady(false)
+    onCancel()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
@@ -67,9 +67,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
             <div className="text-4xl font-bold text-blue-400 mb-2">
               {readyCount} / {totalPlayers}
             </div>
-            <p className="text-white/60 text-sm">
-              игроков завершили ход
-            </p>
+            <p className="text-white/60 text-sm">игроков завершили ход</p>
           </div>
 
           {/* Прогресс-бар */}
@@ -92,10 +90,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
                 className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-3 border border-white/10"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: player.color }}
-                  />
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: player.color }} />
                   <span className="text-white/90">
                     {player.name}
                     {player.isLocal && <span className="text-white/40 ml-1">(вы)</span>}
@@ -113,7 +108,8 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
           {/* Информация */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
             <p className="text-sm text-blue-200">
-              <strong>Совет:</strong> Пока вы ждете, можете просматривать интерфейс, но изменения вносить нельзя.
+              <strong>Совет:</strong> Пока вы ждете, можете просматривать интерфейс, но изменения
+              вносить нельзя.
             </p>
           </div>
 
@@ -128,5 +124,5 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

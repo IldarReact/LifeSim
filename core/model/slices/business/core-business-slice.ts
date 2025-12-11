@@ -7,7 +7,7 @@ import {
   updateBusinessMetrics,
 } from '@/core/lib/business'
 import type { StatEffect } from '@/core/types/stats.types'
-import { applyStats } from '@/core/helpers/applyStats'
+import { applyStats } from '@/core/helpers/apply-stats'
 import {
   shouldCreateNetwork,
   createNetworkForBusinesses,

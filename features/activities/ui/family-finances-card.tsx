@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { getShopItem } from '@/core/lib/shop-helpers'
 import { getItemCost } from '@/core/types/shop.types'
-import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
+import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function FamilyFinancesCard() {
@@ -86,7 +86,9 @@ export function FamilyFinancesCard() {
       housingExpenses = country ? getInflatedPrice(basePrice, country, 'housing') : basePrice
     } else {
       const baseMaintenance = housing.maintenanceCost || 0
-      housingExpenses = country ? getInflatedPrice(baseMaintenance, country, 'housing') : baseMaintenance
+      housingExpenses = country
+        ? getInflatedPrice(baseMaintenance, country, 'housing')
+        : baseMaintenance
     }
   }
 
@@ -157,7 +159,9 @@ export function FamilyFinancesCard() {
       <div className="bg-zinc-900/90 border border-white/10 rounded-2xl p-5 backdrop-blur-sm">
         <div className="flex items-center gap-2 mb-6">
           <Wallet className="w-5 h-5 text-green-400" />
-          <h3 className="font-bold text-white">{familyMembers.length > 0 ? 'Семейные финансы (квартал)' : 'Финансы (квартал)'}</h3>
+          <h3 className="font-bold text-white">
+            {familyMembers.length > 0 ? 'Семейные финансы (квартал)' : 'Финансы (квартал)'}
+          </h3>
         </div>
 
         <div className="space-y-4">

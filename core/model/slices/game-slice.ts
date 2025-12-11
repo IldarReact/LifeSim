@@ -1,5 +1,5 @@
 import type { GameStateCreator, GameSlice } from './types'
-import { createInitialPlayer } from '@/core/lib/initialState'
+import { createInitialPlayer } from '@/core/lib/initial-state'
 import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
 import { processTurn } from '../logic/turn-logic'
 

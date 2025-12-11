@@ -55,6 +55,10 @@ export function useOffersSync() {
 
         // Если это наш оффер, показываем уведомление и выполняем действия
         const offer = state.offers.find((o) => o.id === offerId)
+        if (!offer) {
+          console.error('Offer not found:', offerId)
+          return
+        }
         if (offer && offer.fromPlayerId === player?.id) {
           pushNotification({
             title: 'Предложение принято!',

@@ -1,5 +1,5 @@
 import type { ShopCategory } from '@/core/types/shop.types'
-import { SHOP_CATEGORIES } from './Сategories'
+import { SHOP_CATEGORIES } from './categories'
 
 interface CategoryTabsProps {
   selected: ShopCategory

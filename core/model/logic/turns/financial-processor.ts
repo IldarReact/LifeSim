@@ -1,4 +1,4 @@
-import { calculateQuarterlyReport } from '@/core/lib/calculations/calculateQuarterlyReport'
+import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
 import { getCountry } from '@/core/lib/data-loaders/economy-loader'
 import type { GameStore } from '../../slices/types'
 

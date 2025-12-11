@@ -44,7 +44,7 @@ import { SanityIndicator } from './sanity-indicator'
 import { IntelligenceIndicator } from './intelligence-indicator'
 import { NotificationsMenu } from './notifications-menu'
 import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
-import { MultiplayerHud } from '@/features/multiplayer/MultiplayerHub'
+import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
 
 export function TopStatusBar() {
   const { player, turn, year, resetGame, countries } = useGameStore()

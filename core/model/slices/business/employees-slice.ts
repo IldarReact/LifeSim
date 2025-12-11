@@ -1,7 +1,7 @@
 import type { GameStateCreator } from '../types'
 import type { Employee, EmployeeCandidate } from '@/core/types'
 import { updateBusinessMetrics, validateEmployeeHire } from '@/core/lib/business'
-import { applyStats } from '@/core/helpers/applyStats'
+import { applyStats } from '@/core/helpers/apply-stats'
 
 export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
   // Hire a new employee from candidate pool
@@ -120,7 +120,7 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       role: role as any,
       stars: 3,
       skills: {
-        efficiency: 50
+        efficiency: 50,
       },
       salary: salary,
       productivity: 100,

@@ -1,15 +1,15 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, IdeaSlice } from './types'
-import { generateBusinessIdea, calculateDevelopmentCost, calculateDevelopmentTime, canDevelopIdea } from '@/core/lib/idea-generator'
-import { applyStats } from '@/core/helpers/applyStats'
+import {
+  generateBusinessIdea,
+  calculateDevelopmentCost,
+  calculateDevelopmentTime,
+  canDevelopIdea,
+} from '@/core/lib/idea-generator'
+import { applyStats } from '@/core/helpers/apply-stats'
 import type { Business } from '@/core/types'
 
-export const createIdeaSlice: StateCreator<
-  GameStore,
-  [],
-  [],
-  IdeaSlice
-> = (set, get) => ({
+export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set, get) => ({
   generateIdea: () => {
     const state = get()
     if (!state.player) return
@@ -25,20 +25,20 @@ export const createIdeaSlice: StateCreator<
     const idea = generateBusinessIdea(
       state.player.personal.skills,
       state.turn,
-      state.globalMarket.value
+      state.globalMarket.value,
     )
 
     // Списываем энергию и добавляем идею
     const updatedStats = applyStats(state.player.stats, {
-      energy: -energyCost
+      energy: -energyCost,
     })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
-        businessIdeas: [...state.player.businessIdeas, idea]
-      }
+        businessIdeas: [...state.player.businessIdeas, idea],
+      },
     })
 
     console.log(`[Idea] Сгенерирована идея: ${idea.name} (${idea.riskLevel} risk)`)
@@ -48,7 +48,7 @@ export const createIdeaSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const ideaIndex = state.player.businessIdeas.findIndex(i => i.id === ideaId)
+    const ideaIndex = state.player.businessIdeas.findIndex((i) => i.id === ideaId)
     if (ideaIndex === -1) return
 
     const idea = state.player.businessIdeas[ideaIndex]
@@ -87,7 +87,7 @@ export const createIdeaSlice: StateCreator<
 
     // Списываем деньги и обновляем идею
     const updatedStats = applyStats(state.player.stats, {
-      money: -investment
+      money: -investment,
     })
 
     const updatedIdeas = [...state.player.businessIdeas]
@@ -97,8 +97,8 @@ export const createIdeaSlice: StateCreator<
       player: {
         ...state.player,
         stats: updatedStats,
-        businessIdeas: updatedIdeas
-      }
+        businessIdeas: updatedIdeas,
+      },
     })
   },
 
@@ -106,7 +106,7 @@ export const createIdeaSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const ideaIndex = state.player.businessIdeas.findIndex(i => i.id === ideaId)
+    const ideaIndex = state.player.businessIdeas.findIndex((i) => i.id === ideaId)
     if (ideaIndex === -1) return
 
     const idea = state.player.businessIdeas[ideaIndex]
@@ -121,10 +121,10 @@ export const createIdeaSlice: StateCreator<
     // Нам нужно адаптировать параметры
 
     // Удаляем идею из списка
-    const updatedIdeas = state.player.businessIdeas.filter(i => i.id !== ideaId)
+    const updatedIdeas = state.player.businessIdeas.filter((i) => i.id !== ideaId)
 
     // Вызываем openBusiness через store action
-    // Но openBusiness требует много параметров. 
+    // Но openBusiness требует много параметров.
     // Упростим: создадим бизнес напрямую и добавим в массив
 
     const newBusiness: Business = {
@@ -211,8 +211,8 @@ export const createIdeaSlice: StateCreator<
       player: {
         ...state.player,
         businessIdeas: updatedIdeas,
-        businesses: [...state.player.businesses, newBusiness]
-      }
+        businesses: [...state.player.businesses, newBusiness],
+      },
     })
 
     console.log(`[Idea] Бизнес запущен: ${newBusiness.name}`)
@@ -222,13 +222,13 @@ export const createIdeaSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
-    const updatedIdeas = state.player.businessIdeas.filter(i => i.id !== ideaId)
+    const updatedIdeas = state.player.businessIdeas.filter((i) => i.id !== ideaId)
 
     set({
       player: {
         ...state.player,
-        businessIdeas: updatedIdeas
-      }
+        businessIdeas: updatedIdeas,
+      },
     })
-  }
+  },
 })

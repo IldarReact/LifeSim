@@ -1,40 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createGameOffersSlice } from '../game-offers-slice'
 import { createMockPlayer } from '@/core/lib/calculations/loan/utils/mock-player'
-import type { GameState } from '@/core/types/game.types'
 import { createBusinessSlice } from '../business-slice'
 import { createCoreBusinessSlice } from '../business/core-business-slice'
 import type { GameStore as CoreGameStore, GameSlice } from '../types'
-
-// Define missing types
+// Определяем типы
 type GameStore = CoreGameStore &
-  Pick<
-    GameSlice,
-    'inflationNotification' | 'setSetupCountry' | 'initializeGame' | 'resetGame'
-  > & {
+  Pick<GameSlice, 'inflationNotification' | 'setSetupCountry' | 'initializeGame' | 'resetGame'> & {
     stats: any
     businesses: any[]
-
     broadcastEvent: (event: any) => void
     pushNotification: (notification: any) => void
     applyStatChanges: (changes: any) => void
   }
-
 type MockState = {
   get: () => GameStore
   set: (patch: any) => void
   on: (eventType: string, handler: (event: any) => void) => void
   state: () => GameStore
 }
-
-// Mock functions
+// Мокируем функции
 const mockBroadcastEvent = vi.fn()
 const mockPushNotification = vi.fn()
-
-// Mock event handlers
+// Обработчики событий
 let eventHandlers: Record<string, (event: any) => void> = {}
-
-// Mock broadcastEvent implementation
+// Мок для broadcastEvent
 const broadcastEvent = (event: any) => {
   if (eventHandlers[event.type]) {
     eventHandlers[event.type](event)

@@ -42,25 +42,28 @@ export function getInflatedPrice(
   // Реверсируем чтобы получить хронологический порядок
   const chronologicalHistory = [...inflationHistory].reverse()
 
-  // DEBUG: Log inflation history for debugging price falls (development only)
-  if (basePrice > 500) {
-    devLog('[getInflatedPrice] base=', basePrice, 'category=', category, {
-      historyAsStored: inflationHistory,
-      historyReversed: chronologicalHistory,
-      categoryMultiplier: INFLATION_MULTIPLIERS[category],
-    })
+  // Only log in development and for significant prices
+  if (process.env.NODE_ENV === 'development' && basePrice > 5000) {
+    devLog('[getInflatedPrice] base=', basePrice, 'category=', category)
   }
 
-  // Применяем мультипликатор с учетом категории
-  const cumulativeMultiplier = getCumulativeInflationMultiplier(chronologicalHistory, category)
+  // Get the category multiplier (default to 1.0 if category is invalid)
+  const categoryMultiplier = INFLATION_MULTIPLIERS[category] || 1.0
 
+  // If no inflation history, return base price
+  if (chronologicalHistory.length === 0) {
+    return basePrice
+  }
+
+  // Calculate cumulative multiplier more efficiently
+  let cumulativeMultiplier = 1.0
+  for (const inflation of chronologicalHistory) {
+    // Apply inflation with category multiplier
+    cumulativeMultiplier *= 1 + (inflation * categoryMultiplier) / 100
+  }
+
+  // Round to nearest integer for prices
   const inflatedPrice = Math.round(basePrice * cumulativeMultiplier)
-
-  if (basePrice > 500) {
-    devLog(
-      `[getInflatedPrice] result: ${basePrice} * ${cumulativeMultiplier.toFixed(6)} = ${inflatedPrice}`,
-    )
-  }
 
   return inflatedPrice
 }

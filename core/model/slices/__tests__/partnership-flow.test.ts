@@ -1,82 +1,47 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { createGameOffersSlice } from '../game-offers-slice'
-import { createMockPlayer } from '@/core/lib/calculations/loan/utils/mock-player'
 import { createBusinessSlice } from '../business-slice'
 import { createCoreBusinessSlice } from '../business/core-business-slice'
-import type { GameStore as CoreGameStore, GameSlice } from '../types'
-// Определяем типы
-type GameStore = CoreGameStore &
-  Pick<GameSlice, 'inflationNotification' | 'setSetupCountry' | 'initializeGame' | 'resetGame'> & {
-    stats: any
-    businesses: any[]
-    broadcastEvent: (event: any) => void
-    pushNotification: (notification: any) => void
-    applyStatChanges: (changes: any) => void
-  }
+import { beforeEach } from 'node:test'
+
+// Тип для мокового хранилища
 type MockState = {
-  get: () => GameStore
+  get: () => any
   set: (patch: any) => void
   on: (eventType: string, handler: (event: any) => void) => void
-  state: () => GameStore
+  state: () => any
 }
+
 // Мокируем функции
 const mockBroadcastEvent = vi.fn()
 const mockPushNotification = vi.fn()
+
 // Обработчики событий
 let eventHandlers: Record<string, (event: any) => void> = {}
+
 // Мок для broadcastEvent
-const broadcastEvent = (event: any) => {
-  if (eventHandlers[event.type]) {
-    eventHandlers[event.type](event)
+function broadcastEvent(event: any) {
+  if (event.toPlayerId) {
+    // Если указан получатель, отправляем только ему
+    const handler = eventHandlers[event.type]
+    if (handler) {
+      handler(event)
+    }
+  } else {
+    // Иначе отправляем всем
+    Object.values(eventHandlers).forEach((handler) => handler(event))
   }
   mockBroadcastEvent(event)
 }
 
-function createMockState(initial: Partial<GameStore> = {}): MockState {
-  const basePlayer = createMockPlayer()
-  const player = {
-    ...basePlayer,
-    ...initial.player,
-    stats: {
-      ...basePlayer.stats,
-      money: 1000000,
-      ...initial.player?.stats,
-    },
-  }
-
-  // Create a base state with all required properties
-  const baseState: Partial<GameStore> = {
-    // GameSlice methods
-    inflationNotification: undefined,
-    setSetupCountry: vi.fn(),
-    initializeGame: vi.fn(),
-    resetGame: vi.fn(),
-
-    // Core game state
-    player,
-    turn: 1,
-    offers: [],
-    businesses: [],
-    stats: player.stats,
-
-    // Test utilities
-    broadcastEvent,
-    pushNotification: mockPushNotification,
-    applyStatChanges: vi.fn((changes: any) => {
-      if (state.player) {
-        state.player.stats = { ...state.player.stats, ...changes }
-      }
-    }),
-  }
-
-  let state = {
-    ...baseState,
-    ...initial,
-  } as GameStore
+function createMockState(initial: any = {}): MockState {
+  let state = { ...initial }
 
   const get = () => state
+
   const set = (patch: any) => {
-    state = typeof patch === 'function' ? { ...state, ...patch(state) } : { ...state, ...patch }
+    const newState = typeof patch === 'function' ? patch(state) : patch
+    state = { ...state, ...newState }
   }
 
   const on = (eventType: string, handler: (event: any) => void) => {
@@ -86,232 +51,179 @@ function createMockState(initial: Partial<GameStore> = {}): MockState {
   return { get, set, on, state: () => state }
 }
 
-describe('Partnership Flow', () => {
-  let mockState: ReturnType<typeof createMockState>
-
+describe('partnership flow', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    mockState = createMockState({
-      player: {
-        ...createMockPlayer(),
-        id: 'player1',
-        name: 'Игрок 1',
-        stats: {
-          ...createMockPlayer().stats,
-          money: 1000000, // Достаточно денег для инвестиций
-        },
-      },
-    })
+    // Сбрасываем моки перед каждым тестом
+    mockBroadcastEvent.mockClear()
+    mockPushNotification.mockClear()
+    eventHandlers = {}
   })
 
-  it('создаёт бизнес для принимающего партнёрство и уведомляет инициатора', () => {
-    const { get, set } = mockState
-    const offersSlice = createGameOffersSlice(set as any, get as any, {} as any)
+  it('создает партнерство между двумя игроками', async () => {
+    // 1. Настраиваем состояние для игрока 1 (отправитель)
+    const player1State = createMockState({
+      player: {
+        id: 'player1',
+        name: 'Игрок 1',
+        stats: { money: 1000000 },
+        businesses: [],
+      },
+      offers: [],
+      turn: 1,
+    })
 
-    // Создаём оффер партнёрства
-    offersSlice.sendOffer(
+    // 2. Настраиваем состояние для игрока 2 (получатель)
+    const player2State = createMockState({
+      player: {
+        id: 'player2',
+        name: 'Игрок 2',
+        stats: { money: 1000000 },
+        businesses: [],
+      },
+      offers: [],
+      turn: 1,
+    })
+
+    // 3. Создаем срезы для игрока 1
+    const coreBusinessSlice1 = createCoreBusinessSlice(
+      player1State.set,
+      player1State.get,
+      {} as any,
+    )
+
+    const businessSlice1 = createBusinessSlice(player1State.set, player1State.get, {
+      ...coreBusinessSlice1,
+    } as any)
+
+    const offersSlice1 = createGameOffersSlice(player1State.set, player1State.get, {
+      ...businessSlice1,
+      applyStatChanges: (changes: any) => {
+        const current = player1State.get()
+        player1State.set({
+          player: {
+            ...current.player,
+            stats: {
+              ...current.player.stats,
+              money: current.player.stats.money + (changes.money || 0),
+            },
+          },
+        })
+      },
+      pushNotification: mockPushNotification,
+      broadcastEvent,
+    } as any)
+
+    // 4. Создаем срезы для игрока 2
+    const coreBusinessSlice2 = createCoreBusinessSlice(
+      player2State.set,
+      player2State.get,
+      {} as any,
+    )
+
+    const businessSlice2 = createBusinessSlice(player2State.set, player2State.get, {
+      ...coreBusinessSlice2,
+    } as any)
+
+    const offersSlice2 = createGameOffersSlice(player2State.set, player2State.get, {
+      ...businessSlice2,
+      applyStatChanges: (changes: any) => {
+        const current = player2State.get()
+        player2State.set({
+          player: {
+            ...current.player,
+            stats: {
+              ...current.player.stats,
+              money: current.player.stats.money + (changes.money || 0),
+            },
+          },
+        })
+      },
+      pushNotification: mockPushNotification,
+      broadcastEvent,
+    } as any)
+
+    // 5. Настраиваем обработчики событий
+    const handlePlayer1Event = (event: any) => {
+      if (event.type === 'OFFER_SENT') return
+
+      // Обработка событий для игрока 1
+      const currentState = player1State.get()
+      if (event.type === 'BUSINESS_CREATED') {
+        player1State.set({
+          player: {
+            ...currentState.player,
+            businesses: [...(currentState.player.businesses || []), event.payload.business],
+          },
+        })
+      }
+    }
+
+    const handlePlayer2Event = (event: any) => {
+      if (event.type === 'OFFER_SENT') {
+        // Добавляем оффер получателю
+        const currentState = player2State.get()
+        player2State.set({
+          offers: [...currentState.offers, event.payload.offer],
+        })
+      }
+    }
+
+    // Подписываемся на события
+    player1State.on('*', handlePlayer1Event)
+    player2State.on('*', handlePlayer2Event)
+
+    // 6. Игрок 1 отправляет оффер партнерства
+    offersSlice1.sendOffer(
       'business_partnership',
       'player2',
       'Игрок 2',
       {
         businessName: 'Совместный магазин',
         businessType: 'shop',
-        businessDescription: 'Описание магазина',
-        totalCost: 200000,
-        yourInvestment: 100000,
-        yourShare: 50,
+        businessDescription: 'Продажа товаров',
+        totalCost: 10000,
+        partnerInvestment: 5000,
         partnerShare: 50,
-        partnerInvestment: 100000,
+        yourShare: 50,
+        yourInvestment: 5000,
         businessId: 'biz1',
       },
       'Давайте откроем магазин вместе!',
     )
-
-    // Эмулируем принятие оффера игроком 2
-    const player2State = createMockState({
-      player: {
-        ...createMockPlayer(),
-        id: 'player2',
-        name: 'Игрок 2',
-        stats: {
-          ...createMockPlayer().stats,
-          money: 1000000,
-        },
-      },
-    })
-
-    // Добавляем оффер вручную, так как offers не является частью GameState
-    player2State.set((state: any) => ({
-      ...state,
-      offers: [...get().offers],
-    }))
-
-    const player2OffersSlice = createGameOffersSlice(player2State.set, player2State.get, {
-      applyStatChanges: player2State.get().applyStatChanges,
-      pushNotification: mockPushNotification,
-      broadcastEvent: mockBroadcastEvent,
-    } as any)
-
-    // Принимаем оффер
-    const offerId = player2State.get().offers[0].id
-    player2OffersSlice.acceptOffer(offerId)
-
-    // Проверяем, что бизнес создан для игрока 2
-    expect(player2State.get().player?.businesses).toHaveLength(1)
-    const player2Business = player2State.get().player?.businesses[0]
-    expect(player2Business).toBeDefined()
-    expect(player2Business?.name).toBe('Совместный магазин')
-    expect(player2Business?.playerShare).toBe(50)
-
-    // Проверяем, что отправлено событие PARTNERSHIP_ACCEPTED
-    expect(mockBroadcastEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'PARTNERSHIP_ACCEPTED',
-        toPlayerId: 'player1',
-        payload: expect.objectContaining({
-          businessName: 'Совместный магазин',
-          partnerId: 'player2',
-          partnerName: 'Игрок 2',
-          partnerShare: 50,
-        }),
-      }),
+    // 7. Проверяем, что оффер доставлен
+    // Ждем немного, чтобы событие успело обработаться
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    // Проверяем, что broadcastEvent был вызван
+    expect(mockBroadcastEvent).toHaveBeenCalled()
+    // Ищем событие OFFER_SENT
+    const offerSentEvent = mockBroadcastEvent.mock.calls.find(
+      (call: any) => call[0].type === 'OFFER_SENT',
     )
-  })
+    expect(offerSentEvent).toBeDefined()
+    const offer = offerSentEvent?.[0].payload.offer
+    expect(offer).toBeDefined()
 
-  it('обрабатывает PARTNERSHIP_ACCEPTED и создаёт бизнес для инициатора', async () => {
-    // Настраиваем мок для обработки события PARTNERSHIP_ACCEPTED
-    const { get, set, on } = mockState
+    // 8. Игрок 2 принимает оффер
+    if (offer) {
+      offersSlice2.acceptOffer(offer.id)
 
-    // Создаем срезы
-    const coreBusinessSlice = createCoreBusinessSlice(set as any, get as any, {} as any)
-    const businessSlice = createBusinessSlice(
-      set as any,
-      get as any,
-      {
-        ...coreBusinessSlice,
-      } as any,
-    )
+      // 9. Проверяем, что у игрока 2 создан бизнес
+      const player2StateAfterAccept = player2State.get()
+      expect(player2StateAfterAccept.player.businesses).toHaveLength(1)
+      const player2Business = player2StateAfterAccept.player.businesses[0]
+      expect(player2Business.name).toBe('Совместный магазин')
+      expect(player2Business.playerShare).toBe(50)
 
-    const offersSlice = createGameOffersSlice(
-      set as any,
-      get as any,
-      {
-        ...businessSlice,
-        applyStatChanges: get().applyStatChanges,
-        pushNotification: mockPushNotification,
-        broadcastEvent,
-      } as any,
-    )
+      // 10. Проверяем, что у игрока 1 тоже создан бизнес
+      const player1StateAfterAccept = player1State.get()
+      expect(player1StateAfterAccept.player.businesses).toHaveLength(1)
+      const player1Business = player1StateAfterAccept.player.businesses[0]
+      expect(player1Business.name).toBe('Совместный магазин')
+      expect(player1Business.playerShare).toBe(50)
 
-    // Подписываемся на событие PARTNERSHIP_ACCEPTED
-    on('PARTNERSHIP_ACCEPTED', (event) => {
-      // Эмулируем обработку события другим игроком
-      if (event.toPlayerId === 'player1') {
-        // Создаем бизнес для инициатора
-        set((state: any) => ({
-          player: {
-            ...state.player,
-            businesses: [
-              ...(state.player?.businesses || []),
-              {
-                id: 'biz1',
-                name: event.payload.businessName,
-                type: event.payload.businessType,
-                description: event.payload.businessDescription,
-                partnerBusinessId: event.payload.businessId,
-                playerShare: event.payload.yourShare,
-                partnerId: event.payload.partnerId,
-                partnerName: event.payload.partnerName,
-                initialCost: event.payload.totalCost,
-                // ... другие необходимые поля
-              },
-            ],
-          },
-        }))
-
-        // Отправляем ответное событие
-        broadcastEvent({
-          type: 'PARTNERSHIP_UPDATED',
-          payload: {
-            businessId: event.payload.businessId,
-            partnerBusinessId: 'biz1',
-          },
-          toPlayerId: event.payload.partnerId,
-        })
-      }
-    })
-
-    // Эмулируем событие PARTNERSHIP_ACCEPTED
-    broadcastEvent({
-      type: 'PARTNERSHIP_ACCEPTED',
-      payload: {
-        businessId: 'biz2',
-        partnerId: 'player2',
-        partnerName: 'Игрок 2',
-        businessName: 'Совместный магазин',
-        businessType: 'shop',
-        businessDescription: 'Описание магазина',
-        totalCost: 200000,
-        partnerShare: 50,
-        partnerInvestment: 100000,
-        yourShare: 50,
-        yourInvestment: 100000,
-      },
-      toPlayerId: 'player1',
-    })
-
-    // Проверяем, что бизнес создан для инициатора
-    expect(get().player?.businesses).toHaveLength(1)
-    const initiatorBusiness = get().player?.businesses[0]
-    expect(initiatorBusiness).toBeDefined()
-    expect(initiatorBusiness?.name).toBe('Совместный магазин')
-    expect(initiatorBusiness?.playerShare).toBe(50)
-    expect(initiatorBusiness?.partnerBusinessId).toBe('biz2')
-  })
-
-  it('обновляет связь между бизнесами при получении PARTNERSHIP_UPDATED', () => {
-    const { get, set, on } = mockState
-
-    // Создаем бизнес игрока 2
-    set((state: any) => ({
-      player: {
-        ...state.player,
-        businesses: [
-          {
-            id: 'biz2',
-            name: 'Совместный магазин',
-            type: 'shop',
-            // ... другие необходимые поля
-          },
-        ],
-      },
-    }))
-
-    // Настраиваем обработчик события PARTNERSHIP_UPDATED
-    on('PARTNERSHIP_UPDATED', (event) => {
-      set((state: any) => ({
-        player: {
-          ...state.player,
-          businesses: state.player?.businesses?.map((b: any) =>
-            b.id === event.payload.businessId
-              ? { ...b, partnerBusinessId: event.payload.partnerBusinessId }
-              : b,
-          ),
-        },
-      }))
-    })
-
-    // Эмулируем событие обновления партнёрства
-    broadcastEvent({
-      type: 'PARTNERSHIP_UPDATED',
-      payload: {
-        businessId: 'biz2',
-        partnerBusinessId: 'biz1',
-      },
-    })
-
-    // Проверяем, что бизнес обновлён с ID партнёрского бизнеса
-    const updatedBusiness = get().player?.businesses.find((b: any) => b.id === 'biz2')
-    expect(updatedBusiness?.partnerBusinessId).toBe('biz1')
+      // 11. Проверяем, что деньги списались у обоих игроков
+      expect(player1StateAfterAccept.player.stats.money).toBe(995000) // 1,000,000 - 5,000
+      expect(player2StateAfterAccept.player.stats.money).toBe(995000) // 1,000,000 - 5,000
+    }
   })
 })

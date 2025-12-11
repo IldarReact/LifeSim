@@ -41,7 +41,14 @@ describe('offers partnership flow', () => {
   it('recipient acceptOffer deducts recipient money and marks offer accepted', () => {
     const recipientPlayer = createMockPlayer()
     // ensure full stat shape
-    ;(recipientPlayer as any).stats = { money: 50000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
+    ;(recipientPlayer as any).stats = {
+      money: 50000,
+      happiness: 100,
+      energy: 100,
+      health: 100,
+      sanity: 100,
+      intelligence: 100,
+    }
 
     const offerDetails: PartnershipOfferDetails = {
       businessId: 'biz_1',
@@ -68,7 +75,11 @@ describe('offers partnership flow', () => {
       expiresInTurns: 4,
     }
 
-    const { get, set, getState } = createMockState({ player: recipientPlayer, offers: [offer], turn: 1 })
+    const { get, set, getState } = createMockState({
+      player: recipientPlayer,
+      offers: [offer],
+      turn: 1,
+    })
 
     // Zustand slice creators expect (set, get, store) — pass a dummy store
     const slice = createGameOffersSlice(set as any, get as any, {} as any)
@@ -87,9 +98,32 @@ describe('offers partnership flow', () => {
     // Sender initial state
     const senderPlayer = createMockPlayer()
     ;(senderPlayer as any).id = 'sender_1'
-    ;(senderPlayer as any).stats = { money: 50000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
+    ;(senderPlayer as any).stats = {
+      money: 50000,
+      happiness: 100,
+      energy: 100,
+      health: 100,
+      sanity: 100,
+      intelligence: 100,
+    }
     // Minimal business shape for test — cast to any to avoid full Business type
-    ;(senderPlayer as any).businesses = [{ id: 'biz_1', name: 'Cell Phone Store', partners: [{ id: 'sender_1', name: 'Alice', type: 'player', share: 100, investedAmount: 85000, relation: 100 }], proposals: [] } as any]
+    ;(senderPlayer as any).businesses = [
+      {
+        id: 'biz_1',
+        name: 'Cell Phone Store',
+        partners: [
+          {
+            id: 'sender_1',
+            name: 'Alice',
+            type: 'player',
+            share: 100,
+            investedAmount: 85000,
+            relation: 100,
+          },
+        ],
+        proposals: [],
+      } as any,
+    ]
 
     const offerDetails: PartnershipOfferDetails = {
       businessId: 'biz_1',
@@ -126,16 +160,31 @@ describe('offers partnership flow', () => {
     }
 
     // Create partnership slice for sender and call addPartnerToBusiness after deducting funds
-    const partnershipSlice = createPartnershipsSlice(senderSet as any, senderGet as any, {} as any) as any
+    const partnershipSlice = createPartnershipsSlice(
+      senderSet as any,
+      senderGet as any,
+      {} as any,
+    ) as any
 
     // Simulate deduction of partnerInvestment (what our feature does on OFFER_ACCEPTED)
     const needed = offerDetails.partnerInvestment
     expect(senderState.player.stats.money).toBeGreaterThanOrEqual(needed)
     // Deduct
-    senderSet({ player: { ...senderState.player, stats: { ...senderState.player.stats, money: senderState.player.stats.money - needed } } })
+    senderSet({
+      player: {
+        ...senderState.player,
+        stats: { ...senderState.player.stats, money: senderState.player.stats.money - needed },
+      },
+    })
 
     // Call addPartnerToBusiness to add recipient as partner
-    partnershipSlice.addPartnerToBusiness(offerDetails.businessId, offer.toPlayerId, offer.toPlayerName, offerDetails.yourShare, offerDetails.yourInvestment)
+    partnershipSlice.addPartnerToBusiness(
+      offerDetails.businessId,
+      offer.toPlayerId,
+      offer.toPlayerName,
+      offerDetails.yourShare,
+      offerDetails.yourInvestment,
+    )
 
     // Verify sender money decreased
     expect(senderState.player.stats.money).toBe(senderPlayer.stats.money - needed)
@@ -150,9 +199,20 @@ describe('offers partnership flow', () => {
     // Now simulate recipient receiving BUSINESS_SYNC and adding shared business
     const recipientPlayer = createMockPlayer()
     ;(recipientPlayer as any).id = 'recipient_conn'
-    ;(recipientPlayer as any).stats = { money: 75000, happiness: 100, energy: 100, health: 100, sanity: 100, intelligence: 100 }
+    ;(recipientPlayer as any).stats = {
+      money: 75000,
+      happiness: 100,
+      energy: 100,
+      health: 100,
+      sanity: 100,
+      intelligence: 100,
+    }
     ;(recipientPlayer as any).businesses = []
-    const { get: rGet, set: rSet, getState: rGetState } = createMockState({ player: recipientPlayer as any, offers: [] })
+    const {
+      get: rGet,
+      set: rSet,
+      getState: rGetState,
+    } = createMockState({ player: recipientPlayer as any, offers: [] })
     const sharedSlice = createSharedBusinessSlice(rSet as any, rGet as any, {} as any) as any
 
     // Shared business object (as broadcasted)

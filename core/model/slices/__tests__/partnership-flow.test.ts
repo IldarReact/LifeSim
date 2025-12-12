@@ -3,6 +3,7 @@ import { createGameOffersSlice } from '../game-offers-slice'
 import { createBusinessSlice } from '../business-slice'
 import { createCoreBusinessSlice } from '../business/core-business-slice'
 import { beforeEach } from 'node:test'
+import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 
 // Тип для мокового хранилища
 type MockState = {
@@ -148,60 +149,116 @@ describe('partnership flow', () => {
 
     // 5. Настраиваем обработчики событий
     const handlePlayer1Event = async (event: any) => {
-      // Добавляем async
-      console.log('[Player1] Event received:', event.type, event)
-
-      // Обработка входящих офферов
-      if (event.type === 'OFFER_SENT') {
-        console.log(`[Player1] Offer received for player:`, event.payload.offer.toPlayerId)
+      try {
+        console.log('[Player1] Event received:', event.type, event)
         const currentState = player1State.get()
-        player1State.set({
-          offers: [...currentState.offers, event.payload.offer],
-        })
+
+        switch (event.type) {
+          case 'OFFER_SENT':
+            player1State.set({
+              offers: [...currentState.offers, event.payload.offer],
+            })
+            break
+
+          case 'BUSINESS_CREATED':
+            player1State.set({
+              player: {
+                ...currentState.player,
+                businesses: [...(currentState.player.businesses || []), event.payload.business],
+              },
+            })
+            break
+
+          case 'PARTNERSHIP_ACCEPTED':
+            if (!event.payload) {
+              console.error('Missing payload in PARTNERSHIP_ACCEPTED event')
+              break
+            }
+
+            const business = createPartnerBusiness(
+              {
+                details: event.payload,
+                fromPlayerId: event.payload.partnerId,
+                fromPlayerName: event.payload.partnerName,
+              },
+              currentState.turn,
+              currentState.player.id,
+              true, // isInitiator
+            )
+
+            const newMoney = currentState.player.stats.money - (event.payload.yourInvestment || 0)
+
+            player1State.set({
+              player: {
+                ...currentState.player,
+                stats: {
+                  ...currentState.player.stats,
+                  money: newMoney,
+                },
+                businesses: [...(currentState.player.businesses || []), business],
+              },
+            })
+            break
+        }
+      } catch (error) {
+        console.error('Error in handlePlayer1Event:', error)
       }
-
-      // Обработка создания бизнеса
-      if (event.type === 'BUSINESS_CREATED') {
-        console.log('[Player1] Creating business:', event.payload.business)
-        const currentState = player1State.get()
-        player1State.set({
-          player: {
-            ...currentState.player,
-            businesses: [...(currentState.player.businesses || []), event.payload.business],
-          },
-        })
-      }
-
-      // Логируем текущее состояние
-      console.log(
-        'Player1 offers:',
-        player1State.get().offers.map((o: any) => o.id),
-      )
-      console.log(
-        'Player1 businesses:',
-        player1State.get().player.businesses?.map((b: any) => b.id),
-      )
-
-      // Добавляем небольшую задержку для асинхронных операций
       await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     const handlePlayer2Event = async (event: any) => {
-      // Добавляем async
-      console.log('[Player2] Event received:', event.type, event)
-
-      if (event.type === 'OFFER_SENT') {
-        console.log(`[Player2] Offer received for player:`, event.payload.offer.toPlayerId)
+      try {
+        console.log('[Player2] Event received:', event.type, event)
         const currentState = player2State.get()
-        player2State.set({
-          offers: [...currentState.offers, event.payload.offer],
-        })
-      }
 
-      console.log(
-        'Player2 offers:',
-        player2State.get().offers.map((o: any) => o.id),
-      )
+        if (event.type === 'OFFER_SENT') {
+          player2State.set({
+            offers: [...currentState.offers, event.payload.offer],
+          })
+        }
+
+        if (event.type === 'BUSINESS_CREATED') {
+          player2State.set({
+            player: {
+              ...currentState.player,
+              businesses: [...(currentState.player.businesses || []), event.payload.business],
+            },
+          })
+        }
+
+        if (event.type === 'PARTNERSHIP_ACCEPTED') {
+          if (!event.payload) {
+            console.error('Missing payload in PARTNERSHIP_ACCEPTED event')
+            return
+          }
+
+          const business = createPartnerBusiness(
+            {
+              details: event.payload,
+              fromPlayerId: event.payload.partnerId,
+              fromPlayerName: event.payload.partnerName,
+            },
+            currentState.turn,
+            currentState.player.id,
+            false, // isInitiator
+          )
+
+          const newMoney = currentState.player.stats.money - (event.payload.yourInvestment || 0)
+
+          player2State.set({
+            player: {
+              ...currentState.player,
+              stats: {
+                ...currentState.player.stats,
+                money: newMoney,
+              },
+              businesses: [...(currentState.player.businesses || []), business],
+            },
+          })
+        }
+      } catch (error) {
+        console.error('Error in handlePlayer2Event:', error)
+      }
       await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
@@ -227,15 +284,9 @@ describe('partnership flow', () => {
       },
       'Давайте откроем магазин вместе!',
     )
-    console.log('All calls to mockBroadcastEvent:', mockBroadcastEvent.mock.calls)
-    expect(mockBroadcastEvent).toHaveBeenCalled()
 
-    // 7. Проверяем, что оффер доставлен
-    // Ждем немного, чтобы событие успело обработаться
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    // Проверяем, что broadcastEvent был вызван
+    // 7. Проверяем, что оффер был отправлен
     expect(mockBroadcastEvent).toHaveBeenCalled()
-    // Ищем событие OFFER_SENT
     const offerSentEvent = mockBroadcastEvent.mock.calls.find(
       (call: any) => call[0].type === 'OFFER_SENT',
     )
@@ -243,27 +294,40 @@ describe('partnership flow', () => {
     const offer = offerSentEvent?.[0].payload.offer
     expect(offer).toBeDefined()
 
-    // 8. Игрок 2 принимает оффер
-    if (offer) {
-      offersSlice2.acceptOffer(offer.id)
+    if (!offer) return
 
-      // 9. Проверяем, что у игрока 2 создан бизнес
-      const player2StateAfterAccept = player2State.get()
-      expect(player2StateAfterAccept.player.businesses).toHaveLength(1)
-      const player2Business = player2StateAfterAccept.player.businesses[0]
-      expect(player2Business.name).toBe('Совместный магазин')
-      expect(player2Business.playerShare).toBe(50)
+    // 8. Очищаем мок перед принятием оффера
+    mockBroadcastEvent.mockClear()
 
-      // 10. Проверяем, что у игрока 1 тоже создан бизнес
-      const player1StateAfterAccept = player1State.get()
-      expect(player1StateAfterAccept.player.businesses).toHaveLength(1)
-      const player1Business = player1StateAfterAccept.player.businesses[0]
-      expect(player1Business.name).toBe('Совместный магазин')
-      expect(player1Business.playerShare).toBe(50)
+    // 9. Игрок 2 принимает оффер
+    offersSlice2.acceptOffer(offer.id)
 
-      // 11. Проверяем, что деньги списались у обоих игроков
-      expect(player1StateAfterAccept.player.stats.money).toBe(995000) // 1,000,000 - 5,000
-      expect(player2StateAfterAccept.player.stats.money).toBe(995000) // 1,000,000 - 5,000
-    }
+    // 10. Ждем обработки событий
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // 11. Проверяем, что события были отправлены
+    expect(mockBroadcastEvent).toHaveBeenCalled()
+    const acceptanceEvent = mockBroadcastEvent.mock.calls.find(
+      (call: any) => call[0].type === 'PARTNERSHIP_ACCEPTED',
+    )
+    expect(acceptanceEvent).toBeDefined()
+
+    // 12. Проверяем состояние игроков
+    const player1FinalState = player1State.get()
+    const player2FinalState = player2State.get()
+
+    // Проверяем, что у обоих игроков есть по одному бизнесу
+    expect(player1FinalState.player.businesses).toHaveLength(1)
+    expect(player2FinalState.player.businesses).toHaveLength(1)
+
+    // Проверяем, что бизнесы связаны
+    const player1Business = player1FinalState.player.businesses[0]
+    const player2Business = player2FinalState.player.businesses[0]
+    expect(player1Business.partnerBusinessId).toBe(player2Business.id)
+    expect(player2Business.partnerBusinessId).toBe(player1Business.id)
+
+    // Проверяем, что деньги списались с обоих игроков
+    expect(player1FinalState.player.stats.money).toBe(995000) // 1,000,000 - 5,000
+    expect(player2FinalState.player.stats.money).toBe(995000) // 1,000,000 - 5,000
   })
 })

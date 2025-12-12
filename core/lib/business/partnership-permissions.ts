@@ -63,8 +63,14 @@ export function getBusinessPartner(business: Business, playerId: string) {
     partners: business.partners.map(p => ({ id: p.id, name: p.name, type: p.type }))
   })
 
+  console.log('[getBusinessPartner] Full partners array:', JSON.stringify(business.partners, null, 2))
+
   // Ищем в списке партнёров (приоритет)
-  const partner = business.partners.find((p) => p.id !== playerId && p.type === 'player')
+  const partner = business.partners.find((p) => {
+    console.log(`[getBusinessPartner] Checking partner: id=${p.id}, playerId=${playerId}, match=${p.id !== playerId}, type=${p.type}`)
+    return p.id !== playerId && p.type === 'player'
+  })
+
   if (partner) {
     console.log('[getBusinessPartner] Found partner in partners array:', partner)
     return {

@@ -76,12 +76,15 @@ export type ProposalType =
   | 'expand_network'
 
 export type BusinessChangeType =
-  | 'price'
-  | 'quantity'
-  | 'hire_employee'
-  | 'fire_employee'
-  | 'freeze'
-  | 'unfreeze'
+  | 'price'              // Изменение цены
+  | 'quantity'           // Изменение количества
+  | 'hire_employee'      // Найм сотрудника
+  | 'fire_employee'      // Увольнение сотрудника
+  | 'freeze'             // Заморозка бизнеса
+  | 'unfreeze'           // Разморозка бизнеса
+  | 'open_branch'        // Открытие филиала
+  | 'auto_purchase'      // Изменение автозакупки
+  | 'change_role'        // Изменение роли игрока
 
 
 export interface BusinessProposal {

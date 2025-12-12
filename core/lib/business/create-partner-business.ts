@@ -9,6 +9,7 @@ export function createPartnerBusiness(
       totalCost: number
       yourInvestment: number
       yourShare: number
+      businessId?: string
     }
     fromPlayerId: string
     fromPlayerName: string
@@ -18,7 +19,7 @@ export function createPartnerBusiness(
   isInitiator: boolean = false,
 ): Business & { partnerBusinessId?: string } {
   const now = Date.now()
-  const businessId = `biz_${now}`
+  const businessId = offer.details.businessId || `biz_${now}`
   const partnerBusinessId = isInitiator ? undefined : `biz_${now + 1}`
 
   console.log('[createPartnerBusiness] Creating business:', {

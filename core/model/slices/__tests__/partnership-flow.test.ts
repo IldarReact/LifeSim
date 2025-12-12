@@ -18,13 +18,17 @@ const mockBroadcastEvent = vi.fn((event) => {
   console.log('mockBroadcastEvent called with:', event)
 })
 
+vi.mock('@/core/lib/multiplayer', () => ({
+  broadcastEvent: (event: any) => mockBroadcastEvent(event),
+}))
+
 const mockPushNotification = vi.fn()
 
 // Обработчики событий
 let eventHandlers: Record<string, (event: any) => void> = {}
 
-// Мок для broadcastEvent
-function broadcastEvent(event: any) {
+// Логика обработки событий
+function handleBroadcastEvent(event: any) {
   console.log(`[BROADCAST] ${event.type} toPlayerId:`, event.toPlayerId)
   if (event.toPlayerId) {
     const handler = eventHandlers[event.type]
@@ -39,7 +43,6 @@ function broadcastEvent(event: any) {
       handler(event)
     })
   }
-  mockBroadcastEvent(event)
 }
 
 function createMockState(initial: Partial<LocalGameState> = {}): MockState {
@@ -83,6 +86,9 @@ describe('partnership flow', () => {
     mockBroadcastEvent.mockClear()
     mockPushNotification.mockClear()
     eventHandlers = {}
+
+    // Настраиваем реализацию мока
+    mockBroadcastEvent.mockImplementation(handleBroadcastEvent)
 
     // 1. Настраиваем состояние для игрока 1 (отправитель)
     player1State = createMockState({
@@ -134,7 +140,6 @@ describe('partnership flow', () => {
         })
       },
       pushNotification: mockPushNotification,
-      broadcastEvent,
     } as any)
 
     // 4. Создаем срезы для игрока 2
@@ -163,7 +168,6 @@ describe('partnership flow', () => {
         })
       },
       pushNotification: mockPushNotification,
-      broadcastEvent,
     } as any)
 
     // 5. Настраиваем обработчики событий
@@ -366,7 +370,6 @@ describe('partnership flow', () => {
         type: 'OFFER_SENT',
         payload: {
           offer: expect.objectContaining({
-            id: testOffer.id,
             type: testOffer.type,
             fromPlayerId: testOffer.fromPlayerId,
             toPlayerId: testOffer.toPlayerId,

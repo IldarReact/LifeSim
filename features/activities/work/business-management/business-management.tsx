@@ -50,7 +50,14 @@ export function BusinessManagement({
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
 
   return (
-    <div className="max-w-md mx-auto md:mx-0 w-full">
+    <div className="max-w-md mx-auto md:mx-0 w-full relative">
+      {/* Notification Badge */}
+      {proposalsCount > 0 && (
+        <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-br from-orange-500 to-red-600 text-white text-xs font-bold rounded-full min-w-[24px] h-[24px] flex items-center justify-center px-2 shadow-lg border-2 border-white/20 animate-pulse">
+          {proposalsCount > 9 ? '9+' : proposalsCount}
+        </div>
+      )}
+
       <InfoCard
         title={business.name}
         subtitle={business.type}
@@ -125,6 +132,7 @@ export function BusinessManagement({
               <BusinessManagementDialog
                 business={business}
                 playerCash={playerCash}
+                proposalsCount={proposalsCount}
                 onHireEmployee={onHireEmployee}
                 onFireEmployee={onFireEmployee}
                 onChangePrice={onChangePrice}

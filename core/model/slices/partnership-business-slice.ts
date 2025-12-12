@@ -145,33 +145,128 @@ export const createPartnershipBusinessSlice: StateCreator<
       return
     }
 
-    console.log('[approveBusinessChange] Applying changes:', {
-      businessId: proposal.businessId,
-      currentPrice: business.price,
-      newPrice: proposal.data.newPrice,
-      currentQuantity: business.quantity,
-      newQuantity: proposal.data.newQuantity,
-    })
+    console.log('[approveBusinessChange] Applying changes for type:', proposal.changeType)
 
-    // Применяем изменения
-    set((state) => ({
-      player: {
-        ...state.player!,
-        businesses: state.player!.businesses.map((b) =>
-          b.id === proposal.businessId
-            ? {
-              ...b,
-              price: proposal.data.newPrice ?? b.price,
-              quantity: proposal.data.newQuantity ?? b.quantity,
-            }
-            : b,
-        ),
-      },
-      // Обновляем статус предложения
-      businessProposals: state.businessProposals.map((p) =>
-        p.id === proposalId ? { ...p, status: 'approved' as const } : p,
-      ),
-    }))
+    // Применяем изменения в зависимости от типа
+    switch (proposal.changeType) {
+      case 'price':
+        set((state) => ({
+          player: {
+            ...state.player!,
+            businesses: state.player!.businesses.map((b) =>
+              b.id === proposal.businessId
+                ? { ...b, price: proposal.data.newPrice ?? b.price }
+                : b,
+            ),
+          },
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'quantity':
+        set((state) => ({
+          player: {
+            ...state.player!,
+            businesses: state.player!.businesses.map((b) =>
+              b.id === proposal.businessId
+                ? { ...b, quantity: proposal.data.newQuantity ?? b.quantity }
+                : b,
+            ),
+          },
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'hire_employee':
+        // TODO: Implement hire employee logic
+        console.log('[approveBusinessChange] Hiring employee:', proposal.data)
+        set((state) => ({
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'fire_employee':
+        // TODO: Implement fire employee logic
+        console.log('[approveBusinessChange] Firing employee:', proposal.data.fireEmployeeId)
+        set((state) => ({
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'freeze':
+        set((state) => ({
+          player: {
+            ...state.player!,
+            businesses: state.player!.businesses.map((b) =>
+              b.id === proposal.businessId ? { ...b, state: 'frozen' as const } : b,
+            ),
+          },
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'unfreeze':
+        set((state) => ({
+          player: {
+            ...state.player!,
+            businesses: state.player!.businesses.map((b) =>
+              b.id === proposal.businessId ? { ...b, state: 'active' as const } : b,
+            ),
+          },
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'open_branch':
+        // TODO: Implement open branch logic
+        console.log('[approveBusinessChange] Opening branch:', proposal.data.branchName)
+        set((state) => ({
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'auto_purchase':
+        set((state) => ({
+          player: {
+            ...state.player!,
+            businesses: state.player!.businesses.map((b) =>
+              b.id === proposal.businessId
+                ? {
+                  ...b,
+                  inventory: b.inventory
+                    ? {
+                      ...b.inventory,
+                      autoPurchaseAmount: proposal.data.autoPurchaseAmount ?? b.inventory.autoPurchaseAmount,
+                    }
+                    : b.inventory,
+                }
+                : b,
+            ),
+          },
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      default:
+        console.error('[approveBusinessChange] Unknown change type:', proposal.changeType)
+        return
+    }
 
     console.log('[approveBusinessChange] Changes applied, broadcasting events')
 
@@ -191,10 +286,7 @@ export const createPartnershipBusinessSlice: StateCreator<
       type: 'BUSINESS_UPDATED',
       payload: {
         businessId: proposal.businessId,
-        changes: {
-          price: proposal.data.newPrice,
-          quantity: proposal.data.newQuantity,
-        },
+        changes: proposal.data,
       },
       toPlayerId: proposal.initiatorId,
     })

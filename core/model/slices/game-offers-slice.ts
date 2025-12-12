@@ -154,13 +154,10 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 
   acceptOffer: (offerId) => {
     const state = get()
-    const offerIndex = state.offers.findIndex((o) => o.id === offerId)
+    console.log('STEP 1: acceptOffer called', offerId)
 
-    console.log('[GameOffers] Принятие предложения:', {
-      offerId,
-      playerMoney: state.player?.stats.money,
-      offer: state.offers.find((o) => o.id === offerId),
-    })
+    const offerIndex = state.offers.findIndex((o) => o.id === offerId)
+    console.log('STEP 2: offerIndex', offerIndex)
 
     if (offerIndex === -1) {
       console.error('Предложение не найдено')
@@ -168,6 +165,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     }
 
     const offer = state.offers[offerIndex]
+    console.log('STEP 3: offer found', offer.type, offer.status)
 
     // Проверяем, что предложение ожидает ответа
     if (offer.status !== 'pending') {
@@ -175,12 +173,15 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       return
     }
 
+    console.log('STEP 4: checking type')
     if (isPartnershipOffer(offer)) {
+      console.log('STEP 5: is partnership')
       // Проверяем, хватает ли у игрока денег
       if (state.player!.stats.money < offer.details.partnerInvestment) {
         console.warn('Недостаточно денег для принятия партнерства')
         return
       }
+      console.log('Money check passed')
 
       // 1. Создаем бизнес для принимающего игрока
       const acceptingBusiness = createPartnerBusiness(
@@ -200,11 +201,17 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         state.player!.id,
         false, // isInitiator = false для принимающего игрока
       )
+      console.log('STEP 6: business created', acceptingBusiness.id)
 
       // 2. Вычитаем деньги у принимающего игрока
       // Используем applyStatChanges для обновления состояния
       const newMoney = state.player!.stats.money - offer.details.partnerInvestment
-      state.applyStatChanges({ money: -offer.details.partnerInvestment })
+      console.log('Has applyStatChanges:', typeof state.applyStatChanges)
+      if (state.applyStatChanges) {
+        state.applyStatChanges({ money: -offer.details.partnerInvestment })
+      } else {
+        console.warn('applyStatChanges not found on state!')
+      }
 
       console.log('[GameOffers] Обновление денег:', {
         oldMoney: state.player!.stats.money,

@@ -31,6 +31,7 @@ import {
 export function BusinessManagementDialog({
   business,
   playerCash,
+  proposalsCount = 0,
   onHireEmployee,
   onFireEmployee,
   onChangePrice,
@@ -88,7 +89,44 @@ export function BusinessManagementDialog({
   }
 
   const handleHire = (candidate: EmployeeCandidate) => {
-    onHireEmployee(business.id, candidate)
+    // Проверка прав для партнёрских бизнесов
+    if (business.partners.length > 0 && player) {
+      const canDirect = canMakeDirectChanges(business, player.id)
+      const needsApproval = requiresApproval(business, player.id)
+
+      if (canDirect) {
+        // > 50% - прямой найм
+        onHireEmployee(business.id, candidate)
+      } else if (needsApproval) {
+        // 50/50 - отправка предложения
+        const proposeChange = useGameStore.getState().proposeBusinessChange
+        proposeChange(business.id, 'hire_employee', {
+          employeeName: candidate.name,
+          employeeRole: candidate.role,
+          employeeSalary: candidate.requestedSalary,
+          employeeStars: candidate.stars,
+        })
+        setHireDialogOpen(false)
+
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'info',
+          title: 'Предложение отправлено',
+          message: `Предложение о найме ${candidate.name} отправлено партнёру`,
+        })
+      } else {
+        // < 50% - нет прав
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'error',
+          title: 'Недостаточно прав',
+          message: 'У вас недостаточно доли в бизнесе для найма сотрудников (требуется минимум 50%)',
+        })
+      }
+    } else {
+      // Обычный бизнес без партнёров
+      onHireEmployee(business.id, candidate)
+    }
   }
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

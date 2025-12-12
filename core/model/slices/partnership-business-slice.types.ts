@@ -9,12 +9,33 @@ export interface BusinessChangeProposal {
   status: 'pending' | 'approved' | 'rejected'
   createdAt: number
   data: {
+    // Для price
     newPrice?: number
+
+    // Для quantity
     newQuantity?: number
+
+    // Для hire_employee
     employeeId?: string
     employeeName?: string
     employeeRole?: string
     employeeSalary?: number
+    employeeStars?: number
+
+    // Для fire_employee
+    fireEmployeeId?: string
+    fireEmployeeName?: string
+
+    // Для open_branch
+    branchName?: string
+    branchCost?: number
+
+    // Для auto_purchase
+    autoPurchaseAmount?: number
+
+    // Для change_role
+    newRole?: string
+    oldRole?: string
   }
 }
 

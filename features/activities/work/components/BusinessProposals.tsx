@@ -30,17 +30,23 @@ export function BusinessProposals() {
   const getProposalDescription = (proposal: BusinessChangeProposal): string => {
     switch (proposal.changeType) {
       case 'price':
-        return `Изменить цену на ${proposal.data.newPrice}`
+        return `Изменить цену на $${proposal.data.newPrice}`
       case 'quantity':
         return `Изменить количество на ${proposal.data.newQuantity}`
       case 'hire_employee':
-        return `Нанять ${proposal.data.employeeName} на должность ${proposal.data.employeeRole}`
+        return `Нанять ${proposal.data.employeeName} на должность ${proposal.data.employeeRole} (зарплата: $${proposal.data.employeeSalary})`
       case 'fire_employee':
-        return `Уволить сотрудника`
+        return `Уволить ${proposal.data.fireEmployeeName}`
       case 'freeze':
         return `Заморозить бизнес`
       case 'unfreeze':
         return `Разморозить бизнес`
+      case 'open_branch':
+        return `Открыть филиал "${proposal.data.branchName}" (стоимость: $${proposal.data.branchCost})`
+      case 'auto_purchase':
+        return `Изменить автозакупку на ${proposal.data.autoPurchaseAmount} единиц`
+      case 'change_role':
+        return `Изменить роль с "${proposal.data.oldRole}" на "${proposal.data.newRole}"`
       default:
         return 'Неизвестное изменение'
     }

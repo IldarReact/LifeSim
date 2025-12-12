@@ -26,9 +26,21 @@ const ACTIVITIES: readonly Activity[] = [
 ]
 
 export function ActivityNavigation(): React.JSX.Element | null {
-  const { activeActivity, setActiveActivity, gameStatus } = useGameStore()
+  const { activeActivity, setActiveActivity, gameStatus, player, businessProposals } = useGameStore()
 
   if (gameStatus !== "playing") return null
+
+  // Подсчёт входящих предложений по бизнесу
+  const workNotificationsCount = businessProposals.filter(
+    (p) => p.status === 'pending' && p.initiatorId !== player?.id
+  ).length
+
+  const getNotificationCount = (activityId: ActivityId): number => {
+    if (activityId === 'work') {
+      return workNotificationsCount
+    }
+    return 0
+  }
 
   return (
     <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40 pointer-events-none">
@@ -37,6 +49,8 @@ export function ActivityNavigation(): React.JSX.Element | null {
           {ACTIVITIES.map((activity) => {
             const Icon = activity.icon
             const isActive = activeActivity === activity.id
+            const notificationCount = getNotificationCount(activity.id)
+
             return (
               <button
                 key={activity.id}
@@ -50,6 +64,14 @@ export function ActivityNavigation(): React.JSX.Element | null {
                 {isActive && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] rounded-r-full" />
                 )}
+
+                {/* Notification Badge */}
+                {notificationCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-500 to-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg border border-white/20 animate-pulse">
+                    {notificationCount > 9 ? '9+' : notificationCount}
+                  </div>
+                )}
+
                 <Icon className={`w-5 h-5 md:w-6 md:h-6 transition-transform ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
                 <span className="text-[10px] font-bold tracking-wider text-center leading-tight opacity-80">{activity.label}</span>
               </button>

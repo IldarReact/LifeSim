@@ -11,6 +11,7 @@ import { BusinessManagementDialog } from './business-management-dialog'
 interface BusinessManagementProps {
   business: Business
   playerCash: number
+  proposalsCount?: number
   onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
   onFireEmployee: (businessId: string, employeeId: string) => void
   onChangePrice: (businessId: string, newPrice: number) => void
@@ -36,6 +37,7 @@ const BUSINESS_IMAGES: Record<string, string> = {
 export function BusinessManagement({
   business,
   playerCash,
+  proposalsCount = 0,
   onHireEmployee,
   onFireEmployee,
   onChangePrice,

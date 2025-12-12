@@ -3,6 +3,7 @@ import type { Business, EmployeeRole, EmployeeCandidate } from "@/core/types"
 export interface BusinessManagementDialogProps {
   business: Business
   playerCash: number
+  proposalsCount?: number
   onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
   onFireEmployee: (businessId: string, employeeId: string) => void
   onChangePrice: (businessId: string, newPrice: number) => void

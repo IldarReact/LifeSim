@@ -17,6 +17,7 @@ import type { SkillLevel } from "@/core/types"
 export function WorkActivity(): React.JSX.Element | null {
   const {
     player,
+    businessProposals,
     applyForJob,
     quitJob,
     applyForFreelance,
@@ -127,20 +128,30 @@ export function WorkActivity(): React.JSX.Element | null {
           <div className="space-y-4">
             <SectionSeparator title="Мои бизнесы" />
             <div className="grid grid-cols-3 gap-4">
-              {player.businesses.map((business) => (
-                <BusinessManagement
-                  key={business.id}
-                  business={business}
-                  playerCash={player?.stats?.money || 0}
-                  onHireEmployee={hireEmployee}
-                  onFireEmployee={fireEmployee}
-                  onChangePrice={changePrice}
-                  onSetQuantity={setQuantity}
-                  onOpenBranch={openBranch}
-                  onJoinAsEmployee={joinBusinessAsEmployee}
-                  onLeaveJob={leaveBusinessJob}
-                />
-              ))}
+              {player.businesses.map((business) => {
+                // Подсчёт входящих предложений для этого бизнеса
+                const proposalsCount = businessProposals.filter(
+                  (p) => p.businessId === business.id &&
+                    p.status === 'pending' &&
+                    p.initiatorId !== player.id
+                ).length
+
+                return (
+                  <BusinessManagement
+                    key={business.id}
+                    business={business}
+                    playerCash={player?.stats?.money || 0}
+                    proposalsCount={proposalsCount}
+                    onHireEmployee={hireEmployee}
+                    onFireEmployee={fireEmployee}
+                    onChangePrice={changePrice}
+                    onSetQuantity={setQuantity}
+                    onOpenBranch={openBranch}
+                    onJoinAsEmployee={joinBusinessAsEmployee}
+                    onLeaveJob={leaveBusinessJob}
+                  />
+                )
+              })}
             </div>
 
             {/* Business Proposals */}

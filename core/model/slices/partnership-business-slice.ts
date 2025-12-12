@@ -128,61 +128,76 @@ export const createPartnershipBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
+    console.log('[approveBusinessChange] Starting:', { proposalId, playerId: state.player.id })
+
     const proposal = state.businessProposals.find((p) => p.id === proposalId)
     if (!proposal) {
-      console.error('Proposal not found:', proposalId)
+      console.error('[approveBusinessChange] Proposal not found:', proposalId)
       return
     }
 
-    // Обновляем статус предложения
+    console.log('[approveBusinessChange] Found proposal:', proposal)
+
+    // Применяем изменения к бизнесу СНАЧАЛА
+    const business = state.player.businesses.find((b) => b.id === proposal.businessId)
+    if (!business) {
+      console.error('[approveBusinessChange] Business not found:', proposal.businessId)
+      return
+    }
+
+    console.log('[approveBusinessChange] Applying changes:', {
+      businessId: proposal.businessId,
+      currentPrice: business.price,
+      newPrice: proposal.data.newPrice,
+      currentQuantity: business.quantity,
+      newQuantity: proposal.data.newQuantity,
+    })
+
+    // Применяем изменения
     set((state) => ({
+      player: {
+        ...state.player!,
+        businesses: state.player!.businesses.map((b) =>
+          b.id === proposal.businessId
+            ? {
+              ...b,
+              price: proposal.data.newPrice ?? b.price,
+              quantity: proposal.data.newQuantity ?? b.quantity,
+            }
+            : b,
+        ),
+      },
+      // Обновляем статус предложения
       businessProposals: state.businessProposals.map((p) =>
         p.id === proposalId ? { ...p, status: 'approved' as const } : p,
       ),
     }))
 
-    // Применяем изменения к бизнесу
-    const business = state.player.businesses.find((b) => b.id === proposal.businessId)
-    if (business) {
-      set((state) => ({
-        player: {
-          ...state.player!,
-          businesses: state.player!.businesses.map((b) =>
-            b.id === proposal.businessId
-              ? {
-                ...b,
-                price: proposal.data.newPrice ?? b.price,
-                quantity: proposal.data.newQuantity ?? b.quantity,
-              }
-              : b,
-          ),
-        },
-      }))
+    console.log('[approveBusinessChange] Changes applied, broadcasting events')
 
-      // Отправляем событие инициатору
-      broadcastEvent({
-        type: 'BUSINESS_CHANGE_APPROVED',
-        payload: {
-          businessId: proposal.businessId,
-          proposalId,
-          approverId: state.player.id,
-        },
-        toPlayerId: proposal.initiatorId,
-      })
+    // Отправляем событие инициатору об одобрении
+    broadcastEvent({
+      type: 'BUSINESS_CHANGE_APPROVED',
+      payload: {
+        businessId: proposal.businessId,
+        proposalId,
+        approverId: state.player.id,
+      },
+      toPlayerId: proposal.initiatorId,
+    })
 
-      // Отправляем обновление бизнеса
-      broadcastEvent({
-        type: 'BUSINESS_UPDATED',
-        payload: {
-          businessId: proposal.businessId,
-          changes: {
-            price: proposal.data.newPrice,
-            quantity: proposal.data.newQuantity,
-          },
+    // Отправляем обновление бизнеса инициатору
+    broadcastEvent({
+      type: 'BUSINESS_UPDATED',
+      payload: {
+        businessId: proposal.businessId,
+        changes: {
+          price: proposal.data.newPrice,
+          quantity: proposal.data.newQuantity,
         },
-        toPlayerId: proposal.initiatorId,
-      })
-    }
+      },
+      toPlayerId: proposal.initiatorId,
+    })
 
     state.pushNotification?.({
       type: 'success',

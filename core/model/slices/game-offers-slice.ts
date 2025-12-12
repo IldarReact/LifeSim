@@ -121,10 +121,12 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     }))
 
     // Отправляем событие всем игрокам
+    console.log('Before broadcastEvent in sendOffer')
     broadcastEvent({
       type: 'OFFER_SENT',
       payload: { offer: newOffer },
     })
+    console.log('After broadcastEvent in sendOffer')
 
     console.log('[GameOffers] Отправка предложения:', {
       offerId: newOffer.id,

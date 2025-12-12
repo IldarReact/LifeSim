@@ -1,8 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createGameOffersSlice } from '../game-offers-slice'
 import { createBusinessSlice } from '../business-slice'
 import { createCoreBusinessSlice } from '../business/core-business-slice'
-import { beforeEach } from 'node:test'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 
 // Тип для мокового хранилища
@@ -14,27 +13,32 @@ type MockState = {
 }
 
 // Мокируем функции
-const mockBroadcastEvent = vi.fn()
+const mockBroadcastEvent = vi.fn((event) => {
+  console.log('mockBroadcastEvent called with:', event)
+})
+
 const mockPushNotification = vi.fn()
 
 // Обработчики событий
 let eventHandlers: Record<string, (event: any) => void> = {}
 
-mockBroadcastEvent.mockImplementation((event) => {
-  console.log('mockBroadcastEvent called with:', event)
-})
-
 // Мок для broadcastEvent
 function broadcastEvent(event: any) {
+  console.log('broadcastEvent called with:', event)
   if (event.toPlayerId) {
     // Если указан получатель, отправляем только ему
     const handler = eventHandlers[event.type]
     if (handler) {
+      console.log('Calling handler for', event.type)
       handler(event)
     }
   } else {
     // Иначе отправляем всем
-    Object.values(eventHandlers).forEach((handler) => handler(event))
+    console.log('Broadcasting to all handlers')
+    Object.values(eventHandlers).forEach((handler) => {
+      console.log('Calling handler with event:', event.type)
+      handler(event)
+    })
   }
   mockBroadcastEvent(event)
 }
@@ -50,6 +54,7 @@ function createMockState(initial: any = {}): MockState {
   }
 
   const on = (eventType: string, handler: (event: any) => void) => {
+    console.log('Registering handler for:', eventType)
     eventHandlers[eventType] = handler
   }
 
@@ -57,16 +62,20 @@ function createMockState(initial: any = {}): MockState {
 }
 
 describe('partnership flow', () => {
+  let player1State: ReturnType<typeof createMockState>
+  let player2State: ReturnType<typeof createMockState>
+  let offersSlice1: any
+  let offersSlice2: any
+
   beforeEach(() => {
     // Сбрасываем моки перед каждым тестом
+    vi.clearAllMocks()
     mockBroadcastEvent.mockClear()
     mockPushNotification.mockClear()
     eventHandlers = {}
-  })
 
-  it('создает партнерство между двумя игроками', async () => {
     // 1. Настраиваем состояние для игрока 1 (отправитель)
-    const player1State = createMockState({
+    player1State = createMockState({
       player: {
         id: 'player1',
         name: 'Игрок 1',
@@ -78,7 +87,7 @@ describe('partnership flow', () => {
     })
 
     // 2. Настраиваем состояние для игрока 2 (получатель)
-    const player2State = createMockState({
+    player2State = createMockState({
       player: {
         id: 'player2',
         name: 'Игрок 2',
@@ -100,7 +109,7 @@ describe('partnership flow', () => {
       ...coreBusinessSlice1,
     } as any)
 
-    const offersSlice1 = createGameOffersSlice(player1State.set, player1State.get, {
+    offersSlice1 = createGameOffersSlice(player1State.set, player1State.get, {
       ...businessSlice1,
       applyStatChanges: (changes: any) => {
         const current = player1State.get()
@@ -129,7 +138,7 @@ describe('partnership flow', () => {
       ...coreBusinessSlice2,
     } as any)
 
-    const offersSlice2 = createGameOffersSlice(player2State.set, player2State.get, {
+    offersSlice2 = createGameOffersSlice(player2State.set, player2State.get, {
       ...businessSlice2,
       applyStatChanges: (changes: any) => {
         const current = player2State.get()
@@ -203,7 +212,6 @@ describe('partnership flow', () => {
       } catch (error) {
         console.error('Error in handlePlayer1Event:', error)
       }
-      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     const handlePlayer2Event = async (event: any) => {
@@ -259,14 +267,16 @@ describe('partnership flow', () => {
       } catch (error) {
         console.error('Error in handlePlayer2Event:', error)
       }
-      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     // Подписываемся на события
     player1State.on('*', handlePlayer1Event)
     player2State.on('*', handlePlayer2Event)
+  })
 
+  it('создает партнерство между двумя игроками', async () => {
     // 6. Игрок 1 отправляет оффер партнерства
+    console.log('Sending offer from player1 to player2')
     offersSlice1.sendOffer(
       'business_partnership',
       'player2',
@@ -285,13 +295,18 @@ describe('partnership flow', () => {
       'Давайте откроем магазин вместе!',
     )
 
+    // Даем время на обработку событий
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
     // 7. Проверяем, что оффер был отправлен
+    console.log('Checking if broadcastEvent was called')
     expect(mockBroadcastEvent).toHaveBeenCalled()
+
     const offerSentEvent = mockBroadcastEvent.mock.calls.find(
       (call: any) => call[0].type === 'OFFER_SENT',
     )
     expect(offerSentEvent).toBeDefined()
-    const offer = offerSentEvent?.[0].payload.offer
+    const offer = offerSentEvent?.[0].payload?.offer
     expect(offer).toBeDefined()
 
     if (!offer) return
@@ -300,13 +315,16 @@ describe('partnership flow', () => {
     mockBroadcastEvent.mockClear()
 
     // 9. Игрок 2 принимает оффер
+    console.log('Player2 accepting offer')
     offersSlice2.acceptOffer(offer.id)
 
     // 10. Ждем обработки событий
     await new Promise((resolve) => setTimeout(resolve, 50))
 
     // 11. Проверяем, что события были отправлены
+    console.log('Checking if partnership was accepted')
     expect(mockBroadcastEvent).toHaveBeenCalled()
+
     const acceptanceEvent = mockBroadcastEvent.mock.calls.find(
       (call: any) => call[0].type === 'PARTNERSHIP_ACCEPTED',
     )
@@ -315,6 +333,9 @@ describe('partnership flow', () => {
     // 12. Проверяем состояние игроков
     const player1FinalState = player1State.get()
     const player2FinalState = player2State.get()
+
+    console.log('Player1 final state:', player1FinalState)
+    console.log('Player2 final state:', player2FinalState)
 
     // Проверяем, что у обоих игроков есть по одному бизнесу
     expect(player1FinalState.player.businesses).toHaveLength(1)

@@ -19,6 +19,10 @@ const mockPushNotification = vi.fn()
 // Обработчики событий
 let eventHandlers: Record<string, (event: any) => void> = {}
 
+mockBroadcastEvent.mockImplementation((event) => {
+  console.log('mockBroadcastEvent called with:', event)
+})
+
 // Мок для broadcastEvent
 function broadcastEvent(event: any) {
   if (event.toPlayerId) {
@@ -143,12 +147,23 @@ describe('partnership flow', () => {
     } as any)
 
     // 5. Настраиваем обработчики событий
-    const handlePlayer1Event = (event: any) => {
-      if (event.type === 'OFFER_SENT') return
+    const handlePlayer1Event = async (event: any) => {
+      // Добавляем async
+      console.log('[Player1] Event received:', event.type, event)
 
-      // Обработка событий для игрока 1
-      const currentState = player1State.get()
+      // Обработка входящих офферов
+      if (event.type === 'OFFER_SENT') {
+        console.log(`[Player1] Offer received for player:`, event.payload.offer.toPlayerId)
+        const currentState = player1State.get()
+        player1State.set({
+          offers: [...currentState.offers, event.payload.offer],
+        })
+      }
+
+      // Обработка создания бизнеса
       if (event.type === 'BUSINESS_CREATED') {
+        console.log('[Player1] Creating business:', event.payload.business)
+        const currentState = player1State.get()
         player1State.set({
           player: {
             ...currentState.player,
@@ -156,16 +171,38 @@ describe('partnership flow', () => {
           },
         })
       }
+
+      // Логируем текущее состояние
+      console.log(
+        'Player1 offers:',
+        player1State.get().offers.map((o: any) => o.id),
+      )
+      console.log(
+        'Player1 businesses:',
+        player1State.get().player.businesses?.map((b: any) => b.id),
+      )
+
+      // Добавляем небольшую задержку для асинхронных операций
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
-    const handlePlayer2Event = (event: any) => {
+    const handlePlayer2Event = async (event: any) => {
+      // Добавляем async
+      console.log('[Player2] Event received:', event.type, event)
+
       if (event.type === 'OFFER_SENT') {
-        // Добавляем оффер получателю
+        console.log(`[Player2] Offer received for player:`, event.payload.offer.toPlayerId)
         const currentState = player2State.get()
         player2State.set({
           offers: [...currentState.offers, event.payload.offer],
         })
       }
+
+      console.log(
+        'Player2 offers:',
+        player2State.get().offers.map((o: any) => o.id),
+      )
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     // Подписываемся на события
@@ -190,6 +227,9 @@ describe('partnership flow', () => {
       },
       'Давайте откроем магазин вместе!',
     )
+    console.log('All calls to mockBroadcastEvent:', mockBroadcastEvent.mock.calls)
+    expect(mockBroadcastEvent).toHaveBeenCalled()
+
     // 7. Проверяем, что оффер доставлен
     // Ждем немного, чтобы событие успело обработаться
     await new Promise((resolve) => setTimeout(resolve, 0))

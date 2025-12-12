@@ -21,6 +21,15 @@ export function createPartnerBusiness(
   const businessId = `biz_${now}`
   const partnerBusinessId = isInitiator ? undefined : `biz_${now + 1}`
 
+  console.log('[createPartnerBusiness] Creating business:', {
+    playerId,
+    fromPlayerId: offer.fromPlayerId,
+    fromPlayerName: offer.fromPlayerName,
+    isInitiator,
+    yourShare: offer.details.yourShare,
+    yourInvestment: offer.details.yourInvestment,
+  })
+
   return {
     id: businessId,
     name: offer.details.businessName,

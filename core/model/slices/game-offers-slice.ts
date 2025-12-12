@@ -49,7 +49,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         },
         state.turn,
         state.player.id,
-        true, // Отмечаем как инициатора
+        true,
       )
 
       // Связываем бизнесы
@@ -227,15 +227,16 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       // 4. Уведомляем инициатора
       console.log('[GameOffers] Отправка PARTNERSHIP_ACCEPTED для инициатора:', {
         businessId: acceptingBusiness.id,
-        partnerId: state.player!.id,
+        partnerId: state.player!.id, // ID принимающего (получателя)
         partnerName: state.player!.name,
+        toPlayerId: offer.fromPlayerId, // ID инициатора
       })
 
       broadcastEvent({
         type: 'PARTNERSHIP_ACCEPTED',
         payload: {
           businessId: acceptingBusiness.id,
-          partnerId: state.player!.id,
+          partnerId: state.player!.id, // ID принимающего - это правильно!
           partnerName: state.player!.name,
           businessName: acceptingBusiness.name,
           businessType: acceptingBusiness.type,
@@ -246,7 +247,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           yourShare: offer.details.yourShare,
           yourInvestment: offer.details.yourInvestment,
         },
-        toPlayerId: offer.fromPlayerId,
+        toPlayerId: offer.fromPlayerId, // Отправляем инициатору
       })
 
       // 5. Обновляем статус предложения

@@ -3,6 +3,7 @@ import { createGameOffersSlice } from '../game-offers-slice'
 import { createBusinessSlice } from '../business-slice'
 import { createCoreBusinessSlice } from '../business/core-business-slice'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
+import { LocalBusiness, LocalGameOffer, LocalGameState } from '../types'
 
 // Тип для мокового хранилища
 type MockState = {
@@ -24,26 +25,35 @@ let eventHandlers: Record<string, (event: any) => void> = {}
 
 // Мок для broadcastEvent
 function broadcastEvent(event: any) {
-  console.log('broadcastEvent called with:', event)
+  console.log(`[BROADCAST] ${event.type} toPlayerId:`, event.toPlayerId)
   if (event.toPlayerId) {
-    // Если указан получатель, отправляем только ему
     const handler = eventHandlers[event.type]
     if (handler) {
-      console.log('Calling handler for', event.type)
+      console.log(`[HANDLER] Calling ${event.type} handler for player ${event.toPlayerId}`)
       handler(event)
     }
   } else {
-    // Иначе отправляем всем
-    console.log('Broadcasting to all handlers')
-    Object.values(eventHandlers).forEach((handler) => {
-      console.log('Calling handler with event:', event.type)
+    console.log('[BROADCAST] Sending to all players')
+    Object.entries(eventHandlers).forEach(([type, handler]) => {
+      console.log(`[HANDLER] Calling ${type} handler`)
       handler(event)
     })
   }
   mockBroadcastEvent(event)
 }
 
-function createMockState(initial: any = {}): MockState {
+function createMockState(initial: Partial<LocalGameState> = {}): MockState {
+  const defaultState: LocalGameState = {
+    player: {
+      id: '',
+      name: '',
+      stats: { money: 0 },
+      businesses: [],
+    },
+    offers: [],
+    turn: 1,
+    ...initial,
+  }
   let state = { ...initial }
 
   const get = () => state
@@ -77,8 +87,8 @@ describe('partnership flow', () => {
     // 1. Настраиваем состояние для игрока 1 (отправитель)
     player1State = createMockState({
       player: {
-        id: 'player1',
-        name: 'Игрок 1',
+        id: 'player_1', // Changed from 'player1'
+        name: 'Player 1',
         stats: { money: 1000000 },
         businesses: [],
       },
@@ -89,8 +99,8 @@ describe('partnership flow', () => {
     // 2. Настраиваем состояние для игрока 2 (получатель)
     player2State = createMockState({
       player: {
-        id: 'player2',
-        name: 'Игрок 2',
+        id: '1', // Changed from 'player2'
+        name: 'Player 2',
         stats: { money: 1000000 },
         businesses: [],
       },
@@ -157,46 +167,90 @@ describe('partnership flow', () => {
     } as any)
 
     // 5. Настраиваем обработчики событий
-    const handlePlayer1Event = async (event: any) => {
+    const handlePlayer1Event = async (event: {
+      type: string
+      payload?: {
+        offer?: LocalGameOffer
+        business?: LocalBusiness
+        partnerId?: string
+        partnerName?: string
+        yourInvestment?: number
+        [key: string]: any
+      }
+    }) => {
       try {
         console.log('[Player1] Event received:', event.type, event)
         const currentState = player1State.get()
-
         switch (event.type) {
           case 'OFFER_SENT':
-            player1State.set({
-              offers: [...currentState.offers, event.payload.offer],
-            })
+            if (event.payload?.offer) {
+              player1State.set({
+                offers: [...currentState.offers, event.payload.offer],
+              })
+            }
             break
-
           case 'BUSINESS_CREATED':
-            player1State.set({
-              player: {
-                ...currentState.player,
-                businesses: [...(currentState.player.businesses || []), event.payload.business],
-              },
-            })
+            if (event.payload?.business) {
+              player1State.set({
+                player: {
+                  ...currentState.player,
+                  businesses: [...currentState.player.businesses, event.payload.business],
+                },
+              })
+            }
             break
-
           case 'PARTNERSHIP_ACCEPTED':
             if (!event.payload) {
               console.error('Missing payload in PARTNERSHIP_ACCEPTED event')
               break
             }
-
+            // Add proper type checking for the payload
+            if (!event.payload.partnerId || !event.payload.partnerName) {
+              console.error('Missing required partner data in PARTNERSHIP_ACCEPTED event')
+              break
+            }
+            // Ensure all required fields are present
+            const payload = {
+              ...event.payload,
+              businessName: event.payload?.businessName || 'Совместный бизнес',
+              businessType: event.payload?.businessType || 'shop',
+              businessDescription: event.payload?.businessDescription || '',
+              totalCost: event.payload?.totalCost || 0,
+              yourInvestment: event.payload?.yourInvestment || 0,
+              yourShare: event.payload?.yourShare || 50,
+              businessId: event.payload?.businessId || `biz_${Date.now()}`,
+              // Add any other required fields with defaults
+              partnerId: event.payload?.partnerId || '',
+              partnerName: event.payload?.partnerName || '',
+              // Ensure all required fields from the GameOffer type are included
+              fromPlayerId: event.payload?.fromPlayerId || '',
+              fromPlayerName: event.payload?.fromPlayerName || '',
+              toPlayerId: event.payload?.toPlayerId || '',
+              toPlayerName: event.payload?.toPlayerName || '',
+              message: event.payload?.message || '',
+              status: event.payload?.status || 'pending',
+              createdTurn: event.payload?.createdTurn || 1,
+              expiresInTurns: event.payload?.expiresInTurns || 10,
+            }
             const business = createPartnerBusiness(
               {
-                details: event.payload,
-                fromPlayerId: event.payload.partnerId,
-                fromPlayerName: event.payload.partnerName,
+                details: {
+                  businessName: payload.businessName,
+                  businessType: payload.businessType,
+                  businessDescription: payload.businessDescription,
+                  totalCost: payload.totalCost,
+                  yourInvestment: payload.yourInvestment,
+                  yourShare: payload.yourShare,
+                },
+                fromPlayerId: payload.partnerId,
+                fromPlayerName: payload.partnerName,
               },
               currentState.turn,
               currentState.player.id,
               true, // isInitiator
             )
-
-            const newMoney = currentState.player.stats.money - (event.payload.yourInvestment || 0)
-
+            const investment = payload.yourInvestment || 0
+            const newMoney = currentState.player.stats.money - investment
             player1State.set({
               player: {
                 ...currentState.player,
@@ -204,7 +258,7 @@ describe('partnership flow', () => {
                   ...currentState.player.stats,
                   money: newMoney,
                 },
-                businesses: [...(currentState.player.businesses || []), business],
+                businesses: [...currentState.player.businesses, business],
               },
             })
             break
@@ -277,22 +331,48 @@ describe('partnership flow', () => {
   it('создает партнерство между двумя игроками', async () => {
     // 6. Игрок 1 отправляет оффер партнерства
     console.log('Sending offer from player1 to player2')
-    offersSlice1.sendOffer(
-      'business_partnership',
-      'player2',
-      'Игрок 2',
-      {
+    const testOffer = {
+      id: 'test-offer-1',
+      type: 'business_partnership' as const,
+      fromPlayerId: 'player1',
+      fromPlayerName: 'Player 1',
+      toPlayerId: 'player2',
+      toPlayerName: 'Player 2',
+      details: {
         businessName: 'Совместный магазин',
         businessType: 'shop',
         businessDescription: 'Продажа товаров',
         totalCost: 10000,
         partnerInvestment: 5000,
-        partnerShare: 50,
         yourShare: 50,
         yourInvestment: 5000,
         businessId: 'biz1',
       },
+      status: 'pending' as const,
+      createdTurn: 1,
+      expiresInTurns: 10,
+    }
+    // Отправляем предложение
+    offersSlice1.sendOffer(
+      testOffer.type,
+      testOffer.toPlayerId,
+      testOffer.toPlayerName,
+      testOffer.details,
       'Давайте откроем магазин вместе!',
+    )
+    // Проверяем, что предложение было отправлено
+    expect(mockBroadcastEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'OFFER_SENT',
+        payload: {
+          offer: expect.objectContaining({
+            id: testOffer.id,
+            type: testOffer.type,
+            fromPlayerId: testOffer.fromPlayerId,
+            toPlayerId: testOffer.toPlayerId,
+          }),
+        },
+      }),
     )
 
     // Даем время на обработку событий

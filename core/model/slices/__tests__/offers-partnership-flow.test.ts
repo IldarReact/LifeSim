@@ -3,38 +3,40 @@ import { createGameOffersSlice } from '../game-offers-slice'
 import { createPartnershipsSlice } from '../business/partnerships-slice'
 import { createSharedBusinessSlice } from '../business/shared-business-slice'
 import { createMockPlayer } from '@/core/lib/calculations/loan/utils/mock-player'
-import type { PartnershipOfferDetails } from '@/core/types/game-offers.types'
+import type { GameOffer, PartnershipOfferDetails } from '@/core/types/game-offers.types'
+import { BusinessWithPartners, LocalGameState, MockState } from '../types'
 
-function createMockState(initial: any) {
-  let state = { ...initial }
-
+function createMockState(initial: Partial<LocalGameState> = {}): MockState {
+  const defaultState: LocalGameState = {
+    player: {
+      id: '',
+      name: '',
+      stats: { money: 0 },
+      businesses: [],
+    },
+    offers: [],
+    turn: 1,
+    ...initial,
+  }
+  let state = defaultState
   const get = () => state
-
   const set = (patch: any) => {
-    // If patch is a function, call with previous state
-    const resolved = typeof patch === 'function' ? patch(state) : patch
-    state = { ...state, ...resolved }
+    state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) }
   }
-
+  const on = () => {}
+  const getState = () => state
   const applyStatChanges = (changes: any) => {
-    set((prev: any) => {
-      const currentMoney = prev.player?.stats?.money || 0
-      return {
-        player: {
-          ...prev.player,
-          stats: {
-            ...prev.player.stats,
-            money: currentMoney + (changes.money || changes.cash || 0),
-          },
+    set((prev: any) => ({
+      player: {
+        ...prev.player,
+        stats: {
+          ...prev.player.stats,
+          money: prev.player.stats.money + (changes.money || 0),
         },
-      }
-    })
+      },
+    }))
   }
-
-  // Expose applyStatChanges on the mock state so slices can call it
-  state = { ...state, applyStatChanges }
-
-  return { get, set, getState: () => state }
+  return { get, set, on, state: getState, getState, applyStatChanges }
 }
 
 describe('offers partnership flow', () => {
@@ -50,30 +52,51 @@ describe('offers partnership flow', () => {
       intelligence: 100,
     }
 
-    const offerDetails: PartnershipOfferDetails = {
-      businessId: 'biz_1',
+    const offerDetails = {
+      businessName: 'Совместный магазин',
       businessType: 'shop',
-      businessName: 'Cell Phone Store',
-      businessDescription: 'Phones and accessories',
-      totalCost: 85000,
+      businessDescription: 'Продажа товаров',
+      totalCost: 10000,
+      partnerInvestment: 5000,
       partnerShare: 50,
-      partnerInvestment: 42500,
       yourShare: 50,
-      yourInvestment: 42500,
+      yourInvestment: 5000,
+      businessId: 'biz1',
     }
 
-    const offer = {
-      id: 'offer_test_1',
+    const offer: GameOffer = {
+      id: 'test-offer-1',
       type: 'business_partnership',
-      fromPlayerId: 'sender_1',
-      fromPlayerName: 'Alice',
-      toPlayerId: 'recipient_conn',
-      toPlayerName: 'Bob',
-      details: offerDetails,
+      fromPlayerId: 'player1',
+      fromPlayerName: 'Player 1',
+      toPlayerId: 'player2',
+      toPlayerName: 'Player 2',
+      details: {
+        businessName: 'Совместный магазин',
+        businessType: 'shop',
+        businessDescription: 'Продажа товаров',
+        totalCost: 10000,
+        partnerInvestment: 5000,
+        partnerShare: 50,
+        yourShare: 50,
+        yourInvestment: 5000,
+        businessId: 'biz1',
+      },
       status: 'pending',
       createdTurn: 1,
-      expiresInTurns: 4,
+      expiresInTurns: 10,
+      message: '', // Add this if required by the GameOffer type
     }
+    // Используем в тесте
+    const recipientState = createMockState({
+      player: {
+        id: 'player2',
+        name: 'Player 2',
+        stats: { money: 50000 },
+        businesses: [],
+      },
+      offers: [offer],
+    })
 
     const { get, set, getState } = createMockState({
       player: recipientPlayer,
@@ -89,9 +112,12 @@ describe('offers partnership flow', () => {
 
     const s = getState()
     // Money should be decreased by yourInvestment
+    const business = s.player.businesses.find((b: any) => b.id === 'expected_business_id')
+    if (!business) {
+      throw new Error('Business not found after accepting offer')
+    }
     expect(s.player.stats.money).toBe(recipientPlayer.stats.money - offerDetails.yourInvestment)
-    // Offer status should be updated to accepted
-    expect(s.offers.find((o: any) => o.id === 'offer_test_1').status).toBe('accepted')
+    expect(s.offers.find((o: any) => o.id === 'offer_test_1')?.status).toBe('accepted')
   })
 
   it('sender handles OFFER_ACCEPTED: deducts partnerInvestment and adds partner to business, then shared business can be added to recipient', () => {
@@ -125,16 +151,16 @@ describe('offers partnership flow', () => {
       } as any,
     ]
 
-    const offerDetails: PartnershipOfferDetails = {
-      businessId: 'biz_1',
+    const offerDetails = {
+      businessName: 'Совместный магазин',
       businessType: 'shop',
-      businessName: 'Cell Phone Store',
-      businessDescription: 'Phones and accessories',
-      totalCost: 85000,
+      businessDescription: 'Продажа товаров',
+      totalCost: 10000,
+      partnerInvestment: 5000,
       partnerShare: 50,
-      partnerInvestment: 42500,
       yourShare: 50,
-      yourInvestment: 42500,
+      yourInvestment: 5000,
+      businessId: 'biz1',
     }
 
     const offer = {
@@ -220,8 +246,14 @@ describe('offers partnership flow', () => {
     sharedSlice.addSharedBusiness(sharedBusiness)
 
     const recState = rGetState()
-    const added = recState.player.businesses.find((b: any) => b.id === 'biz_1')
-    expect(added).toBeDefined()
-    expect(added.partners.some((p: any) => p.id === 'recipient_conn')).toBe(true)
+    const added = recState.player.businesses.find((b: any) => b.id === 'biz_1') as
+      | BusinessWithPartners
+      | undefined
+    if (added) {
+      expect(added).toBeDefined()
+      expect(added.partners.some((p) => p.id === 'recipient_conn')).toBe(true)
+    } else {
+      throw new Error('Business with id "biz_1" not found')
+    }
   })
 })

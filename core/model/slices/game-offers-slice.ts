@@ -12,69 +12,78 @@ import { broadcastEvent } from '@/core/lib/multiplayer'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 import { GameEvent } from '@/core/types/events.types'
 
-export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (set, get) => ({
+export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
+  set,
+  get,
+) => ({
   offers: [],
 
   onPartnershipAccepted: (event: GameEvent) => {
+    console.log('[DEBUG] onPartnershipAccepted called with:', event)
     const { payload } = event
     const state = get()
-
     console.log('[GameOffers] Обработка PARTNERSHIP_ACCEPTED:', {
       event,
       currentPlayerId: state.player?.id,
+      payload,
     })
-
-    if (!state.player) return
-
-    // Создаем бизнес для инициатора
-    const initiatorBusiness = createPartnerBusiness(
-      {
-        details: {
-          businessName: payload.businessName,
-          businessType: payload.businessType,
-          businessDescription: payload.businessDescription,
-          totalCost: payload.totalCost,
-          yourInvestment: payload.yourInvestment,
-          yourShare: payload.yourShare,
+    if (!state.player) {
+      console.error('No player in state')
+      return
+    }
+    try {
+      // Создаем бизнес для инициатора
+      const initiatorBusiness = createPartnerBusiness(
+        {
+          details: {
+            businessName: payload.businessName,
+            businessType: payload.businessType,
+            businessDescription: payload.businessDescription,
+            totalCost: payload.totalCost,
+            yourInvestment: payload.yourInvestment,
+            yourShare: payload.yourShare,
+          },
+          fromPlayerId: payload.partnerId,
+          fromPlayerName: payload.partnerName,
         },
-        fromPlayerId: payload.partnerId,
-        fromPlayerName: payload.partnerName,
-      },
-      state.turn,
-      state.player.id,
-      true, // Отмечаем как инициатора
-    )
+        state.turn,
+        state.player.id,
+        true, // Отмечаем как инициатора
+      )
 
-    // Связываем бизнесы
-    initiatorBusiness.partnerBusinessId = payload.businessId
+      // Связываем бизнесы
+      initiatorBusiness.partnerBusinessId = payload.businessId
 
-    // Вычитаем деньги у инициатора
-    state.applyStatChanges({ money: -payload.yourInvestment })
+      // Вычитаем деньги у инициатора
+      state.applyStatChanges({ money: -payload.yourInvestment })
 
-    // Добавляем бизнес инициатору
-    set((state) => ({
-      player: {
-        ...state.player!,
-        businesses: [...state.player!.businesses, initiatorBusiness],
-      },
-    }))
+      // Добавляем бизнес инициатору
+      set((state) => ({
+        player: {
+          ...state.player!,
+          businesses: [...state.player!.businesses, initiatorBusiness],
+        },
+      }))
 
-    // Обновляем бизнес партнера с ссылкой
-    broadcastEvent({
-      type: 'PARTNERSHIP_UPDATED',
-      payload: {
-        businessId: payload.businessId,
-        partnerBusinessId: initiatorBusiness.id,
-      },
-      toPlayerId: payload.partnerId,
-    })
+      // Обновляем бизнес партнера с ссылкой
+      broadcastEvent({
+        type: 'PARTNERSHIP_UPDATED',
+        payload: {
+          businessId: payload.businessId,
+          partnerBusinessId: initiatorBusiness.id,
+        },
+        toPlayerId: payload.partnerId,
+      })
 
-    // Уведомляем инициатора
-    state.pushNotification?.({
-      type: 'success',
-      title: 'Партнёрство создано',
-      message: `Вы стали партнером с ${payload.partnerName} в бизнесе "${payload.businessName}"`,
-    })
+      // Уведомляем инициатора
+      state.pushNotification?.({
+        type: 'success',
+        title: 'Партнёрство создано',
+        message: `Вы стали партнером с ${payload.partnerName} в бизнесе "${payload.businessName}"`,
+      })
+    } catch (error) {
+      console.error('Error in onPartnershipAccepted:', error)
+    }
   },
 
   onPartnershipUpdated: (event: GameEvent<{ businessId: string; partnerBusinessId: string }>) => {

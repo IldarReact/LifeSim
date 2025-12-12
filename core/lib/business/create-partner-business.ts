@@ -38,6 +38,16 @@ export function createPartnerBusiness(
     playerShare: offer.details.yourShare,
     playerInvestment: offer.details.yourInvestment,
     partners: [
+      // Текущий игрок
+      {
+        id: playerId,
+        name: 'Вы', // Будет заменено на реальное имя в UI
+        type: 'player' as const,
+        share: offer.details.yourShare,
+        investedAmount: offer.details.yourInvestment,
+        relation: 100, // Максимальное отношение к себе
+      },
+      // Партнёр
       {
         id: offer.fromPlayerId,
         name: offer.fromPlayerName,

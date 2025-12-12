@@ -54,8 +54,29 @@ export function getPlayerShare(business: Business, playerId: string): number {
  * Получает партнёра по бизнесу
  */
 export function getBusinessPartner(business: Business, playerId: string) {
-  // Если есть partnerId и это не текущий игрок
+  console.log('[getBusinessPartner] Searching for partner:', {
+    businessId: business.id,
+    playerId,
+    partnerId: business.partnerId,
+    partnerName: business.partnerName,
+    partnersCount: business.partners.length,
+    partners: business.partners.map(p => ({ id: p.id, name: p.name, type: p.type }))
+  })
+
+  // Ищем в списке партнёров (приоритет)
+  const partner = business.partners.find((p) => p.id !== playerId && p.type === 'player')
+  if (partner) {
+    console.log('[getBusinessPartner] Found partner in partners array:', partner)
+    return {
+      id: partner.id,
+      name: partner.name,
+      businessId: business.partnerBusinessId, // Используем partnerBusinessId из бизнеса
+    }
+  }
+
+  // Если есть partnerId и это не текущий игрок (fallback)
   if (business.partnerId && business.partnerId !== playerId) {
+    console.log('[getBusinessPartner] Found partner via partnerId:', business.partnerId)
     return {
       id: business.partnerId,
       name: business.partnerName || 'Партнёр',
@@ -63,16 +84,7 @@ export function getBusinessPartner(business: Business, playerId: string) {
     }
   }
 
-  // Ищем в списке партнёров
-  const partner = business.partners.find((p) => p.id !== playerId && p.type === 'player')
-  if (partner) {
-    return {
-      id: partner.id,
-      name: partner.name,
-      businessId: undefined, // Нужно будет получить из другого источника
-    }
-  }
-
+  console.log('[getBusinessPartner] No partner found')
   return null
 }
 

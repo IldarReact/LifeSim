@@ -33,11 +33,21 @@ describe('createPartnerBusiness', () => {
     expect(business.playerShare).toBe(50)
     expect(business.playerInvestment).toBe(50000)
 
-    // Проверка партнёров
-    expect(business.partners).toHaveLength(1)
-    expect(business.partners[0].id).toBe('player1')
-    expect(business.partners[0].name).toBe('Игрок 1')
-    expect(business.partners[0].share).toBe(50)
+    // Проверка партнёров - теперь должно быть 2 (текущий игрок + партнёр)
+    expect(business.partners).toHaveLength(2)
+
+    // Проверка текущего игрока в partners
+    const currentPlayerPartner = business.partners.find(p => p.id === 'player2')
+    expect(currentPlayerPartner).toBeDefined()
+    expect(currentPlayerPartner?.share).toBe(50)
+    expect(currentPlayerPartner?.investedAmount).toBe(50000)
+
+    // Проверка партнёра в partners
+    const otherPartner = business.partners.find(p => p.id === 'player1')
+    expect(otherPartner).toBeDefined()
+    expect(otherPartner?.name).toBe('Игрок 1')
+    expect(otherPartner?.share).toBe(50)
+    expect(otherPartner?.investedAmount).toBe(50000)
 
     // Проверка финансов
     expect(business.initialCost).toBe(100000)
@@ -59,8 +69,12 @@ describe('createPartnerBusiness', () => {
 
     // Проверка полей инициатора
     expect(business.playerShare).toBe(50)
-    expect(business.partners[0].id).toBe('player1')
-    expect(business.partners[0].share).toBe(50)
+    expect(business.partners).toHaveLength(2)
+
+    // Проверка что инициатор есть в partners
+    const initiator = business.partners.find(p => p.id === 'player1')
+    expect(initiator).toBeDefined()
+    expect(initiator?.share).toBe(50)
   })
 
   it('создаёт бизнес с правильными ролями игрока', () => {

@@ -32,14 +32,26 @@ export const createPartnershipBusinessSlice: StateCreator<
     const state = get()
     if (!state.player) return
 
+    console.log('[proposeBusinessChange] Starting:', { businessId, changeType, data, playerId: state.player.id })
+
     const business = state.player.businesses.find((b) => b.id === businessId)
     if (!business) {
-      console.error('Business not found:', businessId)
+      console.error('[proposeBusinessChange] Business not found:', businessId)
       return
     }
 
+    console.log('[proposeBusinessChange] Business found:', {
+      id: business.id,
+      name: business.name,
+      partnerId: business.partnerId,
+      partnerName: business.partnerName,
+      playerShare: business.playerShare,
+      partnersCount: business.partners.length
+    })
+
     // Проверяем права
     if (!canProposeChanges(business, state.player.id)) {
+      console.log('[proposeBusinessChange] Cannot propose changes - insufficient share')
       state.pushNotification?.({
         type: 'error',
         title: 'Недостаточно прав',
@@ -50,6 +62,7 @@ export const createPartnershipBusinessSlice: StateCreator<
 
     // Если можем вносить изменения напрямую
     if (canMakeDirectChanges(business, state.player.id)) {
+      console.log('[proposeBusinessChange] Can make direct changes - applying immediately')
       // Применяем изменения сразу
       state.updateBusinessDirectly(businessId, {
         price: data.newPrice,
@@ -60,13 +73,16 @@ export const createPartnershipBusinessSlice: StateCreator<
 
     // Если требуется согласование (50/50)
     if (requiresApproval(business, state.player.id)) {
+      console.log('[proposeBusinessChange] Requires approval - creating proposal')
       const proposalId = generateProposalId()
       const partner = getBusinessPartner(business, state.player.id)
 
       if (!partner) {
-        console.error('Partner not found for business:', businessId)
+        console.error('[proposeBusinessChange] Partner not found for business:', businessId)
         return
       }
+
+      console.log('[proposeBusinessChange] Partner found:', partner)
 
       const proposal: BusinessChangeProposal = {
         id: proposalId,
@@ -83,6 +99,8 @@ export const createPartnershipBusinessSlice: StateCreator<
       set((state) => ({
         businessProposals: [...state.businessProposals, proposal],
       }))
+
+      console.log('[proposeBusinessChange] Broadcasting event to partner:', partner.id)
 
       // Отправляем событие партнёру
       broadcastEvent({

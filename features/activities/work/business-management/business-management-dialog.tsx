@@ -17,11 +17,16 @@ import { checkMinimumStaffing } from "@/features/business/lib/player-roles"
 
 import { generateCandidates } from "@/core/lib/business-utils"
 import type { BusinessManagementDialogProps } from './types'
-import { ROLE_LABELS, ROLE_ICONS, DEFAULT_CANDIDATES_COUNT, CONTROL_THRESHOLD } from './constants'  
+import { ROLE_LABELS, ROLE_ICONS, DEFAULT_CANDIDATES_COUNT, CONTROL_THRESHOLD } from './constants'
 import { getAvailablePositions } from './utils/salary-utils'
 import { calculatePlayerShare, hasControlOverBusiness, canHireMoreEmployees } from './utils/business-calculations'
 import { useGameStore } from '@/core/model/game-store'
 import { calculateEmployeeSalary } from './hooks/useEmployeeSalary'
+import {
+  canMakeDirectChanges,
+  requiresApproval,
+  getPlayerShare as getPartnershipShare
+} from '@/core/lib/business/partnership-permissions'
 
 export function BusinessManagementDialog({
   business,
@@ -89,13 +94,63 @@ export function BusinessManagementDialog({
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPrice = parseInt(e.target.value)
     setPrice(newPrice)
-    onChangePrice(business.id, newPrice)
+
+    // Проверка прав для партнёрских бизнесов
+    if (business.partners.length > 0 && player) {
+      const canDirect = canMakeDirectChanges(business, player.id)
+      const needsApproval = requiresApproval(business, player.id)
+
+      if (canDirect) {
+        // > 50% - прямое изменение
+        onChangePrice(business.id, newPrice)
+      } else if (needsApproval) {
+        // 50/50 - отправка предложения
+        const proposeChange = useGameStore.getState().proposeBusinessChange
+        proposeChange(business.id, 'price', { newPrice })
+      } else {
+        // < 50% - нет прав
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'error',
+          title: 'Недостаточно прав',
+          message: 'У вас недостаточно доли в бизнесе для изменения цены (требуется минимум 50%)'
+        })
+      }
+    } else {
+      // Обычный бизнес без партнёров
+      onChangePrice(business.id, newPrice)
+    }
   }
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuantity = parseInt(e.target.value)
     setQuantity(newQuantity)
-    onSetQuantity(business.id, newQuantity)
+
+    // Проверка прав для партнёрских бизнесов
+    if (business.partners.length > 0 && player) {
+      const canDirect = canMakeDirectChanges(business, player.id)
+      const needsApproval = requiresApproval(business, player.id)
+
+      if (canDirect) {
+        // > 50% - прямое изменение
+        onSetQuantity(business.id, newQuantity)
+      } else if (needsApproval) {
+        // 50/50 - отправка предложения
+        const proposeChange = useGameStore.getState().proposeBusinessChange
+        proposeChange(business.id, 'quantity', { newQuantity })
+      } else {
+        // < 50% - нет прав
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'error',
+          title: 'Недостаточно прав',
+          message: 'У вас недостаточно доли в бизнесе для изменения производства (требуется минимум 50%)'
+        })
+      }
+    } else {
+      // Обычный бизнес без партнёров
+      onSetQuantity(business.id, newQuantity)
+    }
   }
 
   return (
@@ -321,17 +376,25 @@ export function BusinessManagementDialog({
                     <p className="text-3xl font-bold text-white">{playerShare}%</p>
                   </div>
                   <div className="text-right">
-                    {hasControl ? (
+                    {player && canMakeDirectChanges(business, player.id) ? (
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        ✓ Контрольный пакет
+                        ✓ Полный контроль
+                      </Badge>
+                    ) : player && requiresApproval(business, player.id) ? (
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                        ⚠ Требуется согласование
                       </Badge>
                     ) : (
-                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                        ⚠ Требуется голосование
+                      <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                        ✗ Только просмотр
                       </Badge>
                     )}
                     <p className="text-xs text-white/40 mt-1">
-                      {hasControl ? 'Вы принимаете решения единолично' : 'Решения требуют одобрения партнеров'}
+                      {player && canMakeDirectChanges(business, player.id)
+                        ? 'Вы можете вносить изменения напрямую (> 50%)'
+                        : player && requiresApproval(business, player.id)
+                          ? 'Изменения требуют одобрения партнёра (= 50%)'
+                          : 'Вы не можете вносить изменения (< 50%)'}
                     </p>
                   </div>
                 </div>
@@ -514,62 +577,62 @@ export function BusinessManagementDialog({
                 {business.employees.map((employee) => {
                   const indexedSalary = calculateEmployeeSalary(employee, country)
                   return (
-                  <div key={employee.id} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-lg bg-blue-500/20">
-                          {ROLE_ICONS[employee.role]}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-lg">{employee.name}</h4>
-                          <div className="flex items-center gap-1">
-                            <p className="text-xs text-white/60 uppercase tracking-wide">
-                              {ROLE_LABELS[employee.role]}
-                            </p>
-                            <span className="text-white/40">•</span>
-                            <div className="flex gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-3 h-3 ${star <= employee.stars ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
-                                />
-                              ))}
+                    <div key={employee.id} className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-lg bg-blue-500/20">
+                            {ROLE_ICONS[employee.role]}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-white text-lg">{employee.name}</h4>
+                            <div className="flex items-center gap-1">
+                              <p className="text-xs text-white/60 uppercase tracking-wide">
+                                {ROLE_LABELS[employee.role]}
+                              </p>
+                              <span className="text-white/40">•</span>
+                              <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`w-3 h-3 ${star <= employee.stars ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
+                                  />
+                                ))}
+                              </div>
                             </div>
                           </div>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onFireEmployee(business.id, employee.id)}
+                          className="border-red-500/20 hover:bg-red-500/20 text-red-300 h-9 px-3"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Уволить
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onFireEmployee(business.id, employee.id)}
-                        className="border-red-500/20 hover:bg-red-500/20 text-red-300 h-9 px-3"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Уволить
-                      </Button>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-white/5 rounded-lg p-2.5">
-                        <p className="text-xs text-white/50 mb-1">Зарплата</p>
-                        <p className="text-base font-bold text-green-400">${indexedSalary.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-2.5">
-                        <p className="text-xs text-white/50 mb-1">Опыт</p>
-                        <p className="text-base font-bold text-white">{Math.floor(employee.experience / 12)}г {employee.experience % 12}м</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="text-white/60">Продуктивность</span>
-                          <span className="text-white font-bold">{employee.productivity}%</span>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white/5 rounded-lg p-2.5">
+                          <p className="text-xs text-white/50 mb-1">Зарплата</p>
+                          <p className="text-base font-bold text-green-400">${indexedSalary.toLocaleString()}</p>
                         </div>
-                        <Progress value={employee.productivity} className="h-1.5 bg-white/10" />
+                        <div className="bg-white/5 rounded-lg p-2.5">
+                          <p className="text-xs text-white/50 mb-1">Опыт</p>
+                          <p className="text-base font-bold text-white">{Math.floor(employee.experience / 12)}г {employee.experience % 12}м</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between items-center text-xs mb-1">
+                            <span className="text-white/60">Продуктивность</span>
+                            <span className="text-white font-bold">{employee.productivity}%</span>
+                          </div>
+                          <Progress value={employee.productivity} className="h-1.5 bg-white/10" />
+                        </div>
                       </div>
                     </div>
-                  </div>
                   )
                 })}
               </div>

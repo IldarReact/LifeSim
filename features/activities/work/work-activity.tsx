@@ -11,6 +11,7 @@ import { StartupsSection } from "./startups-section"
 import { FreelanceSection } from "./freelance-section"
 import { CurrentJobsSection } from "./current-jobs-section"
 import { ActiveFreelanceSection } from "./active-freelance-section"
+import { BusinessProposals } from "./components/BusinessProposals"
 import type { SkillLevel } from "@/core/types"
 
 export function WorkActivity(): React.JSX.Element | null {
@@ -141,6 +142,9 @@ export function WorkActivity(): React.JSX.Element | null {
                 />
               ))}
             </div>
+
+            {/* Business Proposals */}
+            <BusinessProposals />
           </div>
         )}
 

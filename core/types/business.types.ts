@@ -75,6 +75,15 @@ export type ProposalType =
   | 'withdraw_dividends'
   | 'expand_network'
 
+export type BusinessChangeType =
+  | 'price'
+  | 'quantity'
+  | 'hire_employee'
+  | 'fire_employee'
+  | 'freeze'
+  | 'unfreeze'
+
+
 export interface BusinessProposal {
   id: string
   type: ProposalType

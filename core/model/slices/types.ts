@@ -371,7 +371,8 @@ export type GameStore = GameSlice &
   IdeaSlice &
   ShopSlice &
   BankSlice &
-  GameOffersSlice & {
+  GameOffersSlice &
+  import('./partnership-business-slice.types').PartnershipBusinessSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']

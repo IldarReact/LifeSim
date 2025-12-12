@@ -23,6 +23,7 @@ import { saveManager } from '@/core/lib/persistence/save-manager'
 import type { GameState } from '@/core/schemas/game.schema'
 import { createBankSlice } from './slices/bank-slice'
 import { createGameOffersSlice } from './slices/game-offers-slice'
+import { createPartnershipBusinessSlice } from './slices/partnership-business-slice'
 
 // Custom storage using saveManager for unified validation and checksum
 const validatedStorage = createJSONStorage(() => ({
@@ -75,6 +76,7 @@ export const useGameStore = create<GameStore>()(
         ...createShopSlice(...a),
         ...createBankSlice(...a),
         ...createGameOffersSlice(...a),
+        ...createPartnershipBusinessSlice(...a),
       }),
       {
         name: 'artsurv-save-v1',

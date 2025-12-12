@@ -17,7 +17,15 @@ export { useGameStore }
 // Multiplayer
 
 import { initMultiplayer, subscribeToEvents } from '../lib/multiplayer'
-import { GameEvent, PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '../types/events.types'
+import {
+  GameEvent,
+  PartnershipAcceptedEvent,
+  PartnershipUpdatedEvent,
+  BusinessChangeProposedEvent,
+  BusinessChangeApprovedEvent,
+  BusinessChangeRejectedEvent,
+  BusinessUpdatedEvent,
+} from '../types/events.types'
 
 let multiplayerSynced = false
 
@@ -40,11 +48,26 @@ export function enableMultiplayerSync() {
       return
     }
 
+    // Partnership events
     if (event.type === 'PARTNERSHIP_ACCEPTED') {
       state.onPartnershipAccepted(event as PartnershipAcceptedEvent)
     }
     if (event.type === 'PARTNERSHIP_UPDATED') {
       state.onPartnershipUpdated(event as PartnershipUpdatedEvent)
+    }
+
+    // Business change events
+    if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
+      state.onBusinessChangeProposed(event as BusinessChangeProposedEvent)
+    }
+    if (event.type === 'BUSINESS_CHANGE_APPROVED') {
+      state.onBusinessChangeApproved(event as BusinessChangeApprovedEvent)
+    }
+    if (event.type === 'BUSINESS_CHANGE_REJECTED') {
+      state.onBusinessChangeRejected(event as BusinessChangeRejectedEvent)
+    }
+    if (event.type === 'BUSINESS_UPDATED') {
+      state.onBusinessUpdated(event as BusinessUpdatedEvent)
     }
   })
 }

@@ -1,8 +1,7 @@
-
 /**
  * @deprecated This file is kept for backward compatibility.
  * Please import from './store' instead.
- * 
+ *
  * The store has been refactored following FBA (Feature-Based Architecture) principles:
  * - slices/game-slice.ts - Core game logic (turn, year, status)
  * - slices/player-slice.ts - Player state management
@@ -12,32 +11,40 @@
  * - logic/turn-logic.ts - Business logic for turn processing
  */
 
-
-export { useGameStore } from './store'
+import { useGameStore } from './store'
+export { useGameStore }
 
 // Multiplayer
 
-import { initMultiplayer, getSharedState } from '../lib/multiplayer';
+import { initMultiplayer, subscribeToEvents } from '../lib/multiplayer'
+import { GameEvent, PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '../types/events.types'
 
-let multiplayerSynced = false;
+let multiplayerSynced = false
 
 export function enableMultiplayerSync() {
-  if (multiplayerSynced) return;
-  multiplayerSynced = true;
+  if (multiplayerSynced) return
+  multiplayerSynced = true
+  const urlParams = new URLSearchParams(window.location.search)
+  const room = urlParams.get('room')
+  if (!room) return
+  const roomId = initMultiplayer(room)
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const room = urlParams.get("room");
-  if (!room) return;
+  const state = useGameStore.getState()
 
-  // Инициализируем Liveblocks
-  const roomId = initMultiplayer(room);
+  // Liveblocks → Zustand (events)
+  subscribeToEvents((event: GameEvent) => {
+    console.log('Событие получено:', event.type, 'для игрока:', state.player?.id)
 
-  const shared = getSharedState();
+    // Filter events meant for other players if toPlayerId is specified
+    if (event.toPlayerId && state.player && event.toPlayerId !== state.player.id) {
+      return
+    }
 
-  // Liveblocks → Zustand (presence)
-  shared.subscribeToPresenceChanges(() => {
-    // Можно обновлять список онлайн-игроков, если нужно
-  });
-
-  // Не используем storage для синхронизации - только presence
+    if (event.type === 'PARTNERSHIP_ACCEPTED') {
+      state.onPartnershipAccepted(event as PartnershipAcceptedEvent)
+    }
+    if (event.type === 'PARTNERSHIP_UPDATED') {
+      state.onPartnershipUpdated(event as PartnershipUpdatedEvent)
+    }
+  })
 }

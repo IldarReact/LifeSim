@@ -10,7 +10,8 @@ import {
 } from '@/core/types/game-offers.types'
 import { broadcastEvent } from '@/core/lib/multiplayer'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
-import { GameEvent } from '@/core/types/events.types'
+import { PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '@/core/types/events.types'
+
 
 export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
   set,
@@ -18,7 +19,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
 ) => ({
   offers: [],
 
-  onPartnershipAccepted: (event: GameEvent) => {
+  onPartnershipAccepted: (event: PartnershipAcceptedEvent) => {
     console.log('[DEBUG] onPartnershipAccepted called with:', event)
     const { payload } = event
     const state = get()
@@ -74,6 +75,11 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         },
         toPlayerId: payload.partnerId,
       })
+      console.log('Отправка PARTNERSHIP_ACCEPTED', {
+        toPlayerId: payload.partnerId, // Fixed: was offer.fromPlayerId which is not available here
+        currentPlayerId: state.player?.id,
+        // offer, // Fixed: offer is not available here
+      })
 
       // Уведомляем инициатора
       state.pushNotification?.({
@@ -86,7 +92,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     }
   },
 
-  onPartnershipUpdated: (event: GameEvent<{ businessId: string; partnerBusinessId: string }>) => {
+  onPartnershipUpdated: (event: PartnershipUpdatedEvent) => {
     const state = get()
     if (!state.player) return
 

@@ -260,6 +260,10 @@ export interface GameOffersSlice {
   // Helpers
   getIncomingOffers: () => GameOffer[]
   getOutgoingOffers: () => GameOffer[]
+
+  // Event Handlers
+  onPartnershipAccepted: (event: import('@/core/types/events.types').PartnershipAcceptedEvent) => void
+  onPartnershipUpdated: (event: import('@/core/types/events.types').PartnershipUpdatedEvent) => void
 }
 
 // Add these interfaces at the top of the file

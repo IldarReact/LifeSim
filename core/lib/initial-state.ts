@@ -60,7 +60,7 @@ export function createInitialPlayer(
   }
 
   const base: PlayerState = {
-    id: "player_1",
+    id: `player_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     name: "Player",
     countryId,
     age: 24,

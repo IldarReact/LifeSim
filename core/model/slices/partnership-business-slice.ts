@@ -10,7 +10,7 @@ import type {
   BusinessChangeRejectedEvent,
   BusinessUpdatedEvent,
 } from '@/core/types/events.types'
-import type { BusinessChangeType } from '@/core/types/business.types'
+import type { BusinessChangeType, EmployeeRole } from '@/core/types/business.types'
 import { broadcastEvent } from '@/core/lib/multiplayer'
 import {
   canMakeDirectChanges,
@@ -142,6 +142,11 @@ export const createPartnershipBusinessSlice: StateCreator<
     const business = state.player.businesses.find((b) => b.id === proposal.businessId)
     if (!business) {
       console.error('[approveBusinessChange] Business not found:', proposal.businessId)
+      state.pushNotification?.({
+        type: 'error',
+        title: 'Ошибка',
+        message: `Бизнес не найден (ID: ${proposal.businessId}). Возможно, он был удален.`,
+      })
       return
     }
 
@@ -182,8 +187,13 @@ export const createPartnershipBusinessSlice: StateCreator<
         break
 
       case 'hire_employee':
-        // TODO: Implement hire employee logic
         console.log('[approveBusinessChange] Hiring employee:', proposal.data)
+        state.addEmployeeToBusiness(
+          proposal.businessId,
+          proposal.data.employeeName || 'Unknown',
+          proposal.data.employeeRole as EmployeeRole,
+          proposal.data.employeeSalary || 0,
+        )
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
@@ -192,8 +202,10 @@ export const createPartnershipBusinessSlice: StateCreator<
         break
 
       case 'fire_employee':
-        // TODO: Implement fire employee logic
         console.log('[approveBusinessChange] Firing employee:', proposal.data.fireEmployeeId)
+        if (proposal.data.fireEmployeeId) {
+          state.fireEmployee(proposal.businessId, proposal.data.fireEmployeeId)
+        }
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
@@ -230,8 +242,8 @@ export const createPartnershipBusinessSlice: StateCreator<
         break
 
       case 'open_branch':
-        // TODO: Implement open branch logic
         console.log('[approveBusinessChange] Opening branch:', proposal.data.branchName)
+        state.openBranch(proposal.businessId)
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,

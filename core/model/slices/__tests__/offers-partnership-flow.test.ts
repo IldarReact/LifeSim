@@ -29,7 +29,7 @@ function createMockState(initial: Partial<LocalGameState> = {}) {
   }
 
   // Mock applyStatChanges
-  state.applyStatChanges = (changes: any) => {
+  (state as any).applyStatChanges = (changes: any) => {
     if (changes.money) {
       state.player!.stats.money += changes.money
     }
@@ -86,12 +86,11 @@ describe('offers partnership flow', () => {
     expect(s.player.stats.money).toBe(45000) // 50000 - 5000
 
     // Check business creation
-    const business = s.player.businesses.find((b) => {
-      console.log('Checking:', b.id, b.id === 'biz_1')
-      return b.id === 'biz_1'
-    })
+    // Check business creation
+    const business = s.player.businesses[0]
     expect(business).toBeDefined()
-    expect((business as any)?.name).toBe('Совместный магазин')
+    expect(business.id).toBe('biz_1')
+    expect((business as any).name).toBe('Совместный магазин')
 
     // Check offer status
     const acceptedOffer = s.offers.find((o) => o.id === 'test-offer-1')

@@ -142,10 +142,11 @@ export const createPartnershipBusinessSlice: StateCreator<
     const business = state.player.businesses.find((b) => b.id === proposal.businessId)
     if (!business) {
       console.error('[approveBusinessChange] Business not found:', proposal.businessId)
+      console.log('Available businesses:', state.player.businesses.map(b => ({ id: b.id, name: b.name })))
       state.pushNotification?.({
         type: 'error',
         title: 'Ошибка',
-        message: `Бизнес не найден (ID: ${proposal.businessId}). Возможно, он был удален.`,
+        message: `Бизнес не найден (ID: ${proposal.businessId}). Это может быть старое предложение. Пожалуйста, отклоните его и создайте новое.`,
       })
       return
     }

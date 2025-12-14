@@ -4,12 +4,6 @@ import type {
   PartnershipBusinessSlice,
   BusinessChangeProposal,
 } from './partnership-business-slice.types'
-import type {
-  BusinessChangeProposedEvent,
-  BusinessChangeApprovedEvent,
-  BusinessChangeRejectedEvent,
-  BusinessUpdatedEvent,
-} from '@/core/types/events.types'
 import type { BusinessChangeType, EmployeeRole } from '@/core/types/business.types'
 import { broadcastEvent } from '@/core/lib/multiplayer'
 import {
@@ -297,7 +291,7 @@ export const createPartnershipBusinessSlice: StateCreator<
     // Prepare changes for broadcast based on proposal type
     let changesToBroadcast: any = {}
 
-    const updatedBusiness = get().player.businesses.find((b) => b.id === proposal.businessId)
+    const updatedBusiness = get().player?.businesses.find((b) => b.id === proposal.businessId)
 
     switch (proposal.changeType) {
       case 'price':

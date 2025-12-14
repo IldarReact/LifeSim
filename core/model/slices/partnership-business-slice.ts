@@ -294,12 +294,46 @@ export const createPartnershipBusinessSlice: StateCreator<
       toPlayerId: proposal.initiatorId,
     })
 
+    // Prepare changes for broadcast based on proposal type
+    let changesToBroadcast: any = {}
+
+    const updatedBusiness = get().player.businesses.find((b) => b.id === proposal.businessId)
+
+    switch (proposal.changeType) {
+      case 'price':
+        changesToBroadcast = { price: proposal.data.newPrice }
+        break
+      case 'quantity':
+        changesToBroadcast = { quantity: proposal.data.newQuantity }
+        break
+      case 'hire_employee':
+      case 'fire_employee':
+        if (updatedBusiness) {
+          changesToBroadcast = { employees: updatedBusiness.employees }
+        }
+        break
+      case 'open_branch':
+        if (updatedBusiness) {
+          changesToBroadcast = {
+            networkId: updatedBusiness.networkId,
+            isMainBranch: updatedBusiness.isMainBranch
+          }
+        }
+        break
+      case 'freeze':
+        changesToBroadcast = { state: 'frozen' }
+        break
+      case 'unfreeze':
+        changesToBroadcast = { state: 'active' }
+        break
+    }
+
     // Отправляем обновление бизнеса инициатору
     broadcastEvent({
       type: 'BUSINESS_UPDATED',
       payload: {
         businessId: proposal.businessId,
-        changes: proposal.data,
+        changes: changesToBroadcast,
       },
       toPlayerId: proposal.initiatorId,
     })

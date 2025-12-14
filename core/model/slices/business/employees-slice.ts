@@ -2,6 +2,7 @@ import type { GameStateCreator } from '../types'
 import type { Employee, EmployeeCandidate } from '@/core/types'
 import { updateBusinessMetrics, validateEmployeeHire } from '@/core/lib/business'
 import { applyStats } from '@/core/helpers/apply-stats'
+import { broadcastEvent } from '@/core/lib/multiplayer'
 
 export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
   // Hire a new employee from candidate pool
@@ -177,13 +178,13 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-            ...b,
-            playerEmployment: {
-              role,
-              salary,
-              startedTurn: state.turn,
-            },
-          }
+          ...b,
+          playerEmployment: {
+            role,
+            salary,
+            startedTurn: state.turn,
+          },
+        }
         : b,
     )
 
@@ -200,6 +201,28 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     console.log(
       `[Business] Player joined ${business.name} as ${role} with salary ${salary}/quarter`,
     )
+
+    // Broadcast to partners
+    if (business.partners && business.partners.length > 0) {
+      business.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                playerEmployment: {
+                  role,
+                  salary,
+                  startedTurn: state.turn,
+                },
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
   },
 
   // Player leaves their job in own business
@@ -234,5 +257,23 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     })
 
     console.log(`[Business] Player left ${business.name}`)
+
+    // Broadcast to partners
+    if (business.partners && business.partners.length > 0) {
+      business.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                playerEmployment: undefined,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
   },
 })

@@ -1,10 +1,12 @@
 import type { JobApplication, Skill, Notification } from '@/core/types'
+import type { EconomicCycle } from '@/core/types/economy.types'
 
 interface JobsResult {
   updatedSkills: Skill[]
   notifications: Notification[]
   remainingApplications: JobApplication[]
   protectedSkills: string[]
+  updatedJobs: any[]
 }
 
 export function processJobs(
@@ -12,40 +14,78 @@ export function processJobs(
   pendingApplications: JobApplication[],
   updatedSkills: Skill[],
   currentTurn: number,
+  cycle?: EconomicCycle
 ): JobsResult {
   const newNotifications: Notification[] = []
   const protectedSkills = new Set<string>()
+  const updatedJobs: any[] = []
 
-  // 3. Process Jobs (skill usage at work)
+  // 3. Process Jobs (skill usage at work & firing risk)
   jobs.forEach((job) => {
-    if (job.requirements?.skills) {
-      job.requirements.skills.forEach((req: any) => {
-        const skillName = req.name
-        protectedSkills.add(skillName)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === skillName)
-        if (skillIdx !== -1) {
-          const skill = { ...updatedSkills[skillIdx] }
-          if (skill.level < 4) {
-            skill.progress += 15
-            skill.lastPracticedTurn = currentTurn
-            // mark as used at work (may be read by other processors)
-            ;(skill as any).isBeingUsedAtWork = true
-            if (skill.progress >= 100) {
-              skill.level = (skill.level + 1) as any
-              skill.progress = 0
-              newNotifications.push({
-                id: `work_lvl_${Date.now()}_${Math.random()}`,
-                type: 'success',
-                title: 'Профессиональный рост',
-                message: `Благодаря работе ваш навык ${skill.name} повысился до уровня ${skill.level}!`,
-                date: `${Math.floor(currentTurn / 4)} Q${currentTurn % 4 || 4}`,
-                isRead: false,
-              } as unknown as Notification)
+    let isFired = false
+
+    // Firing Logic (only for external jobs, not own business)
+    // Assuming own business jobs have a specific flag or we check job source
+    // For now, apply to all "jobs" in the list (usually external)
+    if (cycle) {
+      let risk = 0.01 // Base 1%
+
+      // Cycle Risk
+      if (cycle.phase === 'recession') risk += 0.15
+      else if (cycle.phase === 'growth') risk -= 0.005
+
+      // Tenure Risk (Newbie)
+      const tenure = currentTurn - (job.startedTurn || currentTurn)
+      if (tenure < 4) risk += 0.10 // +10% for < 1 year
+      else if (tenure > 12) risk -= 0.05 // -5% for > 3 years
+
+      // Cap risk
+      risk = Math.max(0, Math.min(0.5, risk))
+
+      if (Math.random() < risk) {
+        isFired = true
+        newNotifications.push({
+          id: `fired_${Date.now()}_${Math.random()}`,
+          type: 'warning',
+          title: 'Вас уволили! 😱',
+          message: `К сожалению, вы попали под сокращение на должности ${job.title}. ${cycle.phase === 'recession' ? 'Кризис вынуждает компании резать косты.' : 'Вы были на испытательном сроке.'}`,
+          date: `${Math.floor(currentTurn / 4)} Q${currentTurn % 4 || 4}`,
+          isRead: false,
+        } as unknown as Notification)
+      }
+    }
+
+    if (!isFired) {
+      updatedJobs.push(job)
+      if (job.requirements?.skills) {
+        job.requirements.skills.forEach((req: any) => {
+          const skillName = req.name
+          protectedSkills.add(skillName)
+          let skillIdx = updatedSkills.findIndex((s) => s.name === skillName)
+          if (skillIdx !== -1) {
+            const skill = { ...updatedSkills[skillIdx] }
+            if (skill.level < 4) {
+              skill.progress += 15
+              skill.lastPracticedTurn = currentTurn
+                // mark as used at work (may be read by other processors)
+                ; (skill as any).isBeingUsedAtWork = true
+              if (skill.progress >= 100) {
+                skill.level = (skill.level + 1) as any
+                skill.progress = 0
+                newNotifications.push({
+                  id: `work_lvl_${Date.now()}_${Math.random()}`,
+                  type: 'success',
+                  title: 'Профессиональный рост',
+                  message: `Благодаря работе ваш навык ${skill.name} повысился до уровня ${skill.level}!`,
+                  date: `${Math.floor(currentTurn / 4)} Q${currentTurn % 4 || 4}`,
+                  isRead: false,
+                } as unknown as Notification)
+              }
+              updatedSkills[skillIdx] = skill
             }
-            updatedSkills[skillIdx] = skill
           }
-        }
-      })
+        })
+      }
     }
   })
 
@@ -132,5 +172,6 @@ export function processJobs(
     notifications: newNotifications,
     remainingApplications,
     protectedSkills: Array.from(protectedSkills),
+    updatedJobs,
   }
 }

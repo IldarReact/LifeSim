@@ -37,141 +37,180 @@ export function calculateBusinessFinancials(
     };
   }
 
-  // 1. Base Expenses
+  // 1. Base Expenses (OpEx)
   const employeesCost = business.employees.reduce((sum, emp) => {
-    // Применяем индексацию зарплаты с учетом опыта сотрудника
     const indexedSalary = economy
       ? getQuarterlyInflatedSalary(emp.salary, economy, emp.experience)
       : emp.salary;
-    
     const kpi = calculateEmployeeKPI(emp);
     return sum + indexedSalary + kpi;
   }, 0);
-  
-  // Применяем инфляцию к операционным расходам
+
   const baseRentPerEmployee = 200;
   const baseUtilitiesPerEmployee = 50;
-  
+
   const rent = economy
     ? getInflatedPrice(baseRentPerEmployee * business.maxEmployees, economy, 'services')
     : baseRentPerEmployee * business.maxEmployees;
-    
+
   const utilities = economy
     ? getInflatedPrice(baseUtilitiesPerEmployee * business.maxEmployees, economy, 'services')
     : baseUtilitiesPerEmployee * business.maxEmployees;
 
-  let baseExpenses = employeesCost + rent + utilities;
+  let opEx = employeesCost + rent + utilities;
 
-  // Accountant reduction (from employees)
+  // Accountant reduction
   const accountants = business.employees.filter(e => e.role === 'accountant');
   if (accountants.length > 0) {
     const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0);
     const reduction = Math.min(0.15, 0.05 + (totalStars * 0.01));
-    baseExpenses *= (1 - reduction);
+    opEx *= (1 - reduction);
   }
 
-  // ✅ НОВОЕ: Дополнительное снижение расходов от навыков игрока
-  let playerExpenseReduction = 0;
+  // Player Skill reduction
   if (playerSkills && playerSkills.length > 0) {
     const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
-    playerExpenseReduction = playerImpact.expenseReduction / 100;
-    baseExpenses *= (1 - playerExpenseReduction);
+    opEx *= (1 - (playerImpact.expenseReduction / 100));
   }
 
-  // 2. Sales & Inventory
+  // 2. Sales & COGS
   let salesIncome = 0;
-  let purchaseCost = 0;
+  let cogs = 0; // Cost of Goods Sold
   let salesVolume = 0;
+  let purchaseCost = 0; // Cost of new inventory purchased
   let purchaseAmount = 0;
 
   const inventory = business.inventory;
 
-  // ✅ НОВОЕ: Разделяем логику для товарных и услуговых бизнесов
   if (business.isServiceBased) {
-    // === УСЛУГОВЫЙ БИЗНЕС ===
-    const price = business.price || 5;
+    // === SERVICE BUSINESS ===
+    // Price is abstract (1-10 scale usually)
+    const priceLevel = business.price || 5;
     const baseServiceDemand = business.maxEmployees * 10;
 
+    // Demand Modifiers
     const efficiencyMod = business.efficiency / 100;
     const reputationMod = business.reputation / 100;
-    const priceMod = 1 / price;
-    const marketMod = globalMarketValue;
+    const priceMod = 1 / Math.max(0.1, priceLevel / 5); // Normalized around 5
 
-    let serviceDemand = baseServiceDemand * efficiencyMod * reputationMod * priceMod * marketMod;
+    // Cycle Effect
+    let cycleMod = globalMarketValue;
+    // In recession (value < 1.0), high prices hurt more
+    if (globalMarketValue < 0.9 && priceLevel > 6) {
+      cycleMod *= 0.6; // High price services suffer in crisis
+    }
+
+    let serviceDemand = baseServiceDemand * efficiencyMod * reputationMod * priceMod * cycleMod;
 
     if (playerSkills && playerSkills.length > 0) {
       const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
-      const salesBonus = playerImpact.salesBonus / 100;
-      serviceDemand *= (1 + salesBonus);
+      serviceDemand *= (1 + (playerImpact.salesBonus / 100));
     }
 
-    const pricePerService = 1000 * price;
+    const pricePerService = 1000 * priceLevel; // Base revenue per service
     salesIncome = Math.floor(serviceDemand * pricePerService);
-
+    // Service business has no COGS in this model, only OpEx
 
   } else if (inventory) {
-    // === ТОВАРНЫЙ БИЗНЕС ===
-    const price = business.price || 5;
+    // === PRODUCT BUSINESS ===
+    const sellingPrice = inventory.pricePerUnit;
+    const unitCost = inventory.purchaseCost;
+    const margin = sellingPrice - unitCost;
+    const marginPercent = margin / sellingPrice;
 
     const baseDemand = business.maxEmployees * 50;
     const efficiencyMod = business.efficiency / 100;
     const reputationMod = business.reputation / 100;
-    const marketMod = globalMarketValue;
 
-    let baseProductDemand = baseDemand * efficiencyMod * reputationMod * marketMod;
-    const priceMod = 1 / price;
-    let finalDemand = baseProductDemand * priceMod;
+    // Demand Elasticity & Cycle
+    let marketMod = globalMarketValue;
+
+    // Crisis Logic:
+    // If Recession (market < 0.9)
+    if (globalMarketValue < 0.9) {
+      if (marginPercent < 0.3) {
+        // Low margin / Cheap goods -> Demand is resilient or even grows
+        marketMod = Math.max(marketMod, 1.0);
+      } else if (marginPercent > 0.6) {
+        // High margin / Luxury -> Demand crashes
+        marketMod *= 0.5;
+      }
+    }
+
+    // Price Elasticity (General)
+    // Higher margin = lower demand generally
+    const priceElasticity = Math.max(0.1, 1 - (marginPercent - 0.3)); // 30% margin is neutral
+
+    let finalDemand = baseDemand * efficiencyMod * reputationMod * marketMod * priceElasticity;
 
     if (!isPreview) {
-      const demandFluctuation = 0.8 + Math.random() * 0.4;
+      const demandFluctuation = 0.9 + Math.random() * 0.2;
       finalDemand *= demandFluctuation;
     }
 
     if (playerSkills && playerSkills.length > 0) {
       const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills);
-      const salesBonus = playerImpact.salesBonus / 100;
-      finalDemand *= (1 + salesBonus);
+      finalDemand *= (1 + (playerImpact.salesBonus / 100));
     }
 
     salesVolume = Math.min(Math.floor(finalDemand), inventory.currentStock);
-    salesIncome = salesVolume * inventory.pricePerUnit;
+    salesIncome = salesVolume * sellingPrice;
+    cogs = salesVolume * unitCost;
 
+    // Restock Logic
     if (inventory.autoPurchaseAmount > 0) {
       purchaseAmount = inventory.autoPurchaseAmount;
     } else {
-      // Если задан quantity (план производства/запасов), используем его как целевой уровень
-      // Иначе пытаемся заполнить склад до максимума
       const targetStock = business.quantity > 0 ? business.quantity : inventory.maxStock;
       purchaseAmount = Math.max(0, targetStock - (inventory.currentStock - salesVolume));
     }
-
-    purchaseCost = purchaseAmount * inventory.purchaseCost;
-
+    purchaseCost = purchaseAmount * unitCost;
   }
 
-  const totalIncome = salesIncome;
-  let totalExpenses = baseExpenses + purchaseCost;
+  // 3. Profit & Taxes
+  // Gross Profit = Sales - COGS - OpEx
+  // Note: purchaseCost is cash flow, not P&L expense (technically). 
+  // But in this simple model, we might treat purchase as expense OR use COGS.
+  // Standard accounting: Profit = Sales - COGS - OpEx.
+  // Cash Flow = Sales - OpEx - PurchaseCost.
+  // The user asked for "quantity sold * margin = profit". 
+  // Margin = Price - Cost. So Sales * Margin = Sales * (Price - Cost) = Sales - COGS.
+  // So GrossProfit = Sales - COGS.
+  // NetProfit = GrossProfit - OpEx - Tax.
 
-  // ✅ НОВОЕ: Расчет налогов
-  const grossProfit = totalIncome - totalExpenses;
+  const grossProfit = salesIncome - cogs - opEx;
+
   let taxAmount = 0;
-
   if (grossProfit > 0) {
-    const taxRate = business.taxRate || 0.15;
-    // Бухгалтер может снизить налогооблагаемую базу или ставку?
-    // Пока просто базовая ставка
-    taxAmount = Math.round(grossProfit * taxRate);
-
-    // Если есть бухгалтер, он уже снизил baseExpenses, что увеличило прибыль и налог
-    // Но в реальности бухгалтер оптимизирует налоги. 
-    // Давайте сделаем так: если есть бухгалтер, налог снижается на 10-20%
+    let taxRate = business.taxRate || 0.15; // Corporate Tax
     if (accountants.length > 0) {
+      // Accountants optimize tax
       const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0);
-      const taxReduction = Math.min(0.20, 0.05 + (totalStars * 0.02)); // 5-20%
-      taxAmount = Math.round(taxAmount * (1 - taxReduction));
+      const taxReduction = Math.min(0.20, 0.05 + (totalStars * 0.02));
+      taxRate *= (1 - taxReduction);
     }
+    taxAmount = Math.round(grossProfit * taxRate);
+  }
 
-    totalExpenses += taxAmount;
+  // Net Profit (Accounting)
+  const netProfit = grossProfit - taxAmount;
+
+  // Cash Flow (for money update)
+  // Cash Change = Sales - OpEx - Tax - NewInventoryPurchases
+  const cashFlow = salesIncome - opEx - taxAmount - purchaseCost;
+
+  if (!isPreview) {
+    console.log(`[Business Math] ${business.name}:`, {
+      salesIncome,
+      cogs,
+      opEx,
+      grossProfit,
+      taxAmount,
+      netProfit,
+      cashFlow,
+      margin: inventory ? (inventory.pricePerUnit - inventory.purchaseCost) : 'N/A',
+      sold: salesVolume
+    });
   }
 
   const newInventory: BusinessInventory = inventory ? {
@@ -186,9 +225,9 @@ export function calculateBusinessFinancials(
   };
 
   return {
-    income: Math.round(totalIncome),
-    expenses: Math.round(totalExpenses),
-    profit: Math.round(totalIncome - totalExpenses),
+    income: Math.round(salesIncome),
+    expenses: Math.round(opEx + purchaseCost + taxAmount), // Total Cash Outflow
+    profit: Math.round(cashFlow), // We return Cash Flow as "profit" for the game money update
     newInventory
   };
 }

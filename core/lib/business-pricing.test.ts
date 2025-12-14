@@ -75,12 +75,26 @@ describe('Business Pricing & Market Tests', () => {
 
       const lowPriceBusiness = createBaseBusiness({
         price: 3,
-        employees: [worker]
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 30, // Low price
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        }
       })
 
       const highPriceBusiness = createBaseBusiness({
         price: 8,
-        employees: [worker]
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 80, // High price
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        }
       })
 
       const lowPriceResult = calculateBusinessFinancials(lowPriceBusiness, true, undefined, 1.0)

@@ -39,6 +39,41 @@ export function processTurn(get: GetState, set: SetState): void {
   let marketEvents = marketResult.marketEvents
   newNotifications.push(...marketResult.notifications)
 
+  // 0.1 Process Economic Cycle (NEW)
+  const playerCountryId = prev.player.countryId
+  let country = prev.countries[playerCountryId] || getCountry(playerCountryId)
+
+  let cycleResult
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { processEconomicCycle } = require('./economy/cycle-processor')
+    cycleResult = processEconomicCycle(country.cycle, prev.turn)
+  } catch (e) {
+    cycleResult = { cycle: { phase: 'growth', durationLeft: 10, intensity: 0.5, marketModifier: 1.0 }, newEvent: null }
+  }
+
+  // Update country with new cycle
+  country = {
+    ...country,
+    cycle: cycleResult.cycle
+  }
+
+  // Add crisis/boom event if generated
+  if (cycleResult.newEvent) {
+    country.activeEvents = [...country.activeEvents, cycleResult.newEvent]
+    newNotifications.push({
+      id: cycleResult.newEvent.id,
+      type: cycleResult.newEvent.type === 'crisis' ? 'warning' : 'success',
+      title: cycleResult.newEvent.title,
+      message: cycleResult.newEvent.description,
+      date: `${prev.year} Q${prev.turn % 4 || 4}`,
+      isRead: false
+    })
+  }
+
+  // Update Global Market Value based on Cycle
+  const globalMarketValue = cycleResult.cycle.marketModifier
+
   // 1-2. Process Active Courses & University (education)
   let activeCourses = [...prev.player.personal.activeCourses]
   let activeUniversity = [...prev.player.personal.activeUniversity]
@@ -76,13 +111,16 @@ export function processTurn(get: GetState, set: SetState): void {
       prev.pendingApplications,
       updatedSkills,
       prev.turn,
+      country.cycle
     )
     updatedSkills = jobsResult.updatedSkills
+    var updatedJobs: any[] = jobsResult.updatedJobs // Capture updated jobs (after firing)
     newNotifications.push(...jobsResult.notifications)
     remainingApplications = jobsResult.remainingApplications
     jobsResult.protectedSkills.forEach((s) => protectedSkills.add(s))
   } catch (err) {
     // fallback: leave updatedSkills and notifications as-is
+    var updatedJobs: any[] = prev.player.jobs as any[]
   }
 
   // 6. Dating Logic
@@ -121,7 +159,7 @@ export function processTurn(get: GetState, set: SetState): void {
     updatedSkills,
     prev.turn,
     prev.year,
-    prev.globalMarket.value,
+    globalMarketValue, // Use calculated market value from cycle
   )
   updatedSkills = businessResult.updatedSkills
   newNotifications.push(...businessResult.notifications)
@@ -183,24 +221,8 @@ export function processTurn(get: GetState, set: SetState): void {
   let lifestyleIntelligence = 0
 
   // 10.1-10.2 Lifestyle calculations (family expenses, item effects, traits)
-  const countryId = prev.player.countryId
-  let country = prev.countries[countryId] ||
-    getCountry(countryId) || {
-      id: countryId,
-      name: 'Unknown',
-      archetype: 'poor',
-      gdpGrowth: 0,
-      inflation: 2,
-      keyRate: 5,
-      interestRate: 5,
-      unemployment: 5,
-      taxRate: 13,
-      corporateTaxRate: 20,
-      salaryModifier: 1,
-      costOfLivingModifier: 1.0,
-      activeEvents: [],
-    }
-  const costModifier = country.costOfLivingModifier || 1.0
+  // country is already updated above with cycle data
+  // costModifier is already defined above
 
   // defaults so names exist outside the try block
   let updatedFamilyMembers = familyMembers
@@ -283,7 +305,7 @@ export function processTurn(get: GetState, set: SetState): void {
       require('./turns/financial-processor') as typeof import('./turns/financial-processor')
     const fin = processFinancials(
       prev as any,
-      countryId,
+      playerCountryId, // Use playerCountryId defined at top
       updatedFamilyMembers,
       lifestyleExpenses,
       lifestyleExpensesBreakdown,
@@ -399,8 +421,11 @@ export function processTurn(get: GetState, set: SetState): void {
     let updatedCountries = prev.countries
 
     if (prev.player) {
+      // Use updated countries map (with new cycle)
+      const countriesForInflation = { ...prev.countries, [playerCountryId]: country }
+
       const inflationResult = processInflation(
-        prev.countries,
+        countriesForInflation,
         prev.player.countryId,
         newTurn,
         newYear,
@@ -425,41 +450,48 @@ export function processTurn(get: GetState, set: SetState): void {
       isProcessingTurn: false,
       marketEvents: marketEvents,
       countries: updatedCountries,
+      globalMarket: {
+        ...state.globalMarket,
+        value: globalMarketValue,
+        description: `Фаза: ${country.cycle?.phase.toUpperCase()}`,
+        lastUpdatedTurn: newTurn
+      },
       player: state.player
         ? {
-            ...state.player,
-            age: newTurn % 4 === 0 ? state.player.age + 1 : state.player.age,
-            businesses: businessResult.updatedBusinesses,
-            personal: {
-              ...state.player.personal,
-              skills: updatedSkills,
-              activeCourses: activeCourses,
-              activeUniversity: activeUniversity,
-              familyMembers: updatedFamilyMembers.map((member: any) => {
-                // Update relationship
-                let relationChange = 0
-                if (Math.random() > 0.7) {
-                  relationChange = Math.floor(Math.random() * 5) - 2
-                }
-                return {
-                  ...member,
-                  relationLevel: Math.max(0, Math.min(100, member.relationLevel + relationChange)),
-                  age: member.age + (newTurn % 4 === 0 ? 1 : 0),
-                }
-              }),
-              buffs: activeBuffs,
-              isDating: isDating,
-              potentialPartner: potentialPartner,
-              pregnancy: pregnancy,
-              stats: currentStats,
-            },
-            energy: currentStats.energy,
-            stats: {
-              ...state.player.stats,
-              money: state.player.stats.money + adjustedNetProfit,
-            },
-            quarterlyReport,
-          }
+          ...state.player,
+          age: newTurn % 4 === 0 ? state.player.age + 1 : state.player.age,
+          jobs: updatedJobs, // Use updated jobs list
+          businesses: businessResult.updatedBusinesses,
+          personal: {
+            ...state.player.personal,
+            skills: updatedSkills,
+            activeCourses: activeCourses,
+            activeUniversity: activeUniversity,
+            familyMembers: updatedFamilyMembers.map((member: any) => {
+              // Update relationship
+              let relationChange = 0
+              if (Math.random() > 0.7) {
+                relationChange = Math.floor(Math.random() * 5) - 2
+              }
+              return {
+                ...member,
+                relationLevel: Math.max(0, Math.min(100, member.relationLevel + relationChange)),
+                age: member.age + (newTurn % 4 === 0 ? 1 : 0),
+              }
+            }),
+            buffs: activeBuffs,
+            isDating: isDating,
+            potentialPartner: potentialPartner,
+            pregnancy: pregnancy,
+            stats: currentStats,
+          },
+          energy: currentStats.energy,
+          stats: {
+            ...state.player.stats,
+            money: state.player.stats.money + adjustedNetProfit,
+          },
+          quarterlyReport,
+        }
         : null,
       notifications: [...newNotifications, ...state.notifications],
       pendingApplications: remainingApplications,

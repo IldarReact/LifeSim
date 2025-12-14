@@ -26,6 +26,15 @@ export interface EconomicEvent {
   };
 }
 
+export type EconomicPhase = 'growth' | 'peak' | 'recession' | 'recovery'
+
+export interface EconomicCycle {
+  phase: EconomicPhase
+  durationLeft: number // Quarters left in current phase
+  intensity: number // 0.0 to 1.0 (how strong is the effect)
+  marketModifier: number // Multiplier for demand (e.g., 1.2 for growth, 0.7 for recession)
+}
+
 export interface CountryEconomy {
   id: string;
   name: string;
@@ -45,6 +54,7 @@ export interface CountryEconomy {
   activeEvents: EconomicEvent[]; // Активные экономические события
   inflationHistory?: number[]; // История годовой инфляции для накопленного расчета
   baseYear?: number; // Базовый год для расчета инфляции (обычно год начала игры)
+  cycle?: EconomicCycle; // Текущий экономический цикл
 }
 
 export type Country = CountryEconomy;

@@ -10,35 +10,38 @@ export interface GlobalMarketCondition {
    * 0.5 = кризис
    * 0.2 = мировой коллапс (почти ничего не покупают)
    */
-  value: number;
+  value: number
 
   /**
    * Описание текущего состояния
    */
-  description: string;
+  description: string
 
   /**
    * Тренд (растет/падает/стабильно)
    */
-  trend: 'rising' | 'falling' | 'stable';
+  trend: 'rising' | 'falling' | 'stable'
 
   /**
    * Когда последний раз обновлялось
    */
-  lastUpdatedTurn: number;
+  lastUpdatedTurn: number
 }
 
 /**
  * Событие глобального рынка
  */
 export interface MarketEvent {
-  id: string;
-  title: string;
-  description: string;
-  impact: number;        // Изменение значения рынка (-1.0 до +1.0)
-  duration: number;      // Сколько кварталов действует
-  turn: number;          // Когда произошло (deprecated, use startTurn)
-  type?: 'positive' | 'negative' | 'neutral';  // Тип события
-  startTurn?: number;    // Когда началось
-  endTurn?: number;      // Когда закончится
+  id: string
+  title: string
+  description: string
+  impact: number // Изменение значения рынка (-1.0 до +1.0)
+  duration: number // Сколько кварталов действует
+  turn: number // Когда произошло (deprecated, use startTurn)
+  type?: 'positive' | 'negative' | 'neutral' // Тип события
+  startTurn?: number // Когда началось
+  endTurn?: number // Когда закончится
+  effect?: {
+    globalMarketModifier?: number
+  }
 }

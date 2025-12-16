@@ -1,3 +1,4 @@
+import { formatGameDate } from '@/core/lib/quarter'
 import type { Notification, Skill, SkillLevel } from '@/core/types'
 
 interface EducationResult {
@@ -50,7 +51,7 @@ export function processEducation(
             type: 'success',
             title: 'Курс завершен',
             message: `Вы завершили курс "${course.courseName}" и получили навык ${course.skillName} (${newLevel} зв.)!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         } else {
@@ -64,7 +65,7 @@ export function processEducation(
             type: 'success',
             title: 'Курс завершен',
             message: `Вы завершили курс "${course.courseName}". Навык ${skill.name} повышен до ${skill.level} зв.!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         }
@@ -101,7 +102,7 @@ export function processEducation(
             type: 'success',
             title: 'Диплом получен',
             message: `Поздравляем! Вы завершили обучение по программе "${uni.programName}" и получили навык ${uni.skillName} (${newLevel} зв.)!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         } else {
@@ -115,7 +116,7 @@ export function processEducation(
             type: 'success',
             title: 'Диплом получен',
             message: `Поздравляем! Вы завершили обучение по программе "${uni.programName}". Навык ${skill.name} повышен до ${skill.level} зв.!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         }

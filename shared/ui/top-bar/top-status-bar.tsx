@@ -45,6 +45,7 @@ import { IntelligenceIndicator } from './intelligence-indicator'
 import { NotificationsMenu } from './notifications-menu'
 import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
 import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
+import { getQuarter } from '@/core/lib/quarter'
 
 export function TopStatusBar() {
   const { player, turn, year, resetGame, countries } = useGameStore()
@@ -70,15 +71,15 @@ export function TopStatusBar() {
           {/* Center: Player Stats */}
           <div className="hidden lg:flex items-center gap-4">
             <MoneyIndicator />
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
             <HappinessIndicator />
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
             <EnergyIndicator />
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
             <HealthIndicator />
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
             <SanityIndicator />
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
             <IntelligenceIndicator />
           </div>
 
@@ -86,18 +87,18 @@ export function TopStatusBar() {
           <div className="flex items-center gap-4">
             <NotificationsMenu />
 
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
 
             <div className="flex flex-col items-end">
               <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
                 Дата
               </span>
               <span className="text-lg font-bold text-white tabular-nums">
-                {year} Q{turn % 4 || 4}
+                {year} Q{getQuarter(turn)}
               </span>
             </div>
 
-            <div className="h-8 w-[1px] bg-white/10" />
+            <div className="h-8 w-1px bg-white/10" />
 
             <AlertDialog>
               <AlertDialogTrigger asChild>

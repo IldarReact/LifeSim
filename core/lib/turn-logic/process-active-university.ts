@@ -7,6 +7,7 @@
  */
 
 import type { Skill, SkillLevel, ActiveUniversity, Notification } from '@/core/types'
+import { formatGameDate } from '../quarter'
 
 export interface UniversityProcessingResult {
   updatedUniversities: ActiveUniversity[]
@@ -66,7 +67,7 @@ export function processActiveUniversity(
             type: 'success',
             title: 'Диплом получен',
             message: `Поздравляем! Вы завершили обучение по программе "${uni.programName}" и получили навык ${uni.skillName} (${newLevel} зв.)!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         } else {
@@ -81,7 +82,7 @@ export function processActiveUniversity(
             type: 'success',
             title: 'Диплом получен',
             message: `Поздравляем! Вы завершили обучение по программе "${uni.programName}". Навык ${skill.name} повышен до ${skill.level} зв.!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         }

@@ -1,20 +1,38 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Check, X, Briefcase, ExternalLink } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { cn } from "@/shared/utils/utils"
-import { Button } from "@/shared/ui/button"
-import { useState, useRef, useEffect } from "react"
-import { OfferDetailsDialog } from "@/features/notifications/offer-details-dialog"
-import type { GameOffer } from "@/core/types/game-offers.types"
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bell, Check, X, Briefcase, ExternalLink } from 'lucide-react'
+import { useGameStore } from '@/core/model/game-store'
+import { cn } from '@/shared/utils/utils'
+import { Button } from '@/shared/ui/button'
+import { useState, useRef, useEffect } from 'react'
+import { OfferDetailsDialog } from '@/features/notifications/offer-details-dialog'
+import type { GameOffer } from '@/core/types/game-offers.types'
+import type { Notification as GameNotification } from '@/core/types'
+
+type OfferReceivedNotificationData = {
+  type: 'offer_received'
+  offerId: string
+}
+
+type JobOfferNotificationData = {
+  applicationId: string
+}
 
 export function NotificationsMenu() {
-  const { notifications, dismissNotification, acceptJobOffer, markNotificationAsRead, offers, acceptOffer, rejectOffer } = useGameStore()
+  const {
+    notifications,
+    dismissNotification,
+    acceptJobOffer,
+    markNotificationAsRead,
+    offers,
+    acceptOffer,
+    rejectOffer,
+  } = useGameStore()
   const [isOpen, setIsOpen] = useState(false)
   const [selectedOffer, setSelectedOffer] = useState<GameOffer | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const unreadCount = notifications.filter(n => !n.isRead).length
-  const displayCount = unreadCount > 9 ? "9+" : unreadCount
+  const unreadCount = notifications.filter((n) => !n.isRead).length
+  const displayCount = unreadCount > 9 ? '9+' : unreadCount
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -22,23 +40,40 @@ export function NotificationsMenu() {
         setIsOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const handleAcceptOffer = (notifId: string, applicationId: string) => {
     acceptJobOffer(applicationId)
   }
 
-  const handleNotificationClick = (notif: any) => {
-    if (notif.data?.type === 'offer_received' && notif.data.offerId) {
-      const offer = offers.find(o => o.id === notif.data.offerId)
+  const handleNotificationClick = (notif: GameNotification) => {
+    const data = notif.data
+
+    if (isOfferReceivedData(data)) {
+      const offer = offers.find((o) => o.id === data.offerId)
       if (offer) {
         setSelectedOffer(offer)
-        setIsOpen(false) // Close menu when opening dialog
+        setIsOpen(false)
         markNotificationAsRead(notif.id)
       }
     }
+  }
+
+
+  function isOfferReceivedData(data: unknown): data is OfferReceivedNotificationData {
+    return (
+      typeof data === 'object' &&
+      data !== null &&
+      'type' in data &&
+      (data as any).type === 'offer_received' &&
+      'offerId' in data
+    )
+  }
+
+  function isJobOfferData(data: unknown): data is JobOfferNotificationData {
+    return typeof data === 'object' && data !== null && 'applicationId' in data
   }
 
   return (
@@ -68,7 +103,7 @@ export function NotificationsMenu() {
               <h3 className="font-bold text-white">Уведомления</h3>
               {unreadCount > 0 && (
                 <button
-                  onClick={() => notifications.forEach(n => markNotificationAsRead(n.id))}
+                  onClick={() => notifications.forEach((n) => markNotificationAsRead(n.id))}
                   className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   Прочитать все
@@ -83,25 +118,30 @@ export function NotificationsMenu() {
                   <p>Нет новых уведомлений</p>
                 </div>
               ) : (
-                notifications.map((notif) => {
-                  const isOfferNotif = notif.data?.type === 'offer_received';
+                notifications.map((notif: GameNotification) => {
+                  const isOfferNotif = isOfferReceivedData(notif.data)
 
                   return (
                     <div
                       key={notif.id}
                       onClick={() => isOfferNotif && handleNotificationClick(notif)}
                       className={cn(
-                        "relative p-3 rounded-xl border transition-all duration-200 group",
-                        isOfferNotif ? "cursor-pointer" : "",
+                        'relative p-3 rounded-xl border transition-all duration-200 group',
+                        isOfferNotif ? 'cursor-pointer' : '',
                         notif.isRead
-                          ? "bg-white/5 border-white/5 hover:bg-white/10"
-                          : "bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20"
+                          ? 'bg-white/5 border-white/5 hover:bg-white/10'
+                          : 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20',
                       )}
                     >
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className={cn("font-semibold text-sm", notif.isRead ? "text-white/90" : "text-white")}>
+                            <h4
+                              className={cn(
+                                'font-semibold text-sm',
+                                notif.isRead ? 'text-white/90' : 'text-white',
+                              )}
+                            >
                               {notif.title}
                             </h4>
                             {!notif.isRead && (
@@ -122,33 +162,38 @@ export function NotificationsMenu() {
                             )}
                           </div>
 
-                          {notif.type === 'job_offer' && notif.data && !isOfferNotif && (
-                            <div className="mt-3 flex gap-2">
-                              <Button
-                                size="sm"
-                                className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-none"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAcceptOffer(notif.id, notif.data.applicationId);
-                                }}
-                              >
-                                <Check className="w-3 h-3 mr-1" />
-                                Принять
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs border-white/20 text-white hover:bg-white/10"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  dismissNotification(notif.id);
-                                }}
-                              >
-                                <X className="w-3 h-3 mr-1" />
-                                Отклонить
-                              </Button>
-                            </div>
-                          )}
+                          {notif.type === 'job_offer' &&
+                            isJobOfferData(notif.data) &&
+                            !isOfferNotif && (
+                              <div className="mt-3 flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white border-none"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    const data = notif.data
+                                    if (isJobOfferData(data)) {
+                                      handleAcceptOffer(notif.id, data.applicationId)
+                                    }
+                                  }}
+                                >
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Принять
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 text-xs border-white/20 text-white hover:bg-white/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    dismissNotification(notif.id)
+                                  }}
+                                >
+                                  <X className="w-3 h-3 mr-1" />
+                                  Отклонить
+                                </Button>
+                              </div>
+                            )}
                         </div>
                         <button
                           onClick={(e) => {

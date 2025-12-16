@@ -7,6 +7,7 @@
  */
 
 import type { Skill, SkillLevel, Job, Notification } from '@/core/types'
+import { formatGameDate } from '../quarter'
 
 export interface JobSkillProgressionResult {
   skillUpdates: Skill[]
@@ -61,7 +62,7 @@ export function processJobSkillProgression(
                 type: 'success',
                 title: 'Профессиональный рост',
                 message: `Благодаря работе ваш навык ${skill.name} повысился до уровня ${skill.level}!`,
-                date: `${currentYear} Q${currentTurn % 4 || 4}`,
+                date: formatGameDate(currentYear, currentTurn),
                 isRead: false,
               })
             }

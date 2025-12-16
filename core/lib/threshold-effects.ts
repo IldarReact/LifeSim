@@ -5,6 +5,7 @@ import { checkHealthEffects } from './threshold-effects/health'
 import { checkSanityEffects } from './threshold-effects/sanity'
 import { checkIntelligenceEffects } from './threshold-effects/intelligence'
 import { checkHappinessEffects } from './threshold-effects/happiness'
+import { getQuarter } from './quarter'
 export type { ThresholdEffectsResult } from './threshold-effects/types'
 
 export function checkAllThresholdEffects(stats: StatEffect) {
@@ -43,7 +44,7 @@ export function generateLowStatEvents(
   year: number,
 ): Notification[] {
   const notifications: Notification[] = []
-  const quarter = turn % 4 || 4
+  const quarter = getQuarter(turn)
 
   if ((stats.sanity || 0) < 20 && Math.random() < 0.3) {
     notifications.push({

@@ -7,6 +7,7 @@
  */
 
 import type { Skill, SkillLevel, ActiveCourse, Notification } from '@/core/types'
+import { formatGameDate } from '../quarter'
 
 export interface CourseProcessingResult {
   updatedCourses: ActiveCourse[]
@@ -66,7 +67,7 @@ export function processActiveCourses(
             type: 'success',
             title: 'Курс завершен',
             message: `Вы завершили курс "${course.courseName}" и получили навык ${course.skillName} (${newLevel} зв.)!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         } else {
@@ -81,7 +82,7 @@ export function processActiveCourses(
             type: 'success',
             title: 'Курс завершен',
             message: `Вы завершили курс "${course.courseName}". Навык ${skill.name} повышен до ${skill.level} зв.!`,
-            date: `${currentYear} Q${currentTurn % 4 || 4}`,
+            date: formatGameDate(currentYear, currentTurn),
             isRead: false,
           })
         }

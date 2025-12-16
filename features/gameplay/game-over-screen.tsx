@@ -5,6 +5,7 @@ import { getGameOverMessage } from '@/core/lib/defeat-conditions'
 import type { GameOverReason } from '@/core/types/game.types'
 import { Button } from '@/shared/ui/button'
 import { Skull, Brain, Heart, Frown, DollarSign } from 'lucide-react'
+import { getQuarter } from '@/core/lib/quarter'
 
 export function GameOverScreen() {
   const { endReason, turn, year, player, resetGame } = useGameStore()
@@ -47,10 +48,10 @@ export function GameOverScreen() {
 
   const quartersPlayed = turn
   const yearsPlayed = Math.floor(quartersPlayed / 4)
-  const remainingQuarters = quartersPlayed % 4
+  const currentQuarter = getQuarter(quartersPlayed)
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b ${getBgGradient()} backdrop-blur-sm`}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-linear-to-b ${getBgGradient()} backdrop-blur-sm`}>
       <div className="max-w-2xl w-full mx-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl">
         {/* Иконка */}
         <div className="flex justify-center mb-6">
@@ -76,7 +77,7 @@ export function GameOverScreen() {
               <div className="text-sm text-white/60 mb-1">Прожито времени</div>
               <div className="text-2xl font-bold text-white">
                 {yearsPlayed > 0 && `${yearsPlayed} ${yearsPlayed === 1 ? 'год' : yearsPlayed < 5 ? 'года' : 'лет'}`}
-                {remainingQuarters > 0 && ` ${remainingQuarters} кв.`}
+                {currentQuarter > 0 && ` ${currentQuarter} кв.`}
               </div>
             </div>
 

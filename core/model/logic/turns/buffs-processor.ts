@@ -1,3 +1,4 @@
+import { formatGameDate } from '@/core/lib/quarter'
 import type { Notification } from '@/core/types'
 
 export function processBuffs(activeBuffs: Array<any>, year: number, turn: number) {
@@ -25,7 +26,7 @@ export function processBuffs(activeBuffs: Array<any>, year: number, turn: number
           type: 'info',
           title: 'Эффект истек',
           message: `Действие эффекта "${buff.description}" закончилось.`,
-          date: `${year} Q${turn % 4 || 4}`,
+          date: formatGameDate(year, turn),
           isRead: false,
         })
       }

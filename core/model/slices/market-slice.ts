@@ -1,6 +1,5 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, MarketSlice } from './types'
-import type { GlobalMarketCondition, MarketEvent } from '@/core/types'
 
 /**
  * Market Slice - управление глобальным рынком

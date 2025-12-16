@@ -105,10 +105,6 @@ const MARKET_EVENT_TEMPLATES: MarketEventTemplate[] = [
  * Генерирует случайное событие рынка на основе вероятностей
  */
 export function generateMarketEvent(currentTurn: number, currentYear: number): MarketEvent | null {
-  // Генерируем событие с вероятностью 30% каждый квартал
-  if (Math.random() > 0.3) {
-    return null
-  }
 
   // Выбираем событие на основе вероятностей
   const roll = Math.random()
@@ -122,8 +118,8 @@ export function generateMarketEvent(currentTurn: number, currentYear: number): M
         title: template.title,
         description: template.description,
         impact: template.impact,
-        duration: template.duration,
         turn: currentTurn,
+        duration: template.duration,
         type: template.type,
         startTurn: currentTurn,
         endTurn: currentTurn + template.duration
@@ -141,13 +137,7 @@ export function cleanupExpiredMarketEvents(
   events: MarketEvent[],
   currentTurn: number
 ): MarketEvent[] {
-  return events.filter(event => {
-    if (event.endTurn !== undefined) {
-      return event.endTurn > currentTurn
-    }
-    // Fallback to turn + duration for old events
-    return event.turn + event.duration > currentTurn
-  })
+  return events.filter((event) => event.endTurn! > currentTurn)
 }
 
 /**

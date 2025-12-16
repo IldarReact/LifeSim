@@ -1,4 +1,5 @@
 import { generateMarketEvent, cleanupExpiredMarketEvents } from '@/core/lib/market-events-generator'
+import { formatGameDate } from '@/core/lib/quarter';
 import type { MarketEvent } from '@/core/types'
 import type { Notification } from '@/core/types'
 
@@ -25,7 +26,7 @@ export function processMarket(
       type: newMarketEvent.type === 'positive' ? 'success' : 'info',
       title: `${eventIcon} Рынок: ${newMarketEvent.title}`,
       message: newMarketEvent.description,
-      date: `${currentYear} Q${currentTurn % 4 || 4}`,
+      date: formatGameDate(currentYear, currentTurn),
       isRead: false,
     })
   }

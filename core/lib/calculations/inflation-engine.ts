@@ -18,6 +18,7 @@
  */
 
 import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
+import { isQuarterEnd } from '../quarter'
 
 /**
  * Category-specific inflation multipliers
@@ -303,14 +304,10 @@ export function formatInflationNotification(notification: InflationNotification)
 
 /**
  * Returns true if inflation should be applied this turn
- * Only apply on Q1 of each year (turn % 4 === 0)
  *
  * @param turn - Current turn number
  * @returns true if this is Q1 (start of new year)
  */
 export function shouldApplyInflationThisTurn(turn: number): boolean {
-  // Apply inflation when we transition from Q4 -> Q1.
-  // This corresponds to turns where (turn % 4 === 1) after the increment.
-  // Example: turns 1, 5, 9, 13 ...
-  return turn % 4 === 1 && turn > 0
+  return isQuarterEnd(turn)
 }

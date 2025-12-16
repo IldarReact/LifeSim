@@ -7,6 +7,7 @@ import {
   formatInflationNotification,
   type InflationNotification,
 } from '@/core/lib/calculations/inflation-engine'
+import { getQuarter } from '@/core/lib/quarter'
 
 /**
  * Process yearly inflation for the player's country when appropriate.
@@ -43,7 +44,7 @@ export function processInflation(
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { devLog } = require('../../../lib/debug') as { devLog?: (...a: unknown[]) => void }
     if (devLog) {
-      devLog('[INFLATION UPDATE] Turn', newTurn, `(Q${newTurn % 4 || 4}), Year`, newYear, {
+      devLog('[INFLATION UPDATE] Turn', newTurn, `${getQuarter(newTurn)}, Year`, newYear, {
         oldInflation: country.inflation,
         newInflation,
         change: inflationChange,

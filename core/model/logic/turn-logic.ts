@@ -18,6 +18,7 @@ import { type InflationNotification } from '@/core/lib/calculations/inflation-en
 import { processInflation } from './turns/inflation-processor'
 import { getCountry } from '@/core/lib/data-loaders/economy-loader'
 import traitsData from '@/shared/data/world/commons/human-traits.json'
+import { formatGameDate, isQuarterEnd } from '@/core/lib/quarter'
 
 type GetState = () => GameStore
 type SetState = (partial: Partial<GameStore> | ((state: GameStore) => Partial<GameStore>)) => void
@@ -49,13 +50,16 @@ export function processTurn(get: GetState, set: SetState): void {
     const { processEconomicCycle } = require('./economy/cycle-processor')
     cycleResult = processEconomicCycle(country.cycle, prev.turn)
   } catch (e) {
-    cycleResult = { cycle: { phase: 'growth', durationLeft: 10, intensity: 0.5, marketModifier: 1.0 }, newEvent: null }
+    cycleResult = {
+      cycle: { phase: 'growth', durationLeft: 10, intensity: 0.5, marketModifier: 1.0 },
+      newEvent: null,
+    }
   }
 
   // Update country with new cycle
   country = {
     ...country,
-    cycle: cycleResult.cycle
+    cycle: cycleResult.cycle,
   }
 
   // Add crisis/boom event if generated
@@ -66,8 +70,8 @@ export function processTurn(get: GetState, set: SetState): void {
       type: cycleResult.newEvent.type === 'crisis' ? 'warning' : 'success',
       title: cycleResult.newEvent.title,
       message: cycleResult.newEvent.description,
-      date: `${prev.year} Q${prev.turn % 4 || 4}`,
-      isRead: false
+      date: formatGameDate(prev.year, prev.turn),
+      isRead: false,
     })
   }
 
@@ -111,7 +115,8 @@ export function processTurn(get: GetState, set: SetState): void {
       prev.pendingApplications,
       updatedSkills,
       prev.turn,
-      country.cycle
+      prev.year,
+      country.cycle,
     )
     updatedSkills = jobsResult.updatedSkills
     var updatedJobs: any[] = jobsResult.updatedJobs // Capture updated jobs (after firing)
@@ -204,7 +209,7 @@ export function processTurn(get: GetState, set: SetState): void {
             type: 'info',
             title: 'Эффект истек',
             message: `Действие эффекта "${buff.description}" закончилось.`,
-            date: `${prev.year} Q${prev.turn % 4 || 4}`,
+            date: formatGameDate(prev.year, prev.turn),
             isRead: false,
           })
         }
@@ -378,7 +383,7 @@ export function processTurn(get: GetState, set: SetState): void {
       type: event.severity === 'critical' ? 'warning' : 'info',
       title: event.severity === 'critical' ? '⚠️ КРИТИЧЕСКОЕ СОСТОЯНИЕ' : '⚡ Предупреждение',
       message: event.message,
-      date: `${prev.year} Q${prev.turn % 4 || 4}`,
+      date: formatGameDate(prev.year, prev.turn),
       isRead: false,
     })
   })
@@ -388,7 +393,7 @@ export function processTurn(get: GetState, set: SetState): void {
   const adjustedNetProfit = netProfit - totalThresholdCosts
 
   const newTurn = prev.turn + 1
-  const newYear = prev.turn % 4 === 0 ? prev.year + 1 : prev.year
+  const newYear = isQuarterEnd(prev.turn) ? prev.year + 1 : prev.year
 
   setTimeout(() => {
     const gameOverReason = checkDefeatConditions(currentStats)
@@ -410,7 +415,7 @@ export function processTurn(get: GetState, set: SetState): void {
           type: 'warning',
           title: '📉 ФИНАНСОВЫЙ КРИЗИС',
           message: 'Ваш баланс упал до критической отметки!',
-          date: `${newYear} Q${newTurn % 4 || 4}`,
+          date: formatGameDate(prev.year, prev.turn),
           isRead: false,
         })
       }
@@ -454,44 +459,44 @@ export function processTurn(get: GetState, set: SetState): void {
         ...state.globalMarket,
         value: globalMarketValue,
         description: `Фаза: ${country.cycle?.phase.toUpperCase()}`,
-        lastUpdatedTurn: newTurn
+        lastUpdatedTurn: newTurn,
       },
       player: state.player
         ? {
-          ...state.player,
-          age: newTurn % 4 === 0 ? state.player.age + 1 : state.player.age,
-          jobs: updatedJobs, // Use updated jobs list
-          businesses: businessResult.updatedBusinesses,
-          personal: {
-            ...state.player.personal,
-            skills: updatedSkills,
-            activeCourses: activeCourses,
-            activeUniversity: activeUniversity,
-            familyMembers: updatedFamilyMembers.map((member: any) => {
-              // Update relationship
-              let relationChange = 0
-              if (Math.random() > 0.7) {
-                relationChange = Math.floor(Math.random() * 5) - 2
-              }
-              return {
-                ...member,
-                relationLevel: Math.max(0, Math.min(100, member.relationLevel + relationChange)),
-                age: member.age + (newTurn % 4 === 0 ? 1 : 0),
-              }
-            }),
-            buffs: activeBuffs,
-            isDating: isDating,
-            potentialPartner: potentialPartner,
-            pregnancy: pregnancy,
-            stats: currentStats,
-          },
-          energy: currentStats.energy,
-          stats: {
-            ...state.player.stats,
-            money: state.player.stats.money + adjustedNetProfit,
-          },
-          quarterlyReport,
-        }
+            ...state.player,
+            age: isQuarterEnd(newTurn) ? state.player.age + 1 : state.player.age,
+            jobs: updatedJobs, // Use updated jobs list
+            businesses: businessResult.updatedBusinesses,
+            personal: {
+              ...state.player.personal,
+              skills: updatedSkills,
+              activeCourses: activeCourses,
+              activeUniversity: activeUniversity,
+              familyMembers: updatedFamilyMembers.map((member: any) => {
+                // Update relationship
+                let relationChange = 0
+                if (Math.random() > 0.7) {
+                  relationChange = Math.floor(Math.random() * 5) - 2
+                }
+                return {
+                  ...member,
+                  relationLevel: Math.max(0, Math.min(100, member.relationLevel + relationChange)),
+                  age: member.age + (isQuarterEnd(newTurn) ? 1 : 0),
+                }
+              }),
+              buffs: activeBuffs,
+              isDating: isDating,
+              potentialPartner: potentialPartner,
+              pregnancy: pregnancy,
+              stats: currentStats,
+            },
+            energy: currentStats.energy,
+            stats: {
+              ...state.player.stats,
+              money: state.player.stats.money + adjustedNetProfit,
+            },
+            quarterlyReport,
+          }
         : null,
       notifications: [...newNotifications, ...state.notifications],
       pendingApplications: remainingApplications,

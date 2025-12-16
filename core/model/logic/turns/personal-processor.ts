@@ -1,3 +1,4 @@
+import { formatGameDate } from '@/core/lib/quarter'
 import type { Notification } from '@/core/types'
 import type { PlayerState } from '@/core/types'
 
@@ -12,6 +13,7 @@ export function processPersonal(
   // Dating Logic
   let potentialPartner = prevPersonal.potentialPartner
   let isDating = prevPersonal.isDating
+
   if (isDating && !potentialPartner) {
     if (Math.random() < 0.3) {
       const names = ['Мария', 'Анна', 'Елена', 'Виктория', 'София', 'Алиса', 'Дарья', 'Полина']
@@ -20,7 +22,9 @@ export function processPersonal(
         { id: 'job_indebted_start', title: 'Офисный работник', income: 18000 },
         { id: 'job_marketing', title: 'Digital Marketing Specialist', income: 22500 },
       ]
+
       const selectedJob = jobs[Math.floor(Math.random() * jobs.length)]
+
       potentialPartner = {
         id: `partner_${Date.now()}`,
         name: names[Math.floor(Math.random() * names.length)],
@@ -28,14 +32,16 @@ export function processPersonal(
         occupation: selectedJob.title,
         income: selectedJob.income,
       }
+
       notifications.push({
         id: `dating_success_${Date.now()}`,
         type: 'success',
         title: 'Успешное свидание! 💘',
         message: `Вы познакомились с ${potentialPartner.name}. Она работает как ${potentialPartner.occupation}.`,
-        date: `${year} Q${turn % 4 || 4}`,
+        date: formatGameDate(year, turn),
         isRead: false,
       })
+
       isDating = false
     } else {
       notifications.push({
@@ -43,7 +49,7 @@ export function processPersonal(
         type: 'info',
         title: 'Поиск партнера',
         message: 'В этом квартале не удалось найти подходящую пару. Поиски продолжаются...',
-        date: `${year} Q${turn % 4 || 4}`,
+        date: formatGameDate(year, turn),
         isRead: false,
       })
     }
@@ -52,11 +58,14 @@ export function processPersonal(
   // Pregnancy Logic
   let pregnancy = prevPersonal.pregnancy
   let familyMembers = [...prevPersonal.familyMembers]
+
   if (pregnancy) {
     pregnancy = { ...pregnancy, turnsLeft: pregnancy.turnsLeft - 1 }
+
     if (pregnancy.turnsLeft <= 0) {
       const childCount = pregnancy.isTwins ? 2 : 1
       const names = ['Макс', 'Александр', 'Михаил', 'Артем', 'Иван', 'Дмитрий']
+
       for (let i = 0; i < childCount; i++) {
         familyMembers.push({
           id: `child_${Date.now()}_${i}`,
@@ -71,14 +80,18 @@ export function processPersonal(
           transportPreference: undefined,
         })
       }
+
       notifications.push({
         id: `birth_${Date.now()}`,
         type: 'success',
         title: pregnancy.isTwins ? 'Двойня! 👶👶' : 'Рождение ребенка! 👶',
-        message: `Поздравляем! В вашей семье ${pregnancy.isTwins ? 'пополнение (двойня)' : 'пополнение'}.`,
-        date: `${year} Q${turn % 4 || 4}`,
+        message: `Поздравляем! В вашей семье ${
+          pregnancy.isTwins ? 'пополнение (двойня)' : 'пополнение'
+        }.`,
+        date: formatGameDate(year, turn),
         isRead: false,
       })
+
       pregnancy = null
     }
   }

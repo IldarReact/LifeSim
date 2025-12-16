@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand'
 import type { GameStore, NotificationSlice } from './types'
+import { formatGameDate } from '@/core/lib/quarter'
 
 export const createNotificationSlice: StateCreator<
   GameStore,
@@ -19,7 +20,7 @@ export const createNotificationSlice: StateCreator<
           ...notification,
           id: `notif_${Date.now()}_${Math.random()}`,
           isRead: false,
-          date: `${state.year} Q${((state.turn - 1) % 4) + 1}`
+          date: formatGameDate(state.year, state.turn)
         },
         ...state.notifications
       ]

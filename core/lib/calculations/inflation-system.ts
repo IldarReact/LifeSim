@@ -1,6 +1,7 @@
 // Система управления инфляцией и ценами
 import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
 import { applyEventEffects } from '@/core/lib/economic-events'
+import { isQuarterEnd } from '../quarter'
 
 /**
  * Коэффициенты роста цен для разных категорий товаров
@@ -284,5 +285,5 @@ export function applyYearlyInflation(
  */
 export function shouldShowInflationNotification(currentTurn: number): boolean {
   // Show notification when we transition from Q4 -> Q1 (turns 1,5,9,...)
-  return currentTurn > 0 && currentTurn % 4 === 1
+  return isQuarterEnd(currentTurn)
 }

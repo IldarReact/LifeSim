@@ -333,6 +333,51 @@ export function BusinessManagementDialog({
                   )}
                 </div>
               </div>
+
+              {/* Прошлый квартал */}
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    className="border-white/20 text-white/80 hover:bg-white/10"
+                    onClick={() => {
+                      // no-op: просто есть блок ниже
+                    }}
+                  >
+                    Прошлый квартал
+                  </Button>
+                </div>
+                {business.lastQuarterSummary && (
+                  <div className="mt-3 bg-black/30 border border-white/10 rounded-xl p-4 text-white/90">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Продано товаров</span>
+                        <span className="text-sm font-semibold">{business.lastQuarterSummary.sold}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Цена продажи</span>
+                        <span className="text-sm font-semibold">${business.lastQuarterSummary.priceUsed.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Доход</span>
+                        <span className="text-sm font-semibold text-emerald-400">+${business.lastQuarterSummary.salesIncome.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Налоги</span>
+                        <span className="text-sm font-semibold text-amber-300">-${business.lastQuarterSummary.taxes.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Расходы</span>
+                        <span className="text-sm font-semibold text-rose-400">-${business.lastQuarterSummary.expenses.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-white/60">Прибыль (после налога)</span>
+                        <span className="text-sm font-semibold">{business.lastQuarterSummary.netProfit >= 0 ? '+' : ''}${business.lastQuarterSummary.netProfit.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -155,6 +155,14 @@ export interface Business {
   quarterlyIncome: number // Доход за последний квартал
   quarterlyExpenses: number // Расходы за последний квартал
   currentValue: number // Текущая стоимость бизнеса
+  lastQuarterSummary?: {
+    sold: number
+    priceUsed: number
+    salesIncome: number
+    taxes: number
+    expenses: number
+    netProfit: number
+  }
 
   // Налоги и страховка
   taxRate: number // Ставка налога (0-1, например 0.15 = 15%)

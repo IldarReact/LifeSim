@@ -183,6 +183,16 @@ export function processBusinessTurn(
       inventory: financials.newInventory,
       quarterlyIncome: financials.income,
       quarterlyExpenses: financials.expenses,
+      lastQuarterSummary: financials.debug
+        ? {
+            sold: financials.debug.salesVolume,
+            priceUsed: financials.debug.priceUsed,
+            salesIncome: financials.income,
+            taxes: financials.debug.taxAmount,
+            expenses: financials.expenses,
+            netProfit: financials.netProfit,
+          }
+        : updatedBiz.lastQuarterSummary,
     })
   })
 

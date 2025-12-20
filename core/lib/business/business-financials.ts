@@ -1,4 +1,5 @@
 import { getInflatedPrice, getQuarterlyInflatedSalary } from '../calculations/price-helpers'
+import { getStarMultiplier } from '@/core/lib/data-loaders/static-data-loader'
 
 import { calculateEmployeeKPI } from './employee-calculations'
 import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles'
@@ -25,6 +26,14 @@ export function calculateBusinessFinancials(
   cashFlow: number
   newInventory: BusinessInventory
   playerStatEffects: StatEffect
+  debug?: {
+    salesVolume: number
+    priceUsed: number
+    taxAmount: number
+    opEx: number
+    cogs: number
+    grossProfit: number
+  }
 } {
   const state = business.state ?? 'active'
   if (state !== 'active') {
@@ -76,6 +85,38 @@ export function calculateBusinessFinancials(
     opEx *= 1 - reduction
   }
 
+  // ✅ NEW: Employee role buffs (efficiency/sales/expenses)
+  let employeeEfficiencyBonusPct = 0
+  let employeeExpenseReductionPct = 0
+  let employeeSalesBonusPct = 0
+  let employeeReputationBonusPct = 0
+
+  business.employees.forEach((emp) => {
+    const starMul = getStarMultiplier(emp.stars) // ~1.0-1.4
+    if (emp.role === 'manager') {
+      employeeEfficiencyBonusPct += 3 * starMul
+      employeeExpenseReductionPct += 2 * starMul
+    }
+    if (emp.role === 'salesperson') {
+      employeeSalesBonusPct += 2 * starMul
+      employeeReputationBonusPct += 1 * starMul
+    }
+    if (emp.role === 'marketer') {
+      employeeSalesBonusPct += 3 * starMul
+      employeeReputationBonusPct += 2 * starMul
+    }
+    if (emp.role === 'technician') {
+      employeeEfficiencyBonusPct += 2 * starMul
+    }
+    if (emp.role === 'worker') {
+      employeeEfficiencyBonusPct += 1 * starMul
+    }
+  })
+
+  if (employeeExpenseReductionPct > 0) {
+    opEx *= 1 - Math.min(0.3, employeeExpenseReductionPct / 100)
+  }
+
   // Player Skill reduction
   if (playerSkills && playerSkills.length > 0) {
     const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
@@ -98,7 +139,7 @@ export function calculateBusinessFinancials(
     const baseServiceDemand = business.maxEmployees * 10
 
     // Demand Modifiers
-    const efficiencyMod = business.efficiency / 100
+    const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
     const reputationMod = business.reputation / 100
     const priceMod = 1 / Math.max(0.1, priceLevel / 5) // Normalized around 5
 
@@ -110,6 +151,9 @@ export function calculateBusinessFinancials(
     }
 
     let serviceDemand = baseServiceDemand * efficiencyMod * reputationMod * priceMod * cycleMod
+    if (employeeSalesBonusPct > 0) {
+      serviceDemand *= 1 + employeeSalesBonusPct / 100
+    }
 
     if (playerSkills && playerSkills.length > 0) {
       const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
@@ -127,7 +171,7 @@ export function calculateBusinessFinancials(
     const marginPercent = margin / sellingPrice
 
     const baseDemand = business.maxEmployees * 50
-    const efficiencyMod = business.efficiency / 100
+    const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
     const reputationMod = business.reputation / 100
 
     // Demand Elasticity & Cycle
@@ -151,6 +195,9 @@ export function calculateBusinessFinancials(
     const priceElasticity = Math.max(0.1, baseElasticity * baseElasticity)
 
     let finalDemand = baseDemand * efficiencyMod * reputationMod * marketMod * priceElasticity
+    if (employeeSalesBonusPct > 0) {
+      finalDemand *= 1 + employeeSalesBonusPct / 100
+    }
 
     if (!isPreview) {
       const demandFluctuation = 0.9 + Math.random() * 0.2
@@ -250,6 +297,14 @@ export function calculateBusinessFinancials(
     cashFlow: Math.round(cashFlow),
     newInventory,
     playerStatEffects: calculatePlayerRoleEffects(business),
+    debug: {
+      salesVolume,
+      priceUsed: inventory ? inventory.pricePerUnit : 0,
+      taxAmount,
+      opEx: Math.round(opEx),
+      cogs: Math.round(cogs),
+      grossProfit: Math.round(grossProfit),
+    },
   }
 }
 

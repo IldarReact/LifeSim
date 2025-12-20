@@ -80,6 +80,7 @@ export function createPartnerBusiness(
     quarterlyIncome: 0,
     quarterlyExpenses: 0,
     currentValue: offer.details.totalCost,
+    walletBalance: 0,
     taxRate: 0.15,
     hasInsurance: true,
     insuranceCost: offer.details.totalCost * 0.01,

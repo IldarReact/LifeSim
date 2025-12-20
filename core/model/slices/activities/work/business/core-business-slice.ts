@@ -144,6 +144,45 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
       },
     })
   },
+  depositToBusinessWallet: (businessId: string, amount: number) => {
+    const state = get()
+    if (!state.player) return
+    if (amount <= 0) return
+
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
+    if (i === -1) return
+
+    const business = state.player.businesses[i]
+    if (!business) return
+
+    if (state.player.stats.money < amount) {
+      console.warn(
+        `[Business Wallet] Недостаточно средств у игрока для пополнения: требуется $${amount}`,
+      )
+      return
+    }
+
+    const updatedStats = applyStats(state.player.stats, { money: -amount })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, { money: -amount })
+
+    const updatedBusinesses = [...state.player.businesses]
+    updatedBusinesses[i] = {
+      ...business,
+      walletBalance: (business.walletBalance || 0) + amount,
+    }
+
+    set({
+      player: {
+        ...state.player,
+        stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
+        businesses: updatedBusinesses,
+      },
+    })
+  },
 
   unfreezeBusiness: (businessId: string) => {
     const state = get()

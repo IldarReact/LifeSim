@@ -12,6 +12,7 @@ import {
   requiresApproval,
   canProposeChanges,
   getBusinessPartner,
+  getPlayerShare,
   generateProposalId,
 } from '@/core/lib/business/partnership-permissions'
 import { broadcastEvent } from '@/core/lib/multiplayer'
@@ -65,11 +66,61 @@ export const createPartnershipBusinessSlice: StateCreator<
     // Если можем вносить изменения напрямую
     if (canMakeDirectChanges(business, state.player.id)) {
       console.log('[proposeBusinessChange] Can make direct changes - applying immediately')
-      // Применяем изменения сразу
-      state.updateBusinessDirectly(businessId, {
-        price: data.newPrice,
-        quantity: data.newQuantity,
-      })
+      if (changeType === 'fund_collection') {
+        const amount = data.collectionAmount || 0
+        const playerShare = getPlayerShare(business, state.player.id)
+        const contribution = Math.round(amount * (Math.max(0, Math.min(100, playerShare)) / 100))
+        if (contribution > 0) {
+          if (state.player.stats.money < contribution) {
+            state.pushNotification?.({
+              type: 'error',
+              title: 'Недостаточно средств',
+              message: 'У вас недостаточно денег для взноса',
+            })
+            return
+          }
+          set((state) => ({
+            player: {
+              ...state.player!,
+              stats: { ...state.player!.stats, money: state.player!.stats.money - contribution },
+              personal: {
+                ...state.player!.personal,
+                stats: {
+                  ...state.player!.personal.stats,
+                  money: state.player!.personal.stats.money - contribution,
+                },
+              },
+              businesses: state.player!.businesses.map((b) =>
+                b.id === businessId
+                  ? { ...b, walletBalance: (b.walletBalance || 0) + contribution }
+                  : b,
+              ),
+            },
+          }))
+          const partner = getBusinessPartner(business, state.player.id)
+          if (partner) {
+            const updatedBusiness = get().player?.businesses.find((b) => b.id === businessId)
+            broadcastEvent({
+              type: 'BUSINESS_UPDATED',
+              payload: {
+                businessId,
+                changes: { walletBalance: updatedBusiness?.walletBalance },
+              },
+              toPlayerId: partner.id,
+            })
+          }
+          state.pushNotification?.({
+            type: 'success',
+            title: 'Взнос выполнен',
+            message: 'Ваш вклад внесён в кошелёк бизнеса',
+          })
+        }
+      } else {
+        state.updateBusinessDirectly(businessId, {
+          price: data.newPrice,
+          quantity: data.newQuantity,
+        })
+      }
       return
     }
 
@@ -172,6 +223,50 @@ export const createPartnershipBusinessSlice: StateCreator<
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
           ),
         }))
+        break
+      case 'fund_collection':
+        {
+          const amount = proposal.data.collectionAmount || 0
+          const playerShare = getPlayerShare(business, state.player.id)
+          const contribution = Math.round(amount * (Math.max(0, Math.min(100, playerShare)) / 100))
+          if (contribution > 0) {
+            if (state.player.stats.money < contribution) {
+              state.pushNotification?.({
+                type: 'error',
+                title: 'Недостаточно средств',
+                message: 'У вас недостаточно денег для взноса',
+              })
+              return
+            }
+            set((state) => ({
+              player: {
+                ...state.player!,
+                stats: { ...state.player!.stats, money: state.player!.stats.money - contribution },
+                personal: {
+                  ...state.player!.personal,
+                  stats: {
+                    ...state.player!.personal.stats,
+                    money: state.player!.personal.stats.money - contribution,
+                  },
+                },
+                businesses: state.player!.businesses.map((b) =>
+                  b.id === proposal.businessId
+                    ? { ...b, walletBalance: (b.walletBalance || 0) + contribution }
+                    : b,
+                ),
+              },
+              businessProposals: state.businessProposals.map((p) =>
+                p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+              ),
+            }))
+          } else {
+            set((state) => ({
+              businessProposals: state.businessProposals.map((p) =>
+                p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+              ),
+            }))
+          }
+        }
         break
 
       case 'quantity':
@@ -329,6 +424,11 @@ export const createPartnershipBusinessSlice: StateCreator<
         break
       case 'unfreeze':
         changesToBroadcast = { state: 'active' }
+        break
+      case 'fund_collection':
+        if (updatedBusiness) {
+          changesToBroadcast = { walletBalance: updatedBusiness.walletBalance }
+        }
         break
     }
 

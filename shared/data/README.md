@@ -76,14 +76,3 @@ const housing = getHousingById('rent_room', player.countryId)
 2. Add all required JSON files (food, transport, health, services, housing, jobs, courses, businesses)
 3. Update all data loaders to import and register the new country
 4. Add country to `INITIAL_COUNTRIES` in `core/lib/initialState.ts`
-
-## Migration Status
-
-✅ Shop items (food, transport, health, services)
-✅ Housing
-✅ Data loaders created
-✅ JSON Schemas created
-⏳ Jobs (loader ready, data to be migrated)
-⏳ Courses (loader ready, data to be migrated)
-⏳ Businesses (loader ready, data to be migrated)
-⏳ Skills (to be moved to commons)

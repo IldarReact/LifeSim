@@ -109,6 +109,7 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     quarterlyExpenses: (monthlyExpenses || 0) * 3,
     currentValue: totalCost,
     taxRate: taxRate || 0.15,
+    walletBalance: 0,
 
     // Insurance
     hasInsurance: false,

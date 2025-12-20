@@ -36,6 +36,9 @@ export interface BusinessChangeProposal {
     // Для change_role
     newRole?: string
     oldRole?: string
+
+    // Для fund_collection
+    collectionAmount?: number
   }
 }
 

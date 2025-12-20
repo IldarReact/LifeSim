@@ -76,16 +76,16 @@ export type ProposalType =
   | 'expand_network'
 
 export type BusinessChangeType =
-  | 'price'              // Изменение цены
-  | 'quantity'           // Изменение количества
-  | 'hire_employee'      // Найм сотрудника
-  | 'fire_employee'      // Увольнение сотрудника
-  | 'freeze'             // Заморозка бизнеса
-  | 'unfreeze'           // Разморозка бизнеса
-  | 'open_branch'        // Открытие филиала
-  | 'auto_purchase'      // Изменение автозакупки
-  | 'change_role'        // Изменение роли игрока
-
+  | 'price' // Изменение цены
+  | 'quantity' // Изменение количества
+  | 'hire_employee' // Найм сотрудника
+  | 'fire_employee' // Увольнение сотрудника
+  | 'freeze' // Заморозка бизнеса
+  | 'unfreeze' // Разморозка бизнеса
+  | 'open_branch' // Открытие филиала
+  | 'auto_purchase' // Изменение автозакупки
+  | 'change_role' // Изменение роли игрока
+  | 'fund_collection' // Сбор средств партнёрами
 
 export interface BusinessProposal {
   id: string
@@ -155,6 +155,7 @@ export interface Business {
   quarterlyIncome: number // Доход за последний квартал
   quarterlyExpenses: number // Расходы за последний квартал
   currentValue: number // Текущая стоимость бизнеса
+  walletBalance?: number // Деньги бизнеса (кошелёк для операций)
   lastQuarterSummary?: {
     sold: number
     priceUsed: number
@@ -162,6 +163,7 @@ export interface Business {
     taxes: number
     expenses: number
     netProfit: number
+    profitDistribution?: { partnerId: string; share: number; amount: number }[]
   }
 
   // Налоги и страховка

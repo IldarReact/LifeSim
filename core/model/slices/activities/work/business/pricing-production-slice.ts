@@ -40,6 +40,32 @@ export const createPricingProductionSlice: GameStateCreator<Record<string, unkno
       console.log(`[Pricing] Price changed for "${business.name}": ${oldPrice} → ${clampedPrice}`)
     }
 
+    const k = 0.15
+    const recalcInventoryPrice = (b: any) => {
+      if (b.isServiceBased || !b.inventory) return b
+      const level = b.price || 5
+      const cost = b.inventory.purchaseCost
+      const newPricePerUnit = Math.round(cost * (1 + k * (level - 5)))
+      return {
+        ...b,
+        inventory: {
+          ...b.inventory,
+          pricePerUnit: newPricePerUnit,
+        },
+      }
+    }
+
+    if (business.networkId) {
+      const nid = business.networkId
+      updatedBusinesses = updatedBusinesses.map((b) =>
+        b.networkId === nid ? recalcInventoryPrice(b) : b,
+      )
+    } else {
+      updatedBusinesses = updatedBusinesses.map((b) =>
+        b.id === businessId ? recalcInventoryPrice(b) : b,
+      )
+    }
+
     set({
       player: {
         ...state.player,

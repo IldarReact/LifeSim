@@ -66,12 +66,12 @@ describe('Business Formulas', () => {
     role,
     stars: stars as any,
     skills: {
-      efficiency: 50
+      efficiency: 50,
     },
     salary: 1000,
     productivity: 100,
     experience: 4,
-    humanTraits: []
+    humanTraits: [],
   })
 
   describe('calculateBusinessFinancials', () => {
@@ -80,7 +80,7 @@ describe('Business Formulas', () => {
       const employee = createMockEmployee('worker')
       const businessWithEmployee = {
         ...mockBusiness,
-        employees: [employee]
+        employees: [employee],
       }
 
       // Pass isPreview=true for deterministic demand (fluctuation = 1.0)
@@ -105,30 +105,27 @@ describe('Business Formulas', () => {
       expect(result.newInventory.currentStock).toBeGreaterThan(0)
     })
 
-    it('should reduce expenses with an accountant', () => {
+    it('should reduce taxes with an accountant', () => {
       const worker = createMockEmployee('worker')
-      const accountant = createMockEmployee('accountant', 5) // 5 stars
+      const accountant = createMockEmployee('accountant', 5)
 
       const business = {
         ...mockBusiness,
-        employees: [worker]
+        employees: [worker],
       }
 
       const businessWithAccountant = {
         ...mockBusiness,
-        employees: [worker, accountant]
+        employees: [worker, accountant],
       }
 
       const res1 = calculateBusinessFinancials(business, true)
       const res2 = calculateBusinessFinancials(businessWithAccountant, true)
 
-      // Base expenses should be lower in res2 (excluding salary difference)
-      // But salary increases expenses. 
-      // We should check if the *base* component is reduced.
-      // Hard to check directly from total expenses.
-      // But we can verify logic runs without error.
-
-      expect(res2.expenses).toBeDefined()
+      // Проверяем именно снижение налога при наличии бухгалтера
+      const tax1 = res1.debug?.taxAmount ?? 0
+      const tax2 = res2.debug?.taxAmount ?? 0
+      expect(tax2).toBeLessThanOrEqual(tax1)
     })
   })
 })

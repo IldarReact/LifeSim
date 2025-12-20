@@ -168,8 +168,10 @@ export function processBusinessTurn(
     if (eventMoney > 0) financials.income += eventMoney
     else financials.expenses += Math.abs(eventMoney)
 
-    totalIncome += financials.income
-    totalExpenses += financials.expenses
+    const playerSharePct = typeof updatedBiz.playerShare === 'number' ? updatedBiz.playerShare : 100
+    const shareFactor = Math.max(0, Math.min(100, playerSharePct)) / 100
+    totalIncome += Math.round(financials.income * shareFactor)
+    totalExpenses += Math.round(financials.expenses * shareFactor)
 
     // 7. Update employee experience (+3 months per quarter)
     updatedBiz.employees = updatedBiz.employees.map((emp) => ({
@@ -191,6 +193,13 @@ export function processBusinessTurn(
             taxes: financials.debug.taxAmount,
             expenses: financials.expenses,
             netProfit: financials.netProfit,
+            profitDistribution: updatedBiz.partners.map((p) => ({
+              partnerId: p.id,
+              share: p.share,
+              amount: Math.round(
+                financials.netProfit * (Math.max(0, Math.min(100, p.share)) / 100),
+              ),
+            })),
           }
         : updatedBiz.lastQuarterSummary,
     })

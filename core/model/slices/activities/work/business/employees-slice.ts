@@ -18,7 +18,7 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
 
     // Validate hiring parameters
     const validation = validateEmployeeHire(
-      state.player.stats.money,
+      business.walletBalance || 0,
       candidate.requestedSalary,
       business.employees.length,
       business.maxEmployees,
@@ -51,22 +51,16 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     const updatedBusinesses = [...state.player.businesses]
     updatedBusinesses[i] = updatedBusiness
 
-    // Deduct salary from player money
-    const updatedStats = applyStats(state.player.stats, {
-      money: -candidate.requestedSalary,
-    })
-    const updatedPersonalStats = applyStats(state.player.personal.stats, {
-      money: -candidate.requestedSalary,
-    })
+    // Deduct from business wallet instead of player money
+    const updatedBusinessWithWallet = {
+      ...updatedBusiness,
+      walletBalance: Math.max(0, (updatedBusiness.walletBalance || 0) - candidate.requestedSalary),
+    }
+    updatedBusinesses[i] = updatedBusinessWithWallet
 
     set({
       player: {
         ...state.player,
-        stats: updatedStats,
-        personal: {
-          ...state.player.personal,
-          stats: updatedPersonalStats,
-        },
         businesses: updatedBusinesses,
       },
     })

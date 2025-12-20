@@ -63,12 +63,12 @@ describe('Business Pricing & Market Tests', () => {
     role,
     stars: stars as any,
     skills: {
-      efficiency: 50
+      efficiency: 50,
     },
     salary: 1000,
     productivity: 100,
     experience: 4,
-    humanTraits: []
+    humanTraits: [],
   })
 
   describe('Price Impact on Demand', () => {
@@ -84,7 +84,7 @@ describe('Business Pricing & Market Tests', () => {
           pricePerUnit: 30, // Low price
           purchaseCost: 20,
           autoPurchaseAmount: 0,
-        }
+        },
       })
 
       const highPriceBusiness = createBaseBusiness({
@@ -96,7 +96,7 @@ describe('Business Pricing & Market Tests', () => {
           pricePerUnit: 80, // High price
           purchaseCost: 20,
           autoPurchaseAmount: 0,
-        }
+        },
       })
 
       const lowPriceResult = calculateBusinessFinancials(lowPriceBusiness, true, undefined, 1.0)
@@ -110,7 +110,7 @@ describe('Business Pricing & Market Tests', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
         price: 1,
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -121,7 +121,7 @@ describe('Business Pricing & Market Tests', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
         price: 10,
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -133,7 +133,7 @@ describe('Business Pricing & Market Tests', () => {
     it('should increase income during market boom (value > 1.0)', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
-        employees: [worker]
+        employees: [worker],
       })
 
       const normalMarket = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -146,7 +146,7 @@ describe('Business Pricing & Market Tests', () => {
     it('should decrease income during market crisis (value < 1.0)', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
-        employees: [worker]
+        employees: [worker],
       })
 
       const normalMarket = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -159,7 +159,7 @@ describe('Business Pricing & Market Tests', () => {
     it('should handle extreme market collapse (value = 0.3)', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 0.3)
@@ -181,8 +181,8 @@ describe('Business Pricing & Market Tests', () => {
           maxStock: 1000,
           pricePerUnit: 50,
           purchaseCost: 20,
-          autoPurchaseAmount: 0
-        }
+          autoPurchaseAmount: 0,
+        },
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -196,7 +196,7 @@ describe('Business Pricing & Market Tests', () => {
       const serviceBusiness = createBaseBusiness({
         isServiceBased: true,
         quantity: 0,
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(serviceBusiness, true, undefined, 1.0)
@@ -211,7 +211,7 @@ describe('Business Pricing & Market Tests', () => {
       const worker = createMockEmployee('worker')
       const business = createBaseBusiness({
         taxRate: 0.2, // 20% tax
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -226,20 +226,62 @@ describe('Business Pricing & Market Tests', () => {
 
       const businessWithoutAccountant = createBaseBusiness({
         employees: [worker],
-        taxRate: 0.2
+        taxRate: 0.2,
       })
 
       const businessWithAccountant = createBaseBusiness({
         employees: [worker, accountant],
-        taxRate: 0.2
+        taxRate: 0.2,
       })
 
-      const withoutResult = calculateBusinessFinancials(businessWithoutAccountant, true, undefined, 1.0)
+      const withoutResult = calculateBusinessFinancials(
+        businessWithoutAccountant,
+        true,
+        undefined,
+        1.0,
+      )
       const withResult = calculateBusinessFinancials(businessWithAccountant, true, undefined, 1.0)
 
-      // With accountant, profit should be higher (less taxes)
-      // Note: accountant also costs salary, so we check that logic runs
-      expect(withResult.expenses).toBeDefined()
+      const withoutTax = withoutResult.debug?.taxAmount ?? 0
+      const withTax = withResult.debug?.taxAmount ?? 0
+      expect(withTax).toBeLessThanOrEqual(withoutTax)
+    })
+
+    it('should reduce taxes when player acts as accountant (by skill)', () => {
+      const worker = createMockEmployee('worker')
+
+      const baseBusiness = createBaseBusiness({
+        employees: [worker],
+        taxRate: 0.2,
+        playerRoles: { managerialRoles: [], operationalRole: null },
+      })
+
+      const playerAccountantBusiness = createBaseBusiness({
+        employees: [worker],
+        taxRate: 0.2,
+        playerRoles: { managerialRoles: ['accountant'], operationalRole: null },
+      })
+
+      const control = calculateBusinessFinancials(baseBusiness, true, [], 1.0)
+      const withPlayerAcc = calculateBusinessFinancials(
+        playerAccountantBusiness,
+        true,
+        [
+          {
+            id: 'skill_accounting',
+            name: 'Бухгалтерия',
+            level: 4,
+            progress: 0,
+            lastPracticedTurn: 0,
+          },
+        ],
+        1.0,
+      )
+
+      const taxControl = control.debug?.taxAmount ?? 0
+      const taxWithPlayerAcc = withPlayerAcc.debug?.taxAmount ?? 0
+      expect(taxWithPlayerAcc).toBeLessThanOrEqual(taxControl)
+      expect(withPlayerAcc.netProfit).toBeGreaterThanOrEqual(control.netProfit)
     })
   })
 
@@ -249,7 +291,7 @@ describe('Business Pricing & Market Tests', () => {
       const business = createBaseBusiness({
         price: 7,
         quantity: 300,
-        employees: [worker]
+        employees: [worker],
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.2)
@@ -269,8 +311,8 @@ describe('Business Pricing & Market Tests', () => {
           maxStock: 1000,
           pricePerUnit: 50,
           purchaseCost: 20,
-          autoPurchaseAmount: 0
-        }
+          autoPurchaseAmount: 0,
+        },
       })
 
       const result = calculateBusinessFinancials(business, true, undefined, 1.0)
@@ -278,6 +320,112 @@ describe('Business Pricing & Market Tests', () => {
       // New inventory should be calculated
       expect(result.newInventory.currentStock).toBeGreaterThanOrEqual(0)
       expect(result.newInventory.currentStock).toBeLessThanOrEqual(1000)
+    })
+  })
+
+  describe('Crisis Demand vs Margin', () => {
+    it('cheap goods should outperform luxury in crisis', () => {
+      const worker = createMockEmployee('worker')
+      const lowMarginBusiness = createBaseBusiness({
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 26, // margin 6, margin% ~0.23 (< 0.3) -> resilient
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+      const highMarginBusiness = createBaseBusiness({
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 80, // margin 60, margin% 0.75 (> 0.6) -> demand crash
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+
+      const crisisValue = 0.7
+      const lowMarginResult = calculateBusinessFinancials(
+        lowMarginBusiness,
+        true,
+        undefined,
+        crisisValue,
+      )
+      const highMarginResult = calculateBusinessFinancials(
+        highMarginBusiness,
+        true,
+        undefined,
+        crisisValue,
+      )
+
+      expect(lowMarginResult.income).toBeGreaterThan(highMarginResult.income)
+    })
+    it('cheap goods demand should be resilient in crisis vs normal', () => {
+      const worker = createMockEmployee('worker')
+      const lowMarginBusiness = createBaseBusiness({
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 26,
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+      const normal = calculateBusinessFinancials(lowMarginBusiness, true, undefined, 1.0)
+      const crisis = calculateBusinessFinancials(lowMarginBusiness, true, undefined, 0.7)
+      expect(crisis.income).toBeGreaterThanOrEqual(normal.income)
+    })
+    it('luxury goods income should drop in crisis vs normal', () => {
+      const worker = createMockEmployee('worker')
+      const highMarginBusiness = createBaseBusiness({
+        employees: [worker],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 80,
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+      const normal = calculateBusinessFinancials(highMarginBusiness, true, undefined, 1.0)
+      const crisis = calculateBusinessFinancials(highMarginBusiness, true, undefined, 0.7)
+      expect(crisis.income).toBeLessThan(normal.income)
+    })
+  })
+
+  describe('Workers-based demand', () => {
+    it('income grows with more workers for product businesses', () => {
+      const worker = createMockEmployee('worker')
+
+      const noWorkersBiz = createBaseBusiness({
+        employees: [],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 50,
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+      const twoWorkersBiz = createBaseBusiness({
+        employees: [worker, { ...worker, id: 'emp-worker-2' }],
+        inventory: {
+          currentStock: 1000,
+          maxStock: 1000,
+          pricePerUnit: 50,
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+
+      const res0 = calculateBusinessFinancials(noWorkersBiz, true, undefined, 1.0)
+      const res2 = calculateBusinessFinancials(twoWorkersBiz, true, undefined, 1.0)
+
+      expect(res2.income).toBeGreaterThan(res0.income)
     })
   })
 })

@@ -1,42 +1,52 @@
-import type { Skill } from '@/core/types';
-import type { StatEffect } from '@/core/types/stats.types';
+import type { Skill } from '@/core/types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 /**
  * Тип роли: управленческая или операционная
  * - managerial: можно выполнять несколько одновременно (частично)
  * - operational: только одна роль, полный рабочий день
  */
-export type RoleType = 'managerial' | 'operational';
+export type RoleType = 'managerial' | 'operational'
 
 /**
  * Влияние роли на бизнес
  */
 export interface BusinessImpact {
-  efficiencyBonus?: (skill: Skill | null) => number;
-  expenseReduction?: (skill: Skill | null) => number;
-  salesBonus?: (skill: Skill | null) => number;
-  reputationBonus?: (skill: Skill | null) => number;
+  efficiencyBonus?: (skill: Skill | null) => number
+  expenseReduction?: (skill: Skill | null) => number
+  salesBonus?: (skill: Skill | null) => number
+  reputationBonus?: (skill: Skill | null) => number
+  taxReduction?: (skill: Skill | null) => number
+}
+
+export interface StaffImpactResult {
+  efficiencyBonus?: number
+  expenseReduction?: number
+  salesBonus?: number
+  reputationBonus?: number
+  taxReduction?: number
 }
 
 /**
  * Конфигурация роли сотрудника
  */
 export interface EmployeeRoleConfig {
-  type: RoleType;
-  name: string;
-  description: string;
+  type: RoleType
+  name: string
+  description: string
 
   // Эффекты на игрока, если он выполняет эту роль
-  playerEffects: StatEffect;
+  playerEffects: StatEffect
 
   // Рост навыка при работе в роли
   skillGrowth: {
-    name: string;
-    progressPerQuarter: number;
-  } | null;
+    name: string
+    progressPerQuarter: number
+  } | null
 
   // Влияние навыка игрока на бизнес (если он работает в этой роли)
-  businessImpact?: BusinessImpact;
+  businessImpact?: BusinessImpact
+  staffImpact?: (stars: number) => StaffImpactResult
 }
 
 /**
@@ -63,8 +73,11 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      efficiencyBonus: (skill) => skill ? skill.level * 5 : 0,  // +5% за уровень
+      efficiencyBonus: (skill) => (skill ? skill.level * 5 : 0),
     },
+    staffImpact: (stars) => ({
+      efficiencyBonus: stars * 4,
+    }),
   },
 
   accountant: {
@@ -83,8 +96,11 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      expenseReduction: (skill) => skill ? skill.level * 3 : 0,  // -3% расходов за уровень
+      taxReduction: (skill) => (skill ? skill.level * 2 : 0),
     },
+    staffImpact: (stars) => ({
+      taxReduction: stars * 2,
+    }),
   },
 
   marketer: {
@@ -103,9 +119,13 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      reputationBonus: (skill) => skill ? skill.level * 2 : 0,  // +2 репутации за уровень
-      salesBonus: (skill) => skill ? skill.level * 3 : 0,  // +3% продаж за уровень
+      reputationBonus: (skill) => (skill ? skill.level * 2 : 0), // +2 репутации за уровень
+      salesBonus: (skill) => (skill ? skill.level * 3 : 0), // +3% продаж за уровень
     },
+    staffImpact: (stars) => ({
+      salesBonus: stars * 3,
+      reputationBonus: stars * 2,
+    }),
   },
 
   lawyer: {
@@ -168,8 +188,11 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      salesBonus: (skill) => skill ? skill.level * 10 : 5,  // +10% за уровень, минимум +5%
+      salesBonus: (skill) => (skill ? skill.level * 10 : 5), // +10% за уровень, минимум +5%
     },
+    staffImpact: (stars) => ({
+      salesBonus: stars * 2.5,
+    }),
   },
 
   technician: {
@@ -188,8 +211,11 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      efficiencyBonus: (skill) => skill ? skill.level * 8 : 5,  // +8% за уровень
+      efficiencyBonus: (skill) => (skill ? skill.level * 8 : 5), // +8% за уровень
     },
+    staffImpact: (stars) => ({
+      efficiencyBonus: stars * 2,
+    }),
   },
 
   worker: {
@@ -202,47 +228,50 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
       sanity: -2,
     },
 
-    skillGrowth: null,  // Работник не дает роста навыков
+    skillGrowth: null, // Работник не дает роста навыков
 
     businessImpact: {
-      efficiencyBonus: () => 5,  // Фиксированный бонус +5%
+      efficiencyBonus: () => 5, // Фиксированный бонус +5%
     },
+    staffImpact: (stars) => ({
+      efficiencyBonus: stars * 1,
+    }),
   },
-};
+}
 
 /**
  * Получить конфиг роли
  */
 export function getRoleConfig(role: string): EmployeeRoleConfig | undefined {
-  return EMPLOYEE_ROLES_CONFIG[role];
+  return EMPLOYEE_ROLES_CONFIG[role]
 }
 
 /**
  * Проверить, является ли роль управленческой
  */
 export function isManagerialRole(role: string): boolean {
-  const config = getRoleConfig(role);
-  return config?.type === 'managerial';
+  const config = getRoleConfig(role)
+  return config?.type === 'managerial'
 }
 
 /**
  * Проверить, является ли роль операционной
  */
 export function isOperationalRole(role: string): boolean {
-  const config = getRoleConfig(role);
-  return config?.type === 'operational';
+  const config = getRoleConfig(role)
+  return config?.type === 'operational'
 }
 
 /**
  * Получить список всех управленческих ролей
  */
 export function getManagerialRoles(): string[] {
-  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isManagerialRole);
+  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isManagerialRole)
 }
 
 /**
  * Получить список всех операционных ролей
  */
 export function getOperationalRoles(): string[] {
-  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isOperationalRole);
+  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isOperationalRole)
 }

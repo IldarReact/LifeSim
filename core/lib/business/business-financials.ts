@@ -1,5 +1,5 @@
 import { getInflatedPrice, getQuarterlyInflatedSalary } from '../calculations/price-helpers'
-import { getStarMultiplier } from '@/core/lib/data-loaders/static-data-loader'
+import { getRoleConfig } from './employee-roles.config'
 
 import { calculateEmployeeKPI } from './employee-calculations'
 import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles'
@@ -77,50 +77,27 @@ export function calculateBusinessFinancials(
 
   let opEx = employeesCost + rent + utilities
 
-  // Accountant reduction
-  const accountants = business.employees.filter((e) => e.role === 'accountant')
-  if (accountants.length > 0) {
-    const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0)
-    const reduction = Math.min(0.15, 0.05 + totalStars * 0.01)
-    opEx *= 1 - reduction
-  }
-
-  // ✅ NEW: Employee role buffs (efficiency/sales/expenses)
+  // Employee role buffs
   let employeeEfficiencyBonusPct = 0
-  let employeeExpenseReductionPct = 0
   let employeeSalesBonusPct = 0
   let employeeReputationBonusPct = 0
+  let employeeTaxReductionPct = 0
 
   business.employees.forEach((emp) => {
-    const starMul = getStarMultiplier(emp.stars) // ~1.0-1.4
-    if (emp.role === 'manager') {
-      employeeEfficiencyBonusPct += 3 * starMul
-      employeeExpenseReductionPct += 2 * starMul
-    }
-    if (emp.role === 'salesperson') {
-      employeeSalesBonusPct += 2 * starMul
-      employeeReputationBonusPct += 1 * starMul
-    }
-    if (emp.role === 'marketer') {
-      employeeSalesBonusPct += 3 * starMul
-      employeeReputationBonusPct += 2 * starMul
-    }
-    if (emp.role === 'technician') {
-      employeeEfficiencyBonusPct += 2 * starMul
-    }
-    if (emp.role === 'worker') {
-      employeeEfficiencyBonusPct += 1 * starMul
-    }
+    const cfg = getRoleConfig(emp.role)
+    const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
+    if (!impact) return
+    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus
+    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus
+    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus
+    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction
   })
-
-  if (employeeExpenseReductionPct > 0) {
-    opEx *= 1 - Math.min(0.3, employeeExpenseReductionPct / 100)
-  }
 
   // Player Skill reduction
   if (playerSkills && playerSkills.length > 0) {
     const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
-    opEx *= 1 - playerImpact.expenseReduction / 100
+    // Не сокращаем фиксированные расходы “из воздуха”
+    // Эффективность/продажи/репутация учитываются ниже через спрос и доход
   }
 
   // 2. Sales & COGS
@@ -170,7 +147,8 @@ export function calculateBusinessFinancials(
     const margin = sellingPrice - unitCost
     const marginPercent = margin / sellingPrice
 
-    const baseDemand = business.maxEmployees * 50
+    const workersCount = business.employees.filter((e) => e.role === 'worker').length
+    const baseDemand = workersCount * 50
     const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
     const reputationMod = business.reputation / 100
 
@@ -242,12 +220,15 @@ export function calculateBusinessFinancials(
 
   let taxAmount = 0
   if (grossProfit > 0) {
-    let taxRate = business.taxRate || 0.15 // Corporate Tax
-    if (accountants.length > 0) {
-      // Accountants optimize tax
-      const totalStars = accountants.reduce((sum, a) => sum + a.stars, 0)
-      const taxReduction = Math.min(0.2, 0.05 + totalStars * 0.02)
-      taxRate *= 1 - taxReduction
+    let taxRate = business.taxRate || 0.15
+    if (employeeTaxReductionPct > 0) {
+      taxRate *= 1 - Math.min(0.5, employeeTaxReductionPct / 100)
+    }
+    if (playerSkills && playerSkills.length > 0) {
+      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+      if (playerImpact.taxReduction > 0) {
+        taxRate *= 1 - Math.min(0.5, playerImpact.taxReduction / 100)
+      }
     }
     taxAmount = Math.round(grossProfit * taxRate)
   }

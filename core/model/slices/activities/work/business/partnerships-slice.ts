@@ -1,6 +1,5 @@
 import type { GameStateCreator } from '../../../types'
 
-import { calculateNPCVote } from '@/core/lib/business'
 import type { BusinessProposal, ProposalType } from '@/core/types/business.types'
 
 export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
@@ -38,46 +37,8 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
       createdTurn: state.turn,
     }
 
-    business.partners.forEach((partner) => {
-      if (partner.type === 'npc') {
-        const vote = calculateNPCVote(proposal, business, partner)
-        proposal.votes[partner.id] = vote
-      }
-    })
-
-    let votesFor = 0
-    const voteDetails: string[] = []
-
-    business.partners.forEach((partner) => {
-      const vote = proposal.votes[partner.id]
-      if (vote) votesFor += partner.share
-      voteDetails.push(
-        `${partner.name || partner.id}: ${vote ? '✅ ЗА' : '❌ ПРОТИВ'} (${partner.share}%)`,
-      )
-    })
-
-    console.log(`[Business] 🗳️ Voting on ${type}:`)
-    voteDetails.forEach((d) => console.log(`   - ${d}`))
-    console.log(`   = TOTAL: FOR=${votesFor}%, AGAINST=${100 - votesFor}%`)
-
-    if (votesFor > 50) {
-      proposal.status = 'approved'
-      proposal.resolvedTurn = state.turn
-      console.log('[Business] Proposal approved')
-
-      switch (type) {
-        case 'change_price':
-          if (payload.newPrice !== undefined) get().changePrice(businessId, payload.newPrice)
-          break
-        case 'change_quantity':
-          if (payload.newQuantity !== undefined) get().setQuantity(businessId, payload.newQuantity)
-          break
-      }
-    } else {
-      proposal.status = 'rejected'
-      proposal.resolvedTurn = state.turn
-      console.log('[Business] Proposal rejected')
-    }
+    // В онлайн-партнёрстве решение принимают только игроки.
+    // Предложение остаётся pending до получения голосов других игроков.
 
     const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId ? { ...b, proposals: [...b.proposals, proposal] } : b,
@@ -127,11 +88,23 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
       p.id === state.player!.id ? { ...p, share: Math.max(0, p.share - share) } : p,
     )
 
+    const currentSum = updatedPartners.reduce((sum, p) => sum + p.share, 0)
+    const available = Math.max(0, 100 - currentSum)
+    let finalShare = Math.min(share, available)
+    if (finalShare <= 0) {
+      state.pushNotification?.({
+        type: 'error',
+        title: 'Недостаточная доступная доля',
+        message: 'Нельзя назначить долю партнёру: сумма долей превышает 100%',
+      })
+      return
+    }
+
     updatedPartners.push({
       id: partnerId,
       name: partnerName,
       type: 'player',
-      share: share,
+      share: finalShare,
       investedAmount: investment,
       relation: 50,
     })

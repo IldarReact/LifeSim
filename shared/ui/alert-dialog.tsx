@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
-import * as React from "react"
+import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
+import * as React from 'react'
 
 const AlertDialog = AlertDialogPrimitive.Root
 
@@ -36,37 +36,21 @@ const AlertDialogContent = React.forwardRef<
 ))
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
 
-const AlertDialogHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className="flex flex-col space-y-2 text-center sm:text-left"
-    {...props}
-  />
+const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className="flex flex-col space-y-2 text-center sm:text-left" {...props} />
 )
-AlertDialogHeader.displayName = "AlertDialogHeader"
+AlertDialogHeader.displayName = 'AlertDialogHeader'
 
-const AlertDialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2"
-    {...props}
-  />
+const AlertDialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2" {...props} />
 )
-AlertDialogFooter.displayName = "AlertDialogFooter"
+AlertDialogFooter.displayName = 'AlertDialogFooter'
 
 const AlertDialogTitle = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Title
-    ref={ref}
-    className="text-lg font-semibold"
-    {...props}
-  />
+  <AlertDialogPrimitive.Title ref={ref} className="text-lg font-semibold" {...props} />
 ))
 AlertDialogTitle.displayName = AlertDialogPrimitive.Title.displayName
 
@@ -74,14 +58,9 @@ const AlertDialogDescription = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Description
-    ref={ref}
-    className="text-sm text-white/60"
-    {...props}
-  />
+  <AlertDialogPrimitive.Description ref={ref} className="text-sm text-white/60" {...props} />
 ))
-AlertDialogDescription.displayName =
-  AlertDialogPrimitive.Description.displayName
+AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,

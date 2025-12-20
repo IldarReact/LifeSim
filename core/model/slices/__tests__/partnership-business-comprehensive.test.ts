@@ -19,6 +19,8 @@ describe('Partnership Business Slice - Comprehensive Actions', () => {
     const mockPlayer = {
       id: 'player_1',
       name: 'Player 1',
+      stats: { money: 20000 },
+      personal: { stats: { money: 20000 } },
       businesses: [],
     }
 
@@ -229,6 +231,42 @@ describe('Partnership Business Slice - Comprehensive Actions', () => {
 
       expect(store.businessProposals[0].status).toBe('rejected')
       expect(store.player!.businesses[0].price).toBe(100) // Unchanged
+    })
+  })
+
+  describe('Fund Collection', () => {
+    it('should create proposal and on approval deduct money and increase wallet', () => {
+      mockBusiness.walletBalance = 0
+      store.player!.businesses = [mockBusiness]
+
+      store.proposeBusinessChange('biz_123', 'fund_collection', { collectionAmount: 10000 })
+
+      expect(store.businessProposals).toHaveLength(1)
+      const proposalId = store.businessProposals[0].id
+      store.approveBusinessChange(proposalId)
+
+      const updatedBiz = store.player!.businesses[0]
+      expect(updatedBiz.walletBalance).toBe(5000)
+      expect(store.player!.stats.money).toBe(15000)
+      expect(store.player!.personal.stats.money).toBe(15000)
+    })
+
+    it('should apply fund collection directly when share > 50%', () => {
+      mockBusiness.playerShare = 60
+      mockBusiness.partners[0].share = 60
+      mockBusiness.partners[1].share = 40
+      mockBusiness.walletBalance = 0
+      store.player!.stats.money = 20000
+      store.player!.personal.stats.money = 20000
+      store.player!.businesses = [mockBusiness]
+
+      store.proposeBusinessChange('biz_123', 'fund_collection', { collectionAmount: 10000 })
+
+      const updatedBiz = store.player!.businesses[0]
+      expect(store.businessProposals).toHaveLength(0)
+      expect(updatedBiz.walletBalance).toBe(6000)
+      expect(store.player!.stats.money).toBe(14000)
+      expect(store.player!.personal.stats.money).toBe(14000)
     })
   })
 

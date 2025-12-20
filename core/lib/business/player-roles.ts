@@ -259,9 +259,12 @@ export function getAutoAssignedManagerialRoles(business: Business): EmployeeRole
 export function updateAutoAssignedRoles(business: Business): Business {
   const autoRoles = getAutoAssignedManagerialRoles(business);
 
-  // Объединить автоматические роли с уже выбранными
-  const currentRoles = business.playerRoles.managerialRoles;
-  const allRoles = Array.from(new Set([...currentRoles, ...autoRoles])) as EmployeeRole[];
+  // Удаляем роли игрока, если на них уже есть сотрудник
+  const filledRoles = new Set(business.employees.map((e) => e.role));
+  const prunedRoles = business.playerRoles.managerialRoles.filter((r) => !filledRoles.has(r));
+
+  // Добавляем обязательные роли только если они свободны
+  const allRoles = Array.from(new Set([...prunedRoles, ...autoRoles])) as EmployeeRole[];
 
   return {
     ...business,

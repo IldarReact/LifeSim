@@ -8,8 +8,6 @@ import type { Business, BusinessInventory } from '@/core/types/business.types'
 import type { CountryEconomy } from '@/core/types/economy.types'
 import type { StatEffect } from '@/core/types/stats.types'
 
-
-
 /**
  * Рассчитывает детальные финансовые показатели бизнеса за квартал
  */
@@ -172,7 +170,11 @@ export function calculateBusinessFinancials(
     if (inventory.autoPurchaseAmount > 0) {
       purchaseAmount = inventory.autoPurchaseAmount
     } else {
-      const targetStock = business.quantity > 0 ? business.quantity : inventory.maxStock
+      const hasPlan =
+        typeof business.quantity === 'number' &&
+        Number.isFinite(business.quantity) &&
+        business.quantity >= 0
+      const targetStock = hasPlan ? business.quantity : inventory.maxStock
       purchaseAmount = Math.max(0, targetStock - (inventory.currentStock - salesVolume))
     }
     purchaseCost = purchaseAmount * unitCost

@@ -106,7 +106,14 @@ export function processJobs(
         message: `Вам предложили работу ${app.jobTitle} в ${app.company}.`,
         date: formatGameDate(currentYear, currentTurn),
         isRead: false,
-        data: app,
+        data: {
+          applicationId: app.id,
+          jobTitle: app.jobTitle,
+          company: app.company,
+          salary: app.salary,
+          cost: app.cost,
+          requirements: app.requirements ?? [],
+        },
       })
     } else {
       remainingApplications.push(app)

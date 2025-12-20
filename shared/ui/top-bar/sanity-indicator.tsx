@@ -4,15 +4,18 @@ import { useState } from "react"
 
 import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
 import { useGameStore } from "@/core/model/game-store"
+import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
 
 export function SanityIndicator() {
-  const { player } = useGameStore()
+  const { player, countries } = useGameStore()
   const [isOpen, setIsOpen] = useState(false)
 
   if (!player) return null
 
   const statMods = calculateStatModifiers(player)
   const sanityMod = getTotalModifier(statMods.sanity, 'sanity')
+  const lifestyleResult = processLifestyle(player, countries)
+  const lifestyleSanityMod = lifestyleResult.modifiers.sanity
 
   return (
     <div className="relative flex flex-col items-center">
@@ -57,6 +60,29 @@ export function SanityIndicator() {
                     </div>
                   ))
                 )}
+                
+                {lifestyleSanityMod !== 0 && (
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
+                    <span className={lifestyleSanityMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
+                      {lifestyleSanityMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      Образ жизни (еда, жильё, транспорт)
+                    </span>
+                    <span className="text-white font-medium">
+                      {lifestyleSanityMod > 0 ? "+" : ""}{lifestyleSanityMod}
+                    </span>
+                  </div>
+                )}
+
+                <div className="border-t border-white/20 pt-2 mt-2">
+                  <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
+                    <span className="text-white flex items-center gap-2">
+                      Итого изменение
+                    </span>
+                    <span className={`text-white text-sm ${(sanityMod + lifestyleSanityMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
+                      {(sanityMod + lifestyleSanityMod) > 0 ? "+" : ""}{sanityMod + lifestyleSanityMod}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

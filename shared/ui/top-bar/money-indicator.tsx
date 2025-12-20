@@ -124,7 +124,7 @@ export function MoneyIndicator() {
         other: otherExpenses,
       },
     })
-  }, [player, country])
+  }, [player, countries, country])
 
   if (!player) return null
 

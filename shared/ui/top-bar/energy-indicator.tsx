@@ -4,19 +4,22 @@ import { useState } from "react"
 
 import { calculateStatModifiers } from "@/core/lib/calculations/stat-modifiers"
 import { useGameStore } from "@/core/model/game-store"
+import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
 
 export function EnergyIndicator() {
-  const { player } = useGameStore()
+  const { player, countries } = useGameStore()
   const [isOpen, setIsOpen] = useState(false)
 
   if (!player) return null
 
   const actualEnergy = player?.personal?.stats?.energy || 0
   const statMods = calculateStatModifiers(player)
+  const lifestyleResult = processLifestyle(player, countries)
+  const lifestyleEnergyMod = lifestyleResult.modifiers.energy
   
   // Расчёт итоговой энергии: 100 (восстановление) + все модификаторы
   const totalEnergyMods = statMods.energy.reduce((sum, mod) => sum + (mod.energy || 0), 0)
-  const calculatedEnergy = 100 + totalEnergyMods
+  const calculatedEnergy = 100 + totalEnergyMods + lifestyleEnergyMod
 
   return (
     <div className="relative flex flex-col items-center">
@@ -65,6 +68,18 @@ export function EnergyIndicator() {
                     </span>
                   </div>
                 ))}
+                
+                {lifestyleEnergyMod !== 0 && (
+                  <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
+                    <span className={lifestyleEnergyMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
+                      {lifestyleEnergyMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      Образ жизни (еда, жильё, транспорт)
+                    </span>
+                    <span className="text-white/70 font-medium">
+                      {lifestyleEnergyMod > 0 ? "+" : ""}{lifestyleEnergyMod}
+                    </span>
+                  </div>
+                )}
 
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">

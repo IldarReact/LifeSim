@@ -1,24 +1,26 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { WorldMapCard } from './world-map-card'
+
 import { ActivitiesPanel } from './activities-panel'
-import { Button } from '@/shared/ui/button'
+import { FinancialCrisisModal } from './financial-crisis-modal'
+import { GameOverScreen } from './game-over-screen'
+import { WorldMapCard } from './world-map-card'
+
+import { isInFinancialCrisis } from '@/core/lib/financial-crisis'
 import {
   isMultiplayerActive,
   setTurnReady,
   subscribeToTurnReadyStatus,
 } from '@/core/lib/multiplayer'
-import { TurnSyncModal } from '@/features/multiplayer/turn-sync-modal'
+import { useGameStore } from '@/core/model/game-store'
 import { TurnLockedModal } from '@/features/multiplayer/turn-locked-modal'
-import { GameOverScreen } from './game-over-screen'
-import { FinancialCrisisModal } from './financial-crisis-modal'
-import { isInFinancialCrisis } from '@/core/lib/financial-crisis'
+import { TurnSyncModal } from '@/features/multiplayer/turn-sync-modal'
+import { useOffersSync } from '@/features/multiplayer/use-offers-sync'
 import { InflationNotification } from '@/features/notifications/inflation-notification'
 import { OffersList } from '@/features/notifications/offers-list'
-import { useOffersSync } from '@/features/multiplayer/use-offers-sync'
-import { Loader2 } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 
 export function GameplayLayout() {
   const {

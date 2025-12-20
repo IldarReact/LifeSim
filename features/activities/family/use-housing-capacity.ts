@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { useGameStore } from '@/core/model/game-store'
+
 import { getShopItem } from '@/core/lib/shop-helpers'
+import { useGameStore } from '@/core/model/game-store'
 
 export function useHousingCapacity() {
   const { player } = useGameStore()

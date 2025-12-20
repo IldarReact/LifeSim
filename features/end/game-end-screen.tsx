@@ -1,7 +1,5 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
 
 // DEPRECATED: This component uses old store structure
 // Use features/end/ui/game-end.tsx instead

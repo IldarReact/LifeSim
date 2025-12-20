@@ -1,14 +1,14 @@
-import type { Asset, Debt, QuarterlyReport } from './finance.types';
-import type { PersonalLife } from './personal.types';
-import type { Job } from './job.types';
-import type { FreelanceGig } from './freelance.types';
 import type { Business } from './business.types';
-import type { BusinessIdea } from './idea.types';
 import type { CountryEconomy, GlobalEvent } from './economy.types';
-import type { Notification } from './notification.types';
-import type { JobApplication } from './job.types';
+import type { Asset, Debt, QuarterlyReport } from './finance.types';
+import type { FreelanceGig } from './freelance.types';
 import type { FreelanceApplication } from './freelance.types';
-import { StatEffect, Stats } from './stats.types';
+import type { BusinessIdea } from './idea.types';
+import type { Job } from './job.types';
+import type { JobApplication } from './job.types';
+import type { Notification } from './notification.types';
+import type { PersonalLife } from './personal.types';
+import { StatEffect } from './stats.types';
 
 export type GameStatus = "menu" | "setup" | "select_country" | "select_character" | "playing" | "ended";
 

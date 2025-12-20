@@ -1,9 +1,8 @@
 // src/shared/data/loaders/freelance-loader.ts
 import type { FreelanceGig } from '@/core/types/freelance.types'
-
-import usFreelance from '@/shared/data/world/countries/us/freelance.json'
-import geFreelance from '@/shared/data/world/countries/germany/freelance.json'
 import brFreelance from '@/shared/data/world/countries/brazil/freelance.json'
+import geFreelance from '@/shared/data/world/countries/germany/freelance.json'
+import usFreelance from '@/shared/data/world/countries/us/freelance.json'
 
 function validateFreelance(item: unknown): item is FreelanceGig {
   const f = item as FreelanceGig

@@ -1,5 +1,6 @@
-import type { EconomicEvent, CountryEconomy } from '@/core/types'
 import { ECONOMIC_EVENT_DEFINITIONS, createEconomicEvent } from './definitions'
+
+import type { EconomicEvent, CountryEconomy } from '@/core/types'
 
 function selectEventType(economy: CountryEconomy): keyof typeof ECONOMIC_EVENT_DEFINITIONS {
   const { inflation, gdpGrowth, unemployment } = economy

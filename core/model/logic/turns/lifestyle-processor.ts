@@ -1,9 +1,9 @@
+import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
 import { calculateMemberExpenses } from '@/core/lib/lifestyle-expenses'
 import { calculateLifestyleExpenses } from '@/core/lib/lifestyle-expenses'
-import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
-import traitsData from '@/shared/data/world/commons/human-traits.json'
 import type { CountryEconomy } from '@/core/types'
 import type { PlayerState, FamilyMember } from '@/core/types'
+import traitsData from '@/shared/data/world/commons/human-traits.json'
 
 interface LifestyleResult {
   updatedFamilyMembers: FamilyMember[]

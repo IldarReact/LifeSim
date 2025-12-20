@@ -1,11 +1,13 @@
 'use client'
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Button } from '@/shared/ui/button'
 import { Loader2, Users, CheckCircle2, Circle } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { getOnlinePlayers, subscribeToTurnReadyStatus, setTurnReady } from '@/core/lib/multiplayer'
+
 import { Player } from './multiplayer-hub'
+
+import { getOnlinePlayers, subscribeToTurnReadyStatus, setTurnReady } from '@/core/lib/multiplayer'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 
 interface TurnSyncModalProps {
   isOpen: boolean

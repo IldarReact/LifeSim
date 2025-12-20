@@ -1,10 +1,11 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, FamilySlice } from '../../types'
-import type { FamilyMember } from '@/core/types'
-import type { PlayerState } from '@/core/types/game.types'
+
+import { applyStats } from '@/core/helpers/apply-stats'
 import { FAMILY_PRICES } from '@/core/lib/calculations/family-prices'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
-import { applyStats } from '@/core/helpers/apply-stats'
+import type { FamilyMember } from '@/core/types'
 
 export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (set, get) => ({
   // ------------------------------------------------------------
@@ -128,6 +129,7 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
         stats: {
           ...prev.personal.stats,
           energy: prev.personal.stats.energy - FAMILY_PRICES.DATING_ENERGY_COST,
+          money: prev.personal.stats.money - datingCost,
         },
       },
     }))

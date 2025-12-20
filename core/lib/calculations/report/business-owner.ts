@@ -1,3 +1,5 @@
+import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import type {
   PlayerState,
   QuarterlyReport,
@@ -6,8 +8,6 @@ import type {
   TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
-import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function calculateBusinessOwnerQuarterlyReport(params: {
   player: PlayerState

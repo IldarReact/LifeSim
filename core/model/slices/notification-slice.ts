@@ -1,5 +1,7 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, NotificationSlice } from './types'
+
 import { formatGameDate } from '@/core/lib/quarter'
 
 export const createNotificationSlice: StateCreator<

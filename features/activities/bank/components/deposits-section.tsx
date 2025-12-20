@@ -1,6 +1,7 @@
+import { PiggyBank, Plus } from 'lucide-react'
+
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { PiggyBank, Plus } from 'lucide-react'
 
 interface Deposit {
   id: string

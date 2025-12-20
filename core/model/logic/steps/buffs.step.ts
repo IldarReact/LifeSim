@@ -1,5 +1,6 @@
 import type { TurnStep } from '../turn/turn-step'
 import { processBuffs } from '../turns/buffs-processor'
+
 import type { Stats } from '@/core/types'
 
 export const buffsStep: TurnStep = (ctx, state) => {
@@ -17,7 +18,9 @@ export const buffsStep: TurnStep = (ctx, state) => {
   // 📊 модификаторы статов
   for (const key in res.statModifiers) {
     const stat = key as keyof Stats
-    state.statModifiers[stat] = (state.statModifiers[stat] ?? 0) + (res.statModifiers[stat] ?? 0)
+    const value = res.statModifiers[stat]
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue
+    state.statModifiers[stat] = (state.statModifiers[stat] ?? 0) + value
   }
 
   // 🔔 уведомления

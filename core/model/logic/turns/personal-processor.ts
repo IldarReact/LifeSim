@@ -57,7 +57,7 @@ export function processPersonal(
 
   // Pregnancy Logic
   let pregnancy = prevPersonal.pregnancy
-  let familyMembers = [...prevPersonal.familyMembers]
+  const familyMembers = [...prevPersonal.familyMembers]
 
   if (pregnancy) {
     pregnancy = { ...pregnancy, turnsLeft: pregnancy.turnsLeft - 1 }

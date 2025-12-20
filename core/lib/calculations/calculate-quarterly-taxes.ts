@@ -1,5 +1,5 @@
-import type { Asset } from "@/core/types/finance.types"
 import type { CountryEconomy } from "@/core/types/economy.types"
+import type { Asset } from "@/core/types/finance.types"
 
 interface Params {
   income: number

@@ -1,7 +1,7 @@
 // Country imports
-import usBusinesses from '@/shared/data/world/countries/us/businesses.json'
-import geBusinesses from '@/shared/data/world/countries/germany/businesses.json'
 import brBusinesses from '@/shared/data/world/countries/brazil/businesses.json'
+import geBusinesses from '@/shared/data/world/countries/germany/businesses.json'
+import usBusinesses from '@/shared/data/world/countries/us/businesses.json'
 
 export interface BusinessType {
   id: string

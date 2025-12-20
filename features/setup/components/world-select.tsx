@@ -1,12 +1,13 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { CountryEconomy } from "@/core/types"
+import { useState, useEffect } from "react"
+
 import { getCountryArchetypes } from "@/core/lib/data-loaders/static-data-loader"
+import { useGameStore } from "@/core/model/game-store"
+import type { CountryEconomy } from "@/core/types"
+import { Button } from "@/shared/ui/button"
 
 const ARCHETYPE_DESCRIPTIONS = getCountryArchetypes() as Record<string, { title: string; description: string }>
 

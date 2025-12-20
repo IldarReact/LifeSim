@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { generateEmployeeCandidate, calculateSalary } from '@/core/lib/business/employee-generator'
 import { getInflatedBaseSalary } from '@/core/lib/calculations/price-helpers'
 import type { CountryEconomy } from '@/core/types/economy.types'

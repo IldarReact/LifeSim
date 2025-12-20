@@ -1,10 +1,5 @@
 'use client'
 
-import React from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
-import { Progress } from '@/shared/ui/progress'
 import {
   DollarSign,
   ChevronRight,
@@ -14,15 +9,19 @@ import {
   Brain,
   User,
   Utensils,
-  Home,
   Car,
 } from 'lucide-react'
-import type { FamilyMember, LifeGoal } from '@/core/types'
-import { getShopItem, getRecurringItemsByCategory } from '@/core/lib/shop-helpers'
-import { ClickFeedback } from '@/shared/ui/feedback-animation'
-import { isRecurringItem } from '@/core/types/shop.types'
-import traitsData from '@/shared/data/world/commons/human-traits.json'
+import React from 'react'
+
 import { useInflatedPrice } from '@/core/hooks'
+import { getShopItem, getRecurringItemsByCategory } from '@/core/lib/shop-helpers'
+import { useGameStore } from '@/core/model/game-store'
+import type { FamilyMember, LifeGoal } from '@/core/types'
+import traitsData from '@/shared/data/world/commons/human-traits.json'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
+import { ClickFeedback } from '@/shared/ui/feedback-animation'
+import { Progress } from '@/shared/ui/progress'
 
 interface FamilyMemberCardProps {
   member?: FamilyMember

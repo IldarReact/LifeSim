@@ -1,26 +1,36 @@
 "use client"
 
+import { Activity, DollarSign, Globe, Info, Plus, Star, Store, Trash2, TrendingDown, TrendingUp, UserPlus, Users } from "lucide-react"
 import React from "react"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
-import { Progress } from "@/shared/ui/progress"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
-import type { Business, EmployeeRole, EmployeeCandidate } from "@/core/types"
-import { calculatePlayerShare, hasControlOverBusiness, canHireMoreEmployees } from './utils/business-calculations'
+
+import { EmployeeHireDialog } from "../../employee-hire"
+
+import { CONTROL_THRESHOLD, DEFAULT_CANDIDATES_COUNT, ROLE_ICONS, ROLE_LABELS } from "./constants"
 import { calculateEmployeeSalary } from './hooks/useEmployeeSalary'
+import { BusinessManagementDialogProps } from "./types"
+import { calculatePlayerShare, hasControlOverBusiness, canHireMoreEmployees } from './utils/business-calculations'
+
+import { getAvailablePositions } from "./utils/salary-utils"
 import {
   canMakeDirectChanges,
-  requiresApproval,
-  getPlayerShare as getPartnershipShare
+  requiresApproval
 } from '@/core/lib/business/partnership-permissions'
-import { BusinessManagementDialogProps } from "./types"
+import type { EmployeeRole, EmployeeCandidate } from "@/core/types"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Progress } from "@/shared/ui/progress"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
+
+
+
+
 import { useGameStore } from "@/core/model/store"
-import { getAvailablePositions } from "./utils/salary-utils"
+
+
 import { calculateBusinessFinancials, generateCandidates } from "@/core/lib/business"
 import { checkMinimumStaffing } from "@/features/business/lib/player-roles"
-import { CONTROL_THRESHOLD, DEFAULT_CANDIDATES_COUNT, ROLE_ICONS, ROLE_LABELS } from "./constants"
-import { Activity, DollarSign, Globe, Info, Plus, Star, Store, Trash2, TrendingDown, TrendingUp, UserPlus, Users } from "lucide-react"
-import { EmployeeHireDialog } from "../../employee-hire"
+
+
 
 export function BusinessManagementDialog({
   business,

@@ -1,9 +1,11 @@
 "use client"
 
-import React from "react"
-import { OpportunityCard } from "../ui/opportunity-card"
-import { FreelanceDetailCard } from "../ui/freelance-detail-card"
 import { Laptop } from "lucide-react"
+import React from "react"
+
+import { FreelanceDetailCard } from "../ui/freelance-detail-card"
+import { OpportunityCard } from "../ui/opportunity-card"
+
 import { useInflatedPrices } from "@/core/hooks"
 import { getFreelanceGigs } from "@/core/lib/data-loaders/freelance-loader"
 import { useGameStore } from "@/core/model/store"

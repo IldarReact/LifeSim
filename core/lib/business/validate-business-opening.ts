@@ -6,7 +6,6 @@
  * ✅ Single responsibility: validate business opening parameters
  */
 
-import type { PlayerState } from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
 
 export interface BusinessOpeningValidation {

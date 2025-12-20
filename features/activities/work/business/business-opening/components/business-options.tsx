@@ -1,4 +1,5 @@
 import { Users, TrendingUp, CheckCircle, Star, Award, Activity } from "lucide-react"
+
 import { BusinessOption } from "../types"
 
 export const BUSINESS_OPTIONS: BusinessOption[] = [

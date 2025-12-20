@@ -1,11 +1,12 @@
-import type { StatEffect } from '@/core/types/stats.types'
-import type { Notification } from '@/core/types/notification.types'
-
-import { checkHealthEffects } from './threshold-effects/health'
-import { checkSanityEffects } from './threshold-effects/sanity'
-import { checkIntelligenceEffects } from './threshold-effects/intelligence'
-import { checkHappinessEffects } from './threshold-effects/happiness'
 import { getQuarter } from './quarter'
+import { checkHappinessEffects } from './threshold-effects/happiness'
+import { checkHealthEffects } from './threshold-effects/health'
+import { checkIntelligenceEffects } from './threshold-effects/intelligence'
+import { checkSanityEffects } from './threshold-effects/sanity'
+
+import type { Notification } from '@/core/types/notification.types'
+import type { StatEffect } from '@/core/types/stats.types'
+
 export type { ThresholdEffectsResult } from './threshold-effects/types'
 
 export function checkAllThresholdEffects(stats: StatEffect) {

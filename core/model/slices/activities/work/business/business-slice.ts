@@ -1,25 +1,9 @@
 import type { GameStateCreator, BusinessSlice } from '../../../types'
-import type { Business, Employee, EmployeeCandidate, BusinessType } from '@/core/types'
-import type { BusinessProposal } from '@/core/types/business.types'
-import type { StatEffect } from '@/core/types/stats.types'
-import {
-  updateBusinessMetrics,
-  calculateNPCVote,
-  validateBusinessOpening,
-  validateBusinessUnfreeze,
-  validateEmployeeHire,
-  createBusinessObject,
-  createBusinessBranch,
-} from '@/core/lib/business'
-import { applyStats } from '@/core/helpers/apply-stats'
-import {
-  shouldCreateNetwork,
-  createNetworkForBusinesses,
-  addBranchToNetwork,
-  updateNetworkBonuses,
-  canChangePrice,
-  syncPriceToNetwork,
-} from '@/core/lib/business/business-network'
+
+
+
+
+
 
 export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) => ({
   openBusiness: (

@@ -1,5 +1,5 @@
-import type { Business, BusinessEvent } from "@/core/types/business.types";
 import { getRandomNegativeEvent, getRandomPositiveEvent } from '@/core/lib/data-loaders/static-data-loader';
+import type { Business, BusinessEvent } from "@/core/types/business.types";
 
 /**
  * Генерирует случайные события для бизнеса

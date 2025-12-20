@@ -1,10 +1,11 @@
 "use client"
 
+import { CheckCircle } from "lucide-react"
 import React from "react"
-import { Button } from "@/shared/ui/button"
-import { CheckCircle, DollarSign } from "lucide-react"
+
 import { useInflatedPrices } from "@/core/hooks"
 import type { FreelanceGig } from "@/core/types"
+import { Button } from "@/shared/ui/button"
 
 interface ActiveFreelanceSectionProps {
   gigs: FreelanceGig[]

@@ -1,5 +1,6 @@
-import { Card } from '@/shared/ui/card'
 import { PiggyBank, CreditCard, TrendingUp, Percent } from 'lucide-react'
+
+import { Card } from '@/shared/ui/card'
 
 interface Props {
   totalDeposits: number

@@ -1,8 +1,5 @@
 "use client"
 
-import React from "react"
-import { InfoCard } from "@/shared/ui/info-card"
-import { Button } from "@/shared/ui/button"
 import {
   Zap,
   Heart,
@@ -12,9 +9,12 @@ import {
   Lightbulb,
   Smile, // Счастье
 } from "lucide-react"
-import { useInflatedPrices } from "@/core/hooks"
+import React from "react"
 
+import { useInflatedPrices } from "@/core/hooks"
 import type { Job } from "@/core/types"
+import { Button } from "@/shared/ui/button"
+import { InfoCard } from "@/shared/ui/info-card"
 
 // Тип для одной детали в InfoCard
 type DetailItem = {

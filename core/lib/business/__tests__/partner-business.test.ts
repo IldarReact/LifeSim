@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
+
 import { createPartnerBusiness } from '../create-partner-business'
-import type { BusinessType, EmployeeRole } from '@/core/types/business.types'
+
+import type { BusinessType } from '@/core/types/business.types'
 
 describe('createPartnerBusiness', () => {
   const mockOffer = {

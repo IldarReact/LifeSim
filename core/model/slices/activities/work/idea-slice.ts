@@ -1,12 +1,13 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, IdeaSlice } from '../../types'
+
+import { applyStats } from '@/core/helpers/apply-stats'
 import {
   generateBusinessIdea,
   calculateDevelopmentCost,
-  calculateDevelopmentTime,
   canDevelopIdea,
 } from '@/core/lib/idea-generator'
-import { applyStats } from '@/core/helpers/apply-stats'
 import type { Business } from '@/core/types'
 
 export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set, get) => ({
@@ -32,11 +33,18 @@ export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set,
     const updatedStats = applyStats(state.player.stats, {
       energy: -energyCost,
     })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, {
+      energy: -energyCost,
+    })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businessIdeas: [...state.player.businessIdeas, idea],
       },
     })
@@ -89,6 +97,9 @@ export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set,
     const updatedStats = applyStats(state.player.stats, {
       money: -investment,
     })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, {
+      money: -investment,
+    })
 
     const updatedIdeas = [...state.player.businessIdeas]
     updatedIdeas[ideaIndex] = updatedIdea
@@ -97,6 +108,10 @@ export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set,
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businessIdeas: updatedIdeas,
       },
     })

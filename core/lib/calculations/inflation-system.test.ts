@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
+
 import {
   getCumulativeInflationMultiplier,
   applyInflationToPrice,
   applyYearlyInflation,
   INFLATION_MULTIPLIERS,
 } from './inflation-system'
+
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 describe('Inflation System', () => {
@@ -155,7 +157,7 @@ describe('Inflation System', () => {
       const basePrice = 1000
 
       // Год 1 (2025): инфляция 4%
-      let price1 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2025)
+      const price1 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2025)
       expect(price1).toBe(1040) // 1000 * 1.04
 
       // Обновляем экономику для следующего года
@@ -166,7 +168,7 @@ describe('Inflation System', () => {
       }
 
       // Год 2 (2026): инфляция 5%
-      let price2 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2026)
+      const price2 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2026)
       expect(price2).toBe(1092) // 1000 * 1.04 * 1.05
 
       // Обновляем экономику для следующего года
@@ -177,7 +179,7 @@ describe('Inflation System', () => {
       }
 
       // Год 3 (2027): инфляция 6%
-      let price3 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2027)
+      const price3 = applyInflationToPrice(basePrice, economy, 'default', 2024, 2027)
       expect(price3).toBe(1158) // 1000 * 1.04 * 1.05 * 1.06
 
       // Проверяем, что каждая следующая цена больше предыдущей (compound inflation)

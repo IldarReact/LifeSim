@@ -1,5 +1,7 @@
 import { DollarSign, Users, Zap, CheckCircle, Store, AlertCircle } from "lucide-react"
+
 import type { BusinessOption, BusinessRequirement } from "../types"
+
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 

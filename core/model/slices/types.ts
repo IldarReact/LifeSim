@@ -1,7 +1,6 @@
 import type { StateCreator } from 'zustand'
-import type { StatEffect } from '@/core/types/stats.types'
-import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
-import type { SkillRequirement } from '@/core/types/skill.types'
+
+import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 import type {
   GameState,
   PlayerState,
@@ -9,7 +8,9 @@ import type {
   JobApplication,
   FreelanceApplication,
 } from '@/core/types'
-import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
+import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
+import type { SkillRequirement } from '@/core/types/skill.types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 // Slice types for better organization
 // Общий тип middleware для стора (devtools + persist)
@@ -43,6 +44,7 @@ export interface PlayerSlice {
 
   // Actions
   applyStatChanges: (effect: StatEffect) => void
+  performTransaction: (cost: StatEffect, options?: { requireFunds?: boolean; title?: string }) => boolean
 }
 
 export interface EducationSlice {

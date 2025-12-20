@@ -2,27 +2,27 @@ import { ShopItem } from '@/core/types/shop.types'
 
 // Country imports
 // USA
+import brHousing from '@/shared/data/world/countries/brazil/housing.json'
+import brFood from '@/shared/data/world/countries/brazil/shop-categories/food.json'
+import brHealth from '@/shared/data/world/countries/brazil/shop-categories/health.json'
+import brServices from '@/shared/data/world/countries/brazil/shop-categories/services.json'
+import brTransport from '@/shared/data/world/countries/brazil/transport.json'
+import geHousing from '@/shared/data/world/countries/germany/housing.json'
+import geFood from '@/shared/data/world/countries/germany/shop-categories/food.json'
+import geHealth from '@/shared/data/world/countries/germany/shop-categories/health.json'
+import geTransport from '@/shared/data/world/countries/germany/transport.json'
+import usHousing from '@/shared/data/world/countries/us/housing.json'
 import usFood from '@/shared/data/world/countries/us/shop-categories/food.json'
 import usTransport from '@/shared/data/world/countries/us/transport.json'
 import usHealth from '@/shared/data/world/countries/us/shop-categories/health.json'
 import usServices from '@/shared/data/world/countries/us/shop-categories/services.json'
-import usHousing from '@/shared/data/world/countries/us/housing.json'
 
 
 // Germany
-import geFood from '@/shared/data/world/countries/germany/shop-categories/food.json'
-import geTransport from '@/shared/data/world/countries/germany/transport.json'
-import geHealth from '@/shared/data/world/countries/germany/shop-categories/health.json'
 import geServices from '@/shared/data/world/countries/germany/shop-categories/services.json'
-import geHousing from '@/shared/data/world/countries/germany/housing.json'
 
 
 // Brazil
-import brFood from '@/shared/data/world/countries/brazil/shop-categories/food.json'
-import brTransport from '@/shared/data/world/countries/brazil/transport.json'
-import brHealth from '@/shared/data/world/countries/brazil/shop-categories/health.json'
-import brServices from '@/shared/data/world/countries/brazil/shop-categories/services.json'
-import brHousing from '@/shared/data/world/countries/brazil/housing.json'
 
 
 /**

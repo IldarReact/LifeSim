@@ -6,8 +6,9 @@
  * ✅ Single responsibility: handle university progression and diploma completion
  */
 
-import type { Skill, SkillLevel, ActiveUniversity, Notification } from '@/core/types'
 import { formatGameDate } from '../quarter'
+
+import type { Skill, SkillLevel, ActiveUniversity, Notification } from '@/core/types'
 
 export interface UniversityProcessingResult {
   updatedUniversities: ActiveUniversity[]
@@ -49,7 +50,7 @@ export function processActiveUniversity(
       if (updatedUni.remainingDuration <= 0) {
         completedUni.push(updatedUni.id)
         const levelsGained = Math.ceil(uni.totalDuration)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === uni.skillName)
+        const skillIdx = updatedSkills.findIndex((s) => s.name === uni.skillName)
 
         if (skillIdx === -1) {
           // New skill from diploma

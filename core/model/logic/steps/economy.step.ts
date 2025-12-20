@@ -1,6 +1,7 @@
 import { processEconomicCycle } from '../economy/cycle-processor'
-import { generateGlobalEvents } from '@/core/lib/calculations/generate-global-events'
 import type { TurnStep } from '../turn/turn-step'
+
+import { generateGlobalEvents } from '@/core/lib/calculations/generate-global-events'
 import { formatGameDate } from '@/core/lib/quarter'
 
 export const economyStep: TurnStep = (ctx, state) => {

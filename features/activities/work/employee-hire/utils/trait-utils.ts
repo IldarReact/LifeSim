@@ -1,6 +1,7 @@
+import { TrendingUp, AlertCircle, Activity, User } from "lucide-react"
+
 import type { HumanTrait } from "@/core/types/human-traits.types"
 import humanTraitsData from "@/shared/data/world/commons/human-traits.json"
-import { TrendingUp, AlertCircle, Activity, User } from "lucide-react"
 
 export const TRAITS_MAP = humanTraitsData.reduce((acc, trait) => {
   acc[trait.id] = trait as HumanTrait

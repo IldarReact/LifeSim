@@ -1,5 +1,5 @@
-import { GameOffer } from './game-offers.types'
 import { BusinessType } from './business.types'
+import { GameOffer } from './game-offers.types'
 
 export type GameEventType =
   | 'PARTNERSHIP_ACCEPTED'

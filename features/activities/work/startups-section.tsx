@@ -1,14 +1,19 @@
 "use client"
 
-import React from "react"
-import { OpportunityCard } from "../ui/opportunity-card"
 import { Rocket, Brain, Zap } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
-import { Progress } from "@/shared/ui/progress"
+import React from "react"
+
+import { OpportunityCard } from "../ui/opportunity-card"
+
 import { IdeaManagementDialog } from "./idea-management-dialog"
+
+import { useGameStore } from "@/core/model/game-store"
 import type { BusinessIdea } from "@/core/types/idea.types"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Progress } from "@/shared/ui/progress"
+
+
 
 export function StartupsSection() {
   const {

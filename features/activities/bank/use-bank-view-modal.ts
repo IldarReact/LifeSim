@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
-import { useGameStore } from '@/core/model/game-store'
+
 import { DEPOSIT_RATE_MULTIPLIER, LOAN_RATE_MULTIPLIER } from './shared-constants'
+
+import { useGameStore } from '@/core/model/game-store'
 
 export function useBankViewModel() {
   const player = useGameStore((s) => s.player)

@@ -1,6 +1,6 @@
 // Player and personal life state types
-import type { Skill, ActiveCourse, ActiveUniversity } from './skill.types';
 import type { TimedBuff, FamilyMember, LifeGoal, PotentialPartner, Pregnancy } from './family.types';
+import type { Skill, ActiveCourse, ActiveUniversity } from './skill.types';
 import { Stats } from './stats.types';
 
 export interface PersonalLife {

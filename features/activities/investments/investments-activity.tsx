@@ -1,12 +1,13 @@
 "use client";
 
+import { TrendingUp, Home, Coins, ChartLine, Plus, Minus } from "lucide-react";
 import { useState } from "react";
+import { LineChart, Line, ResponsiveContainer } from "recharts";
+
 import { useGameStore } from "@/core/model/game-store";
 import { Button } from "@/shared/ui/button";
 import { Card } from "@/shared/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { TrendingUp, Home, Coins, ChartLine, Plus, Minus } from "lucide-react";
 
 const investmentCategories = {
   stocks: {

@@ -1,8 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
+
 import { createGameOffersSlice } from '../activities/work/business/game-offers-slice'
+import { LocalGameState } from '../types'
+
 import { createMockPlayer } from '@/core/lib/calculations/loan/utils/mock-player'
 import type { GameOffer } from '@/core/types/game-offers.types'
-import { LocalGameState } from '../types'
 
 // Mock broadcastEvent
 vi.mock('@/core/lib/multiplayer', () => ({

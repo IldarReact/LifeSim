@@ -1,20 +1,22 @@
 'use client'
 
+import { Calculator, DollarSign } from 'lucide-react'
 import { useState } from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { Card } from '@/shared/ui/card'
-import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
-import { Label } from '@/shared/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+
+import { useBank } from './use-bank'
+
 import {
   calculateQuarterlyPayment,
   calculateTotalPayment,
   calculateOverpayment,
   getAvailableLoanTerms,
 } from '@/core/lib/calculations/loan-calculator'
-import { Calculator, DollarSign } from 'lucide-react'
-import { useBank } from './use-bank'
+import { useGameStore } from '@/core/model/game-store'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
+import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
 const LOAN_TYPES = {
   consumer_credit: 'Потребительский кредит',

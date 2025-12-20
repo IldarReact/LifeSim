@@ -1,5 +1,5 @@
 // features/activities/bank/useBank.ts
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 
 export const usePlayer = () => useGameStore((s) => s.player)
 export const useOpenDeposit = () => useGameStore((s) => s.openDeposit)

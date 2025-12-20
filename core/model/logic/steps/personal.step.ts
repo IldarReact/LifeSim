@@ -18,16 +18,26 @@ export const personalStep: TurnStep = (ctx, state) => {
   // Apply family passive effects
   state.player.personal.familyMembers.forEach((member) => {
     if (member.passiveEffects) {
-      state.statModifiers.happiness =
-        (state.statModifiers.happiness || 0) + (member.passiveEffects.happiness || 0)
-      state.statModifiers.health =
-        (state.statModifiers.health || 0) + (member.passiveEffects.health || 0)
-      state.statModifiers.energy =
-        (state.statModifiers.energy || 0) + (member.passiveEffects.energy || 0)
-      state.statModifiers.sanity =
-        (state.statModifiers.sanity || 0) + (member.passiveEffects.sanity || 0)
-      state.statModifiers.intelligence =
-        (state.statModifiers.intelligence || 0) + (member.passiveEffects.intelligence || 0)
+      const h = member.passiveEffects.happiness
+      if (typeof h === 'number' && Number.isFinite(h)) {
+        state.statModifiers.happiness = (state.statModifiers.happiness || 0) + h
+      }
+      const he = member.passiveEffects.health
+      if (typeof he === 'number' && Number.isFinite(he)) {
+        state.statModifiers.health = (state.statModifiers.health || 0) + he
+      }
+      const e = member.passiveEffects.energy
+      if (typeof e === 'number' && Number.isFinite(e)) {
+        state.statModifiers.energy = (state.statModifiers.energy || 0) + e
+      }
+      const s = member.passiveEffects.sanity
+      if (typeof s === 'number' && Number.isFinite(s)) {
+        state.statModifiers.sanity = (state.statModifiers.sanity || 0) + s
+      }
+      const i = member.passiveEffects.intelligence
+      if (typeof i === 'number' && Number.isFinite(i)) {
+        state.statModifiers.intelligence = (state.statModifiers.intelligence || 0) + i
+      }
     }
   })
 

@@ -1,6 +1,6 @@
 // Family and personal life types
 
-import { CoreStat, StatEffect } from "./stats.types";
+import { StatEffect } from "./stats.types";
 
 export interface TimedBuff {
   id: string;

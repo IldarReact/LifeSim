@@ -6,7 +6,7 @@
  * ✅ Single responsibility: create properly initialized Business object
  */
 
-import type { Business, BusinessType, EmployeeRole } from '@/core/types/business.types'
+import type { Business, BusinessType } from '@/core/types/business.types'
 import type { StatEffect } from '@/core/types/stats.types'
 
 export interface CreateBusinessParams {

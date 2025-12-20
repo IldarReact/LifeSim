@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { useGameStore } from '@/core/model/store'
+
 import { subscribeToEvents, getMyConnectionId, broadcastEvent } from '@/core/lib/multiplayer'
+import { useGameStore } from '@/core/model/store'
 import {
   GameOffer,
   isJobOffer,
@@ -149,5 +150,5 @@ export function useOffersSync() {
     })
 
     return () => unsubscribe()
-  }, [player?.id])
+  }, [player?.id, pushNotification])
 }

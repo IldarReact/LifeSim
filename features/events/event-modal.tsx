@@ -1,8 +1,9 @@
 "use client"
 
+import { X } from 'lucide-react'
+
 import { useGameStore } from "@/core/model/game-store"
 import type { GlobalEvent } from "@/core/types"
-import { X } from 'lucide-react'
 
 export function EventModal() {
   const { pendingEventNotification, dismissEventNotification } = useGameStore()

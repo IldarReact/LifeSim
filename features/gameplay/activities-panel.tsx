@@ -1,19 +1,20 @@
 'use client'
 
-import { useGameStore } from '@/core/model/game-store'
-import { ExpandableCard } from '@/shared/ui/expandable-card'
-import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
 // Import activities
-import { FamilyActivity } from '../activities/family/family-activity'
-import { WorkActivity } from '../activities/work/work-activity'
-import { InvestmentsActivity } from '../activities/investments/investments-activity'
 import { BanksActivity } from '../activities/bank/banks-activity'
+import { EducationActivity } from '../activities/education/education-activity'
+import { FamilyActivity } from '../activities/family/family-activity'
+import { InvestmentsActivity } from '../activities/investments/investments-activity'
 import { RelocationActivity } from '../activities/relocation/relocation-activity'
 import { RestActivity } from '../activities/rest/rest-activity'
-import { EducationActivity } from '../activities/education/education-activity'
 import { ShopActivity } from '../activities/shop'
+import { WorkActivity } from '../activities/work/work-activity'
+
+import { useGameStore } from '@/core/model/game-store'
+import { Button } from '@/shared/ui/button'
+import { ExpandableCard } from '@/shared/ui/expandable-card'
 
 const ACTIVITIES = [
   {

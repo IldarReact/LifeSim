@@ -1,7 +1,6 @@
-import type { BusinessIdea, IdeaTemplate, RiskLevel } from '@/core/types/idea.types'
-import type { Skill } from '@/core/types'
-import type { BusinessType } from '@/core/types/business.types'
 import { getIdeaTemplates, getIdeaReplacements } from '@/core/lib/data-loaders/static-data-loader'
+import type { Skill } from '@/core/types'
+import type { BusinessIdea, RiskLevel } from '@/core/types/idea.types'
 
 /**
  * Генерирует бизнес-идею на основе навыков игрока

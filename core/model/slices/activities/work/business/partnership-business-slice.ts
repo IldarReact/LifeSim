@@ -1,11 +1,12 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore } from '../../../types'
+
 import type {
   PartnershipBusinessSlice,
   BusinessChangeProposal,
 } from './partnership-business-slice.types'
-import type { BusinessChangeType, EmployeeRole } from '@/core/types/business.types'
-import { broadcastEvent } from '@/core/lib/multiplayer'
+
 import {
   canMakeDirectChanges,
   requiresApproval,
@@ -13,6 +14,8 @@ import {
   getBusinessPartner,
   generateProposalId,
 } from '@/core/lib/business/partnership-permissions'
+import { broadcastEvent } from '@/core/lib/multiplayer'
+import type { EmployeeRole } from '@/core/types/business.types'
 
 export const createPartnershipBusinessSlice: StateCreator<
   GameStore,

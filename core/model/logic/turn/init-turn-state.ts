@@ -1,5 +1,6 @@
 import type { TurnContext } from './turn-context'
 import type { TurnState } from './turn-state'
+
 import { getCountry } from '@/core/lib/data-loaders/economy-loader'
 
 export function initTurnState(ctx: TurnContext): TurnState {

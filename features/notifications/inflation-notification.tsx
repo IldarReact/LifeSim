@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, AlertTriangle, X } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+import { useEffect, useState } from 'react'
+
 import type { InflationNotification as InflationNotificationData } from '@/core/lib/calculations/inflation-engine'
 import { devLog } from '@/core/lib/debug'
+import { Button } from '@/shared/ui/button'
 
 interface InflationNotificationProps {
   data: InflationNotificationData | null

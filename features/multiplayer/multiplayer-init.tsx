@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { enableMultiplayerSync } from "@/core/model/game-store";
 
 export function MultiplayerInit() {

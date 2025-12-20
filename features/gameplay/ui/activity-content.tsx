@@ -1,26 +1,25 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { FamilyActivity } from '@/features/activities/family/family-activity'
-import { WorkActivity } from '@/features/activities/work/work-activity'
-import { ShopActivity } from '@/features/activities/shop'
-import { InvestmentsActivity } from '@/features/activities/investments/investments-activity'
-import { BanksActivity } from '@/features/activities/bank/banks-activity'
-import { RelocationActivity } from '@/features/activities/relocation/relocation-activity'
-import { RestActivity } from '@/features/activities/rest/rest-activity'
-import { EventsActivity } from '@/features/activities/events/events-activity'
-import { EducationActivity } from '@/features/activities/education/education-activity'
-import { Button } from '@/shared/ui/button'
 import { ArrowRight, Loader2 } from 'lucide-react'
-import type { GameState } from '@/core/types'
+import React, { useEffect, useState } from 'react'
+
 import {
   isMultiplayerActive,
-  setPlayerReady,
-  subscribeToReadyStatus,
   subscribeToTurnReadyStatus,
   setTurnReady,
 } from '@/core/lib/multiplayer'
+import { useGameStore } from '@/core/model/game-store'
+import type { GameState } from '@/core/types'
+import { BanksActivity } from '@/features/activities/bank/banks-activity'
+import { EducationActivity } from '@/features/activities/education/education-activity'
+import { EventsActivity } from '@/features/activities/events/events-activity'
+import { FamilyActivity } from '@/features/activities/family/family-activity'
+import { InvestmentsActivity } from '@/features/activities/investments/investments-activity'
+import { RelocationActivity } from '@/features/activities/relocation/relocation-activity'
+import { RestActivity } from '@/features/activities/rest/rest-activity'
+import { ShopActivity } from '@/features/activities/shop'
+import { WorkActivity } from '@/features/activities/work/work-activity'
+import { Button } from '@/shared/ui/button'
 
 // Helper type to exclude null from keys
 type ActivityType = NonNullable<GameState['activeActivity']> | 'education'

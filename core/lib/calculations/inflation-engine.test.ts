@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import {
   generateYearlyInflation,
   calculateKeyRate,
@@ -6,7 +7,6 @@ import {
   getCumulativeInflationMultiplier,
   shouldApplyInflationThisTurn,
   INFLATION_SETTINGS,
-  INFLATION_MULTIPLIERS,
   type PriceCategory,
 } from './inflation-engine'
 

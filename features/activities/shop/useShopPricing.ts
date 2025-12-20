@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
+
 import { useInflatedPrice } from '@/core/hooks'
 import type { ShopItem } from '@/core/types/shop.types'
-import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
+import { isRecurringItem } from '@/core/types/shop.types'
 
 interface ShopPricing {
   displayPrice: number

@@ -1,3 +1,5 @@
+import { getInflatedPrice } from '../price-helpers'
+
 import type {
   PlayerState,
   QuarterlyReport,
@@ -6,7 +8,6 @@ import type {
   TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { getInflatedPrice } from '../price-helpers'
 
 export function calculateEmployeeQuarterlyReport(params: {
   player: PlayerState

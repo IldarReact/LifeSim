@@ -1,9 +1,11 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore } from '../../types'
-import type { FreelanceGig, FreelanceApplication, SkillLevel } from '@/core/types'
-import type { StatEffect } from '@/core/types/stats.types'
-import type { SkillRequirement } from '@/core/types/skill.types'
+
 import { formatGameDate } from '@/core/lib/quarter'
+import type { FreelanceGig, FreelanceApplication } from '@/core/types'
+import type { SkillRequirement } from '@/core/types/skill.types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 export interface FreelanceSlice {
   pendingFreelanceApplications: FreelanceApplication[]

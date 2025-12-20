@@ -1,9 +1,9 @@
 "use client"
 
+import { ChevronRight } from "lucide-react"
 import { useState } from "react"
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { ChevronRight, Info } from "lucide-react"
 
 export interface OpportunityCardProps {
   title: string

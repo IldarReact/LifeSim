@@ -1,7 +1,8 @@
 import type { TurnStep } from '../turn/turn-step'
-import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
+
 import { checkDefeatConditions } from '@/core/lib/defeat-conditions'
 import { formatGameDate } from '@/core/lib/quarter'
+import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v))
 

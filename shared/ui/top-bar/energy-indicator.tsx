@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { TrendingUp, TrendingDown, Zap } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { calculateStatModifiers } from "@/core/lib/calculations/stat-modifiers"
 import { useState } from "react"
+
+import { calculateStatModifiers } from "@/core/lib/calculations/stat-modifiers"
+import { useGameStore } from "@/core/model/game-store"
 
 export function EnergyIndicator() {
   const { player } = useGameStore()

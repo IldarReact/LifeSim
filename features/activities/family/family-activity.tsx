@@ -1,28 +1,30 @@
 "use client";
 
+import {
+  Heart, DollarSign, Baby, Dog,
+  Search, X
+} from "lucide-react";
 import React from "react";
+
+import { FamilyFinancesCard } from "../ui/family-finances-card";
+import { FamilyMemberCard } from "../ui/family-member-card";
+import { OpportunityCard } from "../ui/opportunity-card";
+
+import { useFamilyPricing } from "./use-family-pricing";
+
+import { FAMILY_PRICES } from "@/core/lib/calculations/family-prices";
 import { useGameStore } from "@/core/model/game-store";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { SectionSeparator } from "@/shared/ui/section-separator";
-import {
-  Heart, Brain, DollarSign, User, Plus, Star, Target, Baby, Dog,
-  Search, X, Check, Zap, Activity, ChevronRight
-} from "lucide-react";
 import { Progress } from "@/shared/ui/progress";
-import { OpportunityCard } from "../ui/opportunity-card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog";
-import type { FamilyMember } from "@/core/types";
-import { FamilyMemberCard } from "../ui/family-member-card";
-import { FamilyFinancesCard } from "../ui/family-finances-card";
-import { useFamilyPricing } from "./use-family-pricing";
-import { FAMILY_PRICES } from "@/core/lib/calculations/family-prices";
+import { SectionSeparator } from "@/shared/ui/section-separator";
+
+
+
+
+
+
+
 
 export function FamilyActivity(): React.JSX.Element | null {
   const { player, startDating, acceptPartner, rejectPartner, tryForBaby, adoptPet } = useGameStore();

@@ -1,9 +1,9 @@
 import type { Job } from '@/core/types/job.types'
 
 // Country imports
-import usJobs from '@/shared/data/world/countries/us/jobs.json'
-import geJobs from '@/shared/data/world/countries/germany/jobs.json'
 import brJobs from '@/shared/data/world/countries/brazil/jobs.json'
+import geJobs from '@/shared/data/world/countries/germany/jobs.json'
+import usJobs from '@/shared/data/world/countries/us/jobs.json'
 
 function validateJob(item: unknown): item is Job {
   const j = item as Job

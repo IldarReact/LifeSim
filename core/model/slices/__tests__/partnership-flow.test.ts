@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createGameOffersSlice } from '../activities/work/business/game-offers-slice'
+
 import { createBusinessSlice } from '../activities/work/business/business-slice'
 import { createCoreBusinessSlice } from '../activities/work/business/core-business-slice'
-import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
+import { createGameOffersSlice } from '../activities/work/business/game-offers-slice'
 import { LocalBusiness, LocalGameOffer, LocalGameState } from '../types'
 
 // Тип для мокового хранилища
@@ -24,25 +24,12 @@ vi.mock('@/core/lib/multiplayer', () => ({
 
 const mockPushNotification = vi.fn()
 
-// Обработчики событий
-let eventHandlers: Record<string, (event: any) => void> = {}
+let eventHandlers: Array<(event: any) => void> = []
 
-// Логика обработки событий
 function handleBroadcastEvent(event: any) {
   console.log(`[BROADCAST] ${event.type} toPlayerId:`, event.toPlayerId)
-  if (event.toPlayerId) {
-    const handler = eventHandlers[event.type]
-    if (handler) {
-      console.log(`[HANDLER] Calling ${event.type} handler for player ${event.toPlayerId}`)
-      handler(event)
-    }
-  } else {
-    console.log('[BROADCAST] Sending to all players')
-    Object.entries(eventHandlers).forEach(([type, handler]) => {
-      console.log(`[HANDLER] Calling ${type} handler`)
-      handler(event)
-    })
-  }
+  console.log('[BROADCAST] Sending to all registered handlers')
+  eventHandlers.forEach((handler) => handler(event))
 }
 
 function createMockState(initial: Partial<LocalGameState> = {}): MockState {
@@ -68,7 +55,7 @@ function createMockState(initial: Partial<LocalGameState> = {}): MockState {
 
   const on = (eventType: string, handler: (event: any) => void) => {
     console.log('Registering handler for:', eventType)
-    eventHandlers[eventType] = handler
+    eventHandlers.push(handler)
   }
 
   return { get, set, on, state: () => state }
@@ -85,7 +72,7 @@ describe('partnership flow', () => {
     vi.clearAllMocks()
     mockBroadcastEvent.mockClear()
     mockPushNotification.mockClear()
-    eventHandlers = {}
+    eventHandlers = []
 
     // Настраиваем реализацию мока
     mockBroadcastEvent.mockImplementation(handleBroadcastEvent)
@@ -141,6 +128,20 @@ describe('partnership flow', () => {
       },
       pushNotification: mockPushNotification,
     } as any)
+    player1State.set({
+      applyStatChanges: (changes: any) => {
+        const current = player1State.get()
+        player1State.set({
+          player: {
+            ...current.player,
+            stats: {
+              ...current.player.stats,
+              money: current.player.stats.money + (changes.money || 0),
+            },
+          },
+        })
+      },
+    })
 
     // 4. Создаем срезы для игрока 2
     const coreBusinessSlice2 = createCoreBusinessSlice(
@@ -169,6 +170,20 @@ describe('partnership flow', () => {
       },
       pushNotification: mockPushNotification,
     } as any)
+    player2State.set({
+      applyStatChanges: (changes: any) => {
+        const current = player2State.get()
+        player2State.set({
+          player: {
+            ...current.player,
+            stats: {
+              ...current.player.stats,
+              money: current.player.stats.money + (changes.money || 0),
+            },
+          },
+        })
+      },
+    })
 
     // 5. Настраиваем обработчики событий
     const handlePlayer1Event = async (event: {
@@ -204,67 +219,10 @@ describe('partnership flow', () => {
             }
             break
           case 'PARTNERSHIP_ACCEPTED':
-            if (!event.payload) {
-              console.error('Missing payload in PARTNERSHIP_ACCEPTED event')
-              break
-            }
-            // Add proper type checking for the payload
-            if (!event.payload.partnerId || !event.payload.partnerName) {
-              console.error('Missing required partner data in PARTNERSHIP_ACCEPTED event')
-              break
-            }
-            // Ensure all required fields are present
-            const payload = {
-              ...event.payload,
-              businessName: event.payload?.businessName || 'Совместный бизнес',
-              businessType: event.payload?.businessType || 'shop',
-              businessDescription: event.payload?.businessDescription || '',
-              totalCost: event.payload?.totalCost || 0,
-              yourInvestment: event.payload?.yourInvestment || 0,
-              yourShare: event.payload?.yourShare || 50,
-              businessId: event.payload?.businessId || `biz_${Date.now()}`,
-              // Add any other required fields with defaults
-              partnerId: event.payload?.partnerId || '',
-              partnerName: event.payload?.partnerName || '',
-              // Ensure all required fields from the GameOffer type are included
-              fromPlayerId: event.payload?.fromPlayerId || '',
-              fromPlayerName: event.payload?.fromPlayerName || '',
-              toPlayerId: event.payload?.toPlayerId || '',
-              toPlayerName: event.payload?.toPlayerName || '',
-              message: event.payload?.message || '',
-              status: event.payload?.status || 'pending',
-              createdTurn: event.payload?.createdTurn || 1,
-              expiresInTurns: event.payload?.expiresInTurns || 10,
-            }
-            const business = createPartnerBusiness(
-              {
-                details: {
-                  businessName: payload.businessName,
-                  businessType: payload.businessType,
-                  businessDescription: payload.businessDescription,
-                  totalCost: payload.totalCost,
-                  yourInvestment: payload.yourInvestment,
-                  yourShare: payload.yourShare,
-                },
-                fromPlayerId: payload.partnerId,
-                fromPlayerName: payload.partnerName,
-              },
-              currentState.turn,
-              currentState.player.id,
-              true, // isInitiator
-            )
-            const investment = payload.yourInvestment || 0
-            const newMoney = currentState.player.stats.money - investment
-            player1State.set({
-              player: {
-                ...currentState.player,
-                stats: {
-                  ...currentState.player.stats,
-                  money: newMoney,
-                },
-                businesses: [...currentState.player.businesses, business],
-              },
-            })
+            offersSlice1.onPartnershipAccepted(event)
+            break
+          case 'PARTNERSHIP_UPDATED':
+            offersSlice1.onPartnershipUpdated(event)
             break
         }
       } catch (error) {
@@ -292,35 +250,8 @@ describe('partnership flow', () => {
           })
         }
 
-        if (event.type === 'PARTNERSHIP_ACCEPTED') {
-          if (!event.payload) {
-            console.error('Missing payload in PARTNERSHIP_ACCEPTED event')
-            return
-          }
-
-          const business = createPartnerBusiness(
-            {
-              details: event.payload,
-              fromPlayerId: event.payload.partnerId,
-              fromPlayerName: event.payload.partnerName,
-            },
-            currentState.turn,
-            currentState.player.id,
-            false, // isInitiator
-          )
-
-          const newMoney = currentState.player.stats.money - (event.payload.yourInvestment || 0)
-
-          player2State.set({
-            player: {
-              ...currentState.player,
-              stats: {
-                ...currentState.player.stats,
-                money: newMoney,
-              },
-              businesses: [...(currentState.player.businesses || []), business],
-            },
-          })
+        if (event.type === 'PARTNERSHIP_UPDATED') {
+          offersSlice2.onPartnershipUpdated(event)
         }
       } catch (error) {
         console.error('Error in handlePlayer2Event:', error)
@@ -338,7 +269,7 @@ describe('partnership flow', () => {
     const testOffer = {
       id: 'test-offer-1',
       type: 'business_partnership' as const,
-      fromPlayerId: 'player1',
+      fromPlayerId: 'player_1',
       fromPlayerName: 'Player 1',
       toPlayerId: 'player2',
       toPlayerName: 'Player 2',

@@ -18,7 +18,6 @@
  */
 
 import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
-import { isQuarterEnd } from '../quarter'
 
 /**
  * Category-specific inflation multipliers
@@ -241,7 +240,7 @@ export function getCumulativeInflationMultiplier(
   // DEBUG: Log multiplier calculation
   try {
     // import devLog lazily to avoid circular issues in some test environments
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const { devLog } = require('../debug') as { devLog?: (...a: unknown[]) => void }
     if (devLog && inflationHistory.length > 0) {
       devLog(
@@ -309,5 +308,5 @@ export function formatInflationNotification(notification: InflationNotification)
  * @returns true if this is Q1 (start of new year)
  */
 export function shouldApplyInflationThisTurn(turn: number): boolean {
-  return isQuarterEnd(turn)
+  return turn > 0 && turn % 4 === 1
 }

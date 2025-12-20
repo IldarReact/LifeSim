@@ -1,15 +1,12 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, PlayerSlice } from './types'
-import type { StatEffect } from '@/core/types/stats.types'
 
 import { PlayerState } from '@/core/types'
+import type { StatEffect } from '@/core/types/stats.types'
 
-export const createPlayerSlice: StateCreator<
-  GameStore,
-  [],
-  [],
-  PlayerSlice
-> = (set, get) => ({
+
+export const createPlayerSlice: StateCreator<GameStore, [], [], PlayerSlice> = (set, get) => ({
   // State
   player: null,
 
@@ -19,25 +16,27 @@ export const createPlayerSlice: StateCreator<
     if (!player) return
 
     set((state) => ({
-      player: state.player ? {
-        ...state.player,
-        stats: {
-          ...state.player.stats,
-          energy: Math.max(0, state.player.stats.energy - amount)
-        },
-        personal: {
-          ...state.player.personal,
-          stats: {
-            ...state.player.personal.stats,
-            energy: Math.max(0, state.player.personal.stats.energy - amount)
+      player: state.player
+        ? {
+            ...state.player,
+            stats: {
+              ...state.player.stats,
+              energy: Math.max(0, state.player.stats.energy - amount),
+            },
+            personal: {
+              ...state.player.personal,
+              stats: {
+                ...state.player.personal.stats,
+                energy: Math.max(0, state.player.personal.stats.energy - amount),
+              },
+            },
           }
-        }
-      } : null
+        : null,
     }))
   },
 
   updatePlayer: (updater: Partial<PlayerState> | ((prev: PlayerState) => Partial<PlayerState>)) => {
-    set(state => {
+    set((state) => {
       const prev = state.player
       if (!prev) return state
 
@@ -49,17 +48,18 @@ export const createPlayerSlice: StateCreator<
           ...patch,
           stats: {
             ...prev.stats,
-            ...(patch.stats ?? {})
+            ...(patch.personal?.stats ?? {}), // ✅ Sync: Сначала применяем статы из personal (если есть)
+            ...(patch.stats ?? {}), // ✅ Sync: Затем явные статы (имеют приоритет)
           },
           personal: {
             ...prev.personal,
             ...(patch.personal ?? {}),
             stats: {
               ...prev.personal.stats,
-              ...(patch.personal?.stats ?? {})
-            }
-          }
-        }
+              ...(patch.personal?.stats ?? {}),
+            },
+          },
+        },
       }
     })
   },
@@ -80,21 +80,62 @@ export const createPlayerSlice: StateCreator<
           stats: {
             ...currentStats,
             money: currentStats.money + (changes.money || changes.cash || 0),
-            energy: Math.min(100, Math.max(0, currentStats.energy + (changes.energy || 0)))
+            energy: Math.min(100, Math.max(0, currentStats.energy + (changes.energy || 0))),
           },
           personal: {
             ...state.player.personal,
             stats: {
               ...currentStatEffect,
-              happiness: Math.min(100, Math.max(0, currentStatEffect.happiness + (changes.happiness || 0))),
+              money: (currentStatEffect.money || 0) + (changes.money || changes.cash || 0),
+              happiness: Math.min(
+                100,
+                Math.max(0, currentStatEffect.happiness + (changes.happiness || 0)),
+              ),
               health: Math.min(100, Math.max(0, currentStatEffect.health + (changes.health || 0))),
               energy: Math.min(100, Math.max(0, currentStatEffect.energy + (changes.energy || 0))),
               sanity: Math.min(100, Math.max(0, currentStatEffect.sanity + (changes.sanity || 0))),
-              intelligence: Math.min(100, Math.max(0, currentStatEffect.intelligence + (changes.intelligence || 0)))
-            }
-          }
-        }
+              intelligence: Math.min(
+                100,
+                Math.max(0, currentStatEffect.intelligence + (changes.intelligence || 0)),
+              ),
+            },
+          },
+        },
       }
     })
-  }
+  },
+
+  performTransaction: (cost: StatEffect, options?: { requireFunds?: boolean; title?: string }) => {
+    const state = get()
+    if (!state.player) return false
+
+    const deltaMoney = cost.money || 0
+    const deltaEnergy = cost.energy || 0
+    const requireFunds = options?.requireFunds ?? true
+    const title = options?.title
+
+    // 1. Check Money (only if spending)
+    if (requireFunds && deltaMoney < 0 && state.player.stats.money < Math.abs(deltaMoney)) {
+      state.pushNotification({
+        type: 'error',
+        title: title || 'Недостаточно средств',
+        message: `Требуется $${Math.abs(deltaMoney).toLocaleString()}, у вас только $${state.player.stats.money.toLocaleString()}`,
+      })
+      return false
+    }
+
+    // 2. Check Energy (only if spending)
+    if (deltaEnergy < 0 && state.player.stats.energy < Math.abs(deltaEnergy)) {
+      state.pushNotification({
+        type: 'info',
+        title: 'Недостаточно энергии',
+        message: 'Вы слишком устали для этого действия',
+      })
+      return false
+    }
+
+    // 3. Apply Changes
+    get().applyStatChanges(cost)
+    return true
+  },
 })

@@ -1,11 +1,6 @@
 'use client'
 
-import React from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { Card } from '@/shared/ui/card'
-import { Progress } from '@/shared/ui/progress'
 import {
-  DollarSign,
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -16,10 +11,14 @@ import {
   Landmark,
   HelpCircle,
 } from 'lucide-react'
-import { getShopItem } from '@/core/lib/shop-helpers'
-import { getItemCost } from '@/core/types/shop.types'
+import React from 'react'
+
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { getShopItem } from '@/core/lib/shop-helpers'
+import { useGameStore } from '@/core/model/game-store'
+import { getItemCost } from '@/core/types/shop.types'
+import { Progress } from '@/shared/ui/progress'
 
 export function FamilyFinancesCard() {
   const { player, countries } = useGameStore()

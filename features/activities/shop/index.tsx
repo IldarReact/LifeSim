@@ -1,12 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useGameStore } from '@/core/model/store'
-import { getShopItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
-import type { ShopCategory } from '@/core/types/shop.types'
-import { ShopHeader } from './components/shop-header'
+
 import { CategoryTabs } from './components/category-tabs'
+import { ShopHeader } from './components/shop-header'
 import { ShopItemCard } from './components/shop-item-card'
+
+import { getShopItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
+import { useGameStore } from '@/core/model/store'
+import type { ShopCategory } from '@/core/types/shop.types'
+
 
 export const ShopActivity = () => {
   const { player, buyItem, setLifestyle, setPlayerHousing } = useGameStore()

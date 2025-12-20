@@ -1,5 +1,5 @@
-import type { PlayerState } from "@/core/types/game.types"
 import type { CountryEconomy } from "@/core/types/economy.types"
+import type { PlayerState } from "@/core/types/game.types"
 
 export function calculateQuarterlyIncome(
   player: PlayerState,

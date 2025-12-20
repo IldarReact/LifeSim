@@ -1,4 +1,5 @@
 import type { GameStateCreator } from '../../../types'
+
 import type { EmployeeRole } from '@/core/types/business.types'
 
 export const createRolesSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({

@@ -1,5 +1,5 @@
-import { StatEffect } from "./stats.types"
 import { AssetType } from "./finance.types"
+import { StatEffect } from "./stats.types"
 
 export type ShopCategory =
   | 'food'

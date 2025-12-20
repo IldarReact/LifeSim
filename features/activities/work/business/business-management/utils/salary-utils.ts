@@ -1,8 +1,10 @@
+import { ROLE_DESCRIPTIONS } from "../constants"
+import type { AvailablePosition } from "../types"
+
+import { getInflatedBaseSalary } from "@/core/lib/calculations/price-helpers"
 import type { EmployeeRole } from "@/core/types"
 import type { CountryEconomy } from "@/core/types/economy.types"
-import type { AvailablePosition } from "../types"
-import { ROLE_DESCRIPTIONS } from "../constants"
-import { getInflatedBaseSalary } from "@/core/lib/calculations/price-helpers"
+
 
 export function getAvailablePositions(economy: CountryEconomy | undefined): AvailablePosition[] {
   if (!economy || !economy.baseSalaries) return []

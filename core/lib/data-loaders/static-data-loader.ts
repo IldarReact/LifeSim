@@ -1,16 +1,14 @@
-import employeeData from '@/shared/data/employees/employee-data.json'
+import type { EmployeeRole, EmployeeStars } from '@/core/types/business.types'
+import type { CountryEconomy } from '@/core/types/economy.types'
+import type { IdeaTemplate } from '@/core/types/idea.types'
 import businessEvents from '@/shared/data/business/business-events.json'
 import ideaTemplates from '@/shared/data/business/idea-templates.json'
+import employeeData from '@/shared/data/employees/employee-data.json'
 import crisisOptions from '@/shared/data/events/crisis-options.json'
 import countries from '@/shared/data/world/countries.json'
 import countryArchetypes from '@/shared/data/world/country-archetypes.json'
 
 // Types
-import type { EmployeeRole, EmployeeStars, EmployeeSkills } from '@/core/types/business.types'
-import type { BusinessEvent } from '@/core/types/business.types'
-import type { BusinessIdea, IdeaTemplate } from '@/core/types/idea.types'
-import type { CountryEconomy } from '@/core/types/economy.types'
-import type { HousingOption } from '@/core/types/housing.types'
 
 // --- Employees Data ---
 export const getEmployeeData = () => employeeData

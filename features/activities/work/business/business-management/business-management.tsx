@@ -1,12 +1,15 @@
 'use client'
 
+import { TrendingUp, TrendingDown, Users, Info } from 'lucide-react'
 import React from 'react'
-import { InfoCard } from '@/shared/ui/info-card'
-import { Button } from '@/shared/ui/button'
-import type { Business, EmployeeCandidate } from '@/core/types'
-import { TrendingUp, TrendingDown, Zap, Brain, Users, Info } from 'lucide-react'
-import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
+
 import { BusinessManagementDialog } from './business-management-dialog'
+
+import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
+import type { Business, EmployeeCandidate } from '@/core/types'
+import { Button } from '@/shared/ui/button'
+import { InfoCard } from '@/shared/ui/info-card'
+
 
 interface BusinessManagementProps {
   business: Business

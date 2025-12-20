@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Button } from '@/shared/ui/button'
 import { Info } from 'lucide-react'
+import { useState } from 'react'
+
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 
 export interface InfoCardProps {
   title: string

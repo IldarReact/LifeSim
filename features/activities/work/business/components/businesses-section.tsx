@@ -1,18 +1,19 @@
 'use client'
 
-import React from 'react'
-import { OpportunityCard } from '../../../ui/opportunity-card'
-import { BusinessDetailCard } from '../../../ui/business-detail-card'
-import { BusinessDetailDialog } from '../business-management/business-detail-dialog'
 import { Store, TrendingUp, Users, CheckCircle, Star, AlertCircle } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
-import { getAllBusinessTypesForCountry } from '@/core/lib/data-loaders/businesses-loader'
-import { useGameStore } from '@/core/model/store'
-import { isMultiplayerActive } from '@/core/lib/multiplayer'
+import React from 'react'
+
+import { BusinessDetailCard } from '../../../ui/business-detail-card'
+import { OpportunityCard } from '../../../ui/opportunity-card'
+import { BusinessDetailDialog } from '../business-management/business-detail-dialog'
+
 import { useEconomy } from '@/core/hooks'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
-
+import { getAllBusinessTypesForCountry } from '@/core/lib/data-loaders/businesses-loader'
+import { isMultiplayerActive } from '@/core/lib/multiplayer'
+import { useGameStore } from '@/core/model/store'
 import type { StatEffect } from '@/core/types/stats.types'
+import { Button } from '@/shared/ui/button'
 
 interface BusinessesSectionProps {
   playerCash: number

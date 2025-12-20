@@ -1,5 +1,6 @@
-import type { Debt } from '@/core/types'
 import { calculateQuarterlyPayment } from './amortization'
+
+import type { Debt } from '@/core/types'
 
 export function createDebt(
   principal: number,

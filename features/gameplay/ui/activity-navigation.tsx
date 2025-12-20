@@ -1,7 +1,8 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
 import { Heart, Briefcase, TrendingUp, Landmark, Home, Palmtree, Bell, GraduationCap, ShoppingCart } from "lucide-react"
+
+import { useGameStore } from "@/core/model/game-store"
 import type { GameState } from "@/core/types"
 
 type ActivityId = NonNullable<GameState["activeActivity"]> | "education"

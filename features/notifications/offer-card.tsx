@@ -1,11 +1,14 @@
 "use client"
 
+import { DollarSign, Users, Briefcase, ChevronRight } from "lucide-react"
 import { useState } from "react"
-import { Badge } from "@/shared/ui/badge"
-import { Building, DollarSign, Users, Briefcase, ChevronRight } from "lucide-react"
+
+import { OfferDetailsDialog } from "./offer-details-dialog"
+
 import type { GameOffer, JobOfferDetails, PartnershipOfferDetails, ShareSaleOfferDetails } from "@/core/types/game-offers.types"
 import { isJobOffer, isPartnershipOffer, isShareSaleOffer } from "@/core/types/game-offers.types"
-import { OfferDetailsDialog } from "./offer-details-dialog"
+import { Badge } from "@/shared/ui/badge"
+
 
 interface OfferCardProps {
   offer: GameOffer

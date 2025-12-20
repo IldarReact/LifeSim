@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from "react"
-import type { EmployeeCandidate } from "@/core/types"
-import { getOnlinePlayers } from "@/core/lib/multiplayer"
-import { useGameStore } from "@/core/model/game-store"
+
 import { SALARY_CONFIG, KPI_CONFIG } from "../../shared-constants"
 import { createPlayerCandidate } from "../utils/employee-utils"
+
 import { getInflatedBaseSalary } from "@/core/lib/calculations/price-helpers"
+import { getOnlinePlayers } from "@/core/lib/multiplayer"
+import { useGameStore } from "@/core/model/game-store"
+import type { EmployeeCandidate } from "@/core/types"
 
 export function useHireDialog(isOpen: boolean, candidates: EmployeeCandidate[]) {
   const { countries, player } = useGameStore()

@@ -1,7 +1,9 @@
-import type { Business, Employee, EmployeeRole } from '@/core/types/business.types';
+import { getRoleConfig, isManagerialRole, isOperationalRole } from '../config/employee-roles.config';
+
 import type { Skill } from '@/core/types';
+import type { Business, EmployeeRole } from '@/core/types/business.types';
 import type { StatEffect } from '@/core/types/stats.types';
-import { EMPLOYEE_ROLES_CONFIG, getRoleConfig, isManagerialRole, isOperationalRole } from '../config/employee-roles.config';
+
 
 /**
  * Информация о росте навыка

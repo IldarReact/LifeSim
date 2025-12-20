@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { calculateQuarterlyIncome } from './calculate-quarterly-income'
+
 import { calculateQuarterlyExpenses } from './calculate-quarterly-expenses'
+import { calculateQuarterlyIncome } from './calculate-quarterly-income'
 import { calculateQuarterlyTaxes } from './calculate-quarterly-taxes'
 import { createEmptyQuarterlyReport } from './financial-helpers'
-import type { PlayerState } from '@/core/types/game.types'
+
 import type { CountryEconomy } from '@/core/types/economy.types'
+import type { PlayerState } from '@/core/types/game.types'
 import type { Stats } from '@/core/types/stats.types'
 
 describe('Quarterly Calculations', () => {

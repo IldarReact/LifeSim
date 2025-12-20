@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
-import { useGameStore } from '@/core/model/store'
-import { getCrisisExitOptions, calculateEmergencyLoanAmount, calculateFamilyHelp, isInFinancialCrisis } from '@/core/lib/financial-crisis'
-import { Button } from '@/shared/ui/button'
 import { AlertTriangle, DollarSign, Home, Users, Skull, X } from 'lucide-react'
+import { useEffect } from 'react'
+
+import { getCrisisExitOptions, calculateEmergencyLoanAmount, calculateFamilyHelp, isInFinancialCrisis } from '@/core/lib/financial-crisis'
+import { useGameStore } from '@/core/model/store'
 import { Card } from '@/shared/ui/card'
 
 interface FinancialCrisisModalProps {

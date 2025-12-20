@@ -1,16 +1,14 @@
 // Calculate quarterly financial report based on player type
+import { calculateBusinessOwnerQuarterlyReport } from './report/business-owner'
+import { calculateEmployeeQuarterlyReport } from './report/employee'
+import { calculateMixedQuarterlyReport } from './report/mixed'
+
 import type {
   PlayerState,
   QuarterlyReport,
-  IncomeBreakdown,
-  ExpensesBreakdown,
-  TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
-import { calculateEmployeeQuarterlyReport } from './report/employee'
-import { calculateBusinessOwnerQuarterlyReport } from './report/business-owner'
-import { calculateMixedQuarterlyReport } from './report/mixed'
+
 
 /**
  * Determines the player's primary activity type

@@ -18,12 +18,26 @@ export const jobsStep: TurnStep = (ctx, state) => {
   // Apply job costs
   state.player.jobs.forEach((job) => {
     if (job.cost) {
-      state.statModifiers.energy = (state.statModifiers.energy || 0) - (job.cost.energy || 0)
-      state.statModifiers.happiness = (state.statModifiers.happiness || 0) + (job.cost.happiness || 0)
-      state.statModifiers.health = (state.statModifiers.health || 0) + (job.cost.health || 0)
-      state.statModifiers.sanity = (state.statModifiers.sanity || 0) + (job.cost.sanity || 0)
-      state.statModifiers.intelligence =
-        (state.statModifiers.intelligence || 0) + (job.cost.intelligence || 0)
+      const e = job.cost.energy
+      if (typeof e === 'number' && Number.isFinite(e)) {
+        state.statModifiers.energy = (state.statModifiers.energy || 0) - e
+      }
+      const h = job.cost.happiness
+      if (typeof h === 'number' && Number.isFinite(h)) {
+        state.statModifiers.happiness = (state.statModifiers.happiness || 0) + h
+      }
+      const he = job.cost.health
+      if (typeof he === 'number' && Number.isFinite(he)) {
+        state.statModifiers.health = (state.statModifiers.health || 0) + he
+      }
+      const s = job.cost.sanity
+      if (typeof s === 'number' && Number.isFinite(s)) {
+        state.statModifiers.sanity = (state.statModifiers.sanity || 0) + s
+      }
+      const i = job.cost.intelligence
+      if (typeof i === 'number' && Number.isFinite(i)) {
+        state.statModifiers.intelligence = (state.statModifiers.intelligence || 0) + i
+      }
     }
   })
 

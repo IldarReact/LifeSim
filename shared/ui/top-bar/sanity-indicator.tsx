@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { TrendingUp, TrendingDown, Brain } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
 import { useState } from "react"
+
+import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
+import { useGameStore } from "@/core/model/game-store"
 
 export function SanityIndicator() {
   const { player } = useGameStore()

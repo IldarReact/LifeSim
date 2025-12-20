@@ -1,11 +1,11 @@
 "use client"
 
-import React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
 import { Users, DollarSign, CheckCircle, XCircle, Globe, User } from "lucide-react"
+import React from "react"
+
 import { getOnlinePlayers } from "@/core/lib/multiplayer"
+import { Button } from "@/shared/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 
 interface PartnerSelectionDialogProps {
   isOpen: boolean

@@ -1,16 +1,16 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, GameOffersSlice } from '../../../types'
-import type { GameOffer, OfferType, OfferDetails } from '@/core/types/game-offers.types'
-import type { Business, BusinessType } from '@/core/types/business.types'
+
+import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
+import { broadcastEvent } from '@/core/lib/multiplayer'
+import type { BusinessType } from '@/core/types/business.types'
+import { PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '@/core/types/events.types'
+import type { GameOffer } from '@/core/types/game-offers.types'
 import {
   generateOfferId,
-  isJobOffer,
   isPartnershipOffer,
-  isShareSaleOffer,
 } from '@/core/types/game-offers.types'
-import { broadcastEvent } from '@/core/lib/multiplayer'
-import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
-import { PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '@/core/types/events.types'
 
 export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
   set,
@@ -56,7 +56,14 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       initiatorBusiness.partnerBusinessId = payload.businessId
 
       // Вычитаем деньги у инициатора
-      state.applyStatChanges({ money: -payload.yourInvestment })
+      if (state.performTransaction) {
+        state.performTransaction(
+          { money: -payload.yourInvestment },
+          { title: 'Партнёрская инвестиция' },
+        )
+      } else if (state.applyStatChanges) {
+        state.applyStatChanges({ money: -payload.yourInvestment })
+      }
 
       // Добавляем бизнес инициатору
       set((state) => ({
@@ -204,30 +211,25 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
       )
       console.log('STEP 6: business created', acceptingBusiness.id)
 
-      // 2. Вычитаем деньги у принимающего игрока
-      // Используем applyStatChanges для обновления состояния
-      const newMoney = state.player!.stats.money - offer.details.partnerInvestment
-      console.log('Has applyStatChanges:', typeof state.applyStatChanges)
-      if (state.applyStatChanges) {
+      // 2. Вычитаем деньги у принимающего игрока через централизованный метод
+      if (state.performTransaction) {
+        state.performTransaction(
+          { money: -offer.details.partnerInvestment },
+          { title: 'Партнёрская инвестиция' },
+        )
+      } else if (state.applyStatChanges) {
         state.applyStatChanges({ money: -offer.details.partnerInvestment })
-      } else {
-        console.warn('applyStatChanges not found on state!')
       }
 
-      console.log('[GameOffers] Обновление денег:', {
+      console.log('[GameOffers] Обновление денег через performTransaction:', {
         oldMoney: state.player!.stats.money,
         investment: offer.details.partnerInvestment,
-        newMoney,
       })
 
       // 3. Добавляем бизнес принимающему игроку
       set((state) => ({
         player: {
           ...state.player!,
-          stats: {
-            ...state.player!.stats,
-            money: newMoney,
-          },
           businesses: [...state.player!.businesses, acceptingBusiness],
         },
       }))
@@ -255,7 +257,6 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           yourShare: offer.details.yourShare,
           yourInvestment: offer.details.yourInvestment,
         },
-        toPlayerId: offer.fromPlayerId, // Отправляем инициатору
       })
 
       // 5. Обновляем статус предложения

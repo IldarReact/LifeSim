@@ -1,10 +1,11 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
-import { Card } from "@/shared/ui/card"
-import { Button } from "@/shared/ui/button"
 import { motion } from "framer-motion"
 import { Trophy, SkullIcon } from "lucide-react"
+
+import { useGameStore } from "@/core/model/game-store"
+import { Button } from "@/shared/ui/button"
+import { Card } from "@/shared/ui/card"
 
 export function GameEnd(): React.JSX.Element | null {
   const { gameStatus, endReason, history, player, turn, globalEvents } = useGameStore()

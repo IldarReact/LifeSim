@@ -1,25 +1,18 @@
 // Система управления инфляцией и ценами
-import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
+import {
+  INFLATION_MULTIPLIERS as ENGINE_MULTIPLIERS,
+  getCumulativeInflationMultiplier as engineGetCumulativeInflationMultiplier,
+} from './inflation-engine'
+import type { PriceCategory } from './inflation-engine'
+
 import { applyEventEffects } from '@/core/lib/economic-events'
-import { isQuarterEnd } from '../quarter'
+import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
 
 /**
  * Коэффициенты роста цен для разных категорий товаров
- * Жильё растёт быстрее, еда медленнее
+ * Делегируем на движок инфляции, чтобы избежать дублирования и рассинхронизации.
  */
-export const INFLATION_MULTIPLIERS = {
-  housing: 1.5, // Недвижимость растёт на 150% от инфляции
-  realEstate: 1.5, // Недвижимость
-  business: 1.3, // Бизнес
-  education: 1.2, // Образование
-  health: 1.1, // Здравоохранение
-  transport: 1.0, // Транспорт
-  services: 0.9, // Услуги
-  food: 0.5, // Еда растёт медленнее
-  default: 1.0, // По умолчанию
-} as const
-
-export type PriceCategory = keyof typeof INFLATION_MULTIPLIERS
+export const INFLATION_MULTIPLIERS = ENGINE_MULTIPLIERS
 
 // === Хелперы для масштабируемой инфляции (без хардкода стран) ===
 
@@ -151,18 +144,7 @@ export function getCumulativeInflationMultiplier(
   inflationHistory: number[],
   category: PriceCategory = 'default',
 ): number {
-  const multiplier = INFLATION_MULTIPLIERS[category]
-
-  // Compound inflation: каждая инфляция применяется к уже измененной цене
-  // Например: цена * (1 + инф1*множитель) * (1 + инф2*множитель) * ...
-  // Гарантируем, что инфляция не отрицательная (защита от ошибок данных)
-  const cumulativeMultiplier = inflationHistory.reduce((product, inflation) => {
-    const safeInflation = Math.max(0, inflation) // Защита от отрицательной инфляции
-    const effectiveInflation = (safeInflation * multiplier) / 100
-    return product * (1 + effectiveInflation)
-  }, 1)
-
-  return cumulativeMultiplier
+  return engineGetCumulativeInflationMultiplier(inflationHistory, category)
 }
 
 /**
@@ -285,5 +267,5 @@ export function applyYearlyInflation(
  */
 export function shouldShowInflationNotification(currentTurn: number): boolean {
   // Show notification when we transition from Q4 -> Q1 (turns 1,5,9,...)
-  return isQuarterEnd(currentTurn)
+  return currentTurn > 0 && currentTurn % 4 === 1
 }

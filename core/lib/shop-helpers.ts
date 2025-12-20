@@ -1,6 +1,6 @@
+import { getShopItemById, getShopItemsByCategory as getItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
 import { getItemCost, isRecurringItem, } from '@/core/types/shop.types'
 import type { ShopItem, ShopCategory } from '@/core/types/shop.types'
-import { getShopItemById, getShopItemsByCategory as getItemsByCategory } from '@/core/lib/data-loaders/shop-loader'
 
 /**
  * Получить товар по ID

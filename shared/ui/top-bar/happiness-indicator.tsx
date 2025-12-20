@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { Users, Briefcase } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
+import { Users } from "lucide-react"
 import { useState } from "react"
+
+import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
+import { useGameStore } from "@/core/model/game-store"
 
 export function HappinessIndicator() {
   const { player } = useGameStore()

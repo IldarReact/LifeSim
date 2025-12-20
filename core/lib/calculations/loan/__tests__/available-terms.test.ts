@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { getAvailableLoanTerms } from '../../loan-calculator';
 
 describe('getAvailableLoanTerms', () => {

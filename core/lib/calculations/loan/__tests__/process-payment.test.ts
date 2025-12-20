@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { createDebt, processDebtPayment } from '../../loan-calculator';
 
 describe('processDebtPayment', () => {

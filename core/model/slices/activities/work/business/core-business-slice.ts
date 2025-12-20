@@ -1,19 +1,19 @@
 import type { GameStateCreator } from '../../../types'
-import type { Business, BusinessType } from '@/core/types'
+
+import { applyStats } from '@/core/helpers/apply-stats'
 import {
   validateBusinessOpening,
   validateBusinessUnfreeze,
   createBusinessObject,
-  updateBusinessMetrics,
 } from '@/core/lib/business'
-import type { StatEffect } from '@/core/types/stats.types'
-import { applyStats } from '@/core/helpers/apply-stats'
 import {
   shouldCreateNetwork,
   createNetworkForBusinesses,
   addBranchToNetwork,
   updateNetworkBonuses,
 } from '@/core/lib/business/business-network'
+import type { Business, BusinessType } from '@/core/types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
   openBusiness: (
@@ -130,11 +130,16 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
 
     const returnValue = Math.round(business.currentValue * 0.5)
     const updatedStats = applyStats(state.player.stats, { money: returnValue })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, { money: returnValue })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businesses: state.player.businesses.filter((b) => b.id !== businessId),
       },
     })
@@ -156,22 +161,29 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
     const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          state: 'opening' as const,
-          openingProgress: {
-            ...b.openingProgress,
-            quartersLeft: 1,
-          },
-        }
+            ...b,
+            state: 'opening' as const,
+            openingProgress: {
+              ...b.openingProgress,
+              quartersLeft: 1,
+            },
+          }
         : b,
     )
 
     const updatedStats = applyStats(state.player.stats, { money: -validation.unfreezeCost })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, {
+      money: -validation.unfreezeCost,
+    })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businesses: updatedBusinesses,
       },
     })
@@ -191,21 +203,29 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
     const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId
         ? {
-          ...b,
-          state: 'frozen' as const,
-          employees: [],
-          reputation: Math.max(0, b.reputation - 20),
-          inventory: b.inventory ? { ...b.inventory, currentStock: 0 } : b.inventory,
-        }
+            ...b,
+            state: 'frozen' as const,
+            employees: [],
+            reputation: Math.max(0, b.reputation - 20),
+            inventory: b.inventory ? { ...b.inventory, currentStock: 0 } : b.inventory,
+          }
         : b,
     )
 
     const updatedStats = { ...state.player.stats, money: newMoney }
+    const updatedPersonalStats = {
+      ...state.player.personal.stats,
+      money: state.player.personal.stats.money - compensation,
+    }
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businesses: updatedBusinesses,
       },
     })
@@ -268,11 +288,16 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
     }
 
     const updatedStats = applyStats(state.player.stats, { money: -branchCost })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, { money: -branchCost })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businesses: [...updatedBusinesses, newBranch],
       },
     })

@@ -1,5 +1,6 @@
-import { processBusinessTurn } from '../turns/business-turn-processor'
 import type { TurnStep } from '../turn/turn-step'
+import { processBusinessTurn } from '../turns/business-turn-processor'
+
 import { formatGameDate } from '@/core/lib/quarter'
 
 export const businessStep: TurnStep = (ctx, state) => {
@@ -18,16 +19,26 @@ export const businessStep: TurnStep = (ctx, state) => {
   state.business.totalExpenses = res.totalExpenses
 
   // Применяем затраты статов от ролей игрока
-  state.statModifiers.energy = (state.statModifiers.energy || 0) - res.playerRoleEnergyCost
-  state.statModifiers.sanity = (state.statModifiers.sanity || 0) - res.playerRoleSanityCost
+  const energyCost = res.playerRoleEnergyCost
+  if (typeof energyCost === 'number' && Number.isFinite(energyCost)) {
+    state.statModifiers.energy = (state.statModifiers.energy || 0) - energyCost
+  }
+  const sanityCost = res.playerRoleSanityCost
+  if (typeof sanityCost === 'number' && Number.isFinite(sanityCost)) {
+    state.statModifiers.sanity = (state.statModifiers.sanity || 0) - sanityCost
+  }
 
   // Уведомление о значительных затратах статов
-  if (res.playerRoleEnergyCost > 5 || res.playerRoleSanityCost > 5) {
+  const notifyEnergy =
+    typeof energyCost === 'number' && Number.isFinite(energyCost) ? energyCost : 0
+  const notifySanity =
+    typeof sanityCost === 'number' && Number.isFinite(sanityCost) ? sanityCost : 0
+  if (notifyEnergy > 5 || notifySanity > 5) {
     state.notifications.push({
       id: `biz_stats_cost_${ctx.turn}`,
       type: 'info',
       title: 'Управление бизнесом',
-      message: `Участие в управлении вашими предприятиями потребовало ${res.playerRoleEnergyCost} энергии и ${res.playerRoleSanityCost} рассудка в этом квартале.`,
+      message: `Участие в управлении вашими предприятиями потребовало ${notifyEnergy} энергии и ${notifySanity} рассудка в этом квартале.`,
       date: formatGameDate(ctx.year, ctx.turn),
       isRead: false,
     })

@@ -1,8 +1,10 @@
 import type { StateCreator } from 'zustand'
+
 import type { GameStore, EducationSlice } from '../../types'
+
+import { formatGameDate } from '@/core/lib/quarter'
 import type { ActiveCourse, ActiveUniversity } from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
-import { formatGameDate } from '@/core/lib/quarter'
 
 export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlice> = (
   set,
@@ -19,22 +21,7 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
     if (!state.player) return
 
     // ✅ Денежная проверка
-    if (state.player.stats.money < cost) {
-      set((state) => ({
-        notifications: [
-          {
-            id: `err_${Date.now()}`,
-            type: 'info',
-            title: 'Недостаточно средств',
-            message: 'У вас недостаточно денег для оплаты курса.',
-            date: formatGameDate(state.year, state.turn),
-            isRead: false,
-          },
-          ...state.notifications,
-        ],
-      }))
-      return
-    }
+    // Удалено, так как выполняется в performTransaction
 
     // ✅ Подсчет текущих затрат энергии
     const currentEnergyCost =
@@ -67,6 +54,11 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
       return
     }
 
+    // ✅ Списываем деньги через централизованный метод
+    if (!get().performTransaction({ money: -cost }, { title: 'Оплата курса' })) {
+      return
+    }
+
     const normalizedSkillName = skillBonus.split('(')[0].trim()
 
     const newCourse: ActiveCourse = {
@@ -85,11 +77,7 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
         ? {
             ...state.player,
 
-            // ✅ HELLO NEW SYSTEM
-            stats: {
-              ...state.player.stats,
-              money: state.player.stats.money - cost,
-            },
+            // Stats updated by performTransaction
 
             personal: {
               ...state.player.personal,
@@ -123,22 +111,7 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
     if (!state.player) return
 
     // ✅ Денежная проверка
-    if (state.player.stats.money < cost) {
-      set((state) => ({
-        notifications: [
-          {
-            id: `err_${Date.now()}`,
-            type: 'info',
-            title: 'Недостаточно средств',
-            message: 'У вас недостаточно денег для оплаты обучения.',
-            date: formatGameDate(state.year, state.turn),
-            isRead: false,
-          },
-          ...state.notifications,
-        ],
-      }))
-      return
-    }
+    // Удалено, так как выполняется в performTransaction
 
     // ✅ Подсчет текущих затрат энергии
     const currentEnergyCost =
@@ -171,6 +144,11 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
       return
     }
 
+    // ✅ Списываем деньги через централизованный метод
+    if (!get().performTransaction({ money: -cost }, { title: 'Оплата обучения' })) {
+      return
+    }
+
     const normalizedSkillName = skillBonus.split('(')[0].trim()
 
     const newUni: ActiveUniversity = {
@@ -189,11 +167,7 @@ export const createEducationSlice: StateCreator<GameStore, [], [], EducationSlic
         ? {
             ...state.player,
 
-            // ✅ HELLO NEW SYSTEM
-            stats: {
-              ...state.player.stats,
-              money: state.player.stats.money - cost,
-            },
+            // Stats updated by performTransaction
 
             personal: {
               ...state.player.personal,

@@ -1,9 +1,11 @@
-import React from "react"
-import { Slider } from "@/shared/ui/slider"
-import { Input } from "@/shared/ui/input"
 import { DollarSign } from "lucide-react"
+import React from "react"
+
 import { SALARY_CONFIG, KPI_CONFIG } from "../../shared-constants"
 import { calculateMonthlySalary, calculateKPIBonus, calculateMaxSalaryWithKPI } from "../utils/employee-utils"
+
+import { Input } from "@/shared/ui/input"
+import { Slider } from "@/shared/ui/slider"
 
 interface SalarySettingsProps {
   salary: number

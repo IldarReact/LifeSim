@@ -1,7 +1,8 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
 import { OfferCard } from "./offer-card"
+
+import { useGameStore } from "@/core/model/game-store"
 
 export function OffersList() {
   const { getIncomingOffers, acceptOffer, rejectOffer } = useGameStore()

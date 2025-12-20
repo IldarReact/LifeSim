@@ -1,11 +1,13 @@
-import type { ShopItem, ShopCategory } from '@/core/types/shop.types'
-import { Card } from '@/shared/ui/card'
-import { Button } from '@/shared/ui/button'
 import { Check, Key } from 'lucide-react'
+
 import { useShopPricing } from '../useShopPricing'
 import { formatPrice, getHousingTypeLabel } from '../utils/formatters'
 import { getStatIcon } from '../utils/icons'
+
 import { useEconomy } from '@/core/hooks'
+import type { ShopItem, ShopCategory } from '@/core/types/shop.types'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 
 interface ShopItemCardProps {
   item: ShopItem

@@ -1,6 +1,8 @@
 import type { GameStore } from '../../slices/types'
+
 import type { TurnContext } from './turn-context'
 import type { TurnState } from './turn-state'
+
 import { isQuarterEnd } from '@/core/lib/quarter'
 
 export function commitTurn(ctx: TurnContext, state: TurnState): Partial<GameStore> {
@@ -23,7 +25,8 @@ export function commitTurn(ctx: TurnContext, state: TurnState): Partial<GameStor
 
       stats: {
         ...state.player.stats,
-        money: state.player.stats.money + state.financial.adjustedNetProfit,
+        ...state.stats, // ✅ SYNC: Применяем изменения статов (Health, Energy, etc.)
+        money: state.player.stats.money + state.financial.adjustedNetProfit + state.moneyDelta,
       },
 
       personal: {

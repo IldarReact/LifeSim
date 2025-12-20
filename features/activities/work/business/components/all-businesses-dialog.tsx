@@ -1,13 +1,14 @@
 "use client"
 
-import React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
 import {
-  Store, Users, TrendingUp, DollarSign, Zap, Brain,
+  Store, Users, TrendingUp, DollarSign, Zap,
   CheckCircle, AlertCircle, Info, Star, Award, Activity
 } from "lucide-react"
+import React from "react"
+
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
 
 interface BusinessOption {
   id: string

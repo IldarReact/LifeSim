@@ -1,5 +1,6 @@
-import type { EmployeeCandidate } from "@/core/types"
 import { SKILL_STAR_DIVISOR, MONTHS_PER_QUARTER } from "../../shared-constants"
+
+import type { EmployeeCandidate } from "@/core/types"
 
 export function getSkillStarsCount(value: number): number {
   return Math.round(value / SKILL_STAR_DIVISOR)

@@ -1,6 +1,6 @@
-import type { PersonalLife } from "@/core/types/personal.types"
-import type { Asset } from "@/core/types/finance.types"
 import type { CountryEconomy } from "@/core/types/economy.types"
+import type { Asset } from "@/core/types/finance.types"
+import type { PersonalLife } from "@/core/types/personal.types"
 
 interface Params {
   personal: PersonalLife

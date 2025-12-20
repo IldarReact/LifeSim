@@ -1,9 +1,10 @@
 "use client"
 
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
 import { Star, Clock, Zap, DollarSign } from "lucide-react"
 import { useState } from "react"
+
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
 import {
   Dialog,
   DialogContent,

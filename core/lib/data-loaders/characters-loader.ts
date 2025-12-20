@@ -1,9 +1,9 @@
 import type { CharacterData } from '@/core/types/character.types'
 
 // Country imports
-import usCharacters from '@/shared/data/world/countries/us/characters.json'
-import geCharacters from '@/shared/data/world/countries/germany/characters.json'
 import brCharacters from '@/shared/data/world/countries/brazil/characters.json'
+import geCharacters from '@/shared/data/world/countries/germany/characters.json'
+import usCharacters from '@/shared/data/world/countries/us/characters.json'
 
 const COUNTRY_CHARACTERS: Record<string, CharacterData[]> = {
   us: usCharacters as CharacterData[],

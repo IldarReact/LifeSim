@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { calculateBusinessFinancials, calculateEfficiency } from './business-utils'
+
+import { calculateBusinessFinancials } from './business-utils'
+
 import type { Business, Employee } from '@/core/types'
 
 describe('Business Formulas', () => {

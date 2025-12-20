@@ -1,21 +1,20 @@
 'use client'
 
 import { TopStatusBar } from '@/shared/ui/top-bar/top-status-bar'
-import { GameEnd } from '@/features/end/ui'
-import { WorldSelect } from '@/features/setup/components'
-import { CharacterSelect } from '@/features/setup/components'
-import { ActivityNavigation, ActivityContent } from '@/features/gameplay/ui'
-import { EventModal } from '@/features/events/event-modal'
 import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
 import { useGameStore } from '@/core/model/store'
+import { GameEnd } from '@/features/end/ui'
+import { EventModal } from '@/features/events/event-modal'
+import { ActivityNavigation, ActivityContent } from '@/features/gameplay/ui'
 
 // Утилита для очистки сохранений (доступна в консоли браузера)
 import '@/core/lib/persistence/clear-saves'
 
 import { MainMenu } from '@/features/menu/main-menu'
-
-import { OffersList } from '@/features/notifications/offers-list'
 import { useOffersSync } from '@/features/multiplayer/use-offers-sync'
+import { OffersList } from '@/features/notifications/offers-list'
+import { CharacterSelect } from '@/features/setup/components'
+import { WorldSelect } from '@/features/setup/components'
 
 export default function Page() {
   const { gameStatus } = useGameStore()

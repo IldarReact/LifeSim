@@ -1,22 +1,30 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
-import { useGameStore } from '@/core/model/game-store'
-import { cn } from '@/shared/utils/utils'
 import { useState, useMemo } from 'react'
+
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
-import { getShopItem } from '@/core/lib/shop-helpers'
-import { getItemCost } from '@/core/types/shop.types'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { getShopItem } from '@/core/lib/shop-helpers'
+import { useGameStore } from '@/core/model/game-store'
+import { getItemCost } from '@/core/types/shop.types'
+import { cn } from '@/shared/utils/utils'
+import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
+import type { QuarterlyReport } from '@/core/types'
 
 export function MoneyIndicator() {
   const { player, countries } = useGameStore()
   const [isOpen, setIsOpen] = useState(false)
 
-  if (!player) return null
+  const country = player ? countries[player.countryId] : undefined
 
-  const country = countries[player.countryId]
-
-  const report = useMemo(() => {
+  const report = useMemo<QuarterlyReport>(() => {
+    if (!player) {
+      return createEmptyQuarterlyReport()
+    }
+    const countryEconomy = countries[player.countryId]
+    if (!countryEconomy) {
+      return createEmptyQuarterlyReport()
+    }
     const { familyMembers } = player.personal
 
     const familyIncome = familyMembers.reduce((sum, m) => {
@@ -96,7 +104,7 @@ export function MoneyIndicator() {
 
     return calculateQuarterlyReport({
       player,
-      country,
+      country: countryEconomy,
       familyIncome,
       familyExpenses: 0,
       assetIncome: 0,
@@ -117,6 +125,8 @@ export function MoneyIndicator() {
       },
     })
   }, [player, country])
+
+  if (!player) return null
 
   return (
     <div className="relative flex flex-col items-center">

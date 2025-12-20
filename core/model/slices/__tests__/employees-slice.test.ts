@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { createEmployeesSlice } from '../activities/work/business/employees-slice'
 
 describe('employees-slice', () => {

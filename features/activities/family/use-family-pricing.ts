@@ -5,9 +5,10 @@
  */
 
 import { useMemo } from 'react'
+
 import { useEconomy } from '@/core/hooks'
-import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import { FAMILY_PRICES, FAMILY_PRICE_CATEGORY } from '@/core/lib/calculations/family-prices'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 /**
  * Возвращает цены семейных активностей с учётом инфляции

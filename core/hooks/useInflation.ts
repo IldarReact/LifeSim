@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react'
-import { useGameStore } from '@/core/model/game-store'
+
 import {
   getInflatedPrice,
   getInflatedHousingPrice,
@@ -12,6 +12,7 @@ import {
   getInflatedShopPrice,
   getInflatedBaseSalary
 } from '@/core/lib/calculations/price-helpers'
+import { useGameStore } from '@/core/model/game-store'
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 // Type guards для автоопределения категории

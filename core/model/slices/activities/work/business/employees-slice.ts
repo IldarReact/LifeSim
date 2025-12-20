@@ -1,8 +1,9 @@
 import type { GameStateCreator } from '../../../types'
-import type { Employee, EmployeeCandidate } from '@/core/types'
-import { updateBusinessMetrics, validateEmployeeHire } from '@/core/lib/business'
+
 import { applyStats } from '@/core/helpers/apply-stats'
+import { updateBusinessMetrics, validateEmployeeHire } from '@/core/lib/business'
 import { broadcastEvent } from '@/core/lib/multiplayer'
+import type { Employee, EmployeeCandidate } from '@/core/types'
 
 export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
   // Hire a new employee from candidate pool
@@ -54,11 +55,18 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     const updatedStats = applyStats(state.player.stats, {
       money: -candidate.requestedSalary,
     })
+    const updatedPersonalStats = applyStats(state.player.personal.stats, {
+      money: -candidate.requestedSalary,
+    })
 
     set({
       player: {
         ...state.player,
         stats: updatedStats,
+        personal: {
+          ...state.player.personal,
+          stats: updatedPersonalStats,
+        },
         businesses: updatedBusinesses,
       },
     })

@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useBank } from './use-bank'
-import { useBankViewModel } from './use-bank-view-modal'
-import { MIN_DEPOSIT_AMOUNT } from './shared-constants'
+
 
 import { BankStatsGrid } from './components/bank-stats-grid'
 import { DepositsSection } from './components/deposits-section'
 import { LoansSection } from './components/loans-section'
 import { OpenDepositDialog } from './components/open-deposit-dialog'
+import { MIN_DEPOSIT_AMOUNT } from './shared-constants'
+import { useBank } from './use-bank'
+import { useBankViewModel } from './use-bank-view-modal'
 
 export function BanksActivity() {
   const bank = useBank()

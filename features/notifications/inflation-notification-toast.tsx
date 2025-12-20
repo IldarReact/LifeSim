@@ -15,8 +15,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useGameStore } from '@/core/model/game-store'
-import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 
 export function InflationNotificationToast() {
   const inflationNotification = useGameStore((state) => state.inflationNotification)

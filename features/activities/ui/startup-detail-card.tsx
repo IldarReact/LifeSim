@@ -1,6 +1,7 @@
+import { Zap, AlertTriangle, Lightbulb } from "lucide-react"
+
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
-import { Rocket, Zap, AlertTriangle, Lightbulb } from "lucide-react"
 
 interface StartupDetailCardProps {
   title: string

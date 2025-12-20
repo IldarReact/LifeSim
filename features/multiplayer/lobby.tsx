@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/shared/ui/button'
+import { useEffect, useState } from 'react'
+
+import { Player } from './multiplayer-hub'
+
+import { getCharactersForCountry } from '@/core/lib/data-loaders/characters-loader'
 import {
   getOnlinePlayers,
-  setPlayerName,
   setSelectedArchetype,
   startGame,
   subscribeToGameStart,
@@ -14,12 +17,10 @@ import {
   setPlayerReady,
 } from '@/core/lib/multiplayer'
 import { useGameStore } from '@/core/model/game-store'
-import { Users, Crown, Play, Link as LinkIcon, Check, AlertCircle, Globe, User } from 'lucide-react'
-import { WorldSelectUI } from '@/features/setup/components/world-select'
-import { CharacterSelectUI } from '@/features/setup/components/character-select'
 import type { CountryEconomy } from '@/core/types'
-import { Player } from './multiplayer-hub'
-import { getCharactersForCountry } from '@/core/lib/data-loaders/characters-loader'
+import { CharacterSelectUI } from '@/features/setup/components/character-select'
+import { WorldSelectUI } from '@/features/setup/components/world-select'
+import { Button } from '@/shared/ui/button'
 
 export function MultiplayerLobby() {
   const router = useRouter()

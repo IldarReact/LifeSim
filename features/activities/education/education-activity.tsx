@@ -1,12 +1,7 @@
 'use client'
 
-import React from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { SectionSeparator } from '@/shared/ui/section-separator'
-import { OpportunityCard } from '../ui/opportunity-card'
 import {
   GraduationCap,
-  BookOpen,
   Code,
   DollarSign,
   Globe,
@@ -18,11 +13,17 @@ import {
   Palette,
   Lightbulb,
 } from 'lucide-react'
-import { getAllCoursesForCountry } from '@/core/lib/data-loaders/courses-loader'
+import React from 'react'
+
+import { OpportunityCard } from '../ui/opportunity-card'
+
 import { getInflatedEducationPrice } from '@/core/lib/calculations/price-helpers'
-import { Button } from '@/shared/ui/button'
+import { getAllCoursesForCountry } from '@/core/lib/data-loaders/courses-loader'
+import { useGameStore } from '@/core/model/game-store'
 import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import { FeedbackAnimation } from '@/shared/ui/feedback-animation'
+import { SectionSeparator } from '@/shared/ui/section-separator'
 
 interface CourseCardProps {
   title: string

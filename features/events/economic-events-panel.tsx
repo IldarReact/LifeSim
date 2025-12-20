@@ -1,9 +1,5 @@
 "use client";
 
-import { useGameStore } from "@/core/model/game-store";
-import { Card } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import type { EconomicEvent } from "@/core/types";
 import {
   AlertTriangle,
   TrendingUp,
@@ -13,6 +9,11 @@ import {
   ArrowUp,
   ArrowDown
 } from "lucide-react";
+
+import { useGameStore } from "@/core/model/game-store";
+import type { EconomicEvent } from "@/core/types";
+import { Badge } from "@/shared/ui/badge";
+import { Card } from "@/shared/ui/card";
 
 const eventIcons: Record<EconomicEvent['type'], React.ReactNode> = {
   crisis: <AlertTriangle className="w-5 h-5 text-red-400" />,

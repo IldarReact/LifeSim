@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, Check, X, Briefcase, ExternalLink } from 'lucide-react'
-import { useGameStore } from '@/core/model/game-store'
-import { cn } from '@/shared/utils/utils'
-import { Button } from '@/shared/ui/button'
+import { Bell, Check, X, ExternalLink } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
-import { OfferDetailsDialog } from '@/features/notifications/offer-details-dialog'
-import type { GameOffer } from '@/core/types/game-offers.types'
+
+import { useGameStore } from '@/core/model/game-store'
 import type { Notification as Notification } from '@/core/types'
+import type { GameOffer } from '@/core/types/game-offers.types'
+import { OfferDetailsDialog } from '@/features/notifications/offer-details-dialog'
+import { Button } from '@/shared/ui/button'
+import { cn } from '@/shared/utils/utils'
 
 type OfferReceivedNotificationData = {
   type: 'offer_received'

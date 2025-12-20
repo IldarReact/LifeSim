@@ -1,11 +1,14 @@
 import { motion } from "framer-motion"
 import { User, DollarSign, Home, CreditCard, PieChart, ArrowLeft, X } from "lucide-react"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
-import { cn } from "@/shared/utils/utils"
+
 import { CATEGORY_IMAGES, DETAIL_IMAGES } from "../shared-constants"
-import { MOCK_DETAILED_INFO } from "../utils"
 import type { ModalView, CategoryCardProps, DetailCardProps } from "../types"
+import { MOCK_DETAILED_INFO } from "../utils"
+
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { cn } from "@/shared/utils/utils"
+
 
 interface CharacterModalProps {
   isOpen: boolean

@@ -1,7 +1,9 @@
-import type { GameStateCreator, GameSlice } from './types'
-import { createInitialPlayer } from '@/core/lib/initial-state'
-import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
 import { processTurn } from '../logic'
+
+import type { GameStateCreator, GameSlice } from './types'
+
+import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
+import { createInitialPlayer } from '@/core/lib/initial-state'
 
 export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   // State
@@ -84,10 +86,10 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
 
     let newMoney = player.stats.money
     let newAssets = [...player.assets]
-    let newDebts = [...player.debts]
+    const newDebts = [...player.debts]
     let newFamily = [...player.personal.familyMembers]
     let gameStatus = get().gameStatus
-    let endReason = get().endReason
+    const endReason = get().endReason
 
     if (actionType === 'bankruptcy') {
       set({ gameStatus: 'ended', endReason: 'BANKRUPTCY' })
@@ -145,6 +147,10 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
           personal: {
             ...player.personal,
             familyMembers: newFamily,
+            stats: {
+              ...player.personal.stats,
+              money: newMoney,
+            },
           },
           stats: {
             ...player.stats,

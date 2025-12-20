@@ -1,16 +1,19 @@
 "use client"
 
-import React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
 import { CheckCircle, XCircle, Briefcase, Users, Globe } from "lucide-react"
-import type { EmployeeCandidate } from "@/core/types"
-import { useGameStore } from "@/core/model/game-store"
+import React from "react"
+
 import { ROLE_LABELS } from "../shared-constants"
-import { calculateMonthlySalary } from "./utils/employee-utils"
+
 import { CandidateCard } from "./components/candidate-card"
 import { SalarySettings } from "./components/salary-settings"
 import { useHireDialog } from "./hooks/use-hire-dialog"
+import { calculateMonthlySalary } from "./utils/employee-utils"
+
+import { useGameStore } from "@/core/model/game-store"
+import type { EmployeeCandidate } from "@/core/types"
+import { Button } from "@/shared/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 
 interface EmployeeHireDialogProps {
   isOpen: boolean

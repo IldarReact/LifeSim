@@ -1,7 +1,8 @@
 "use client"
 
-import { useGameStore } from "@/core/model/game-store"
 import type { MouseEvent } from "react"
+
+import { useGameStore } from "@/core/model/game-store"
 
 export function YearReportModal() {
   const { gameStatus, history, turn } = useGameStore()

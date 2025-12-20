@@ -1,10 +1,11 @@
 'use client'
 
+import { Bell, Check, X, Clock } from 'lucide-react'
+
 import { useGameStore } from '@/core/model/game-store'
 import type { BusinessChangeProposal } from '@/core/model/slices/activities/work/business/partnership-business-slice.types'
-import { Button } from '@/shared/ui/button'
 import { Badge } from '@/shared/ui/badge'
-import { Bell, Check, X, Clock } from 'lucide-react'
+import { Button } from '@/shared/ui/button'
 
 /**
  * Компонент для отображения и обработки предложений изменений от партнёров

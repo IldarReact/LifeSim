@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createMockPlayer } from '../utils/mock-player';
+
 import { canTakeLoan, createDebt } from '../../loan-calculator';
+import { createMockPlayer } from '../utils/mock-player';
 
 describe('canTakeLoan', () => {
   it('должен разрешить взять кредит при хороших условиях', () => {

@@ -1,10 +1,11 @@
 import type { StateCreator } from 'zustand'
-import type { GameStore, JobSlice } from '../../types'
-import type { Job, JobApplication } from '@/core/types'
 
-import type { StatEffect } from '@/core/types/stats.types'
-import type { SkillRequirement } from '@/core/types/skill.types'
+import type { GameStore, JobSlice } from '../../types'
+
 import { formatGameDate } from '@/core/lib/quarter'
+import type { Job, JobApplication } from '@/core/types'
+import type { SkillRequirement } from '@/core/types/skill.types'
+import type { StatEffect } from '@/core/types/stats.types'
 
 type JobApplicationNotificationData = {
   applicationId: string

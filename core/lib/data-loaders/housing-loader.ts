@@ -2,9 +2,9 @@
 import { HousingOption } from '@/core/types/housing.types';
 
 // Импорт JSON-файлов по странам
-import usHousing from '@/shared/data/world/countries/us/housing.json';
-import geHousing from '@/shared/data/world/countries/germany/housing.json';
 import brHousing from '@/shared/data/world/countries/brazil/housing.json';
+import geHousing from '@/shared/data/world/countries/germany/housing.json';
+import usHousing from '@/shared/data/world/countries/us/housing.json';
 
 // ──────────────────────────────────────────────────────────────────────
 // Валидация одного объекта жилья (строгая, но с понятными ошибками)

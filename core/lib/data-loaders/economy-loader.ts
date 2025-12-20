@@ -1,9 +1,9 @@
 import type { CountryEconomy, CountryArchetype } from '@/core/types/economy.types'
 
 // Статический импорт всех economy.json файлов
-import usEconomy from '@/shared/data/world/countries/us/economy.json'
-import germanyEconomy from '@/shared/data/world/countries/germany/economy.json'
 import brazilEconomy from '@/shared/data/world/countries/brazil/economy.json'
+import germanyEconomy from '@/shared/data/world/countries/germany/economy.json'
+import usEconomy from '@/shared/data/world/countries/us/economy.json'
 
 export interface CountryData extends CountryEconomy {
   // Дополнительные поля, если появятся

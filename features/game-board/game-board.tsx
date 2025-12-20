@@ -1,12 +1,13 @@
 "use client"
 
 import { useGameStore } from "@/core/model/game-store"
-import { WorldSelect, CharacterSelect } from "@/features/setup/components"
-import { GameEnd } from "@/features/end/ui"
-import { TopStatusBar } from "@/shared/ui/top-bar/top-status-bar"
-import { ActivityNavigation, ActivityContent } from "@/features/gameplay/ui"
-import { EventModal } from "@/features/events/event-modal"
 import type { GameStatus } from "@/core/types"
+import { GameEnd } from "@/features/end/ui"
+import { EventModal } from "@/features/events/event-modal"
+import { ActivityNavigation, ActivityContent } from "@/features/gameplay/ui"
+import { MainMenu } from "@/features/menu/main-menu"
+import { WorldSelect, CharacterSelect } from "@/features/setup/components"
+import { TopStatusBar } from "@/shared/ui/top-bar/top-status-bar"
 
 const GameplayScreen = () => (
   <div className="min-h-screen bg-background flex flex-col">
@@ -27,7 +28,6 @@ const GameEndScreenWrapper = () => (
   </div>
 )
 
-import { MainMenu } from "@/features/menu/main-menu"
 
 const SCREENS: Record<GameStatus, React.ComponentType> = {
   menu: MainMenu,

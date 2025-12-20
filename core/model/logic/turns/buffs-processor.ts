@@ -1,6 +1,6 @@
 import type { TimedBuff } from '@/core/types'
 import type { Notification } from '@/core/types'
-import type { StatEffect, Stats } from '@/core/types'
+import type { Stats } from '@/core/types'
 
 export interface BuffsProcessResult {
   activeBuffs: TimedBuff[]
@@ -40,7 +40,8 @@ export function processBuffs(
     // 📊 применяем эффекты
     for (const key in buff.effects) {
       const stat = key as keyof Stats
-      const value = buff.effects[stat] ?? 0
+      const value = buff.effects[stat]
+      if (typeof value !== 'number' || !Number.isFinite(value)) continue
 
       if (stat === 'money') {
         moneyDelta += value

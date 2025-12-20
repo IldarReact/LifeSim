@@ -1,7 +1,7 @@
-import { GameState, GameStateSchema } from '@/core/schemas/game.schema'
-import superjson from 'superjson'
-import { z } from 'zod'
 import CryptoJS from 'crypto-js'
+import superjson from 'superjson'
+
+import { GameState, GameStateSchema } from '@/core/schemas/game.schema'
 
 const SAVE_KEY = 'lifesim_save_v1'
 const CURRENT_VERSION = 1

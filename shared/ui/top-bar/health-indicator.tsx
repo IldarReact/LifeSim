@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { TrendingUp, TrendingDown, Zap } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
 import { useState } from "react"
+
+import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
+import { useGameStore } from "@/core/model/game-store"
+import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
 
 export function HealthIndicator() {
   const { player, countries } = useGameStore()
@@ -12,9 +14,6 @@ export function HealthIndicator() {
 
   const statMods = calculateStatModifiers(player)
   const healthMod = getTotalModifier(statMods.health, 'health')
-  
-  // Lifestyle modifiers
-  const { processLifestyle } = require('@/core/model/logic/turns/lifestyle-processor')
   const lifestyleResult = processLifestyle(player, countries)
   const lifestyleHealthMod = lifestyleResult.modifiers.health
 

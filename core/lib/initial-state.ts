@@ -1,12 +1,11 @@
+import { createDebt } from "@/core/lib/calculations/debt-helpers"
+import { createEmptyQuarterlyReport } from "@/core/lib/calculations/financial-helpers"
+import { getCharacterByArchetype } from "@/core/lib/data-loaders/characters-loader"
+import { getStartingJob, getJobById } from "@/core/lib/data-loaders/jobs-loader"
 import type { CountryEconomy } from "@/core/types/economy.types"
 import type { PlayerState } from "@/core/types/game.types"
 import type { Job } from "@/core/types/job.types"
-import type { SkillLevel } from "@/core/types/skill.types"
-import { createEmptyQuarterlyReport } from "@/core/lib/calculations/financial-helpers"
-import { createDebt } from "@/core/lib/calculations/debt-helpers"
 import type { Stats } from "@/core/types/stats.types"
-import { getCharacterByArchetype } from "@/core/lib/data-loaders/characters-loader"
-import { getStartingJob, getJobById } from "@/core/lib/data-loaders/jobs-loader"
 
 // Deprecated: use getCountry(id) instead
 export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
@@ -123,7 +122,7 @@ export function createInitialPlayer(
     traits: ['ambitious'],
   }
 
-  let finalState = { ...base }
+  const finalState = { ...base }
 
   // Add starting debts if any
   if (characterData.startingDebts && characterData.startingDebts.length > 0) {

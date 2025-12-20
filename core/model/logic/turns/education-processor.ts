@@ -34,7 +34,7 @@ export function processEducation(
       if (course.remainingDuration <= 0) {
         finishedCourses.push(course.id)
         const levelsGained = Math.ceil(course.totalDuration)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === course.skillName)
+        const skillIdx = updatedSkills.findIndex((s) => s.name === course.skillName)
 
         if (skillIdx === -1) {
           const newLevel = Math.min(5, levelsGained) as SkillLevel
@@ -85,7 +85,7 @@ export function processEducation(
       if (uni.remainingDuration <= 0) {
         finishedUni.push(uni.id)
         const levelsGained = Math.ceil(uni.totalDuration)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === uni.skillName)
+        const skillIdx = updatedSkills.findIndex((s) => s.name === uni.skillName)
 
         if (skillIdx === -1) {
           const newLevel = Math.min(5, levelsGained) as SkillLevel

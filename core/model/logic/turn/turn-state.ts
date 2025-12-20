@@ -1,3 +1,4 @@
+import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 import type {
   PlayerState,
   Notification,
@@ -10,7 +11,6 @@ import type {
   HistoryEntry,
 } from '@/core/types'
 import type { CountryEconomy, GlobalEvent } from '@/core/types/economy.types'
-import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 
 export interface TurnState {
   // meta

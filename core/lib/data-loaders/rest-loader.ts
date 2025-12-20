@@ -1,8 +1,7 @@
 import type { RestActivity } from '@/core/types/rest.types'
-
-import usRest from '@/shared/data/world/countries/us/rest.json'
-import geRest from '@/shared/data/world/countries/germany/rest.json'
 import brRest from '@/shared/data/world/countries/brazil/rest.json'
+import geRest from '@/shared/data/world/countries/germany/rest.json'
+import usRest from '@/shared/data/world/countries/us/rest.json'
 
 function validateRestActivity(item: unknown): item is RestActivity {
   const r = item as RestActivity

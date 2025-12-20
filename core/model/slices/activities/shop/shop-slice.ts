@@ -1,11 +1,14 @@
 import type { StateCreator } from 'zustand'
-import { getItemCost, type ShopItem, isRecurringItem } from '@/core/types/shop.types'
-import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
+
+import { GameStore, ShopSlice } from '../../types'
+
 import {
   getInflatedShopPrice,
   getInflatedHousingPrice,
 } from '@/core/lib/calculations/price-helpers'
-import { GameStore, ShopSlice } from '../../types'
+import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
+import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
+
 
 export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set, get) => ({
   buyItem: (itemId: string) => {
@@ -42,25 +45,9 @@ export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set,
       }
     }
 
-    if (player.stats.money < cost) {
-      get().pushNotification({
-        type: 'info',
-        title: 'Недостаточно средств',
-        message: `Нужно $${cost.toLocaleString()}, у вас только $${player.stats.money.toLocaleString()}`,
-      })
+    if (!get().performTransaction({ money: -cost }, { title: 'Покупка товара' })) {
       return
     }
-
-    // Списываем деньги
-    set((state) => ({
-      player: state.player && {
-        ...state.player,
-        stats: {
-          ...state.player.stats,
-          money: state.player.stats.money - cost,
-        },
-      },
-    }))
 
     get().pushNotification({
       type: 'success',
@@ -123,26 +110,19 @@ export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set,
       cost = getInflatedHousingPrice(baseCost, country)
     }
 
-    if (player.stats.money < cost) {
-      get().pushNotification({
-        type: 'error',
-        title: 'Недостаточно средств',
-        message: `Нужно $${cost.toLocaleString()}, у вас $${player.stats.money.toLocaleString()}`,
-      })
+    if (!get().performTransaction({ money: -cost }, { title: 'Покупка жилья' })) {
       return
     }
 
     // Списываем деньги и меняем жильё
-    set({
-      player: {
-        ...player,
-        housingId,
-        stats: {
-          ...player.stats,
-          money: player.stats.money - cost,
-        },
-      },
-    })
+    set((state) => ({
+      player: state.player
+        ? {
+            ...state.player,
+            housingId,
+          }
+        : null,
+    }))
 
     get().pushNotification({
       type: 'success',

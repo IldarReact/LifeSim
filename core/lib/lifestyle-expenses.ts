@@ -1,6 +1,6 @@
-import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
 import { getShopItem } from '@/core/lib/shop-helpers'
 import type { PlayerState } from '@/core/types'
+import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
 
 export function calculateFoodExpenses(player: PlayerState, costModifier: number = 1.0): number {
   let total = 0

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { getCumulativeInflationMultiplier } from './inflation-engine'
+
 import { getQuarter } from '../quarter'
+
+import { getCumulativeInflationMultiplier } from './inflation-engine'
 
 describe('Inflation History Order - CRITICAL DEBUG', () => {
   it('should verify inflation history storage order', () => {
@@ -15,7 +17,7 @@ describe('Inflation History Order - CRITICAL DEBUG', () => {
   it('should apply inflation ONLY on Q1', () => {
     const turns = Array.from({ length: 8 }, (_, i) => i + 1)
 
-    let inflationHistory: number[] = []
+    const inflationHistory: number[] = []
     let price = 1000
 
     for (const turn of turns) {
@@ -36,7 +38,7 @@ describe('Inflation History Order - CRITICAL DEBUG', () => {
 
   it('REAL TEST: prices never go backwards', () => {
     const inflationRates = [2.1, 2.3, 2.5]
-    let inflationHistory: number[] = []
+    const inflationHistory: number[] = []
     let currentPrice = 1000
     const priceHistory = [currentPrice]
 

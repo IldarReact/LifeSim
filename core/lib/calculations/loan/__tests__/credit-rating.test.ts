@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createMockPlayer } from '../utils/mock-player';
+
 import { calculateCreditRating, createDebt } from '../../loan-calculator';
+import { createMockPlayer } from '../utils/mock-player';
 
 describe('calculateCreditRating', () => {
   it('должен вернуть базовый рейтинг для игрока без кредитов', () => {

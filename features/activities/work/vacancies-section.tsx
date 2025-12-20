@@ -1,12 +1,14 @@
 'use client'
 
+import { Briefcase } from 'lucide-react'
 import React from 'react'
+
 import { OpportunityCard } from '../ui/opportunity-card'
 import { VacancyDetailCard } from '../ui/vacancy-detail-card'
-import { Briefcase } from 'lucide-react'
+
+import { useInflatedPrices } from '@/core/hooks'
 import { getAllJobsForCountry } from '@/core/lib/data-loaders/jobs-loader'
 import { useGameStore } from '@/core/model/store'
-import { useInflatedPrices } from '@/core/hooks'
 
 interface VacanciesSectionProps {
   onApply: (

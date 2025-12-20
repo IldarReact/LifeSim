@@ -1,6 +1,6 @@
+import { formatGameDate } from '@/core/lib/quarter'
 import type { JobApplication, Skill, Notification } from '@/core/types'
 import type { EconomicCycle } from '@/core/types/economy.types'
-import { formatGameDate } from '@/core/lib/quarter'
 
 interface JobsResult {
   updatedSkills: Skill[]

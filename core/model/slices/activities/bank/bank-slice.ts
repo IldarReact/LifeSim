@@ -1,6 +1,7 @@
 // src/core/model/slices/bank-slice.ts
-import { StateCreator } from 'zustand'
 import { nanoid } from 'nanoid'
+import { StateCreator } from 'zustand'
+
 import { GameStore } from '../../types'
 
 export interface BankSlice {
@@ -17,8 +18,14 @@ export interface BankSlice {
 
 export const createBankSlice: StateCreator<GameStore, [], [], BankSlice> = (set, get) => ({
   openDeposit: (amount, name = 'Срочный вклад') => {
+    // 1. Пытаемся списать деньги через централизованный метод
+    if (!get().performTransaction({ money: -amount }, { title: 'Открытие вклада' })) {
+      return
+    }
+
+    // 2. Получаем обновленное состояние (после списания)
     const player = get().player
-    if (!player || player.stats.money < amount) return
+    if (!player) return
 
     const deposit = {
       id: nanoid(),
@@ -38,15 +45,16 @@ export const createBankSlice: StateCreator<GameStore, [], [], BankSlice> = (set,
       player: {
         ...player,
         assets: [...player.assets, deposit],
-        stats: {
-          ...player.stats,
-          money: player.stats.money - amount,
-        },
+        // Stats updated by performTransaction
       },
     })
   },
 
   takeLoan: ({ name, type, amount, interestRate, quarterlyPayment, termQuarters }) => {
+    // 1. Начисляем деньги
+    get().performTransaction({ money: amount })
+
+    // 2. Получаем обновленное состояние
     const player = get().player
     if (!player) return
 
@@ -66,20 +74,15 @@ export const createBankSlice: StateCreator<GameStore, [], [], BankSlice> = (set,
       quarterlyPrincipal,
       quarterlyInterest,
       // Безопасно: если currentQuarter нет — берём 0
-      startTurn: (get() as any).currentQuarter ??
-        (get() as any).turn ??
-        (get() as any).quarter ??
-        0,
+      startTurn:
+        (get() as any).currentQuarter ?? (get() as any).turn ?? (get() as any).quarter ?? 0,
     }
 
     set({
       player: {
         ...player,
         debts: [...player.debts, debt],
-        stats: {
-          ...player.stats,
-          money: player.stats.money + amount,
-        },
+        // Stats updated by performTransaction
       },
     })
   },

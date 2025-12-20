@@ -1,18 +1,20 @@
 "use client"
 
 import React from "react"
-import { useGameStore } from "@/core/model/game-store"
-import { SectionSeparator } from "@/shared/ui/section-separator"
-import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
-import { BusinessManagement } from "./business/business-management/business-management"
-import { BusinessesSection } from "./business/components/businesses-section"
-import { VacanciesSection } from "./vacancies-section"
-import { StartupsSection } from "./startups-section"
-import { FreelanceSection } from "./freelance-section"
-import { CurrentJobsSection } from "./current-jobs-section"
+
 import { ActiveFreelanceSection } from "./active-freelance-section"
+import { BusinessManagement } from "./business/business-management/business-management"
 import { BusinessProposals } from "./business/components/business-proposals"
+import { BusinessesSection } from "./business/components/businesses-section"
+import { CurrentJobsSection } from "./current-jobs-section"
+import { FreelanceSection } from "./freelance-section"
+import { StartupsSection } from "./startups-section"
+import { VacanciesSection } from "./vacancies-section"
+
+import { useGameStore } from "@/core/model/game-store"
 import type { SkillLevel } from "@/core/types"
+import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
+import { SectionSeparator } from "@/shared/ui/section-separator"
 
 export function WorkActivity(): React.JSX.Element | null {
   const {

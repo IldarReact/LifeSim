@@ -1,5 +1,4 @@
 import type { EconomicEvent, CountryEconomy } from '@/core/types'
-import { ECONOMIC_EVENT_DEFINITIONS } from './definitions'
 
 export function applyEventEffects(economy: CountryEconomy, event: EconomicEvent): CountryEconomy {
   const { effects } = event

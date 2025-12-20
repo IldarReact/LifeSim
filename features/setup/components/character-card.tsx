@@ -1,9 +1,11 @@
 import { motion } from "framer-motion"
-import { Button } from "@/shared/ui/button"
-import { cn } from "@/shared/utils/utils"
+
 import { getCharacterImage, calculateQuarterlySalary } from "../utils"
+
 import { getJobById } from "@/core/lib/data-loaders/jobs-loader"
 import type { CharacterData } from "@/core/types/character.types"
+import { Button } from "@/shared/ui/button"
+import { cn } from "@/shared/utils/utils"
 
 interface CharacterCardProps {
   character: CharacterData

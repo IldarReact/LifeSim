@@ -1,11 +1,13 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
-import { Dialog, DialogContent } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
 import { ChevronRight, X, Heart, TrendingUp, Wallet, Briefcase } from "lucide-react"
+import { useState } from "react"
+
 import type { ActivityCard, ActivityGridProps } from "../types"
+
+import { Button } from "@/shared/ui/button"
+import { Dialog, DialogContent } from "@/shared/ui/dialog"
 
 export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
   const [selectedCard, setSelectedCard] = useState<ActivityCard | null>(null)

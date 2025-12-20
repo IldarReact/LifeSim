@@ -1,11 +1,12 @@
 // Хелперы для расчета цен с учетом инфляции
-import type { CountryEconomy } from '@/core/types/economy.types'
+import { devLog } from '../debug'
+
 import {
-  getCumulativeInflationMultiplier,
   type PriceCategory,
   INFLATION_MULTIPLIERS,
 } from './inflation-engine'
-import { devLog } from '../debug'
+
+import type { CountryEconomy } from '@/core/types/economy.types'
 
 /**
  * Универсальная функция для получения цены с учетом инфляции
@@ -133,8 +134,9 @@ export function getInflatedSalary(
   // Берем историю инфляции за прошедшие годы
   const relevantHistory = inflationHistory.slice(-yearsPassed - 1)
 
-  // Коэффициент индексации: 70-90% от инфляции (как в реальном мире)
-  const indexationRate = 0.7 + Math.random() * 0.2 // 0.7-0.9
+  // Коэффициент индексации: 70-90% от инфляции (детерминированно)
+  const salaryMod = economy?.salaryModifier ?? 1.0
+  const indexationRate = Math.max(0.7, Math.min(0.9, 0.8 + (salaryMod - 1.0) * 0.1))
 
   // Рассчитываем накопленную индексацию
   let indexedSalary = baseSalary

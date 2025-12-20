@@ -1,7 +1,8 @@
+import { getInflatedPrice } from '../price-helpers'
+
+import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
 import type { PlayerState, QuarterlyReport } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
-import { getInflatedPrice } from '../price-helpers'
 
 export function calculateMixedQuarterlyReport(params: {
   player: PlayerState

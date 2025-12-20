@@ -1,10 +1,11 @@
 "use client";
 
-import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
-import { Button } from "@/shared/ui/button";
-import { Users, Link, Plus, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2, Check, X } from "lucide-react";
+import { Users, CheckCircle2, Circle, ChevronDown, ChevronUp, Edit2, Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import { getOnlinePlayers, setPlayerName } from "@/core/lib/multiplayer";
 import { subscribeToReadyStatus } from "@/core/lib/multiplayer";
+import { Button } from "@/shared/ui/button";
 
 export type Player = {
   clientId: string;

@@ -1,14 +1,14 @@
-import type { EmployeeCandidate, EmployeeRole, EmployeeStars, EmployeeSkills } from "@/core/types/business.types";
-import type { CountryEconomy } from '@/core/types/economy.types';
+import { getInflatedBaseSalary } from '../calculations/price-helpers';
+
 import {
-  getRoleModifiers,
   getBaseSalary,
   getStarMultiplier,
   getRandomFirstName,
   getRandomLastName,
   getRandomHumanTraits
 } from '@/core/lib/data-loaders/static-data-loader';
-import { getInflatedBaseSalary } from '../calculations/price-helpers';
+import type { EmployeeCandidate, EmployeeRole, EmployeeStars, EmployeeSkills } from "@/core/types/business.types";
+import type { CountryEconomy } from '@/core/types/economy.types';
 
 /**
  * Генерирует случайные навыки для сотрудника на основе роли и звезд

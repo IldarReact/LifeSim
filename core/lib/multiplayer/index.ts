@@ -1,6 +1,7 @@
 // core/lib/multiplayer/index.ts
-import { Player } from '@/features/multiplayer/multiplayer-hub'
 import { createClient } from '@liveblocks/client'
+
+import { Player } from '@/features/multiplayer/multiplayer-hub'
 
 type Presence = {
   name: string

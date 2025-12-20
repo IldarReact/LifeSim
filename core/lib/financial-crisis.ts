@@ -1,7 +1,6 @@
-import type { PlayerState } from '@/core/types/game.types'
-import type { Asset } from '@/core/types/finance.types'
-import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
 import { getCrisisOptions } from '@/core/lib/data-loaders/static-data-loader'
+import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
+import type { PlayerState } from '@/core/types/game.types'
 
 /**
  * Критический порог баланса для финансового кризиса

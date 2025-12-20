@@ -1,7 +1,7 @@
 // Country imports
-import usCourses from '@/shared/data/world/countries/us/courses.json'
-import geCourses from '@/shared/data/world/countries/germany/courses.json'
 import brCourses from '@/shared/data/world/countries/brazil/courses.json'
+import geCourses from '@/shared/data/world/countries/germany/courses.json'
+import usCourses from '@/shared/data/world/countries/us/courses.json'
 
 export interface Course {
   id: string

@@ -1,9 +1,11 @@
 "use client"
 
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
 import { Star, Building, Zap, Heart, Brain, Smile } from "lucide-react"
 import { useState } from "react"
+
+import type { Job } from "@/core/types/job.types"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog"
-import type { Job } from "@/core/types/job.types"
 
 interface VacancyDetailCardProps {
   title: string

@@ -1,8 +1,9 @@
 "use client"
 
+import { User, Users } from "lucide-react"
+
 import { useGameStore } from "@/core/model/game-store"
 import { Button } from "@/shared/ui/button"
-import { User, Users } from "lucide-react"
 
 export function MainMenu() {
   const { startSinglePlayer } = useGameStore()

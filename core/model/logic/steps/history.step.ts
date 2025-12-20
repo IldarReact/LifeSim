@@ -1,4 +1,5 @@
 import type { TurnStep } from '../turn/turn-step'
+
 import type { HistoryEntry } from '@/core/types'
 
 export const historyStep: TurnStep = (ctx, state) => {

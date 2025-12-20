@@ -1,4 +1,5 @@
 import seedrandom from 'seedrandom';
+
 import type { GlobalEvent } from '@/core/types';
 
 export function generateGlobalEvents(

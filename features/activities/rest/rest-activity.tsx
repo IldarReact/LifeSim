@@ -1,10 +1,5 @@
 "use client";
 
-import { useGameStore } from "@/core/model/game-store";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-import { getRestActivitiesForCountry } from "@/core/lib/data-loaders/rest-loader";
-import { getInflatedPrice } from "@/core/lib/calculations/price-helpers";
 import {
   Heart,
   Brain,
@@ -17,6 +12,13 @@ import {
   Palette,
   Zap,
 } from "lucide-react";
+
+import { getInflatedPrice } from "@/core/lib/calculations/price-helpers";
+import { getRestActivitiesForCountry } from "@/core/lib/data-loaders/rest-loader";
+import { useGameStore } from "@/core/model/game-store";
+import { Button } from "@/shared/ui/button";
+import { Card } from "@/shared/ui/card";
+
 
 const ICON_MAP: Record<string, any> = {
   Heart,

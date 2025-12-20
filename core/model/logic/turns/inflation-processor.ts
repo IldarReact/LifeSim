@@ -1,5 +1,3 @@
-import type { CountryEconomy } from '@/core/types'
-import type { Notification } from '@/core/types'
 import {
   shouldApplyInflationThisTurn,
   generateYearlyInflation,
@@ -8,6 +6,8 @@ import {
   type InflationNotification,
 } from '@/core/lib/calculations/inflation-engine'
 import { getQuarter } from '@/core/lib/quarter'
+import type { CountryEconomy } from '@/core/types'
+import type { Notification } from '@/core/types'
 
 /**
  * Process yearly inflation for the player's country when appropriate.
@@ -41,7 +41,7 @@ export function processInflation(
 
   // Lazy devLog to avoid circular import issues in tests/environments
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+     
     const { devLog } = require('../../../lib/debug') as { devLog?: (...a: unknown[]) => void }
     if (devLog) {
       devLog('[INFLATION UPDATE] Turn', newTurn, `${getQuarter(newTurn)}, Year`, newYear, {

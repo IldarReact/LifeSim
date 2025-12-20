@@ -1,8 +1,8 @@
 "use client"
 
 import { useGameStore } from "@/core/model/game-store"
-import { ExpandableCard } from "@/shared/ui/expandable-card"
 import type { CountryEconomy } from "@/core/types"
+import { ExpandableCard } from "@/shared/ui/expandable-card"
 
 export function CountrySelector() {
   const { countries, setSetupCountry } = useGameStore()

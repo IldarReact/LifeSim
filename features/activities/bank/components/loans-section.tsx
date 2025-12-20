@@ -1,5 +1,6 @@
-import { Card } from '@/shared/ui/card'
 import { CreditCard } from 'lucide-react'
+
+import { Card } from '@/shared/ui/card'
 
 interface Debt {
   id: string

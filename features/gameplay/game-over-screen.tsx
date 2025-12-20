@@ -1,11 +1,14 @@
 'use client'
 
-import { useGameStore } from '@/core/model/store'
+import { Skull, Brain, Frown, DollarSign } from 'lucide-react'
+
 import { getGameOverMessage } from '@/core/lib/defeat-conditions'
+import { getQuarter } from '@/core/lib/quarter'
+import { useGameStore } from '@/core/model/store'
 import type { GameOverReason } from '@/core/types/game.types'
 import { Button } from '@/shared/ui/button'
-import { Skull, Brain, Heart, Frown, DollarSign } from 'lucide-react'
-import { getQuarter } from '@/core/lib/quarter'
+
+
 
 export function GameOverScreen() {
   const { endReason, turn, year, player, resetGame } = useGameStore()

@@ -1,13 +1,14 @@
-import React from "react";
-import { useGameStore } from "@/core/model/game-store";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
-import { Progress } from "@/shared/ui/progress";
 import {
   DollarSign, ChevronRight, Target, Star, Heart, Brain,
   Home, Utensils, Car, School, Pill, CreditCard, AlertCircle
 } from "lucide-react";
+import React from "react";
+
+import { useGameStore } from "@/core/model/game-store";
 import type { LifeGoal } from "@/core/types";
+import { Button } from "@/shared/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
+import { Progress } from "@/shared/ui/progress";
 
 // Категории расходов (можно вынести в отдельный файл констант)
 const expenseCategories = [

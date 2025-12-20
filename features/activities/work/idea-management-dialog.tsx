@@ -1,12 +1,13 @@
-import React from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
-import { Button } from '@/shared/ui/button'
-import { Badge } from '@/shared/ui/badge'
-import { Progress } from '@/shared/ui/progress'
 import { Brain, Rocket, TrendingUp, AlertTriangle, DollarSign, Clock } from 'lucide-react'
-import type { BusinessIdea } from '@/core/types/idea.types'
+import React from 'react'
+
 import { calculateDevelopmentCost, calculateDevelopmentTime } from '@/core/lib/idea-generator'
 import type { Skill } from '@/core/types'
+import type { BusinessIdea } from '@/core/types/idea.types'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
+import { Progress } from '@/shared/ui/progress'
 
 interface IdeaManagementDialogProps {
   isOpen: boolean

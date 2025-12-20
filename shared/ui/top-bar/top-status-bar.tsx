@@ -1,30 +1,24 @@
 'use client'
 
-import React from 'react'
-import { useGameStore } from '@/core/model/game-store'
-import { Badge } from '@/shared/ui/badge'
-import { Button } from '@/shared/ui/button'
-import { SectionSeparator } from '@/shared/ui/section-separator'
+import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
 import {
-  Heart,
-  Brain,
-  DollarSign,
-  User,
-  Plus,
-  Star,
-  Target,
-  Baby,
-  Dog,
-  Search,
-  X,
-  Check,
-  Zap,
-  Activity,
-  ChevronRight,
   LogOut,
-  Users,
 } from 'lucide-react'
-import { Progress } from '@/shared/ui/progress'
+import React from 'react'
+
+
+import { EnergyIndicator } from './energy-indicator'
+import { HappinessIndicator } from './happiness-indicator'
+import { HealthIndicator } from './health-indicator'
+import { IntelligenceIndicator } from './intelligence-indicator'
+import { MoneyIndicator } from './money-indicator'
+import { NotificationsMenu } from './notifications-menu'
+import { SanityIndicator } from './sanity-indicator'
+
+
+import { getQuarter } from '@/core/lib/quarter'
+import { useGameStore } from '@/core/model/game-store'
+import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,17 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
-
-import { MoneyIndicator } from './money-indicator'
-import { HappinessIndicator } from './happiness-indicator'
-import { EnergyIndicator } from './energy-indicator'
-import { HealthIndicator } from './health-indicator'
-import { SanityIndicator } from './sanity-indicator'
-import { IntelligenceIndicator } from './intelligence-indicator'
-import { NotificationsMenu } from './notifications-menu'
-import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
-import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
-import { getQuarter } from '@/core/lib/quarter'
+import { Button } from '@/shared/ui/button'
 
 export function TopStatusBar() {
   const { player, turn, year, resetGame, countries } = useGameStore()

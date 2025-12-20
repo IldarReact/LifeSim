@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
+
 import { getInflatedPrice } from './price-helpers'
+
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 describe('Price Helpers - Multi-Year Inflation', () => {

@@ -1,14 +1,17 @@
 "use client"
 
-import { useState, useMemo } from "react"
 import { AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useGameStore } from "@/core/model/game-store"
-import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader"
+import { useState, useMemo } from "react"
+
+import type { ModalView } from "../types"
 import { getCharacterImage } from "../utils"
+
 import { CharacterCard } from "./character-card"
 import { CharacterModal } from "./character-modal"
-import type { ModalView } from "../types"
+
+import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader"
+import { useGameStore } from "@/core/model/game-store"
 
 export interface CharacterSelectUIProps {
   setupCountryId: string

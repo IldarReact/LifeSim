@@ -6,8 +6,9 @@
  * ✅ Single responsibility: handle skill progression from work
  */
 
-import type { Skill, SkillLevel, Job, Notification } from '@/core/types'
 import { formatGameDate } from '../quarter'
+
+import type { Skill, SkillLevel, Job, Notification } from '@/core/types'
 
 export interface JobSkillProgressionResult {
   skillUpdates: Skill[]
@@ -42,7 +43,7 @@ export function processJobSkillProgression(
       job.requirements.skills.forEach((req) => {
         const skillName = req.name
         protectedSkills.add(skillName)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === skillName)
+        const skillIdx = updatedSkills.findIndex((s) => s.name === skillName)
 
         if (skillIdx !== -1) {
           const skill = { ...updatedSkills[skillIdx] }

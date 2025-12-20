@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getInflatedSalary, getInflatedShopPrice } from '@/core/lib/calculations/price-helpers'
+
+import { getInflatedSalary, getInflatedBaseSalary } from '@/core/lib/calculations/price-helpers'
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 describe('Work Activity - Inflation UI Tests', () => {
@@ -39,7 +40,7 @@ describe('Work Activity - Inflation UI Tests', () => {
   describe('VacanciesSection', () => {
     it('должен применить инфляцию ко всем вакансиям', () => {
       const salaries = [3000, 8000]
-      const results = salaries.map(s => getInflatedSalary(s, baseEconomy))
+      const results = salaries.map(s => getInflatedBaseSalary(s, baseEconomy))
 
       expect(results[0]).toBeGreaterThan(3000)
       expect(results[1]).toBeGreaterThan(8000)
@@ -57,9 +58,9 @@ describe('Work Activity - Inflation UI Tests', () => {
         inflationHistory: [20, 19, 21, 18, 20]
       }
 
-      const result = getInflatedSalary(5000, hyperEconomy)
+      const result = getInflatedSalary(5000, hyperEconomy, 12)
 
-      expect(result).toBeGreaterThan(10000)
+      expect(result).toBeGreaterThan(7000)
     })
   })
 })

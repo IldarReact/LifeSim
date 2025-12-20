@@ -1,6 +1,7 @@
 import type { GameStateCreator } from '../../../types'
-import type { BusinessProposal, ProposalType } from '@/core/types/business.types'
+
 import { calculateNPCVote } from '@/core/lib/business'
+import type { BusinessProposal, ProposalType } from '@/core/types/business.types'
 
 export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
   proposeAction: (businessId: string, type: ProposalType, payload: any) => {

@@ -1,6 +1,3 @@
-import type { Business, BusinessEvent } from '@/core/types/business.types'
-import type { Skill, SkillLevel, Notification } from '@/core/types'
-import type { CountryEconomy } from '@/core/types/economy.types'
 import {
   updateAutoAssignedRoles,
   calculatePlayerRoleEffects,
@@ -10,6 +7,9 @@ import {
   calculateBusinessFinancials,
 } from '@/core/lib/business'
 import { formatGameDate } from '@/core/lib/quarter'
+import type { Skill, SkillLevel, Notification } from '@/core/types'
+import type { Business } from '@/core/types/business.types'
+import type { CountryEconomy } from '@/core/types/economy.types'
 
 /**
  * Результат обработки бизнесов за квартал
@@ -37,7 +37,7 @@ export function processBusinessTurn(
   economy?: CountryEconomy, // ✅ НОВОЕ: экономика для инфляции
 ): BusinessTurnResult {
   const updatedBusinesses: Business[] = []
-  let updatedSkills = [...playerSkills]
+  const updatedSkills = [...playerSkills]
   let totalIncome = 0
   let totalExpenses = 0
   let playerRoleEnergyCost = 0

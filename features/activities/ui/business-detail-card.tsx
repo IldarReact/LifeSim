@@ -1,9 +1,10 @@
 "use client"
 
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
 import { Zap } from "lucide-react"
 import React from "react"
+
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
 
 interface BusinessDetailCardProps {
   title: string

@@ -1,5 +1,5 @@
-import type { Asset, Debt } from "@/core/types/finance.types"
 import type { CountryEconomy, GlobalEvent } from "@/core/types/economy.types"
+import type { Asset, Debt } from "@/core/types/finance.types"
 
 interface CalculationResult {
   newAssets: Asset[]

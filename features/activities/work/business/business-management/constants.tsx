@@ -1,5 +1,6 @@
-import type { EmployeeRole } from "@/core/types"
 import { Award, TrendingUp, DollarSign, Star, Activity, Users } from "lucide-react"
+
+import type { EmployeeRole } from "@/core/types"
 
 // Role labels
 export const ROLE_LABELS: Record<EmployeeRole, string> = {

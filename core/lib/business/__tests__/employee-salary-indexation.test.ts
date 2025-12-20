@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { getQuarterlyInflatedSalary } from '@/core/lib/calculations/price-helpers'
 import type { CountryEconomy } from '@/core/types/economy.types'
 

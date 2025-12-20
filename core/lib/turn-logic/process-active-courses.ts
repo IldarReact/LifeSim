@@ -6,8 +6,9 @@
  * ✅ Single responsibility: handle course progression and completion
  */
 
-import type { Skill, SkillLevel, ActiveCourse, Notification } from '@/core/types'
 import { formatGameDate } from '../quarter'
+
+import type { Skill, SkillLevel, ActiveCourse, Notification } from '@/core/types'
 
 export interface CourseProcessingResult {
   updatedCourses: ActiveCourse[]
@@ -49,7 +50,7 @@ export function processActiveCourses(
       if (updatedCourse.remainingDuration <= 0) {
         completedCourses.push(updatedCourse.id)
         const levelsGained = Math.ceil(course.totalDuration)
-        let skillIdx = updatedSkills.findIndex((s) => s.name === course.skillName)
+        const skillIdx = updatedSkills.findIndex((s) => s.name === course.skillName)
 
         if (skillIdx === -1) {
           // New skill

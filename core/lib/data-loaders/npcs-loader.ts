@@ -1,6 +1,5 @@
 // src/shared/data/loaders/npcs-loader.ts
 import type { FamilyMember } from '@/core/types/family.types'
-
 import brNpcs from '@/shared/data/world/countries/brazil/npcs.json'
 import geNpcs from '@/shared/data/world/countries/germany/npcs.json'
 import usNpcs from '@/shared/data/world/countries/us/npcs.json'

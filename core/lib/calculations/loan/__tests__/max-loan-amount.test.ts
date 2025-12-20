@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createMockPlayer } from '../utils/mock-player';
+
 import { calculateMaxLoanAmount, createDebt } from '../../loan-calculator';
+import { createMockPlayer } from '../utils/mock-player';
 
 describe('calculateMaxLoanAmount', () => {
   it('должен рассчитать максимальную сумму для ипотеки', () => {

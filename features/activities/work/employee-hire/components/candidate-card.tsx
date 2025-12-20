@@ -1,11 +1,14 @@
-import React from "react"
-import { Badge } from "@/shared/ui/badge"
 import { User, Award, DollarSign, CheckCircle, XCircle, Activity, Star } from "lucide-react"
-import type { EmployeeCandidate } from "@/core/types"
+import React from "react"
+
+
 import { STARS_LABELS, STARS_COLORS, MONTHS_PER_YEAR } from "../../shared-constants"
 import { getSkillStarsCount } from "../utils/employee-utils"
 import { TRAITS_MAP, getTraitColor, getTraitIcon } from "../utils/trait-utils"
+
 import { useInflatedPrice } from "@/core/hooks"
+import type { EmployeeCandidate } from "@/core/types"
+import { Badge } from "@/shared/ui/badge"
 
 interface CandidateCardProps {
   candidate: EmployeeCandidate

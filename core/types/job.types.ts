@@ -1,6 +1,6 @@
 // Job-related types
-import { StatEffect } from "./stats.types";
 import { SkillRequirement } from "./skill.types";
+import { StatEffect } from "./stats.types";
 
 export interface JobRequirements {
   education?: string;

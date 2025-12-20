@@ -1,5 +1,6 @@
-import type { ShopCategory } from '@/core/types/shop.types'
 import { ShoppingCart, Home, Heart, CarFront, Smile } from 'lucide-react'
+
+import type { ShopCategory } from '@/core/types/shop.types'
 
 export const SHOP_CATEGORIES: { id: ShopCategory; label: string; icon: React.ReactNode }[] = [
   { id: 'food', label: 'Питание', icon: <ShoppingCart className="w-4 h-4" /> },

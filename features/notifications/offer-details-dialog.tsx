@@ -1,11 +1,12 @@
 "use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Badge } from "@/shared/ui/badge"
 import { Building, DollarSign, Users, Briefcase, CheckCircle, XCircle } from "lucide-react"
+
 import type { GameOffer, JobOfferDetails, PartnershipOfferDetails, ShareSaleOfferDetails } from "@/core/types/game-offers.types"
 import { isJobOffer, isPartnershipOffer, isShareSaleOffer } from "@/core/types/game-offers.types"
+import { Badge } from "@/shared/ui/badge"
+import { Button } from "@/shared/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui/dialog"
 
 interface OfferDetailsDialogProps {
   isOpen: boolean

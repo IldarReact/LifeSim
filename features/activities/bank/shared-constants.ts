@@ -1,0 +1,4 @@
+export const MIN_DEPOSIT_AMOUNT = 10_000
+
+export const DEPOSIT_RATE_MULTIPLIER = 0.7
+export const LOAN_RATE_MULTIPLIER = 1.3

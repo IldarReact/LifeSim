@@ -1,6 +1,6 @@
 import type { Business } from "@/core/types/business.types";
 import type { Skill } from '@/core/types';
-import { checkMinimumStaffing, getPlayerRoleBusinessImpact } from '@/features/business/lib/player-roles';
+import { checkMinimumStaffing, getPlayerRoleBusinessImpact } from './player-roles';
 
 /**
  * Рассчитывает эффективность бизнеса (0-100)

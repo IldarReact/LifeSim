@@ -6,13 +6,13 @@ import { Button } from '@/shared/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
 // Import activities
-import { FamilyActivity } from '../activities/family-activity'
+import { FamilyActivity } from '../activities/family/family-activity'
 import { WorkActivity } from '../activities/work/work-activity'
-import { InvestmentsActivity } from '../activities/investments-activity'
+import { InvestmentsActivity } from '../activities/investments/investments-activity'
 import { BanksActivity } from '../activities/bank/banks-activity'
-import { RelocationActivity } from '../activities/relocation-activity'
-import { RestActivity } from '../activities/rest-activity'
-import { EducationActivity } from '../activities/education-activity'
+import { RelocationActivity } from '../activities/relocation/relocation-activity'
+import { RestActivity } from '../activities/rest/rest-activity'
+import { EducationActivity } from '../activities/education/education-activity'
 import { ShopActivity } from '../activities/shop'
 
 const ACTIVITIES = [

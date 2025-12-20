@@ -1,10 +1,27 @@
-export * from './shop.step'
-export * from './economy.step'
-export * from './education.step'
-export * from './jobs.step'
-export * from './personal.step'
-export * from './business.step'
-export * from './lifestyle.step'
-export * from './financial.step'
-export * from './thresholds.step'
-export * from './inflation.step'
+import { economyStep } from './economy.step'
+import { marketStep } from './market.step'
+import { educationStep } from './education.step'
+import { jobsStep } from './jobs.step'
+import { personalStep } from './personal.step'
+import { businessStep } from './business.step'
+import { buffsStep } from './buffs.step'
+import { lifestyleStep } from './lifestyle.step'
+import { financialStep } from './financial.step'
+import { thresholdsStep } from './thresholds.step'
+import { inflationStep } from './inflation.step'
+import { historyStep } from './history.step'
+
+export const STEPS = [
+  marketStep,
+  economyStep,
+  educationStep,
+  jobsStep,
+  personalStep,
+  businessStep,
+  buffsStep,
+  lifestyleStep,
+  financialStep,
+  thresholdsStep,
+  historyStep,
+  inflationStep,
+] as const

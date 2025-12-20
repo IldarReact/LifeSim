@@ -18,6 +18,8 @@ export type {
   EmployeeCandidate,
 } from './business.types'
 
+
+
 // Business ideas
 export type { RiskLevel, IdeaStage, BusinessIdea, IdeaTemplate } from './idea.types'
 
@@ -75,7 +77,7 @@ export type {
 export type { ShopCategory, ShopItem } from './shop.types'
 
 // Notification types
-export type { Notification } from './notification.types'
+export type { Notification } from '@/core/types/notification.types'
 
 // Personal life state
 export type { PersonalLife } from './personal.types'

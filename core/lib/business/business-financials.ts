@@ -1,8 +1,9 @@
 import type { Business, BusinessInventory } from "@/core/types/business.types";
 import type { Skill } from '@/core/types';
 import type { CountryEconomy } from '@/core/types/economy.types';
+import type { StatEffect } from '@/core/types/stats.types';
 import { calculateEmployeeKPI } from './employee-calculations';
-import { getPlayerRoleBusinessImpact } from '@/features/business/lib/player-roles';
+import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles';
 import { getInflatedPrice, getQuarterlyInflatedSalary } from '../calculations/price-helpers';
 
 /**
@@ -19,6 +20,7 @@ export function calculateBusinessFinancials(
   expenses: number;
   profit: number;
   newInventory: BusinessInventory;
+  playerStatEffects: StatEffect;
 } {
   const state = business.state ?? 'active';
   if (state !== 'active') {
@@ -33,7 +35,8 @@ export function calculateBusinessFinancials(
         pricePerUnit: 100,
         purchaseCost: 50,
         autoPurchaseAmount: 0
-      }
+      },
+      playerStatEffects: { energy: 0, sanity: 0 }
     };
   }
 
@@ -228,7 +231,8 @@ export function calculateBusinessFinancials(
     income: Math.round(salesIncome),
     expenses: Math.round(opEx + purchaseCost + taxAmount), // Total Cash Outflow
     profit: Math.round(cashFlow), // We return Cash Flow as "profit" for the game money update
-    newInventory
+    newInventory,
+    playerStatEffects: calculatePlayerRoleEffects(business)
   };
 }
 

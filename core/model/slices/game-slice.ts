@@ -1,7 +1,7 @@
 import type { GameStateCreator, GameSlice } from './types'
 import { createInitialPlayer } from '@/core/lib/initial-state'
 import { WORLD_COUNTRIES } from '@/core/lib/data-loaders/economy-loader'
-import { processTurn } from '../logic/turn-logic'
+import { processTurn } from '../logic'
 
 export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   // State
@@ -16,7 +16,7 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
 
   // Actions
   setSetupCountry: (id: string) => {
-    ;(set as any)(
+    ; (set as any)(
       { setupCountryId: id, gameStatus: 'select_character' },
       false,
       'game/setSetupCountry',
@@ -24,30 +24,30 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   startSinglePlayer: () => {
-    ;(set as any)({ 
+    ; (set as any)({
       gameStatus: 'setup',
-      countries: WORLD_COUNTRIES 
+      countries: WORLD_COUNTRIES
     }, false, 'game/startSinglePlayer')
   },
 
   initializeGame: (countryId: string, archetype: string) => {
     const cId = countryId || get().setupCountryId
     if (!cId) return
-    ;(set as any)(
-      {
-        turn: 1,
-        year: 2024,
-        gameStatus: 'playing',
-        countries: WORLD_COUNTRIES,
-        player: createInitialPlayer(archetype, cId),
-        history: [],
-        notifications: [],
-        pendingApplications: [],
-        pendingFreelanceApplications: [],
-      },
-      false,
-      'game/initializeGame',
-    )
+      ; (set as any)(
+        {
+          turn: 1,
+          year: 2024,
+          gameStatus: 'playing',
+          countries: WORLD_COUNTRIES,
+          player: createInitialPlayer(archetype, cId),
+          history: [],
+          notifications: [],
+          pendingApplications: [],
+          pendingFreelanceApplications: [],
+        },
+        false,
+        'game/initializeGame',
+      )
   },
 
   resetGame: () => {
@@ -71,7 +71,7 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   setActiveActivity: (activity: string | null) => {
-    ;(set as any)({ activeActivity: activity }, false, 'game/setActiveActivity')
+    ; (set as any)({ activeActivity: activity }, false, 'game/setActiveActivity')
   },
 
   nextTurn: () => {
@@ -158,6 +158,6 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   clearInflationNotification: () => {
-    ;(set as any)({ inflationNotification: null }, false, 'game/clearInflationNotification')
+    ; (set as any)({ inflationNotification: null }, false, 'game/clearInflationNotification')
   },
 })

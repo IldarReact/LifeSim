@@ -1,15 +1,7 @@
-import { GameStore } from '../../slices'
+import type { GameStore } from '../../slices/types'
 
 export interface TurnContext {
-  turn: number
-  year: number
-  prev: GameStore
-}
-
-export function createTurnContext(state: GameStore): TurnContext {
-  return {
-    turn: state.turn,
-    year: state.year,
-    prev: state,
-  }
+  readonly prev: GameStore
+  readonly turn: number
+  readonly year: number
 }

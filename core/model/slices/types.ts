@@ -262,7 +262,9 @@ export interface GameOffersSlice {
   getOutgoingOffers: () => GameOffer[]
 
   // Event Handlers
-  onPartnershipAccepted: (event: import('@/core/types/events.types').PartnershipAcceptedEvent) => void
+  onPartnershipAccepted: (
+    event: import('@/core/types/events.types').PartnershipAcceptedEvent,
+  ) => void
   onPartnershipUpdated: (event: import('@/core/types/events.types').PartnershipUpdatedEvent) => void
 }
 
@@ -372,7 +374,7 @@ export type GameStore = GameSlice &
   ShopSlice &
   BankSlice &
   GameOffersSlice &
-  import('./partnership-business-slice.types').PartnershipBusinessSlice & {
+  import('./activities/work/business/partnership-business-slice.types').PartnershipBusinessSlice & {
     countries: GameState['countries']
     globalEvents: GameState['globalEvents']
     history: GameState['history']

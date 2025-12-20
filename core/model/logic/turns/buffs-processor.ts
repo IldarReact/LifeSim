@@ -1,49 +1,64 @@
-import { formatGameDate } from '@/core/lib/quarter'
+import type { TimedBuff } from '@/core/types'
 import type { Notification } from '@/core/types'
+import type { StatEffect, Stats } from '@/core/types'
 
-export function processBuffs(activeBuffs: Array<any>, year: number, turn: number) {
-  const newNotifications: Notification[] = []
-  let buffHappinessMod = 0
-  let buffHealthMod = 0
-  let buffSanityMod = 0
-  let buffIntelligenceMod = 0
-  let buffEnergyMod = 0
-  let buffIncomeMod = 0
+export interface BuffsProcessResult {
+  activeBuffs: TimedBuff[]
+  statModifiers: Partial<Stats>
+  moneyDelta: number
+  notifications: Notification[]
+}
 
-  const updatedBuffs = activeBuffs
-    .map((buff) => {
-      const newBuff = { ...buff, duration: buff.duration - 1 }
-      if (buff.effects.happiness) buffHappinessMod += buff.effects.happiness
-      if (buff.effects.health) buffHealthMod += buff.effects.health
-      if (buff.effects.sanity) buffSanityMod += buff.effects.sanity
-      if (buff.effects.intelligence) buffIntelligenceMod += buff.effects.intelligence
-      if (buff.effects.energy) buffEnergyMod += buff.effects.energy
-      if (buff.effects.money) buffIncomeMod += buff.effects.money
+export function processBuffs(
+  buffs: TimedBuff[],
+  ctx: {
+    turn: number
+    year: number
+  },
+): BuffsProcessResult {
+  const notifications: Notification[] = []
+  const statModifiers: Partial<Stats> = {}
+  let moneyDelta = 0
 
-      if (newBuff.duration <= 0) {
-        newNotifications.push({
-          id: `buff_end_${Date.now()}_${Math.random()}`,
-          type: 'info',
-          title: 'Эффект истек',
-          message: `Действие эффекта "${buff.description}" закончилось.`,
-          date: formatGameDate(year, turn),
-          isRead: false,
-        })
+  const activeBuffs: TimedBuff[] = []
+
+  for (const buff of buffs) {
+    const nextDuration = buff.duration - 1
+
+    // 🧹 бафф закончился
+    if (nextDuration <= 0) {
+      notifications.push({
+        id: `buff_end_${buff.id}_${ctx.turn}`,
+        type: 'info',
+        title: 'Эффект закончился',
+        message: buff.description,
+        isRead: false,
+      })
+      continue
+    }
+
+    // 📊 применяем эффекты
+    for (const key in buff.effects) {
+      const stat = key as keyof Stats
+      const value = buff.effects[stat] ?? 0
+
+      if (stat === 'money') {
+        moneyDelta += value
+      } else {
+        statModifiers[stat] = (statModifiers[stat] ?? 0) + value
       }
-      return newBuff
+    }
+
+    activeBuffs.push({
+      ...buff,
+      duration: nextDuration,
     })
-    .filter((b) => b.duration > 0)
+  }
 
   return {
-    activeBuffs: updatedBuffs,
-    modifiers: {
-      happiness: buffHappinessMod,
-      health: buffHealthMod,
-      sanity: buffSanityMod,
-      intelligence: buffIntelligenceMod,
-      energy: buffEnergyMod,
-      income: buffIncomeMod,
-    },
-    notifications: newNotifications,
+    activeBuffs,
+    statModifiers,
+    moneyDelta,
+    notifications,
   }
 }

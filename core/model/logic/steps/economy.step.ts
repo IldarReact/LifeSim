@@ -1,62 +1,48 @@
-import type { TurnContext } from '../turn/turn-context'
-import type { TurnState } from '../turn/turn-state'
+import { processEconomicCycle } from '../economy/cycle-processor'
+import { generateGlobalEvents } from '@/core/lib/calculations/generate-global-events'
+import type { TurnStep } from '../turn/turn-step'
 import { formatGameDate } from '@/core/lib/quarter'
-import type { CountryEconomy } from '@/core/types/economy.types'
 
-type CycleProcessorResult =
-  | {
-      cycle: NonNullable<CountryEconomy['cycle']>
-      newEvent: CountryEconomy['activeEvents'][number] | null
-    }
-  | {
-      cycle: {
-        phase: 'growth'
-        durationLeft: number
-        intensity: number
-        marketModifier: number
-      }
-      newEvent: null
-    }
+export const economyStep: TurnStep = (ctx, state) => {
+  const country = state.country
 
-export function economyStep(ctx: TurnContext, state: TurnState): void {
-  const player = state.player
-  const countryId = player.countryId
+  // 1. Цикл экономики страны
+  const res = processEconomicCycle(country.cycle, ctx.turn)
 
-  let country = state.country
-
-  let cycleResult
-  try {
-    const { processEconomicCycle } = require('../economy/cycle-processor')
-    cycleResult = processEconomicCycle(country.cycle, ctx.turn)
-  } catch {
-    cycleResult = {
-      cycle: { phase: 'growth', durationLeft: 10, intensity: 0.5, marketModifier: 1 },
-      newEvent: null,
-    }
+  state.country = {
+    ...country,
+    cycle: res.cycle,
   }
 
-  country = { ...country, cycle: cycleResult.cycle }
+  state.globalMarketValue = res.cycle.marketModifier
 
-  if (cycleResult.newEvent) {
-    country = {
-      ...country,
-      activeEvents: [...country.activeEvents, cycleResult.newEvent],
-    }
+  if (res.newEvent) {
+    state.country.activeEvents.push(res.newEvent)
 
     state.notifications.push({
-      id: cycleResult.newEvent.id,
-      type: cycleResult.newEvent.type === 'crisis' ? 'warning' : 'success',
-      title: cycleResult.newEvent.title,
-      message: cycleResult.newEvent.description,
-      date: `${state.year} Q${state.turn}`,
+      id: res.newEvent.id,
+      type: res.newEvent.type === 'crisis' ? 'warning' : 'success',
+      title: res.newEvent.title,
+      message: res.newEvent.description,
+      date: formatGameDate(ctx.year, ctx.turn),
       isRead: false,
     })
   }
 
-  state.country = country
-  state.globalMarketValue = country.cycle?.marketModifier ?? 1
-  state.countries = {
-    ...state.countries,
-    [countryId]: country,
+  // 2. Глобальные события
+  const oldEventsCount = state.globalEvents.length
+  state.globalEvents = generateGlobalEvents(ctx.turn, state.globalEvents)
+
+  // Если добавилось новое событие, отправляем уведомление
+  if (state.globalEvents.length > oldEventsCount) {
+    const newEvent = state.globalEvents[state.globalEvents.length - 1]
+    state.notifications.push({
+      id: `global_${newEvent.id}_${ctx.turn}`,
+      type: 'info',
+      title: `🌍 Глобальное событие: ${newEvent.title}`,
+      message: newEvent.description,
+      date: formatGameDate(ctx.year, ctx.turn),
+      isRead: false,
+    })
   }
 }

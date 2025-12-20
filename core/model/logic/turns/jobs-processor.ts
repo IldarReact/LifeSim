@@ -41,7 +41,7 @@ export function processJobs(
       if (Math.random() < risk) {
         isFired = true
         notifications.push({
-          id: `fired_${Date.now()}`,
+          id: `fired_${job.id}_${currentTurn}`,
           type: 'warning',
           title: 'Вас уволили! 😱',
           message: `Вы были уволены с должности ${job.title}.`,
@@ -62,13 +62,13 @@ export function processJobs(
           const skill = { ...updatedSkills[idx] }
           skill.progress += 15
           skill.lastPracticedTurn = currentTurn
-          ;(skill as any).isBeingUsedAtWork = true
+            ; (skill as any).isBeingUsedAtWork = true
 
           if (skill.progress >= 100) {
             skill.level += 1 as any
             skill.progress = 0
             notifications.push({
-              id: `skill_up_${Date.now()}`,
+              id: `skill_up_${skill.name}_${currentTurn}`,
               type: 'success',
               title: 'Рост навыка',
               message: `Навык ${skill.name} повышен до ${skill.level}!`,
@@ -100,7 +100,7 @@ export function processJobs(
 
     if (Math.random() < chance) {
       notifications.push({
-        id: `offer_${Date.now()}`,
+        id: `offer_${app.id}_${currentTurn}`,
         type: 'job_offer',
         title: '🎉 Оффер!',
         message: `Вам предложили работу ${app.jobTitle} в ${app.company}.`,
@@ -111,7 +111,7 @@ export function processJobs(
     } else {
       remainingApplications.push(app)
       notifications.push({
-        id: `reject_${Date.now()}`,
+        id: `reject_${app.id}_${currentTurn}`,
         type: 'info',
         title: '❌ Отказ',
         message: `Компания ${app.company} отклонила вашу заявку.`,

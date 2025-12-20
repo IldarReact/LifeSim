@@ -7,7 +7,7 @@ import type {
   TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
 import { calculateEmployeeQuarterlyReport } from './report/employee'
 import { calculateBusinessOwnerQuarterlyReport } from './report/business-owner'
 import { calculateMixedQuarterlyReport } from './report/mixed'

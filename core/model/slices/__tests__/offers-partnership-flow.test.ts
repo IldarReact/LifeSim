@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createGameOffersSlice } from '../game-offers-slice'
+import { createGameOffersSlice } from '../activities/work/business/game-offers-slice'
 import { createMockPlayer } from '@/core/lib/calculations/loan/utils/mock-player'
 import type { GameOffer } from '@/core/types/game-offers.types'
 import { LocalGameState } from '../types'
@@ -29,7 +29,7 @@ function createMockState(initial: Partial<LocalGameState> = {}) {
   }
 
   // Mock applyStatChanges
-  (state as any).applyStatChanges = (changes: any) => {
+  ;(state as any).applyStatChanges = (changes: any) => {
     if (changes.money) {
       state.player!.stats.money += changes.money
     }

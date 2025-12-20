@@ -4,10 +4,10 @@
 
 export { createGameSlice } from './game-slice'
 export { createPlayerSlice } from './player-slice'
-export { createEducationSlice } from './education-slice'
-export { createJobSlice } from './job-slice'
+export { createEducationSlice } from './activities/education/education-slice'
+export { createJobSlice } from './activities/work/job-slice'
 export { createNotificationSlice } from './notification-slice'
-export { createShopSlice } from './shop-slice'
+export { createShopSlice } from './activities/shop/shop-slice'
 
 export type {
   GameSlice,
@@ -15,5 +15,5 @@ export type {
   EducationSlice,
   JobSlice,
   NotificationSlice,
-  GameStore
+  GameStore,
 } from './types'

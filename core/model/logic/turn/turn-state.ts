@@ -1,33 +1,41 @@
-import type { PlayerState, Notification, JobApplication, MarketEvent } from '@/core/types'
-import type { CountryEconomy } from '@/core/types/economy.types'
+import type {
+  PlayerState,
+  Notification,
+  JobApplication,
+  MarketEvent,
+  QuarterlyReport,
+  Stats,
+  TimedBuff,
+  GameStatus,
+  HistoryEntry,
+} from '@/core/types'
+import type { CountryEconomy, GlobalEvent } from '@/core/types/economy.types'
 import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 
 export interface TurnState {
+  // meta
   turn: number
   year: number
+  gameStatus: GameStatus
+  isAborted: boolean
+  gameOverReason: string | null
 
+  // snapshot
   player: PlayerState
-
   countries: Record<string, CountryEconomy>
   country: CountryEconomy
+  globalEvents: GlobalEvent[]
+
+  // market
   marketEvents: MarketEvent[]
   globalMarketValue: number
 
-  activeBuffs: PlayerState['personal']['buffs']
-  buffModifiers: {
-    happiness: number
-    health: number
-    sanity: number
-    intelligence: number
-    energy: number
-    income: number
-  }
+  // buffs
+  buffs: TimedBuff[]
+  statModifiers: Partial<Stats> & { income?: number }
+  moneyDelta: number
 
-  business: {
-    totalIncome: number
-    totalExpenses: number
-  }
-
+  // lifestyle
   lifestyle: {
     expenses: number
     breakdown: {
@@ -38,27 +46,35 @@ export interface TurnState {
       mortgage: number
       other: number
     }
-    modifiers: {
-      happiness: number
-      health: number
-      sanity: number
-      intelligence: number
-      energy: number
-    }
+    modifiers: Partial<Stats>
   }
 
-  stats: PlayerState['personal']['stats']
+  // business (aggregated result of turn)
+  business: {
+    totalIncome: number
+    totalExpenses: number
+  }
 
+  // working stats (before commit)
+  stats: Stats
+
+  // finance
   financial: {
-    quarterlyReport: any
+    quarterlyReport: QuarterlyReport
     netProfit: number
     adjustedNetProfit: number
   }
 
-  notifications: Notification[]
+  // jobs / education
+  pendingApplications: JobApplication[]
   protectedSkills: Set<string>
 
+  // economy
   inflationNotification: InflationNotification | null
-  pendingApplications: JobApplication[]
-}
 
+  // history
+  historyEntry: HistoryEntry | null
+
+  // system
+  notifications: Notification[]
+}

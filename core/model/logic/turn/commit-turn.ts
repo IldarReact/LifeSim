@@ -7,47 +7,46 @@ export function commitTurn(ctx: TurnContext, state: TurnState): Partial<GameStor
   const nextTurn = ctx.turn + 1
   const nextYear = isQuarterEnd(ctx.turn) ? ctx.year + 1 : ctx.year
 
-  const updatedPlayer = {
-    ...state.player,
-
-    // 💰 деньги
-    stats: {
-      ...state.player.stats,
-      money: state.player.stats.money + state.financial.adjustedNetProfit,
-    },
-
-    // 🧠 персональные статы
-    personal: {
-      ...state.player.personal,
-      stats: state.stats,
-    },
-
-    // 📊 отчёт
-    quarterlyReport: state.financial.quarterlyReport,
-  }
-
   return {
     // meta
     turn: nextTurn,
     year: nextYear,
     isProcessingTurn: false,
+    gameStatus: state.gameStatus,
+    endReason: state.gameOverReason as any,
+    globalEvents: state.globalEvents,
+    history: state.historyEntry ? [...ctx.prev.history, state.historyEntry] : ctx.prev.history,
+
+    // player
+    player: {
+      ...state.player,
+
+      stats: {
+        ...state.player.stats,
+        money: state.player.stats.money + state.financial.adjustedNetProfit,
+      },
+
+      personal: {
+        ...state.player.personal,
+        stats: state.stats,
+      },
+    },
 
     // economy
     countries: state.countries,
     marketEvents: state.marketEvents,
-    inflationNotification: state.inflationNotification,
 
     globalMarket: {
       value: state.globalMarketValue,
-      description: `Фаза: ${state.country.cycle?.phase.toUpperCase()}`,
+      description: `Фаза: ${state.country.cycle?.phase ?? 'unknown'}`,
       trend: 'stable',
       lastUpdatedTurn: nextTurn,
     },
 
-    // player
-    player: updatedPlayer,
-
     // notifications
     notifications: state.notifications,
+
+    // inflation
+    inflationNotification: state.inflationNotification,
   }
 }

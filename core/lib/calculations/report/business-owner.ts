@@ -6,7 +6,7 @@ import type {
   TaxesBreakdown,
 } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import { calculateBusinessFinancials } from '@/core/lib/business-utils'
+import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 
 export function calculateBusinessOwnerQuarterlyReport(params: {
@@ -70,7 +70,7 @@ export function calculateBusinessOwnerQuarterlyReport(params: {
   // Базовые расходы на жизнь с инфляцией (категория services)
   const baseLifestyleCost = 1000 * 3 * country.costOfLivingModifier
   const baseLiving = getInflatedPrice(baseLifestyleCost, country, 'services')
-  
+
   const breakdown = params.expensesBreakdown || {
     food: params.lifestyleExpenses || 0,
     housing: 0,
@@ -96,14 +96,14 @@ export function calculateBusinessOwnerQuarterlyReport(params: {
     assetMaintenance: Math.round(assetMaintenance),
     total: Math.round(
       baseLiving +
-        breakdown.food +
-        breakdown.housing +
-        breakdown.transport +
-        breakdown.other +
-        familyExpenses +
-        businessExpenses +
-        debtInterest +
-        assetMaintenance,
+      breakdown.food +
+      breakdown.housing +
+      breakdown.transport +
+      breakdown.other +
+      familyExpenses +
+      businessExpenses +
+      debtInterest +
+      assetMaintenance,
     ),
   }
 

@@ -15,4 +15,6 @@ export type Stats = {
   intelligence: number;   
 };
 
+
+
 export type StatEffect = Partial<Stats>;

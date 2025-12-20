@@ -1,11 +1,7 @@
-import { PlayerState } from '@/core/types'
-import type { TurnContext } from '../turn/turn-context'
-import type { TurnState } from '../turn/turn-state'
+import type { TurnStep } from '../turn/turn-step'
 import { processLifestyle } from '../turns/lifestyle-processor'
 
-export function lifestyleStep(_: TurnContext, state: TurnState): void {
-  const { processLifestyle } = require('../turns/lifestyle-processor')
-
+export const lifestyleStep: TurnStep = (ctx, state) => {
   const res = processLifestyle(state.player, state.countries)
 
   state.player.personal.familyMembers = res.updatedFamilyMembers
@@ -13,4 +9,3 @@ export function lifestyleStep(_: TurnContext, state: TurnState): void {
   state.lifestyle.breakdown = res.lifestyleExpensesBreakdown
   state.lifestyle.modifiers = res.modifiers
 }
-

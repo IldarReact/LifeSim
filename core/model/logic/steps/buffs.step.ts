@@ -1,17 +1,25 @@
-import type { TurnContext } from '../turn/turn-context'
-import type { TurnState } from '../turn/turn-state'
+import type { TurnStep } from '../turn/turn-step'
+import { processBuffs } from '../turns/buffs-processor'
+import type { Stats } from '@/core/types'
 
-export function buffsStep(ctx: TurnContext, state: TurnState): void {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require('../turns/buffs-processor') as typeof import('../turns/buffs-processor')
+export const buffsStep: TurnStep = (ctx, state) => {
+  const res = processBuffs(state.buffs, {
+    turn: ctx.turn,
+    year: ctx.year,
+  })
 
-    const res = mod.processBuffs(state.activeBuffs, ctx.year, ctx.turn)
+  // ⏳ обновляем баффы
+  state.buffs = res.activeBuffs
 
-    state.activeBuffs = res.activeBuffs
-    state.buffModifiers = res.modifiers
-    state.notifications.push(...res.notifications)
-  } catch {
-    // fallback: оставляем как есть
+  // 💰 деньги
+  state.moneyDelta += res.moneyDelta
+
+  // 📊 модификаторы статов
+  for (const key in res.statModifiers) {
+    const stat = key as keyof Stats
+    state.statModifiers[stat] = (state.statModifiers[stat] ?? 0) + (res.statModifiers[stat] ?? 0)
   }
+
+  // 🔔 уведомления
+  state.notifications.push(...res.notifications)
 }

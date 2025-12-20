@@ -2,15 +2,15 @@
 
 import React, { useEffect, useState } from 'react'
 import { useGameStore } from '@/core/model/game-store'
-import { FamilyActivity } from '@/features/activities/family-activity'
+import { FamilyActivity } from '@/features/activities/family/family-activity'
 import { WorkActivity } from '@/features/activities/work/work-activity'
 import { ShopActivity } from '@/features/activities/shop'
-import { InvestmentsActivity } from '@/features/activities/investments-activity'
+import { InvestmentsActivity } from '@/features/activities/investments/investments-activity'
 import { BanksActivity } from '@/features/activities/bank/banks-activity'
-import { RelocationActivity } from '@/features/activities/relocation-activity'
-import { RestActivity } from '@/features/activities/rest-activity'
-import { EventsActivity } from '@/features/activities/events-activity'
-import { EducationActivity } from '@/features/activities/education-activity'
+import { RelocationActivity } from '@/features/activities/relocation/relocation-activity'
+import { RestActivity } from '@/features/activities/rest/rest-activity'
+import { EventsActivity } from '@/features/activities/events/events-activity'
+import { EducationActivity } from '@/features/activities/education/education-activity'
 import { Button } from '@/shared/ui/button'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import type { GameState } from '@/core/types'
@@ -125,10 +125,9 @@ export function ActivityContent(): React.JSX.Element | null {
             flex items-center gap-2 sm:gap-3 group backdrop-blur-md
             transition-all shadow-2xl
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${
-              isWaiting
-                ? 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-                : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+            ${isWaiting
+              ? 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+              : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]'
             }
           `}
         >

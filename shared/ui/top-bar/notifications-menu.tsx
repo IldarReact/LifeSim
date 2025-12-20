@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { useState, useRef, useEffect } from 'react'
 import { OfferDetailsDialog } from '@/features/notifications/offer-details-dialog'
 import type { GameOffer } from '@/core/types/game-offers.types'
-import type { Notification as GameNotification } from '@/core/types'
+import type { Notification as Notification } from '@/core/types'
 
 type OfferReceivedNotificationData = {
   type: 'offer_received'
@@ -48,7 +48,7 @@ export function NotificationsMenu() {
     acceptJobOffer(applicationId)
   }
 
-  const handleNotificationClick = (notif: GameNotification) => {
+  const handleNotificationClick = (notif: Notification) => {
     const data = notif.data
 
     if (isOfferReceivedData(data)) {
@@ -60,7 +60,6 @@ export function NotificationsMenu() {
       }
     }
   }
-
 
   function isOfferReceivedData(data: unknown): data is OfferReceivedNotificationData {
     return (
@@ -118,7 +117,7 @@ export function NotificationsMenu() {
                   <p>Нет новых уведомлений</p>
                 </div>
               ) : (
-                notifications.map((notif: GameNotification) => {
+                notifications.map((notif: Notification) => {
                   const isOfferNotif = isOfferReceivedData(notif.data)
 
                   return (

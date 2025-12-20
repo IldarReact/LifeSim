@@ -36,12 +36,17 @@ export interface MarketEvent {
   title: string
   description: string
   impact: number // Изменение значения рынка (-1.0 до +1.0)
-  duration: number // Сколько кварталов действует
-  turn: number // Когда произошло (deprecated, use startTurn)
-  type?: 'positive' | 'negative' | 'neutral' // Тип события
-  startTurn?: number // Когда началось
-  endTurn?: number // Когда закончится
+  duration: number
+  turn: number
+  type?: 'positive' | 'negative' | 'neutral'
+  startTurn?: number
+  endTurn?: number
   effect?: {
     globalMarketModifier?: number
   }
+}
+
+export interface MarketResult {
+  marketEvents: MarketEvent[]
+  notifications: Notification[]
 }

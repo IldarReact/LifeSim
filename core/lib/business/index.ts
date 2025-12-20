@@ -54,3 +54,26 @@ export { generateBusinessEvents } from './business-events'
 
 // NPC voting
 export { calculateNPCVote } from './npc-voting'
+
+// Player roles
+export {
+  playerHasRole,
+  getPlayerActiveRoles,
+  calculatePlayerRoleEffects,
+  getPlayerRoleSkillGrowth,
+  getPlayerRoleBusinessImpact,
+  canPlayerTakeRole,
+  isRoleFilled,
+  checkMinimumStaffing,
+  getAutoAssignedManagerialRoles,
+  updateAutoAssignedRoles,
+} from './player-roles'
+
+export {
+  getRoleConfig,
+  isManagerialRole,
+  isOperationalRole,
+  getManagerialRoles,
+  getOperationalRoles,
+  EMPLOYEE_ROLES_CONFIG,
+} from './employee-roles.config'

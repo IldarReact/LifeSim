@@ -1,37 +1,31 @@
-import type { TurnContext } from '../turn/turn-context'
-import type { TurnState } from '../turn/turn-state'
+import type { TurnStep } from '../turn/turn-step'
 import { checkAllThresholdEffects, generateLowStatEvents } from '@/core/lib/threshold-effects'
+import { checkDefeatConditions } from '@/core/lib/defeat-conditions'
 import { formatGameDate } from '@/core/lib/quarter'
 
-const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
+const clamp = (v: number) => Math.max(0, Math.min(100, v))
 
-export function thresholdsStep(ctx: TurnContext, state: TurnState): void {
-  const baseStats = state.stats
-  const lifestyle = state.lifestyle.modifiers
-  const buffs = state.buffModifiers
+export const thresholdsStep: TurnStep = (ctx, state) => {
+  const s = state.stats
+  const l = state.lifestyle.modifiers
+  const m = state.statModifiers
 
-  // 1️⃣ Применяем модификаторы
-  const nextStats = {
-    ...baseStats,
-    health: clamp(baseStats.health + lifestyle.health + buffs.health, 0, 100),
-    happiness: clamp(baseStats.happiness + lifestyle.happiness + buffs.happiness, 0, 100),
-    sanity: clamp(baseStats.sanity + lifestyle.sanity + buffs.sanity, 0, 100),
-    intelligence: clamp(
-      baseStats.intelligence + lifestyle.intelligence + buffs.intelligence,
-      0,
-      100,
-    ),
-    energy: clamp(baseStats.energy + lifestyle.energy + buffs.energy, 0, 100),
+  // 1. Применяем накопленные модификаторы к статам
+  // Энергия восстанавливается до 100 и затем применяются модификаторы (затраты и бонусы)
+  state.stats = {
+    ...s,
+    health: clamp(s.health + (l.health || 0) + (m.health || 0)),
+    happiness: clamp(s.happiness + (l.happiness || 0) + (m.happiness || 0)),
+    sanity: clamp(s.sanity + (l.sanity || 0) + (m.sanity || 0)),
+    intelligence: clamp(s.intelligence + (l.intelligence || 0) + (m.intelligence || 0)),
+    energy: clamp(100 + (l.energy || 0) + (m.energy || 0)),
   }
 
-  state.stats = nextStats
+  // 2. Проверяем пороги (медицинские расходы и т.д.)
+  const res = checkAllThresholdEffects(state.stats)
+  const low = generateLowStatEvents(state.stats, ctx.turn, ctx.year)
 
-  // 2️⃣ Threshold-эффекты (болезни, терапия и т.п.)
-  const thresholdResult = checkAllThresholdEffects(nextStats)
-  const lowStatEvents = generateLowStatEvents(nextStats, ctx.turn, ctx.year)
-
-  // 3️⃣ Уведомления от threshold-эффектов
-  thresholdResult.events.forEach((event) => {
+  res.events.forEach((event) => {
     state.notifications.push({
       id: `threshold_${event.type}_${Date.now()}_${Math.random()}`,
       type: event.severity === 'critical' ? 'warning' : 'info',
@@ -42,11 +36,14 @@ export function thresholdsStep(ctx: TurnContext, state: TurnState): void {
     })
   })
 
-  // low-stat события
-  state.notifications.push(...lowStatEvents)
+  state.financial.adjustedNetProfit -= (res.medicalCosts + res.therapyCosts)
+  state.notifications.push(...low)
 
-  // 4️⃣ Финансовые последствия
-  const thresholdCosts = thresholdResult.medicalCosts + thresholdResult.therapyCosts
-
-  state.financial.adjustedNetProfit -= thresholdCosts
+  // 3. Проверка условий поражения
+  const gameOverReason = checkDefeatConditions(state.stats)
+  if (gameOverReason) {
+    state.gameStatus = 'ended'
+    state.gameOverReason = gameOverReason
+    state.isAborted = true
+  }
 }

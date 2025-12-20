@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createPartnershipBusinessSlice } from '../partnership-business-slice'
+import { createPartnershipBusinessSlice } from '../activities/work/business/partnership-business-slice'
 import type { GameStore } from '../types'
 import type { Business } from '@/core/types/business.types'
 

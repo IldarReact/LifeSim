@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createGameOffersSlice } from '../game-offers-slice'
-import { createBusinessSlice } from '../business-slice'
-import { createCoreBusinessSlice } from '../business/core-business-slice'
+import { createGameOffersSlice } from '../activities/work/business/game-offers-slice'
+import { createBusinessSlice } from '../activities/work/business/business-slice'
+import { createCoreBusinessSlice } from '../activities/work/business/core-business-slice'
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
 import { LocalBusiness, LocalGameOffer, LocalGameState } from '../types'
 

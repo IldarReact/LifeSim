@@ -43,7 +43,7 @@ const country = getCountry(player.countryId)
     <p className="text-xs text-zinc-500 mt-2">Влияет на кредиты и вклады</p>
   </Card>
   
-  <Card className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-purple-500/30 p-8 text-center">
+  <Card className="bg-linear-to-br from-purple-500/20 to-blue-500/20 border-purple-500/30 p-8 text-center">
     <TrendingUp className="w-12 h-12 mx-auto mb-3 text-purple-400" />
     <p className="text-zinc-400">Чистый капитал</p>
     <p className={`text-4xl font-bold ${(totalDeposits - totalDebt) >= 0 ? "text-green-400" : "text-red-400"}`}>

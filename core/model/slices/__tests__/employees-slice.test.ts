@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createEmployeesSlice } from '../business/employees-slice'
+import { createEmployeesSlice } from '../activities/work/business/employees-slice'
 
 describe('employees-slice', () => {
   it('exports a creator function', () => {

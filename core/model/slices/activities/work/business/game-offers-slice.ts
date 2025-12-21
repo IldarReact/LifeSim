@@ -3,14 +3,15 @@ import type { StateCreator } from 'zustand'
 import type { GameStore, GameOffersSlice } from '../../../types'
 
 import { createPartnerBusiness } from '@/core/lib/business/create-partner-business'
-import { broadcastEvent } from '@/core/lib/multiplayer'
+import { broadcastEvent, getMyConnectionId } from '@/core/lib/multiplayer'
 import type { BusinessType } from '@/core/types/business.types'
-import { PartnershipAcceptedEvent, PartnershipUpdatedEvent } from '@/core/types/events.types'
-import type { GameOffer } from '@/core/types/game-offers.types'
 import {
-  generateOfferId,
-  isPartnershipOffer,
-} from '@/core/types/game-offers.types'
+  PartnershipAcceptedEvent,
+  PartnershipUpdatedEvent,
+  JobOfferAcceptedEvent,
+} from '@/core/types/events.types'
+import type { GameOffer } from '@/core/types/game-offers.types'
+import { generateOfferId, isPartnershipOffer, isJobOffer } from '@/core/types/game-offers.types'
 
 export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSlice> = (
   set,
@@ -118,6 +119,88 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         ),
       },
     }))
+  },
+
+  onJobOfferAccepted: (event: JobOfferAcceptedEvent) => {
+    const { payload } = event
+    const state = get()
+    if (!state.player) return
+
+    console.log('[GameOffers] Обработка JOB_OFFER_ACCEPTED:', payload)
+
+    // Добавляем игрока как сотрудника в бизнес работодателя
+    state.addEmployeeToBusiness(
+      payload.businessId,
+      payload.employeeName,
+      payload.role as any,
+      payload.salary,
+      payload.employeeId,
+    )
+
+    // Обновляем статус предложения локально
+    set((state) => ({
+      offers: state.offers.map((o) =>
+        o.id === payload.offerId ? { ...o, status: 'accepted' } : o,
+      ),
+    }))
+
+    // Уведомляем работодателя
+    state.pushNotification?.({
+      type: 'success',
+      title: 'Сотрудник нанят',
+      message: `${payload.employeeName} принял ваше предложение и устроился на должность ${payload.role}`,
+    })
+  },
+
+  onOfferSent: (event: any) => {
+    const { payload } = event
+    const state = get()
+    const myConnectionId = getMyConnectionId()
+    const offer = payload.offer as GameOffer
+
+    // Если оффер нам (сравниваем connectionId)
+    if (offer.toPlayerId === myConnectionId) {
+      console.log('[GameOffers] Received new offer for me:', offer.id)
+
+      // Проверяем, нет ли уже такого оффера
+      if (state.offers.some((o) => o.id === offer.id)) return
+
+      set((state) => ({
+        offers: [...state.offers, offer],
+      }))
+
+      // Показываем уведомление
+      state.pushNotification?.({
+        title: 'Новое предложение!',
+        message: `От ${offer.fromPlayerName}`,
+        type: 'info',
+        data: {
+          offerId: offer.id,
+          type: 'offer_received',
+        },
+      })
+    }
+  },
+
+  onOfferRejected: (event: any) => {
+    const { payload } = event
+    const state = get()
+    const { offerId, rejectedBy } = payload
+
+    // Обновляем статус оффера
+    set((state) => ({
+      offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'rejected' } : o)),
+    }))
+
+    // Если это наш оффер, уведомляем
+    const offer = state.offers.find((o) => o.id === offerId)
+    if (offer && offer.fromPlayerId === state.player?.id) {
+      state.pushNotification?.({
+        title: 'Предложение отклонено',
+        message: `${offer.toPlayerName} отклонил ваше предложение`,
+        type: 'info',
+      })
+    }
   },
 
   sendOffer: (type, toPlayerId, toPlayerName, details, message) => {
@@ -246,7 +329,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         type: 'PARTNERSHIP_ACCEPTED',
         payload: {
           businessId: acceptingBusiness.id,
-          partnerId: state.player!.id, // ID принимающего - это правильно!
+          partnerId: state.player!.id,
           partnerName: state.player!.name,
           businessName: acceptingBusiness.name,
           businessType: acceptingBusiness.type,
@@ -256,6 +339,7 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
           partnerInvestment: offer.details.partnerInvestment,
           yourShare: offer.details.yourShare,
           yourInvestment: offer.details.yourInvestment,
+          businessId_actual: acceptingBusiness.id, // For initiator to link
         },
       })
 
@@ -269,6 +353,40 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
         type: 'success',
         title: 'Партнёрство создано',
         message: `Вы стали партнером с ${offer.fromPlayerName} в бизнесе "${offer.details.businessName}"`,
+      })
+    } else if (isJobOffer(offer)) {
+      console.log('STEP 5: is job offer')
+      // 1. Принимаем предложение работы
+      state.joinBusinessAsEmployee(
+        offer.details.businessId,
+        offer.details.role,
+        offer.details.salary,
+      )
+
+      // 2. Уведомляем работодателя (отправителя)
+      broadcastEvent({
+        type: 'JOB_OFFER_ACCEPTED',
+        payload: {
+          offerId: offer.id,
+          employeeId: state.player!.id,
+          employeeName: state.player!.name,
+          businessId: offer.details.businessId,
+          role: offer.details.role,
+          salary: offer.details.salary,
+        },
+        toPlayerId: offer.fromPlayerId,
+      })
+
+      // 3. Обновляем статус предложения
+      set((state) => ({
+        offers: state.offers.map((o) => (o.id === offerId ? { ...o, status: 'accepted' } : o)),
+      }))
+
+      // 4. Уведомляем игрока
+      state.pushNotification?.({
+        type: 'success',
+        title: 'Работа принята',
+        message: `Вы устроились в "${offer.details.businessName}" на должность ${offer.details.role}`,
       })
     }
   },

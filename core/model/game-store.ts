@@ -25,6 +25,9 @@ import {
   BusinessChangeApprovedEvent,
   BusinessChangeRejectedEvent,
   BusinessUpdatedEvent,
+  JobOfferAcceptedEvent,
+  OfferSentEvent,
+  OfferRejectedEvent,
 } from '../types/events.types'
 
 let multiplayerSynced = false
@@ -68,6 +71,17 @@ export function enableMultiplayerSync() {
     }
     if (event.type === 'BUSINESS_UPDATED') {
       state.onBusinessUpdated(event as BusinessUpdatedEvent)
+    }
+
+    // Offer events
+    if (event.type === 'JOB_OFFER_ACCEPTED') {
+      state.onJobOfferAccepted(event as JobOfferAcceptedEvent)
+    }
+    if (event.type === 'OFFER_SENT') {
+      state.onOfferSent(event as OfferSentEvent)
+    }
+    if (event.type === 'OFFER_REJECTED') {
+      state.onOfferRejected(event as OfferRejectedEvent)
     }
   })
 }

@@ -215,12 +215,28 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
         if (partner.type === 'player') {
           const updatedBusiness = get().player?.businesses.find((b) => b.id === businessId)
           if (updatedBusiness) {
+            // IMPORTANT: For the partner, the current player is an employee.
+            // We must include ourselves in the employees list we send to them,
+            // otherwise we will be removed from their local state.
+            const playerAsEmployee = {
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: role,
+              stars: 3, // Default for player
+              skills: { efficiency: 100 },
+              salary: salary,
+              productivity: 100,
+              experience: 0,
+              humanTraits: [],
+              effortPercent: isManagerial ? 50 : 100,
+            }
+
             broadcastEvent({
               type: 'BUSINESS_UPDATED',
               payload: {
                 businessId,
                 changes: {
-                  employees: updatedBusiness.employees,
+                  employees: [...updatedBusiness.employees, playerAsEmployee],
                 },
               },
               toPlayerId: partner.id,

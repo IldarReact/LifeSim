@@ -276,6 +276,9 @@ export interface GameOffersSlice {
     event: import('@/core/types/events.types').PartnershipAcceptedEvent,
   ) => void
   onPartnershipUpdated: (event: import('@/core/types/events.types').PartnershipUpdatedEvent) => void
+  onJobOfferAccepted: (event: import('@/core/types/events.types').JobOfferAcceptedEvent) => void
+  onOfferSent: (event: import('@/core/types/events.types').OfferSentEvent) => void
+  onOfferRejected: (event: import('@/core/types/events.types').OfferRejectedEvent) => void
 }
 
 // Add these interfaces at the top of the file

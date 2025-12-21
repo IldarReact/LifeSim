@@ -642,17 +642,24 @@ export const createPartnershipBusinessSlice: StateCreator<
     set((state) => ({
       player: {
         ...state.player!,
-        businesses: state.player!.businesses.map((b) =>
-          b.id === businessId
-            ? {
-                ...b,
-                ...changes,
-              }
-            : b,
-        ),
+        businesses: state.player!.businesses.map((business) => {
+          if (business.id !== businessId) return business
+
+          // Если обновляется список сотрудников, мы должны отфильтровать СЕБЯ из этого списка,
+          // так как мы храним свою занятость в playerEmployment, а не в employees.
+          // Это предотвращает дублирование и затирание нашей роли при синхронизации.
+          let processedChanges = { ...changes }
+          if (changes.employees && Array.isArray(changes.employees)) {
+            processedChanges.employees = changes.employees.filter(
+              (emp: any) => emp.id !== `player_${state.player!.id}`,
+            )
+          }
+
+          return { ...business, ...processedChanges }
+        }),
       },
     }))
 
-    console.log('[PartnershipBusiness] Бизнес обновлён:', { businessId, changes })
+    // console.log('[onBusinessUpdated] Business updated:', businessId, changes)
   },
 })

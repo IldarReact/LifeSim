@@ -6,6 +6,7 @@ export type GameEventType =
   | 'PARTNERSHIP_UPDATED'
   | 'OFFER_SENT'
   | 'OFFER_REJECTED'
+  | 'JOB_OFFER_ACCEPTED'
   | 'BUSINESS_SYNC'
   | 'BUSINESS_CHANGE_PROPOSED'
   | 'BUSINESS_CHANGE_APPROVED'
@@ -57,6 +58,18 @@ export interface OfferRejectedEvent extends BaseGameEvent {
   payload: {
     offerId: string
     rejectedBy: string
+  }
+}
+
+export interface JobOfferAcceptedEvent extends BaseGameEvent {
+  type: 'JOB_OFFER_ACCEPTED'
+  payload: {
+    offerId: string
+    employeeId: string
+    employeeName: string
+    businessId: string
+    role: string
+    salary: number
   }
 }
 
@@ -139,4 +152,4 @@ export type GameEvent<T = any> =
   | BusinessChangeApprovedEvent
   | BusinessChangeRejectedEvent
   | BusinessUpdatedEvent
-  | { type: string; payload: T } & BaseGameEvent
+  | ({ type: string; payload: T } & BaseGameEvent)

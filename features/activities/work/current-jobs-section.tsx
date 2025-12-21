@@ -6,9 +6,8 @@ import { LogOut, TrendingUp, Briefcase } from 'lucide-react'
 import React from 'react'
 
 import { useInflatedPrices } from '@/core/hooks'
-import type { Job } from '@/core/types'
+import type { Job, EmployeeRole } from '@/core/types'
 import { EmployeeCard } from '@/shared/components/business/employee-card'
-import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
 
 import { isManagerialRole } from '@/core/lib/business'
 import { useGameStore } from '@/core/model/game-store'
@@ -36,7 +35,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {jobsWithInflation.map((job) => {
         const isBusinessRole = (job as any).isBusinessRole
-        const role = (job as any).role || 'worker'
+        const role = ((job as any).role || 'worker') as EmployeeRole
 
         return (
           <EmployeeCard
@@ -45,7 +44,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
             name={job.title}
             role={role}
             roleLabel={isBusinessRole ? ROLE_LABELS[role] : 'Ваша работа'}
-            roleIcon={isBusinessRole ? ROLE_ICONS[role] : ROLE_ICONS.worker}
+            roleIcon={isBusinessRole ? (ROLE_ICONS[role] as React.ReactNode) : ROLE_ICONS.worker}
             company={job.company}
             salary={job.salary || (job as any).inflatedPrice}
             salaryLabel="/мес"

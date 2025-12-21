@@ -214,8 +214,8 @@ export function BusinessManagementDialog({
         // 50/50 - отправка предложения
         const proposeChange = useGameStore.getState().proposeBusinessChange
         proposeChange(business.id, 'fire_employee', {
-          employeeId,
-          employeeName,
+          fireEmployeeId: employeeId,
+          fireEmployeeName: employeeName,
         })
 
         const pushNotification = useGameStore.getState().pushNotification

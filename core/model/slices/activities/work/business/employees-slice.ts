@@ -64,6 +64,42 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
         businesses: updatedBusinesses,
       },
     })
+
+    // Broadcast to partners
+    if (updatedBusiness.partners && updatedBusiness.partners.length > 0) {
+      updatedBusiness.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          // IMPORTANT: If we are employed in this business, we must include ourselves
+          // in the employees list for the partner, otherwise they will remove us.
+          let syncEmployees = [...updatedBusiness.employees]
+          if (updatedBusiness.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: updatedBusiness.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: updatedBusiness.playerEmployment.salary,
+              productivity: 100,
+              experience: updatedBusiness.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: updatedBusiness.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                employees: syncEmployees,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
   },
 
   // Fire an employee by id
@@ -92,6 +128,42 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
         businesses: updatedBusinesses,
       },
     })
+
+    // Broadcast to partners
+    if (updatedBusiness.partners && updatedBusiness.partners.length > 0) {
+      updatedBusiness.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          // IMPORTANT: If we are employed in this business, we must include ourselves
+          // in the employees list for the partner, otherwise they will remove us.
+          let syncEmployees = [...updatedBusiness.employees]
+          if (updatedBusiness.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: updatedBusiness.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: updatedBusiness.playerEmployment.salary,
+              productivity: 100,
+              experience: updatedBusiness.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: updatedBusiness.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                employees: syncEmployees,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
   },
 
   // Hire a family member (lightweight placeholder)
@@ -117,8 +189,9 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
 
     const business = state.player.businesses[i]
 
+    const employeeId = playerId ? `player_${playerId}` : `emp_${Date.now()}`
     const newEmployee: Employee = {
-      id: playerId ? `player_${playerId}` : `emp_${Date.now()}`,
+      id: employeeId,
       name: employeeName,
       role: role as any,
       stars: 3,
@@ -131,9 +204,18 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       humanTraits: [],
     }
 
+    // Replace if exists, otherwise append
+    const existingIndex = business.employees.findIndex((e) => e.id === employeeId)
+    let newEmployees = [...business.employees]
+    if (existingIndex !== -1) {
+      newEmployees[existingIndex] = newEmployee
+    } else {
+      newEmployees.push(newEmployee)
+    }
+
     const updatedBusiness = {
       ...business,
-      employees: [...business.employees, newEmployee],
+      employees: newEmployees,
     }
 
     const updatedBusinesses = [...state.player.businesses]
@@ -145,6 +227,42 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
         businesses: updatedBusinesses,
       },
     })
+
+    // Broadcast to partners
+    if (updatedBusiness.partners && updatedBusiness.partners.length > 0) {
+      updatedBusiness.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          // IMPORTANT: If we are adding an employee (possibly another player or ourselves),
+          // we must include the player-as-employee in the list for the partner if applicable.
+          let syncEmployees = [...updatedBusiness.employees]
+          if (updatedBusiness.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: updatedBusiness.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: updatedBusiness.playerEmployment.salary,
+              productivity: 100,
+              experience: updatedBusiness.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: updatedBusiness.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                employees: syncEmployees,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
   },
 
   // Player joins their business as an employee
@@ -279,12 +397,13 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     if (business.partners && business.partners.length > 0) {
       business.partners.forEach((partner) => {
         if (partner.type === 'player') {
+          // When we leave the job, we broadcast the updated employees list (without us)
           broadcastEvent({
             type: 'BUSINESS_UPDATED',
             payload: {
               businessId,
               changes: {
-                playerEmployment: undefined,
+                employees: business.employees,
               },
             },
             toPlayerId: partner.id,
@@ -322,17 +441,34 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       },
     })
 
-    const business = state.player.businesses.find((b) => b.id === businessId)
+    const business = updatedBusinesses.find((b) => b.id === businessId)
     if (business && business.partners && business.partners.length > 0) {
       business.partners.forEach((partner) => {
         if (partner.type === 'player') {
+          // IMPORTANT: When we change our own effort, we must broadcast it to the partner
+          // as an update to the employees list, where we are represented as a player employee.
+          let syncEmployees = [...business.employees]
+          if (business.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: business.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: business.playerEmployment.salary,
+              productivity: 100,
+              experience: business.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: business.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
           broadcastEvent({
             type: 'BUSINESS_UPDATED',
             payload: {
               businessId,
               changes: {
-                playerEmployment: updatedBusinesses.find((b) => b.id === businessId)
-                  ?.playerEmployment,
+                employees: syncEmployees,
               },
             },
             toPlayerId: partner.id,
@@ -375,12 +511,30 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     if (business && business.partners && business.partners.length > 0) {
       business.partners.forEach((partner) => {
         if (partner.type === 'player') {
+          // IMPORTANT: If we are employed in this business, we must include ourselves
+          // in the employees list for the partner, otherwise they will remove us.
+          let syncEmployees = [...business.employees]
+          if (business.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: business.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: business.playerEmployment.salary,
+              productivity: 100,
+              experience: business.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: business.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
           broadcastEvent({
             type: 'BUSINESS_UPDATED',
             payload: {
               businessId,
               changes: {
-                employees: business.employees,
+                employees: syncEmployees,
               },
             },
             toPlayerId: partner.id,

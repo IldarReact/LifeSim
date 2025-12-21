@@ -645,17 +645,46 @@ export const createPartnershipBusinessSlice: StateCreator<
         businesses: state.player!.businesses.map((business) => {
           if (business.id !== businessId) return business
 
-          // Если обновляется список сотрудников, мы должны отфильтровать СЕБЯ из этого списка,
-          // так как мы храним свою занятость в playerEmployment, а не в employees.
-          // Это предотвращает дублирование и затирание нашей роли при синхронизации.
+          // Если обновляется список сотрудников, мы должны синхронизировать нашу роль
+          // и отфильтровать СЕБЯ из этого списка для локального хранения.
           let processedChanges = { ...changes }
+          let updatedPlayerEmployment = business.playerEmployment
+
           if (changes.employees && Array.isArray(changes.employees)) {
+            // Ищем себя в списке сотрудников, который прислал партнер
+            const selfAsEmployee = changes.employees.find(
+              (emp: any) => emp.id === `player_${state.player!.id}`,
+            )
+
+            if (selfAsEmployee) {
+              // Если партнер прислал данные о нас, синхронизируем их
+              updatedPlayerEmployment = {
+                ...(updatedPlayerEmployment || {
+                  startedTurn: state.turn,
+                  experience: 0,
+                }),
+                role: selfAsEmployee.role,
+                salary: selfAsEmployee.salary,
+                effortPercent:
+                  selfAsEmployee.effortPercent ?? updatedPlayerEmployment?.effortPercent ?? 100,
+              }
+            } else if (updatedPlayerEmployment) {
+              // Если нас нет в списке сотрудников, значит нас уволили или мы ушли
+              // Но только если список сотрудников в принципе пришел (он пришел)
+              updatedPlayerEmployment = undefined
+            }
+
+            // Фильтруем себя из списка сотрудников для локального хранения
             processedChanges.employees = changes.employees.filter(
               (emp: any) => emp.id !== `player_${state.player!.id}`,
             )
           }
 
-          return { ...business, ...processedChanges }
+          return {
+            ...business,
+            ...processedChanges,
+            playerEmployment: updatedPlayerEmployment,
+          }
         }),
       },
     }))

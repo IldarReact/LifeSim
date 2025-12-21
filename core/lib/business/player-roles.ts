@@ -95,14 +95,13 @@ export function calculatePlayerRoleEffects(business: Business): StatEffect {
   const effortFactor = Math.max(0.1, Math.min(1, effortPercent / 100))
 
   const totalEffect: StatEffect = {
-    energy: (managerialEffect.energy || 0) + (operationalEffect.energy || 0) * effortFactor,
-    sanity: (managerialEffect.sanity || 0) + (operationalEffect.sanity || 0) * effortFactor,
+    energy: (managerialEffect.energy || 0) * effortFactor + (operationalEffect.energy || 0),
+    sanity: (managerialEffect.sanity || 0) * effortFactor + (operationalEffect.sanity || 0),
     happiness:
-      (managerialEffect.happiness || 0) + (operationalEffect.happiness || 0) * effortFactor,
-    health: (managerialEffect.health || 0) + (operationalEffect.health || 0) * effortFactor,
+      (managerialEffect.happiness || 0) * effortFactor + (operationalEffect.happiness || 0),
+    health: (managerialEffect.health || 0) * effortFactor + (operationalEffect.health || 0),
     intelligence:
-      (managerialEffect.intelligence || 0) +
-      (operationalEffect.intelligence || 0) * effortFactor,
+      (managerialEffect.intelligence || 0) * effortFactor + (operationalEffect.intelligence || 0),
   }
 
   return totalEffect
@@ -115,12 +114,17 @@ export function getPlayerRoleSkillGrowth(business: Business): SkillGrowthInfo[] 
   const activeRoles = getPlayerActiveRoles(business)
   const skillGrowth: SkillGrowthInfo[] = []
 
+  const effortPercent = business.playerEmployment?.effortPercent ?? 100
+  const effortFactor = Math.max(0.1, Math.min(1, effortPercent / 100))
+
   activeRoles.forEach((role) => {
     const config = getRoleConfig(role)
     if (config?.skillGrowth) {
+      // Scale skill growth by effort factor for managerial roles
+      const factor = isManagerialRole(role) ? effortFactor : 1
       skillGrowth.push({
         skillName: config.skillGrowth.name,
-        progress: config.skillGrowth.progressPerQuarter,
+        progress: Math.round(config.skillGrowth.progressPerQuarter * factor),
       })
     }
   })
@@ -267,7 +271,7 @@ export function getAutoAssignedManagerialRoles(business: Business): EmployeeRole
   const autoRoles: EmployeeRole[] = []
 
   // Управляющий и Бухгалтер - обязательные роли по умолчанию
-  const defaultRoles: EmployeeRole[] = ['manager', 'accountant']
+  const defaultRoles: EmployeeRole[] = ['manager', 'accountant', 'lawyer']
 
   defaultRoles.forEach((role) => {
     const hasEmployee = business.employees.some((e) => e.role === role)

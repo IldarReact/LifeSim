@@ -659,60 +659,15 @@ export function BusinessManagementDialog({
                 <Users className="w-6 h-6 text-blue-400" />
                 <h3 className="text-xl font-bold text-white">Персонал и участие</h3>
               </div>
-              {canHireMore && (
-                <p className="text-sm text-white/60">
-                  Бюджет:{' '}
-                  <span className="text-green-400 font-bold">
-                    ${availableBudget.toLocaleString()}
-                  </span>
-                </p>
-              )}
-            </div>
-
-            {/* Активные роли и влияние на статы */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-white/70 uppercase tracking-wider">
-                  Активные роли:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {business.playerRoles.managerialRoles.map((role) => (
-                    <Badge
-                      key={role}
-                      variant="outline"
-                      className="bg-orange-500/10 text-orange-400 border-orange-500/20 py-1 px-3"
-                    >
-                      {ROLE_ICONS[role]} <span className="ml-2">{ROLE_LABELS[role]}</span>
-                    </Badge>
-                  ))}
-                  {business.playerRoles.operationalRole && (
-                    <Badge
-                      variant="outline"
-                      className="bg-purple-500/10 text-purple-400 border-purple-500/20 py-1 px-3"
-                    >
-                      {ROLE_ICONS[business.playerRoles.operationalRole]}{' '}
-                      <span className="ml-2">
-                        {ROLE_LABELS[business.playerRoles.operationalRole]} (Опер.)
-                      </span>
-                    </Badge>
-                  )}
-                  {business.playerRoles.managerialRoles.length === 0 &&
-                    !business.playerRoles.operationalRole && (
-                      <p className="text-sm text-white/40 italic">
-                        Вы не участвуете в работе этого филиала
-                      </p>
-                    )}
-                </div>
-                <p className="text-xs text-white/40 mt-2">
-                  * Управленческие роли (Директор, Бухгалтер) назначаются автоматически, если нет
-                  наемных сотрудников.
-                </p>
-              </div>
-
-              <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-3">
-                  Влияние на ваши статы:
-                </p>
+              <div className="text-right">
+                {canHireMore && (
+                  <p className="text-sm text-white/60">
+                    Бюджет:{' '}
+                    <span className="text-green-400 font-bold">
+                      ${availableBudget.toLocaleString()}
+                    </span>
+                  </p>
+                )}
                 {(() => {
                   const effects = calculateBusinessFinancials(business, true).playerStatEffects || {
                     energy: 0,
@@ -723,146 +678,136 @@ export function BusinessManagementDialog({
                   const hasEffects = energy !== 0 || sanity !== 0
 
                   return hasEffects ? (
-                    <div className="space-y-3">
+                    <div className="flex gap-4 mt-1">
                       {energy !== 0 && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-white/60 flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-blue-400" /> Энергия
-                          </span>
-                          <span className="font-bold text-red-400">
-                            {energy > 0 ? '+' : ''}
-                            {energy} / кв
-                          </span>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <Activity className="w-3 h-3 text-blue-400" />
+                          <span className="text-red-400 font-bold">{energy} Энерг.</span>
                         </div>
                       )}
                       {sanity !== 0 && (
-                        <div className="flex justify_between items-center">
-                          <span className="text-sm text-white/60 flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-purple-400" /> Рассудок
-                          </span>
-                          <span className="font-bold text-red-400">
-                            {sanity > 0 ? '+' : ''}
-                            {sanity} / кв
-                          </span>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <Activity className="w-3 h-3 text-purple-400" />
+                          <span className="text-red-400 font-bold">{sanity} Рассуд.</span>
                         </div>
                       )}
                     </div>
-                  ) : (
-                    <p className="text-sm text-white/40 italic">Нет влияния на статы</p>
-                  )
+                  ) : null
                 })()}
               </div>
             </div>
 
-            {/* Операционная работа игрока */}
-            <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6 mb-6">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-purple-400" />
-                Операционная работа
-              </h3>
-              {business.playerEmployment ? (
-                <div className="space-y-4">
-                  <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-sm text-white/60">Текущая позиция</p>
-                        <p className="text-xl font-bold text_white">
-                          {ROLE_LABELS[business.playerEmployment.role]}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-white/60">Зарплата</p>
-                        <p className="text-xl font-bold text-green-400">
-                          ${business.playerEmployment.salary.toLocaleString()}/кв
-                        </p>
-                      </div>
+            {/* Список сотрудников (включая игрока) */}
+            {business.employees.length > 0 ||
+            business.playerEmployment ||
+            business.playerRoles.managerialRoles.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                {/* Рендерим игрока как сотрудника, если он участвует */}
+                {(business.playerEmployment || business.playerRoles.managerialRoles.length > 0) && (
+                  <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-1">
+                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px]">
+                        ВЫ
+                      </Badge>
                     </div>
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm text-white/80">Занятость</label>
-                        <span className="text-sm font-bold text-white">
-                          {business.playerEmployment.effortPercent ?? 100}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="10"
-                        max="100"
-                        step="5"
-                        value={business.playerEmployment.effortPercent ?? 100}
-                        onChange={(e) =>
-                          useGameStore
-                            .getState()
-                            .setPlayerEmploymentEffort(business.id, parseInt(e.target.value, 10))
-                        }
-                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-400"
-                      />
-                      <p className="text-xs text-white/40 mt-1">
-                        Зарплата и влияние на статы масштабируются по занятости.
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => onLeaveJob(business.id)}
-                      variant="outline"
-                      className="w-full border-red-500/20 hover:bg-red-500/20 text-red-300"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Уволиться
-                    </Button>
-                  </div>
-                  <p className="text-xs text-white/40 text-center">
-                    Работаете с квартала {business.playerEmployment.startedTurn}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-white/70">
-                    Вы можете устроиться на работу в свой бизнес и получать зарплату каждый квартал.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {availablePositions.map((position) => (
-                      <div
-                        key={position.role}
-                        className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-purple-500/30 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-lg bg-purple-500/20">
-                              {ROLE_ICONS[position.role]}
-                            </div>
-                            <div>
-                              <p className="font-semibold text-white">
-                                {ROLE_LABELS[position.role]}
-                              </p>
-                              <p className="text-xs text-white/50">{position.description}</p>
-                            </div>
+
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-lg bg-purple-500/20">
+                          {ROLE_ICONS[business.playerEmployment?.role || 'manager']}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white text-lg">{player?.name || 'Вы'}</h4>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {business.playerEmployment && (
+                              <Badge
+                                variant="outline"
+                                className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px] py-0 px-1.5"
+                              >
+                                {ROLE_LABELS[business.playerEmployment.role]} (Опер.)
+                              </Badge>
+                            )}
+                            {business.playerRoles.managerialRoles.map((role) => (
+                              <Badge
+                                key={role}
+                                variant="outline"
+                                className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px] py-0 px-1.5"
+                              >
+                                {ROLE_LABELS[role]}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                          <p className="text-sm text-green-400 font-bold">
-                            ${position.salary.toLocaleString()}/кв
-                          </p>
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              onJoinAsEmployee(business.id, position.role, position.salary)
-                            }
-                            className="bg-purple-600 hover:bg-purple-700 text-white"
-                          >
-                            <UserPlus className="w-3 h-3 mr-1" />
-                            Устроиться
-                          </Button>
-                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                      {business.playerEmployment && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onLeaveJob(business.id)}
+                          className="border-red-500/20 hover:bg-red-500/20 text-red-300 h-8 px-2 text-xs"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Уволиться
+                        </Button>
+                      )}
+                    </div>
 
-            {/* Список сотрудников */}
-            {business.employees.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-white/5 rounded-lg p-2.5">
+                        <p className="text-xs text-white/50 mb-1">Зарплата</p>
+                        <p className="text-base font-bold text-green-400">
+                          ${(business.playerEmployment?.salary || 0).toLocaleString()}
+                          <span className="text-[10px] text-white/40 ml-1">/кв</span>
+                        </p>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-2.5">
+                        <p className="text-xs text-white/50 mb-1">Занятость</p>
+                        <p className="text-base font-bold text-white">
+                          {business.playerEmployment?.effortPercent ?? 100}%
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Слайдер занятости для игрока */}
+                    {(() => {
+                      const role = business.playerEmployment?.role
+                      const isManagerial =
+                        ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
+                          role as any,
+                        ) ||
+                        (!role && business.playerRoles.managerialRoles.length > 0)
+
+                      if (isManagerial) {
+                        return (
+                          <div className="mt-2 pt-2 border-t border-white/5">
+                            <input
+                              type="range"
+                              min="10"
+                              max="100"
+                              step="5"
+                              value={business.playerEmployment?.effortPercent ?? 100}
+                              onChange={(e) =>
+                                useGameStore
+                                  .getState()
+                                  .setPlayerEmploymentEffort(
+                                    business.id,
+                                    parseInt(e.target.value, 10),
+                                  )
+                              }
+                              className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-400"
+                            />
+                            <p className="text-[10px] text-white/40 mt-1">
+                              Регулируйте нагрузку и доход
+                            </p>
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                  </div>
+                )}
+
+                {/* Рендерим остальных сотрудников */}
                 {business.employees.map((employee) => {
                   const indexedSalary = calculateEmployeeSalary(employee, country)
                   return (
@@ -912,12 +857,42 @@ export function BusinessManagementDialog({
                           </p>
                         </div>
                         <div className="bg-white/5 rounded-lg p-2.5">
-                          <p className="text-xs text-white/50 mb-1">Опыт</p>
+                          <p className="text-xs text-white/50 mb-1">
+                            {employee.id.startsWith('player_') ? 'Занятость' : 'Опыт'}
+                          </p>
                           <p className="text-base font-bold text-white">
-                            {Math.floor(employee.experience / 12)}г {employee.experience % 12}м
+                            {employee.id.startsWith('player_')
+                              ? `${employee.effortPercent ?? 100}%`
+                              : `${Math.floor(employee.experience / 12)}г ${employee.experience % 12}м`}
                           </p>
                         </div>
                       </div>
+
+                      {/* Слайдер занятости для нанятых игроков */}
+                      {employee.id.startsWith('player_') && (
+                        <div className="mt-2 pt-2 border-t border-white/5">
+                          <input
+                            type="range"
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={employee.effortPercent ?? 100}
+                            onChange={(e) =>
+                              useGameStore
+                                .getState()
+                                .setEmployeeEffort(
+                                  business.id,
+                                  employee.id,
+                                  parseInt(e.target.value, 10),
+                                )
+                            }
+                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
+                          />
+                          <p className="text-[10px] text-white/40 mt-1">
+                            Регулируйте занятость игрока
+                          </p>
+                        </div>
+                      )}
 
                       <div className="space-y-3">
                         <div>
@@ -946,7 +921,7 @@ export function BusinessManagementDialog({
                 <h4 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wider">
                   Нанять сотрудника:
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                   {(
                     [
                       'manager',

@@ -9,11 +9,15 @@ export type EmployeeRole =
   | 'marketer' // Маркетолог
   | 'technician' // Техник/специалист
   | 'worker' // Рабочий
+  | 'lawyer' // Юрист
+  | 'hr' // HR-менеджер
 
 export type EmployeeStars = 1 | 2 | 3 | 4 | 5
 
 export interface EmployeeSkills {
   efficiency: number // 0-100 - общая эффективность
+  loyalty?: number // 0-100 - лояльность
+  stressResistance?: number // 0-100 - стрессоустойчивость
 }
 
 export interface Employee {
@@ -25,6 +29,7 @@ export interface Employee {
   salary: number // Ежеквартальная зарплата (базовая)
   productivity: number // 0-100 - текущая продуктивность (влияет на KPI)
   experience: number // Кварталы работы в компании
+  effortPercent?: number // Процент занятости (10-100)
   avatar?: string
   isFamilyMember?: boolean
   familyMemberId?: string

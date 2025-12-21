@@ -21,10 +21,11 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
   let managerBonus = 0;
 
   business.employees.forEach(emp => {
-    const contribution = emp.skills.efficiency * (emp.productivity / 100);
+    const effortFactor = (emp.effortPercent ?? 100) / 100
+    const contribution = emp.skills.efficiency * (emp.productivity / 100) * effortFactor;
 
     if (emp.role === 'manager') {
-      managerBonus += (emp.skills.efficiency / 100) * 10; // До +10% от каждого менеджера
+      managerBonus += (emp.skills.efficiency / 100) * 10 * effortFactor; // До +10% от каждого менеджера
     }
 
     totalEfficiency += contribution;

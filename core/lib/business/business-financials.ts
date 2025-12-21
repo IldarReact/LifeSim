@@ -1,5 +1,10 @@
-import { getInflatedPrice, getQuarterlyInflatedSalary } from '../calculations/price-helpers'
+import {
+  getInflatedPrice,
+  getQuarterlyInflatedSalary,
+  getInflatedSalary,
+} from '../calculations/price-helpers'
 import { getRoleConfig } from './employee-roles.config'
+import { checkMinimumStaffing } from './player-roles'
 
 import { calculateEmployeeKPI } from './employee-calculations'
 import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles'
@@ -56,13 +61,27 @@ export function calculateBusinessFinancials(
   }
 
   // 1. Base Expenses (OpEx)
-  const employeesCost = business.employees.reduce((sum, emp) => {
-    const indexedSalary = economy
-      ? getQuarterlyInflatedSalary(emp.salary, economy, emp.experience)
-      : emp.salary
-    const kpi = calculateEmployeeKPI(emp)
-    return sum + indexedSalary + kpi
+  let employeesCost = business.employees.reduce((sum, emp) => {
+    // We assume emp.salary is monthly. Convert to quarterly with inflation.
+    const monthlySalary = emp.salary
+    const indexedMonthlySalary = economy
+      ? getInflatedSalary(monthlySalary, economy, emp.experience)
+      : monthlySalary
+
+    // KPI is also monthly
+    const effortFactor = (emp.effortPercent ?? 100) / 100
+    const scaledMonthlySalary = indexedMonthlySalary * effortFactor
+    const monthlyKpi = calculateEmployeeKPI({ ...emp, salary: scaledMonthlySalary })
+
+    return sum + (scaledMonthlySalary + monthlyKpi) * 3
   }, 0)
+
+  // Add player salary if they are employed in their own business
+  if (business.playerEmployment) {
+    const monthlySalary = business.playerEmployment.salary
+    const effortFactor = (business.playerEmployment.effortPercent ?? 100) / 100
+    employeesCost += monthlySalary * effortFactor * 3
+  }
 
   const baseRentPerEmployee = 200
   const baseUtilitiesPerEmployee = 50
@@ -75,7 +94,9 @@ export function calculateBusinessFinancials(
     ? getInflatedPrice(baseUtilitiesPerEmployee * business.maxEmployees, economy, 'services')
     : baseUtilitiesPerEmployee * business.maxEmployees
 
-  let opEx = employeesCost + rent + utilities
+  const insurance = business.hasInsurance ? business.insuranceCost || 0 : 0
+
+  let opEx = employeesCost + rent + utilities + insurance
 
   // Employee role buffs
   let employeeEfficiencyBonusPct = 0
@@ -87,10 +108,13 @@ export function calculateBusinessFinancials(
     const cfg = getRoleConfig(emp.role)
     const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
     if (!impact) return
-    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus
-    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus
-    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus
-    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction
+
+    const effortFactor = (emp.effortPercent ?? 100) / 100
+
+    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus * effortFactor
+    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus * effortFactor
+    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus * effortFactor
+    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction * effortFactor
   })
 
   // Player Skill reduction
@@ -127,7 +151,10 @@ export function calculateBusinessFinancials(
       cycleMod *= 0.6 // High price services suffer in crisis
     }
 
-    let serviceDemand = baseServiceDemand * efficiencyMod * reputationMod * priceMod * cycleMod
+    const staffing = checkMinimumStaffing(business)
+    let serviceDemand = staffing.isValid
+      ? baseServiceDemand * efficiencyMod * reputationMod * priceMod * cycleMod
+      : 0
     if (employeeSalesBonusPct > 0) {
       serviceDemand *= 1 + employeeSalesBonusPct / 100
     }
@@ -187,7 +214,9 @@ export function calculateBusinessFinancials(
       finalDemand *= 1 + playerImpact.salesBonus / 100
     }
 
-    salesVolume = Math.min(Math.floor(finalDemand), inventory.currentStock)
+    const staffing2 = checkMinimumStaffing(business)
+    const computedDemand = staffing2.isValid ? finalDemand : 0
+    salesVolume = Math.min(Math.floor(computedDemand), inventory.currentStock)
     salesIncome = salesVolume * sellingPrice
     cogs = salesVolume * unitCost
 
@@ -272,8 +301,8 @@ export function calculateBusinessFinancials(
 
   return {
     income: Math.round(salesIncome),
-    expenses: Math.round(cogs + opEx + taxAmount), // P&L Expenses (COGS + OpEx + Taxes)
-    profit: Math.round(cashFlow), // We return Cash Flow as "profit" for the game money update
+    expenses: Math.round(purchaseCost + opEx + taxAmount), // Cash accounting: Use purchaseCost instead of COGS
+    profit: Math.round(cashFlow),
     netProfit: Math.round(netProfit),
     cashFlow: Math.round(cashFlow),
     newInventory,

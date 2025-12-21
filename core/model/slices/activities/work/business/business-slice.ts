@@ -1,10 +1,5 @@
 import type { GameStateCreator, BusinessSlice } from '../../../types'
 
-
-
-
-
-
 export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) => ({
   openBusiness: (
     name,
@@ -140,11 +135,16 @@ export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) =
     const s = get() as any
     if (typeof s.setPlayerEmploymentEffort === 'function')
       return (s.setPlayerEmploymentEffort as any)(businessId, effortPercent)
-    console.warn('[business-slice] setPlayerEmploymentEffort delegated, but target not found')
+  },
+
+  setEmployeeEffort: (businessId, employeeId, effortPercent) => {
+    const s = get() as any
+    if (typeof s.setEmployeeEffort === 'function')
+      return (s.setEmployeeEffort as any)(businessId, employeeId, effortPercent)
   },
 
   // ✅ Multiplayer Actions implementation
- 
+
   addPartnerToBusiness: (businessId, partnerId, partnerName, share, investment) => {
     const s = get() as any
     if (typeof s.addPartnerToBusiness === 'function')

@@ -173,18 +173,35 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       description: `Работа в собственном бизнесе на позиции ${role}`,
     }
 
-    const updatedBusinesses = state.player.businesses.map((b) =>
-      b.id === businessId
-        ? {
-            ...b,
-            playerEmployment: {
-              role,
-              salary,
-              startedTurn: state.turn,
-            },
-          }
-        : b,
-    )
+    const updatedBusinesses = state.player.businesses.map((b) => {
+      if (b.id !== businessId) return b
+      const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
+        role as any,
+      )
+      const isOperational = ['salesperson', 'technician', 'worker'].includes(role as any)
+
+      const nextPlayerRoles = { ...b.playerRoles }
+      if (isManagerial) {
+        // Добавляем управленческую роль игроку
+        const setRoles = new Set(nextPlayerRoles.managerialRoles || [])
+        setRoles.add(role as any)
+        nextPlayerRoles.managerialRoles = Array.from(setRoles) as any
+      } else if (isOperational) {
+        // Устанавливаем операционную роль игрока (полный день)
+        nextPlayerRoles.operationalRole = role as any
+      }
+
+      return {
+        ...b,
+        playerRoles: nextPlayerRoles,
+        playerEmployment: {
+          role,
+          salary,
+          startedTurn: state.turn,
+          effortPercent: isManagerial ? (b.playerEmployment?.effortPercent ?? 50) : 100,
+        },
+      }
+    })
 
     const updatedJobs = [...state.player.jobs, newJob]
 
@@ -282,21 +299,41 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
 
     const clamped = Math.max(10, Math.min(100, Math.round(effortPercent)))
 
-    const updatedBusinesses = state.player.businesses.map((b) =>
-      b.id === businessId && b.playerEmployment
-        ? {
-            ...b,
-            playerEmployment: {
-              ...b.playerEmployment,
-              effortPercent: clamped,
-            },
-          }
-        : b,
-    )
+    const updatedBusinesses = state.player.businesses.map((b) => {
+      if (b.id !== businessId || !b.playerEmployment) return b
+      const role = b.playerEmployment.role as any
+      const isOperational = ['salesperson', 'technician', 'worker'].includes(role)
+      const newEffort = isOperational ? 100 : clamped
+      return {
+        ...b,
+        playerEmployment: {
+          ...b.playerEmployment,
+          effortPercent: newEffort,
+        },
+      }
+    })
+
+    const updatedJobs = state.player.jobs.map((j) => {
+      if (j.id !== `job_business_${businessId}`) return j
+      const biz = updatedBusinesses.find((b) => b.id === businessId)
+      if (!biz?.playerEmployment) return j
+      const role = biz.playerEmployment.role as any
+      const isOperational = ['salesperson', 'technician', 'worker'].includes(role)
+      const factor = isOperational
+        ? 1
+        : Math.max(0.1, Math.min(1, (biz.playerEmployment.effortPercent ?? 100) / 100))
+      const baseQuarterlySalary = biz.playerEmployment.salary || 0
+      const baseMonthly = Math.round(baseQuarterlySalary / 3)
+      return {
+        ...j,
+        salary: Math.round(baseMonthly * factor),
+      }
+    })
 
     set({
       player: {
         ...state.player,
+        jobs: updatedJobs,
         businesses: updatedBusinesses,
       },
     })
@@ -310,10 +347,56 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
             payload: {
               businessId,
               changes: {
-                playerEmployment: {
-                  ...(business.playerEmployment || {}),
-                  effortPercent: clamped,
-                },
+                playerEmployment: updatedBusinesses.find((b) => b.id === businessId)
+                  ?.playerEmployment,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
+  },
+
+  // Set any employee's effort percent
+  setEmployeeEffort: (businessId: string, employeeId: string, effortPercent: number) => {
+    const state = get()
+    if (!state.player) return
+
+    const clamped = Math.max(10, Math.min(100, Math.round(effortPercent)))
+
+    const updatedBusinesses = state.player.businesses.map((b) => {
+      if (b.id !== businessId) return b
+      return {
+        ...b,
+        employees: b.employees.map((emp) => {
+          if (emp.id !== employeeId) return emp
+          return {
+            ...emp,
+            effortPercent: clamped,
+          }
+        }),
+      }
+    })
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses,
+      },
+    })
+
+    // Broadcast change
+    const business = updatedBusinesses.find((b) => b.id === businessId)
+    if (business && business.partners && business.partners.length > 0) {
+      business.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                employees: business.employees,
               },
             },
             toPlayerId: partner.id,

@@ -44,7 +44,10 @@ export interface PlayerSlice {
 
   // Actions
   applyStatChanges: (effect: StatEffect) => void
-  performTransaction: (cost: StatEffect, options?: { requireFunds?: boolean; title?: string }) => boolean
+  performTransaction: (
+    cost: StatEffect,
+    options?: { requireFunds?: boolean; title?: string },
+  ) => boolean
 }
 
 export interface EducationSlice {
@@ -174,6 +177,7 @@ export interface BusinessSlice {
   ) => void
   leaveBusinessJob: (businessId: string) => void
   setPlayerEmploymentEffort: (businessId: string, effortPercent: number) => void
+  setEmployeeEffort: (businessId: string, employeeId: string, effortPercent: number) => void
 
   // ✅ Multiplayer Business Actions
   addPartnerToBusiness: (

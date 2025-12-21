@@ -7,7 +7,9 @@ export const ROLE_LABELS: Record<EmployeeRole, string> = {
   accountant: "Бухгалтер",
   marketer: "Маркетолог",
   technician: "Техник",
-  worker: "Рабочий"
+  worker: "Рабочий",
+  lawyer: "Юрист",
+  hr: "HR-менеджер"
 }
 
 // Employee star ratings (1-5 stars)

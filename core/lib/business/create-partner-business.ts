@@ -94,7 +94,7 @@ export function createPartnerBusiness(
     employees: [],
     maxEmployees: 5,
     minEmployees: 1,
-    requiredRoles: [],
+    requiredRoles: ['manager', 'accountant', 'lawyer'],
     playerRoles: {
       managerialRoles: isInitiator
         ? (['manager', 'accountant'] as EmployeeRole[])

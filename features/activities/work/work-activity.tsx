@@ -15,6 +15,8 @@ import { useGameStore } from '@/core/model/game-store'
 import type { SkillLevel } from '@/core/types'
 import { FeedbackAnimation } from '@/shared/ui/feedback-animation'
 import { SectionSeparator } from '@/shared/ui/section-separator'
+import { getRoleConfig } from '@/core/lib/business/employee-roles.config'
+import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
 
 export function WorkActivity(): React.JSX.Element | null {
   const {
@@ -104,6 +106,60 @@ export function WorkActivity(): React.JSX.Element | null {
     setFeedback({ show: true, success: true, message: `Заказ "${title}" выполнен!` })
   }
 
+  // Current Jobs including business roles
+  const allJobs = React.useMemo(() => {
+    const regularJobs = player?.jobs || []
+    const businessJobs =
+      player?.businesses?.flatMap((b) => {
+        const roles = [
+          ...b.playerRoles.managerialRoles,
+          ...(b.playerRoles.operationalRole ? [b.playerRoles.operationalRole] : []),
+        ]
+
+        return roles.map((role) => {
+          const roleCfg = getRoleConfig(role)
+          const isEmployed = b.playerEmployment?.role === role
+          const salary = isEmployed ? Math.round((b.playerEmployment?.salary || 0) / 3) : 0
+          const effortPercent = isEmployed ? (b.playerEmployment?.effortPercent ?? 100) : 100
+
+          // Расчет затрат статов с учетом интенсивности (effort)
+          const costs = roleCfg?.playerEffects
+            ? {
+                energy: Math.abs(
+                  Math.round((roleCfg.playerEffects.energy || 0) * (effortPercent / 100)),
+                ),
+                sanity: Math.abs(
+                  Math.round((roleCfg.playerEffects.sanity || 0) * (effortPercent / 100)),
+                ),
+              }
+            : { energy: 10, sanity: 2 }
+
+          return {
+            id: `business-job-${b.id}-${role}`,
+            title: ROLE_LABELS[role],
+            company: b.name,
+            salary: salary,
+            cost: costs,
+            imageUrl: b.imageUrl || '',
+            description: roleCfg?.description || '',
+            isBusinessRole: true,
+            businessId: b.id,
+            role: role,
+            effortPercent,
+            skills: player.personal.skills.reduce((acc, s) => ({ ...acc, [s.id]: s.level }), {
+              efficiency: 100,
+            }),
+            stars:
+              player.personal.skills.length > 0
+                ? Math.max(1, ...player.personal.skills.map((s) => s.level))
+                : 1,
+          }
+        })
+      }) || []
+
+    return [...regularJobs, ...businessJobs]
+  }, [player?.jobs, player?.businesses])
+
   return (
     <React.Fragment>
       <FeedbackAnimation
@@ -166,7 +222,17 @@ export function WorkActivity(): React.JSX.Element | null {
         {/* Current Jobs */}
         <div className="space-y-4">
           <SectionSeparator title="Текущие работы" />
-          <CurrentJobsSection jobs={player?.jobs || []} onQuit={quitJob} />
+          <CurrentJobsSection
+            jobs={allJobs as any}
+            onQuit={(jobId) => {
+              const businessJob = allJobs.find((j) => j.id === jobId && (j as any).isBusinessRole)
+              if (businessJob) {
+                unassignPlayerRole((businessJob as any).businessId, (businessJob as any).role)
+              } else {
+                quitJob(jobId)
+              }
+            }}
+          />
         </div>
 
         {/* Vacancies + Freelance + Business */}

@@ -21,6 +21,7 @@ import {
   Building,
   ToggleLeft,
   ToggleRight,
+  ShieldCheck,
 } from 'lucide-react'
 import React from 'react'
 
@@ -80,6 +81,15 @@ export interface EmployeeCardProps {
     taxReduction?: number
     legalProtection?: number
     staffProductivityBonus?: number
+    marketingBonus?: number
+  }
+
+  // Затраты (энергия, рассудок и т.д.)
+  costs?: {
+    energy?: number
+    sanity?: number
+    happiness?: number
+    health?: number
   }
 
   // Управление
@@ -125,6 +135,7 @@ export function EmployeeCard({
   effortPercent,
   isPartialAllowed,
   impact,
+  costs,
   onAction,
   actionLabel,
   actionIcon,
@@ -142,36 +153,43 @@ export function EmployeeCard({
   // Рассчитываем звезды на лету, если они не переданы явно
   const stars = providedStars ?? calculateStarsFromSkills(skills)
   const getEffectIcon = (key: string) => {
-    switch (key.toLowerCase()) {
-      case 'health':
-        return <Heart className="w-3 h-3" />
+    switch (key) {
       case 'energy':
-        return <Zap className="w-3 h-3" />
+        return <Zap className="w-2.5 h-2.5" />
       case 'sanity':
-        return <Brain className="w-3 h-3" />
-      case 'happiness':
-        return <Smile className="w-3 h-3" />
-      case 'intelligence':
-        return <Brain className="w-3 h-3" />
+        return <Brain className="w-2.5 h-2.5" />
+      case 'health':
+        return <Heart className="w-2.5 h-2.5" />
+      case 'marketingBonus':
+        return <TrendingUp className="w-2.5 h-2.5" />
+      case 'revenue':
+        return <DollarSign className="w-2.5 h-2.5" />
+      case 'loyalty':
+        return <ShieldCheck className="w-2.5 h-2.5" />
       default:
-        return null
+        return <Activity className="w-2.5 h-2.5" />
     }
   }
 
   const getEffectColor = (key: string) => {
     switch (key.toLowerCase()) {
       case 'health':
-        return 'text-red-400'
+        return 'text-rose-400'
       case 'energy':
         return 'text-amber-400'
       case 'sanity':
-        return 'text-purple-400'
+        return 'text-indigo-400'
       case 'happiness':
         return 'text-pink-400'
       case 'intelligence':
         return 'text-blue-400'
+      case 'marketingbonus':
+      case 'revenue':
+        return 'text-emerald-400'
+      case 'loyalty':
+        return 'text-blue-400'
       default:
-        return 'text-gray-400'
+        return 'text-white/60'
     }
   }
 
@@ -213,12 +231,17 @@ export function EmployeeCard({
           label: `${plus}${value}% Команда`,
           title: 'Повышает продуктивность остальных сотрудников',
         }
+      case 'marketingBonus':
+        return {
+          label: `${plus}${value}% Маркетинг`,
+          title: 'Повышает эффективность рекламных кампаний',
+        }
       default:
         return { label: `${plus}${value}%`, title: '' }
     }
   }
 
-  const renderStars = (count: number, max: number = 5, size: string = 'w-3 h-3') => {
+  const renderStars = (count: number, max: number = 5, size: string = 'w-2.5 h-2.5') => {
     const starDescriptions = [
       'Новичок (1★): Требуется обучение и контроль',
       'Стажер (2★): Базовые навыки, может работать под присмотром',
@@ -295,13 +318,13 @@ export function EmployeeCard({
       `}
     >
       {/* Header Image/Avatar Area */}
-      <div className="relative h-28">
+      <div className="relative h-24">
         <img
           src={avatar || `https://i.pravatar.cc/150?u=${id}`}
           alt={name}
-          className="w-full h-full object-cover grayscale-[0.3] hover:grayscale-0 transition-all"
+          className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-zinc-900/95 via-zinc-900/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-900/40 to-transparent" />
 
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {isPlayer && (
@@ -321,6 +344,18 @@ export function EmployeeCard({
                   ? 'Вакансия'
                   : 'Сотрудник'}
           </Badge>
+          {effortPercent !== undefined && (
+            <Badge
+              variant="outline"
+              className={`backdrop-blur-md text-[10px] py-0 px-1.5 ${
+                effortPercent === 100
+                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                  : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+              }`}
+            >
+              {effortPercent === 100 ? 'Полный день' : 'Частично'}
+            </Badge>
+          )}
         </div>
 
         {isSelected && (
@@ -330,17 +365,17 @@ export function EmployeeCard({
         )}
 
         <div className="absolute bottom-2 left-3 flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-white">
+          <div className="p-1.5 rounded-lg bg-white/10 backdrop-blur-md border border-white/10 text-white shadow-inner">
             {roleIcon || <Briefcase className="w-3.5 h-3.5" />}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white text-sm leading-tight">{name}</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-white text-sm leading-tight tracking-tight">{name}</h3>
               {renderStars(stars)}
             </div>
             <div className="flex flex-col">
               <p
-                className="text-[10px] text-white/60 uppercase tracking-wider cursor-help"
+                className="text-[9px] font-bold text-white/50 uppercase tracking-widest cursor-help"
                 title={roleDescription}
               >
                 {roleLabel}
@@ -357,42 +392,74 @@ export function EmployeeCard({
       </div>
 
       {/* Content Area */}
-      <div className="p-4 space-y-4">
+      <div className="p-3.5 space-y-3.5">
         {/* Salary and Main Stats */}
         <div className="flex justify-between items-start">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {experience !== undefined && (
-              <div className="flex items-center gap-1.5 text-white/60">
+              <div className="flex items-center gap-1.5 text-white/40">
                 <Clock className="w-3 h-3" />
-                <span className="text-[10px] uppercase tracking-wider">
+                <span className="text-[9px] font-bold uppercase tracking-widest">
                   Опыт: {formatExperience(experience) || '—'}
                 </span>
               </div>
             )}
             {productivity !== undefined && (
-              <div className="flex items-center gap-1.5 text-white/60">
+              <div className="flex items-center gap-1.5 text-white/40">
                 <Activity className="w-3 h-3 text-blue-400" />
-                <span className="text-[10px] uppercase tracking-wider">
+                <span className="text-[9px] font-bold uppercase tracking-widest">
                   Продуктивность: {productivity}%
                 </span>
               </div>
             )}
-            {impact && Object.entries(impact).some(([_, v]) => v !== 0) && (
-              <div className="space-y-1 mt-2">
-                {Object.entries(impact).map(([key, value]) => {
-                  if (!value) return null
-                  const { label, title } = getImpactLabel(key, value)
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center gap-1.5 text-green-400 cursor-help"
-                      title={title}
-                    >
-                      <TrendingUp className="w-3 h-3" />
-                      <span className="text-[10px] uppercase tracking-wider">{label}</span>
-                    </div>
-                  )
-                })}
+            {/* Impacts/Bonuses */}
+            {impact && Object.values(impact).some((v) => v !== 0) && (
+              <div className="space-y-1.5 mt-2 bg-green-500/5 p-2.5 rounded-xl border border-green-500/10 shadow-sm">
+                <p className="text-[9px] font-bold text-green-500/50 uppercase tracking-[0.2em] mb-1">
+                  Эффекты влияния
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(impact).map(([key, value]) => {
+                    if (!value || value === 0) return null
+                    const color = getEffectColor(key)
+                    return (
+                      <div key={key} className={`flex items-center gap-1.5 ${color} text-[10px]`}>
+                        <div className="p-1 rounded-md bg-green-500/10 border border-green-500/10">
+                          {getEffectIcon(key)}
+                        </div>
+                        <span className="font-bold tracking-tight">
+                          {value > 0 ? '+' : ''}
+                          {value}
+                          {key === 'marketingBonus' || key === 'loyalty' ? '%' : ''}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {costs && Object.values(costs).some((v) => v !== 0) && (
+              <div className="space-y-1.5 bg-red-500/5 p-2.5 rounded-xl border border-red-500/10 shadow-sm">
+                <p className="text-[9px] font-bold text-red-500/50 uppercase tracking-[0.2em] mb-1">
+                  Затраты ресурсов
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(costs).map(([key, value]) => {
+                    if (!value || value === 0) return null
+                    const color = getEffectColor(key)
+                    return (
+                      <div key={key} className={`flex items-center gap-1.5 ${color} text-[10px]`}>
+                        <div className="p-1 rounded-md bg-red-500/10 border border-red-500/10">
+                          {getEffectIcon(key)}
+                        </div>
+                        <span className="font-bold tracking-tight">
+                          {value > 0 ? '-' : ''}
+                          {Math.abs(value)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             )}
             {cost && (
@@ -414,8 +481,10 @@ export function EmployeeCard({
             )}
           </div>
           <div className={`text-right ${canAfford ? 'text-green-400' : 'text-red-400'}`}>
-            <div className="font-bold text-lg">${salary.toLocaleString()}</div>
-            <div className="text-[10px] text-white/40 uppercase tracking-widest">{salaryLabel}</div>
+            <div className="font-black text-xl tracking-tighter">${salary.toLocaleString()}</div>
+            <div className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">
+              {salaryLabel}
+            </div>
           </div>
         </div>
 
@@ -429,14 +498,16 @@ export function EmployeeCard({
         {/* Skills Grid (for candidates) */}
         {skills && (
           <div className="space-y-2">
-            <p className="text-[10px] text-white/40 uppercase tracking-widest">Навыки</p>
+            <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">
+              Навыки и компетенции
+            </p>
             <div className="grid grid-cols-1 gap-1.5">
               {Object.entries(skills).map(([skillName, value]) => (
                 <div
                   key={skillName}
-                  className="flex justify-between items-center bg-white/5 px-2 py-1 rounded-lg border border-white/5"
+                  className="flex justify-between items-center bg-white/5 px-2.5 py-1.5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <span className="text-[11px] text-white/70 flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-white/70 flex items-center gap-2">
                     {getSkillIcon(skillName)}
                     {getSkillLabel(skillName)}
                   </span>

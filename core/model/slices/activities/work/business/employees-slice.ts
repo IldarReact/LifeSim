@@ -167,12 +167,11 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return
     }
 
+    const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(role as any)
+    const isOperational = ['salesperson', 'technician', 'worker'].includes(role as any)
+
     const updatedBusinesses = state.player.businesses.map((b) => {
       if (b.id !== businessId) return b
-      const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
-        role as any,
-      )
-      const isOperational = ['salesperson', 'technician', 'worker'].includes(role as any)
 
       const nextPlayerRoles = { ...b.playerRoles }
       if (isManagerial) {

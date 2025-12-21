@@ -135,8 +135,16 @@ export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) =
     console.warn('[business-slice] leaveBusinessJob delegated, but target not found')
   },
 
-  // ✅ Multiplayer Actions implementation
+  // Delegated to `employees-slice`
+  setPlayerEmploymentEffort: (businessId, effortPercent) => {
+    const s = get() as any
+    if (typeof s.setPlayerEmploymentEffort === 'function')
+      return (s.setPlayerEmploymentEffort as any)(businessId, effortPercent)
+    console.warn('[business-slice] setPlayerEmploymentEffort delegated, but target not found')
+  },
 
+  // ✅ Multiplayer Actions implementation
+ 
   addPartnerToBusiness: (businessId, partnerId, partnerName, share, investment) => {
     const s = get() as any
     if (typeof s.addPartnerToBusiness === 'function')

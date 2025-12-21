@@ -53,6 +53,12 @@ export function BusinessManagement({
   const { income, expenses, profit } = calculateBusinessFinancials(business, true)
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
 
+  // Рассчитываем общее количество сотрудников, включая игрока
+  const playerRolesCount =
+    (business.playerRoles.managerialRoles?.length || 0) +
+    (business.playerRoles.operationalRole ? 1 : 0)
+  const totalEmployees = business.employees.length + playerRolesCount
+
   return (
     <div className="max-w-md mx-auto md:mx-0 w-full relative">
       {/* Notification Badge */}
@@ -82,7 +88,7 @@ export function BusinessManagement({
           },
           {
             label: 'Сотрудники',
-            value: `${business.employees.length}/${business.maxEmployees}`,
+            value: `${totalEmployees}/${business.maxEmployees}`,
             icon: <Users className="w-4 h-4" />,
             color: 'text-blue-400',
           },

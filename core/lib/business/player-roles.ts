@@ -252,11 +252,11 @@ export function checkMinimumStaffing(business: Business): {
     }
   })
 
-  // Подсчитать общее количество "сотрудников" (включая игрока в операционной роли)
-  let totalEmployees = business.employees.length
-  if (business.playerRoles.operationalRole) {
-    totalEmployees += 1 // Игрок в операционной роли считается как сотрудник
-  }
+  // Подсчитать общее количество "сотрудников" (включая игрока во всех ролях)
+  const playerRolesCount =
+    (business.playerRoles.managerialRoles?.length || 0) +
+    (business.playerRoles.operationalRole ? 1 : 0)
+  const totalEmployees = business.employees.length + playerRolesCount
 
   // Подсчитать только работников (worker)
   let workerCount = business.employees.filter((e) => e.role === 'worker').length

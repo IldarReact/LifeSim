@@ -47,6 +47,7 @@ import {
   getRoleConfig,
   isManagerialRole,
   getPlayerRoleBusinessImpact,
+  isRoleFilled,
 } from '@/core/lib/business'
 
 export function BusinessManagementDialog({
@@ -107,23 +108,30 @@ export function BusinessManagementDialog({
           autoPurchaseAmount: 0,
         },
   }
+  // Получаем навыки игрока для отображения
+  const playerSkills = player?.personal.skills || []
+
   const { income: forecastIncome, expenses: forecastExpenses } = calculateBusinessFinancials(
     forecastBusiness,
     true,
-    undefined,
+    playerSkills,
     1.0,
     country,
   )
 
-  const { income, expenses } = calculateBusinessFinancials(business, true, undefined, 1.0, country)
+  const { income, expenses } = calculateBusinessFinancials(
+    business,
+    true,
+    playerSkills,
+    1.0,
+    country,
+  )
+
   const availableBudget = playerCash
   const canHireMore = canHireMoreEmployees(business)
   const staffingCheck = checkMinimumStaffing(business)
   const playerShare = calculatePlayerShare(business)
   const hasControl = hasControlOverBusiness(business, CONTROL_THRESHOLD)
-
-  // Получаем навыки игрока для отображения
-  const playerSkills = player?.personal.skills || []
 
   // Рассчитываем звезды игрока на основе навыков
   // Для игрока звезды — это максимальный уровень среди всех навыков (0-5)
@@ -896,16 +904,25 @@ export function BusinessManagementDialog({
                       'lawyer',
                       'hr',
                     ] as EmployeeRole[]
-                  ).map((role) => (
-                    <Button
-                      key={role}
-                      onClick={() => openHireDialog(role)}
-                      className="bg-white/5 hover:bg-white/10 text-white border border-white/10 h-auto py-3 flex flex-col gap-2"
-                    >
-                      <div className="text-blue-400">{ROLE_ICONS[role]}</div>
-                      <span className="text-xs">{ROLE_LABELS[role]}</span>
-                    </Button>
-                  ))}
+                  )
+                    .filter((role) => {
+                      // Для рабочих и продавцов всегда разрешаем найм, если есть место
+                      if (role === 'worker' || role === 'salesperson' || role === 'technician') {
+                        return true
+                      }
+                      // Для специализированных ролей проверяем, заняты ли они
+                      return !isRoleFilled(business, role)
+                    })
+                    .map((role) => (
+                      <Button
+                        key={role}
+                        onClick={() => openHireDialog(role)}
+                        className="bg-white/5 hover:bg-white/10 text-white border border-white/10 h-auto py-3 flex flex-col gap-2"
+                      >
+                        <div className="text-blue-400">{ROLE_ICONS[role]}</div>
+                        <span className="text-xs">{ROLE_LABELS[role]}</span>
+                      </Button>
+                    ))}
                 </div>
               </div>
             ) : (

@@ -199,7 +199,11 @@ export function calculateBusinessFinancials(
     const margin = sellingPrice - unitCost
     const marginPercent = margin / sellingPrice
 
-    const workersCount = business.employees.filter((e) => e.role === 'worker').length
+    let workersCount = business.employees.filter((e) => e.role === 'worker').length
+    // Игрок тоже может быть работником
+    if (business.playerRoles.operationalRole === 'worker') {
+      workersCount += 1
+    }
     const baseDemand = workersCount * 50
     const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
     const reputationMod = business.reputation / 100

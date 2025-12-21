@@ -10,5 +10,8 @@ export function hasControlOverBusiness(business: Business, threshold: number = 5
 }
 
 export function canHireMoreEmployees(business: Business): boolean {
-  return business.employees.length < business.maxEmployees
+  const playerRolesCount =
+    (business.playerRoles.managerialRoles?.length || 0) +
+    (business.playerRoles.operationalRole ? 1 : 0)
+  return business.employees.length + playerRolesCount < business.maxEmployees
 }

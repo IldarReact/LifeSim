@@ -16,11 +16,15 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
 
     const business = state.player.businesses[i]
 
+    const playerRolesCount =
+      (business.playerRoles.managerialRoles?.length || 0) +
+      (business.playerRoles.operationalRole ? 1 : 0)
+
     // Validate hiring parameters
     const validation = validateEmployeeHire(
       business.walletBalance || 0,
       candidate.requestedSalary,
-      business.employees.length,
+      business.employees.length + playerRolesCount,
       business.maxEmployees,
     )
 

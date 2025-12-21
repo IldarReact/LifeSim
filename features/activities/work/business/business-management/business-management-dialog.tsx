@@ -747,7 +747,9 @@ export function BusinessManagementDialog({
                       salaryLabel="/мес"
                       isPlayer={true}
                       stars={playerStars}
-                      skills={playerSkills.reduce((acc, s) => ({ ...acc, [s.id]: s.level }), {})}
+                      skills={playerSkills.reduce((acc, s) => ({ ...acc, [s.id]: s.level }), {
+                        efficiency: 100,
+                      })}
                       impact={(() => {
                         const impact = getPlayerRoleBusinessImpact(business, playerSkills)
                         // Возвращаем только те бонусы, которые относятся к текущей роли

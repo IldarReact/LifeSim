@@ -60,6 +60,7 @@ export const createRolesSlice: GameStateCreator<Record<string, unknown>> = (set,
         salary: 0,
         effortPercent: 100,
         startedTurn: state.turn,
+        experience: 0,
       }
 
       return { ...b, playerRoles, playerEmployment }

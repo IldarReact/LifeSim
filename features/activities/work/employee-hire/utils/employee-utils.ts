@@ -36,7 +36,10 @@ export function createPlayerCandidate(
       stars: stars as any,
       experience: 24, // Можно тоже вычислять, если есть данные
       requestedSalary: customSalary,
-      skills: skills.reduce((acc: any, s: any) => ({ ...acc, [s.id]: s.level }), {}),
+      skills: skills.reduce(
+        (acc: any, s: any) => ({ ...acc, [s.id]: s.level }),
+        { efficiency: 100 },
+      ),
       humanTraits: [] // Можно подтянуть из трейтов игрока
     }
   }

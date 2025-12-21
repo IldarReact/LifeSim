@@ -213,20 +213,19 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     if (business.partners && business.partners.length > 0) {
       business.partners.forEach((partner) => {
         if (partner.type === 'player') {
-          broadcastEvent({
-            type: 'BUSINESS_UPDATED',
-            payload: {
-              businessId,
-              changes: {
-                playerEmployment: {
-                  role,
-                  salary,
-                  startedTurn: state.turn,
+          const updatedBusiness = get().player?.businesses.find((b) => b.id === businessId)
+          if (updatedBusiness) {
+            broadcastEvent({
+              type: 'BUSINESS_UPDATED',
+              payload: {
+                businessId,
+                changes: {
+                  employees: updatedBusiness.employees,
                 },
               },
-            },
-            toPlayerId: partner.id,
-          })
+              toPlayerId: partner.id,
+            })
+          }
         }
       })
     }

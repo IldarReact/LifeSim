@@ -313,6 +313,9 @@ export const createPartnershipBusinessSlice: StateCreator<
             proposal.initiatorId,
           )
         }
+
+        // Обязательно обновляем статус предложения перед вызовом других экшенов,
+        // чтобы избежать циклов или некорректных состояний
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
@@ -431,8 +434,6 @@ export const createPartnershipBusinessSlice: StateCreator<
         if (updatedBusiness) {
           changesToBroadcast = {
             employees: updatedBusiness.employees,
-            playerEmployment: updatedBusiness.playerEmployment,
-            playerRoles: updatedBusiness.playerRoles,
           }
         }
         break
@@ -583,12 +584,29 @@ export const createPartnershipBusinessSlice: StateCreator<
   onBusinessChangeApproved: (event) => {
     const state = get()
 
+    // Находим предложение
+    const proposal = state.businessProposals.find((p) => p.id === event.payload.proposalId)
+
     // Обновляем статус предложения
     set((state) => ({
       businessProposals: state.businessProposals.map((p) =>
         p.id === event.payload.proposalId ? { ...p, status: 'approved' as const } : p,
       ),
     }))
+
+    // Если это было предложение о вступлении в роль самого инициатора
+    if (
+      proposal &&
+      (proposal.changeType === 'change_role' || proposal.changeType === 'hire_employee') &&
+      proposal.data.isMe
+    ) {
+      console.log('[onBusinessChangeApproved] Player joining business as employee after approval')
+      state.joinBusinessAsEmployee(
+        proposal.businessId,
+        proposal.data.employeeRole as EmployeeRole,
+        proposal.data.employeeSalary || 0,
+      )
+    }
 
     state.pushNotification?.({
       type: 'success',

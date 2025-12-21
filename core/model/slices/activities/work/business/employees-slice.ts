@@ -194,24 +194,9 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       }
     })
 
-    const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(role as any)
-    const effortFactor = isManagerial ? 0.5 : 1
-    const newJob: import('@/core/types').Job = {
-      id: `job_business_${businessId}`,
-      title: `${role} в ${business.name}`,
-      company: business.name,
-      salary: Math.round((salary / 3) * effortFactor),
-      cost: { energy: isManagerial ? -10 : -20 },
-      imageUrl: business.imageUrl || '',
-      description: `Работа в собственном бизнесе на позиции ${role}`,
-    }
-
-    const updatedJobs = [...state.player.jobs, newJob]
-
     set({
       player: {
         ...state.player,
-        jobs: updatedJobs,
         businesses: updatedBusinesses,
       },
     })
@@ -259,9 +244,6 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return
     }
 
-    const jobId = `job_business_${businessId}`
-    const updatedJobs = state.player.jobs.filter((j) => j.id !== jobId)
-
     const updatedBusinesses = state.player.businesses.map((b) =>
       b.id === businessId ? { ...b, playerEmployment: undefined } : b,
     )
@@ -269,7 +251,6 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     set({
       player: {
         ...state.player,
-        jobs: updatedJobs,
         businesses: updatedBusinesses,
       },
     })
@@ -316,32 +297,9 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       }
     })
 
-    const updatedJobs = state.player.jobs.map((j) => {
-      if (j.id !== `job_business_${businessId}`) return j
-      const biz = updatedBusinesses.find((b) => b.id === businessId)
-      if (!biz?.playerEmployment) return j
-      const role = biz.playerEmployment.role as any
-      const isOperational = ['salesperson', 'technician', 'worker'].includes(role)
-      const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(role)
-      const factor = isOperational
-        ? 1
-        : Math.max(0.1, Math.min(1, (biz.playerEmployment.effortPercent ?? 100) / 100))
-      const baseQuarterlySalary = biz.playerEmployment.salary || 0
-      const baseMonthly = Math.round(baseQuarterlySalary / 3)
-      return {
-        ...j,
-        salary: Math.round(baseMonthly * factor),
-        cost: {
-          ...j.cost,
-          energy: isManagerial ? Math.round(-10 * factor * 2) / 2 : -20,
-        },
-      }
-    })
-
     set({
       player: {
         ...state.player,
-        jobs: updatedJobs,
         businesses: updatedBusinesses,
       },
     })

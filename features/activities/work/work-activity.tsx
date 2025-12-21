@@ -108,7 +108,9 @@ export function WorkActivity(): React.JSX.Element | null {
 
   // Current Jobs including business roles
   const allJobs = React.useMemo(() => {
-    const regularJobs = player?.jobs || []
+    // Фильтруем обычные работы, исключая устаревшие записи бизнес-ролей (если они там остались)
+    const regularJobs = (player?.jobs || []).filter((j) => !j.id.startsWith('job_business_'))
+
     const businessJobs =
       player?.businesses?.flatMap((b) => {
         const roles = [

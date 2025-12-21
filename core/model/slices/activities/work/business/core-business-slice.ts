@@ -12,7 +12,7 @@ import {
   addBranchToNetwork,
   updateNetworkBonuses,
 } from '@/core/lib/business/business-network'
-import type { Business, BusinessType } from '@/core/types'
+import type { Business, BusinessType, EmployeeRole } from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
 
 export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
@@ -29,6 +29,8 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
     maxEmployees: number,
     minEmployees: number,
     taxRate: number,
+    requiredRoles: EmployeeRole[],
+    inventory?: import('@/core/types').BusinessInventory,
   ) => {
     const state = get()
     if (!state.player) return
@@ -58,6 +60,8 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
       maxEmployees,
       minEmployees,
       taxRate,
+      requiredRoles,
+      inventory,
       currentTurn: state.turn,
     })
 

@@ -22,6 +22,8 @@ export interface CreateBusinessParams {
   maxEmployees: number
   minEmployees?: number
   taxRate?: number
+  requiredRoles?: import('@/core/types').EmployeeRole[]
+  inventory?: import('@/core/types').BusinessInventory
   currentTurn: number
 }
 
@@ -64,6 +66,8 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     maxEmployees,
     minEmployees = 1,
     taxRate = 0.15,
+    requiredRoles = [],
+    inventory: initialInventory,
     currentTurn,
   } = params
 
@@ -116,18 +120,18 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     insuranceCost: 0,
 
     // Inventory (for non-service businesses)
-    inventory: {
-      currentStock: 1000,
-      maxStock: 1000,
-      pricePerUnit: 100,
-      purchaseCost: 50,
+    inventory: initialInventory || {
+      currentStock: isServiceBased ? 0 : 1000,
+      maxStock: isServiceBased ? 0 : 1000,
+      pricePerUnit: isServiceBased ? 0 : 100,
+      purchaseCost: isServiceBased ? 0 : 50,
       autoPurchaseAmount: 0,
     },
 
     // Staffing
     employees: [],
     maxEmployees,
-    requiredRoles: ['manager', 'accountant', 'lawyer'],
+    requiredRoles: [],
     minEmployees,
     playerRoles: {
       managerialRoles: [],

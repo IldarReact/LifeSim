@@ -66,6 +66,7 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
                 : undefined
             }
             isPlayer={true}
+            isMe={true}
             className={
               isBusinessRole
                 ? 'bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30 shadow-lg'

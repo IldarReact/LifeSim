@@ -51,6 +51,7 @@ export interface EmployeeCardProps {
   // Состояния
   isSelected?: boolean
   isPlayer?: boolean
+  isMe?: boolean
   canAfford?: boolean
 
   // Навыки и статы (для кандидатов/вакансий)
@@ -72,6 +73,13 @@ export interface EmployeeCardProps {
   productivity?: number
   effortPercent?: number
   isPartialAllowed?: boolean // Разрешена ли частичная занятость (50/100%)
+
+  // Рост навыков (для игрока)
+  skillGrowth?: {
+    name: string
+    progress: number
+    progressPerQuarter?: number
+  }
 
   impact?: {
     efficiencyBonus?: number
@@ -124,6 +132,7 @@ export function EmployeeCard({
   id,
   isSelected,
   isPlayer,
+  isMe,
   canAfford = true,
   skills,
   requirements,
@@ -134,6 +143,7 @@ export function EmployeeCard({
   productivity,
   effortPercent,
   isPartialAllowed,
+  skillGrowth,
   impact,
   costs,
   onAction,
@@ -270,6 +280,17 @@ export function EmployeeCard({
         return <Heart className="w-3 h-3 text-red-400" />
       case 'stressresistance':
         return <Brain className="w-3 h-3 text-purple-400" />
+      case 'management':
+        return <Award className="w-3 h-3 text-blue-400" />
+      case 'sales':
+        return <DollarSign className="w-3 h-3 text-emerald-400" />
+      case 'marketing':
+        return <TrendingUp className="w-3 h-3 text-pink-400" />
+      case 'law':
+        return <ShieldCheck className="w-3 h-3 text-indigo-400" />
+      case 'finance':
+      case 'accounting':
+        return <DollarSign className="w-3 h-3 text-yellow-400" />
       default:
         return <Activity className="w-3 h-3 text-blue-400" />
     }
@@ -283,6 +304,17 @@ export function EmployeeCard({
         return 'Лояльность'
       case 'stressresistance':
         return 'Стрессоустойчивость'
+      case 'management':
+        return 'Менеджмент'
+      case 'sales':
+        return 'Продажи'
+      case 'marketing':
+        return 'Маркетинг'
+      case 'law':
+        return 'Право'
+      case 'finance':
+      case 'accounting':
+        return 'Финансы'
       default:
         return skillName
     }
@@ -327,7 +359,7 @@ export function EmployeeCard({
         <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-900/40 to-transparent" />
 
         <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {isPlayer && (
+          {isMe && (
             <Badge className="bg-purple-500/80 text-white backdrop-blur-md border-purple-500/30 text-[10px] py-0 px-1.5">
               ВЫ
             </Badge>
@@ -410,6 +442,35 @@ export function EmployeeCard({
                 <span className="text-[9px] font-bold uppercase tracking-widest">
                   Продуктивность: {productivity}%
                 </span>
+              </div>
+            )}
+            {/* Skill Growth (for player) */}
+            {skillGrowth && (
+              <div className="space-y-1.5 mt-2 bg-blue-500/5 p-2.5 rounded-xl border border-blue-500/10 shadow-sm">
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-[9px] font-bold text-blue-500/50 uppercase tracking-[0.2em]">
+                    Прогресс навыка
+                  </p>
+                  {skillGrowth.progressPerQuarter !== undefined && (
+                    <span className="text-[9px] font-bold text-emerald-400">
+                      +{skillGrowth.progressPerQuarter}%/кв
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-white/70 whitespace-nowrap">
+                    {skillGrowth.name}
+                  </span>
+                  <div className="flex-1 relative h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 bg-blue-500 rounded-full transition-all duration-500"
+                      style={{ width: `${skillGrowth.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-blue-400 w-8 text-right">
+                    {Math.round(skillGrowth.progress)}%
+                  </span>
+                </div>
               </div>
             )}
             {/* Impacts/Bonuses */}

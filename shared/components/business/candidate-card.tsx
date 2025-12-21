@@ -1,7 +1,4 @@
-import {
-  CheckCircle,
-  UserPlus,
-} from 'lucide-react'
+import { CheckCircle, UserPlus } from 'lucide-react'
 import React from 'react'
 
 import { useInflatedPrice } from '@/core/hooks'
@@ -14,6 +11,7 @@ import { TRAITS_MAP, getTraitIcon, getTraitColor } from '@/shared/lib/business/t
 interface CandidateCardProps {
   candidate: EmployeeCandidate
   isSelected?: boolean
+  isMe?: boolean
   canAfford?: boolean
   onClick?: () => void
   actionLabel?: string
@@ -22,15 +20,16 @@ interface CandidateCardProps {
   className?: string
 }
 
-export function CandidateCard({ 
-  candidate, 
-  isSelected = false, 
-  canAfford = true, 
+export function CandidateCard({
+  candidate,
+  isSelected = false,
+  isMe = false,
+  canAfford = true,
   onClick,
   actionLabel,
   actionIcon,
   actionVariant,
-  className
+  className,
 }: CandidateCardProps) {
   const displaySalary = useInflatedPrice({ salary: candidate.requestedSalary })
 
@@ -63,6 +62,7 @@ export function CandidateCard({
       avatar={candidate.avatar}
       isSelected={isSelected}
       isPlayer={isPlayer}
+      isMe={isMe}
       canAfford={canAfford}
       impact={(() => {
         const cfg = getRoleConfig(candidate.role)
@@ -73,7 +73,8 @@ export function CandidateCard({
       onAction={onClick}
       actionLabel={actionLabel || (isSelected ? 'Выбрано' : 'Выбрать')}
       actionIcon={
-        actionIcon || (isSelected ? (
+        actionIcon ||
+        (isSelected ? (
           <CheckCircle className="w-3 h-3 mr-1" />
         ) : (
           <UserPlus className="w-3 h-3 mr-1" />

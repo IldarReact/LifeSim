@@ -30,6 +30,8 @@ interface BusinessesSectionProps {
     maxEmployees: number,
     minWorkers: number,
     taxRate: number,
+    requiredRoles: import('@/core/types').EmployeeRole[],
+    inventory?: import('@/core/types').BusinessInventory,
   ) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
@@ -94,27 +96,32 @@ export function BusinessesSection({
     monthlyIncome: number,
     monthlyExpenses: number,
     maxEmployees: number,
+    minEmployees: number,
+    requiredRoles: import('@/core/types').EmployeeRole[],
     energyCost: number,
     stressImpact: number,
+    inventory?: import('@/core/types').BusinessInventory,
   ) => {
     if (playerCash >= cost) {
       onOpenBusiness(
         name,
         type,
         description,
-        cost, // totalCost
-        cost, // upfrontCost (assuming full payment for now)
-        { energy: -energyCost, sanity: -stressImpact }, // creationCost
-        0, // openingQuarters
+        cost,
+        cost * 0.2, // Upfront cost
+        { energy: -energyCost },
+        1, // Opening quarters
         monthlyIncome,
         monthlyExpenses,
         maxEmployees,
-        1, // minWorkers
-        0.15, // taxRate
+        minEmployees,
+        0.15, // Tax rate
+        requiredRoles,
+        inventory,
       )
-      onSuccess(`Бизнес "${name}" успешно открыт!`)
+      onSuccess(`Вы успешно начали процесс открытия бизнеса "${name}"`)
     } else {
-      onError('Недостаточно средств для открытия бизнеса')
+      onError('Недостаточно средств для открытия этого бизнеса')
     }
   }
 
@@ -170,9 +177,15 @@ export function BusinessesSection({
 
         {businesses.map((business) => {
           // Apply inflation to business costs
-          const inflatedCost = economy ? getInflatedPrice(business.initialCost, economy, 'business') : business.initialCost
-          const inflatedIncome = economy ? getInflatedPrice(business.monthlyIncome, economy, 'business') : business.monthlyIncome
-          const inflatedExpenses = economy ? getInflatedPrice(business.monthlyExpenses, economy, 'business') : business.monthlyExpenses
+          const inflatedCost = economy
+            ? getInflatedPrice(business.initialCost, economy, 'business')
+            : business.initialCost
+          const inflatedIncome = economy
+            ? getInflatedPrice(business.monthlyIncome, economy, 'business')
+            : business.monthlyIncome
+          const inflatedExpenses = economy
+            ? getInflatedPrice(business.monthlyExpenses, economy, 'business')
+            : business.monthlyExpenses
 
           const typeLabel = getBusinessTypeLabel(business.risk, inflatedCost)
           const energyCost = 15
@@ -234,15 +247,18 @@ export function BusinessesSection({
                       inflatedCost,
                       inflatedIncome,
                       inflatedExpenses,
-                      business.requiredEmployees?.recommended || 5,
+                      business.maxEmployees || 8,
+                      business.minEmployees || 1,
+                      (business.requiredRoles || []) as import('@/core/types').EmployeeRole[],
                       energyCost,
                       stressImpact,
+                      business.inventory as any,
                     )
                   }
                   onOpenWithPartner={
                     isMultiplayerActive()
                       ? (partnerId, partnerName, playerShare) =>
-                        handleOpenWithPartner(business, partnerId, partnerName, playerShare)
+                          handleOpenWithPartner(business, partnerId, partnerName, playerShare)
                       : undefined
                   }
                 />
@@ -255,9 +271,12 @@ export function BusinessesSection({
                   inflatedCost,
                   inflatedIncome,
                   inflatedExpenses,
-                  business.requiredEmployees?.recommended || 5,
+                  business.maxEmployees || 8,
+                  business.minEmployees || 1,
+                  (business.requiredRoles || []) as import('@/core/types').EmployeeRole[],
                   energyCost,
                   stressImpact,
+                  business.inventory as any,
                 )
               }
             />

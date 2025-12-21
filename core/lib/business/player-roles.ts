@@ -343,19 +343,8 @@ export function checkMinimumStaffing(business: Business): {
  * (если нет сотрудников на этих ролях)
  */
 export function getAutoAssignedManagerialRoles(business: Business): EmployeeRole[] {
-  const autoRoles: EmployeeRole[] = []
-
-  // Управляющий и Бухгалтер - обязательные роли по умолчанию
-  const defaultRoles: EmployeeRole[] = ['manager', 'accountant', 'lawyer']
-
-  defaultRoles.forEach((role) => {
-    const hasEmployee = business.employees.some((e) => e.role === role)
-    if (!hasEmployee) {
-      autoRoles.push(role as EmployeeRole)
-    }
-  })
-
-  return autoRoles
+  // Теперь роли не назначаются автоматически. Игрок должен выбрать слот вручную.
+  return []
 }
 
 /**

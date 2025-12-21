@@ -100,15 +100,19 @@ export function EmployeeHireDialog({
             </div>
           )}
 
-          {displayCandidates.map((candidate) => (
-            <CandidateCard
-              key={candidate.id}
-              candidate={candidate}
-              isSelected={selectedCandidate?.id === candidate.id}
-              canAfford={canAfford(candidate.requestedSalary)}
-              onClick={() => setSelectedCandidate(candidate)}
-            />
-          ))}
+          {displayCandidates.map((candidate) => {
+            const isLocal = candidate.id.includes(useGameStore.getState().player?.id || 'none')
+            return (
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                isSelected={selectedCandidate?.id === candidate.id}
+                isMe={isLocal}
+                canAfford={canAfford(candidate.requestedSalary)}
+                onClick={() => setSelectedCandidate(candidate)}
+              />
+            )
+          })}
         </div>
 
         {activeTab === 'players' &&

@@ -31,15 +31,20 @@ export function createPartnerBusiness(
     yourInvestment: offer.details.yourInvestment,
   })
 
-  return {
+  const isServiceBased =
+    offer.details.businessType === 'service' || offer.details.businessType === 'tech'
+
+  const business: Business & { partnerBusinessId?: string } = {
     id: businessId,
     name: offer.details.businessName,
     type: offer.details.businessType,
     description: offer.details.businessDescription,
     state: 'active',
-    price: Math.floor(offer.details.totalCost * 0.8),
-    quantity: 1,
-    isServiceBased: false,
+    lastQuarterlyUpdate: currentTurn,
+    createdAt: currentTurn,
+    price: 5, // Default mid-range price
+    quantity: isServiceBased ? 0 : 100,
+    isServiceBased,
     networkId: undefined,
     isMainBranch: false,
     partnerBusinessId,
@@ -73,42 +78,40 @@ export function createPartnerBusiness(
       quartersLeft: 0,
       investedAmount: offer.details.totalCost,
       totalCost: offer.details.totalCost,
-      upfrontCost: offer.details.totalCost * 0.3,
+      upfrontCost: offer.details.totalCost * 0.2, // Match 20% default
     },
-    creationCost: { energy: 20 },
+    creationCost: { energy: -20 }, // Cost should be negative
     initialCost: offer.details.totalCost,
     quarterlyIncome: 0,
     quarterlyExpenses: 0,
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
+    autoPurchaseAmount: 0,
     currentValue: offer.details.totalCost,
     walletBalance: 0,
     taxRate: 0.15,
-    hasInsurance: true,
-    insuranceCost: offer.details.totalCost * 0.01,
+    hasInsurance: false,
+    insuranceCost: 0,
     inventory: {
-      currentStock: 0,
-      maxStock: 100,
-      pricePerUnit: 10,
-      purchaseCost: 5,
+      currentStock: isServiceBased ? 0 : 1000,
+      maxStock: isServiceBased ? 0 : 1000,
+      pricePerUnit: isServiceBased ? 0 : 100,
+      purchaseCost: isServiceBased ? 0 : 50,
       autoPurchaseAmount: 0,
     },
     employees: [],
-    maxEmployees: 5,
+    maxEmployees: 10, // Default to a reasonable number
     minEmployees: 1,
-    requiredRoles: ['manager', 'accountant', 'lawyer'],
+    requiredRoles: [],
     playerRoles: {
-      managerialRoles: isInitiator
-        ? (['manager', 'accountant'] as EmployeeRole[])
-        : (['manager'] as EmployeeRole[]),
+      managerialRoles: [],
       operationalRole: null,
     },
     reputation: 50,
     efficiency: 50,
     eventsHistory: [],
     foundedTurn: currentTurn,
-    lastQuarterlyUpdate: currentTurn,
-    createdAt: currentTurn,
-    monthlyIncome: 0,
-    monthlyExpenses: 0,
-    autoPurchaseAmount: 0,
   }
+
+  return business
 }

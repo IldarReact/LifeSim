@@ -139,6 +139,7 @@ export interface BusinessSlice {
     maxEmployees: number,
     minEmployees: number,
     taxRate: number,
+    requiredRoles: import('@/core/types').EmployeeRole[],
   ) => void
   hireEmployee: (businessId: string, candidate: import('@/core/types').EmployeeCandidate) => void
   fireEmployee: (businessId: string, employeeId: string) => void

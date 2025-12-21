@@ -82,7 +82,7 @@ describe('createPartnerBusiness', () => {
   it('создаёт бизнес с правильными ролями игрока', () => {
     const business = createPartnerBusiness(mockOffer, 1, 'player2', false)
 
-    expect(business.playerRoles.managerialRoles).toContain('ceo')
+    expect(business.playerRoles.managerialRoles).toContain('manager')
     expect(business.playerRoles.operationalRole).toBeNull()
   })
 

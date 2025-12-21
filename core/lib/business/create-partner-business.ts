@@ -98,7 +98,7 @@ export function createPartnerBusiness(
     playerRoles: {
       managerialRoles: isInitiator
         ? (['manager', 'accountant'] as EmployeeRole[])
-        : (['ceo'] as EmployeeRole[]),
+        : (['manager'] as EmployeeRole[]),
       operationalRole: null,
     },
     reputation: 50,

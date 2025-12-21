@@ -223,6 +223,7 @@ export interface Business {
     role: EmployeeRole
     salary: number
     startedTurn: number
+    experience: number // Кварталы работы (для инфляции)
     effortPercent?: number
   }
 

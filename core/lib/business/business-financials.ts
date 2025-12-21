@@ -79,8 +79,50 @@ export function calculateBusinessFinancials(
   // Add player salary if they are employed in their own business
   if (business.playerEmployment) {
     const monthlySalary = business.playerEmployment.salary
+    const indexedMonthlySalary = economy
+      ? getInflatedSalary(monthlySalary, economy, business.playerEmployment.experience || 0)
+      : monthlySalary
+
     const effortFactor = (business.playerEmployment.effortPercent ?? 100) / 100
-    employeesCost += monthlySalary * effortFactor * 3
+    employeesCost += indexedMonthlySalary * effortFactor * 3
+  }
+
+  // Employee role buffs
+  let employeeEfficiencyBonusPct = 0
+  let employeeSalesBonusPct = 0
+  let employeeReputationBonusPct = 0
+  let employeeTaxReductionPct = 0
+  let employeeExpenseReductionPct = 0
+
+  business.employees.forEach((emp) => {
+    const cfg = getRoleConfig(emp.role)
+    const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
+    if (!impact) return
+
+    const effortFactor = (emp.effortPercent ?? 100) / 100
+
+    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus * effortFactor
+    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus * effortFactor
+    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus * effortFactor
+    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction * effortFactor
+    if (impact.expenseReduction)
+      employeeExpenseReductionPct += impact.expenseReduction * effortFactor
+  })
+
+  // Player Skill reduction
+  let playerExpenseReductionPct = 0
+  let playerSalesBonusPct = 0
+  let playerEfficiencyBonusPct = 0
+  let playerReputationBonusPct = 0
+  let playerTaxReductionPct = 0
+
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+    playerExpenseReductionPct = playerImpact.expenseReduction
+    playerSalesBonusPct = playerImpact.salesBonus
+    playerEfficiencyBonusPct = playerImpact.efficiencyBonus
+    playerReputationBonusPct = playerImpact.reputationBonus
+    playerTaxReductionPct = playerImpact.taxReduction
   }
 
   const baseRentPerEmployee = 200
@@ -98,30 +140,13 @@ export function calculateBusinessFinancials(
 
   let opEx = employeesCost + rent + utilities + insurance
 
-  // Employee role buffs
-  let employeeEfficiencyBonusPct = 0
-  let employeeSalesBonusPct = 0
-  let employeeReputationBonusPct = 0
-  let employeeTaxReductionPct = 0
-
-  business.employees.forEach((emp) => {
-    const cfg = getRoleConfig(emp.role)
-    const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
-    if (!impact) return
-
-    const effortFactor = (emp.effortPercent ?? 100) / 100
-
-    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus * effortFactor
-    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus * effortFactor
-    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus * effortFactor
-    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction * effortFactor
-  })
-
-  // Player Skill reduction
-  if (playerSkills && playerSkills.length > 0) {
-    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
-    // Не сокращаем фиксированные расходы “из воздуха”
-    // Эффективность/продажи/репутация учитываются ниже через спрос и доход
+  // Apply expense reduction (Lawyers etc.)
+  const totalExpenseReductionPct = Math.min(
+    50,
+    employeeExpenseReductionPct + playerExpenseReductionPct,
+  )
+  if (totalExpenseReductionPct > 0) {
+    opEx *= 1 - totalExpenseReductionPct / 100
   }
 
   // 2. Sales & COGS

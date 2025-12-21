@@ -1,3 +1,8 @@
+/**
+ * @deprecated This file is redundant. Use core/lib/business/player-roles.ts instead.
+ * @see core/lib/business/player-roles.ts
+ */
+
 import { getRoleConfig, isManagerialRole, isOperationalRole } from '../config/employee-roles.config';
 
 import type { Skill } from '@/core/types';

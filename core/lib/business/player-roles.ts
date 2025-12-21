@@ -21,6 +21,8 @@ export interface PlayerBusinessImpact {
   salesBonus: number
   reputationBonus: number
   taxReduction: number
+  legalProtection: number
+  staffProductivityBonus: number
 }
 
 /**
@@ -147,11 +149,19 @@ export function getPlayerRoleBusinessImpact(
     salesBonus: 0,
     reputationBonus: 0,
     taxReduction: 0,
+    legalProtection: 0,
+    staffProductivityBonus: 0,
   }
+
+  const effortPercent = business.playerEmployment?.effortPercent ?? 100
+  const effortFactor = Math.max(0.1, Math.min(1, effortPercent / 100))
 
   activeRoles.forEach((role) => {
     const config = getRoleConfig(role)
     if (!config?.businessImpact) return
+
+    // Scale impact by effort factor for managerial roles
+    const factor = isManagerialRole(role) ? effortFactor : 1
 
     // Найти соответствующий навык игрока
     const skillName = config.skillGrowth?.name
@@ -160,22 +170,28 @@ export function getPlayerRoleBusinessImpact(
     const roleImpact = config.businessImpact
 
     if (roleImpact.efficiencyBonus) {
-      impact.efficiencyBonus += roleImpact.efficiencyBonus(playerSkill)
+      impact.efficiencyBonus += roleImpact.efficiencyBonus(playerSkill) * factor
     }
 
     if (roleImpact.expenseReduction) {
-      impact.expenseReduction += roleImpact.expenseReduction(playerSkill)
+      impact.expenseReduction += roleImpact.expenseReduction(playerSkill) * factor
     }
 
     if (roleImpact.salesBonus) {
-      impact.salesBonus += roleImpact.salesBonus(playerSkill)
+      impact.salesBonus += roleImpact.salesBonus(playerSkill) * factor
     }
 
     if (roleImpact.reputationBonus) {
-      impact.reputationBonus += roleImpact.reputationBonus(playerSkill)
+      impact.reputationBonus += roleImpact.reputationBonus(playerSkill) * factor
     }
     if (roleImpact.taxReduction) {
-      impact.taxReduction += roleImpact.taxReduction(playerSkill)
+      impact.taxReduction += roleImpact.taxReduction(playerSkill) * factor
+    }
+    if (roleImpact.legalProtection) {
+      impact.legalProtection += roleImpact.legalProtection(playerSkill) * factor
+    }
+    if (roleImpact.staffProductivityBonus) {
+      impact.staffProductivityBonus += roleImpact.staffProductivityBonus(playerSkill) * factor
     }
   })
 

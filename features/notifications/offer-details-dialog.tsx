@@ -17,6 +17,8 @@ import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
 
+import { getRoleConfig } from '@/core/lib/business'
+
 interface OfferDetailsDialogProps {
   isOpen: boolean
   onClose: () => void
@@ -105,19 +107,26 @@ export function OfferDetailsDialog({
 }
 
 function JobOfferContent({ details }: { details: JobOfferDetails }) {
+  const role = details.role as EmployeeRole
+  const cfg = getRoleConfig(role)
+  const baseImpact = cfg?.staffImpact ? cfg.staffImpact(3) : {} // 3 звезды как база для оффера
+
   return (
     <div className="space-y-4">
       <EmployeeCard
         id="job-offer"
-        name={details.role}
-        role={details.role as EmployeeRole}
-        roleLabel={ROLE_LABELS[details.role as EmployeeRole] || details.role}
-        roleIcon={ROLE_ICONS[details.role as EmployeeRole]}
+        name={role}
+        role={role}
+        roleLabel={ROLE_LABELS[role] || role}
+        roleIcon={ROLE_ICONS[role]}
         company={details.businessName}
         salary={details.salary}
         salaryLabel="/кв"
         stars={3} // Дефолтное значение для оффера
-        impact={details.kpiBonus ? { salesBonus: details.kpiBonus } : undefined}
+        impact={{
+          ...baseImpact,
+          salesBonus: (baseImpact.salesBonus || 0) + (details.kpiBonus || 0),
+        }}
       />
     </div>
   )

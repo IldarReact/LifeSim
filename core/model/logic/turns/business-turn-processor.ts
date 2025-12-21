@@ -173,11 +173,23 @@ export function processBusinessTurn(
     totalIncome += Math.round(financials.income * shareFactor)
     totalExpenses += Math.round(financials.expenses * shareFactor)
 
-    // 7. Update employee experience (+3 months per quarter)
-    updatedBiz.employees = updatedBiz.employees.map((emp) => ({
-      ...emp,
-      experience: emp.experience + 3,
-    }))
+    // 7. Update employee experience (+3 months per quarter, scaled by effort)
+    updatedBiz.employees = updatedBiz.employees.map((emp) => {
+      const effortFactor = (emp.effortPercent ?? 100) / 100
+      return {
+        ...emp,
+        experience: emp.experience + 3 * effortFactor,
+      }
+    })
+
+    // Update player experience if employed
+    if (updatedBiz.playerEmployment) {
+      const effortFactor = (updatedBiz.playerEmployment.effortPercent ?? 100) / 100
+      updatedBiz.playerEmployment = {
+        ...updatedBiz.playerEmployment,
+        experience: (updatedBiz.playerEmployment.experience || 0) + 3 * effortFactor,
+      }
+    }
 
     // Update Business with new state
     updatedBusinesses.push({

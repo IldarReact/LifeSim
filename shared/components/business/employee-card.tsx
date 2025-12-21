@@ -19,6 +19,8 @@ import {
   UserPlus,
   Smile,
   Building,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react'
 import React from 'react'
 
@@ -26,6 +28,8 @@ import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Progress } from '@/shared/ui/progress'
 import type { EmployeeRole, EmployeeStars, EmployeeSkills } from '@/core/types'
+import { calculateStarsFromSkills, formatExperience } from '@/shared/lib/business/employee-utils'
+import { getRoleConfig } from '@/core/lib/business/employee-roles.config'
 
 // Мы можем импортировать константы из существующего места,
 // но для shared компонента лучше иметь свои или прокидывать их.
@@ -36,7 +40,7 @@ export interface EmployeeCardProps {
   role: EmployeeRole
   roleLabel: string
   roleIcon?: React.ReactNode
-  stars: number
+  stars?: number // Опционально, если есть skills - рассчитаем
   experience?: number // в месяцах
   salary: number
   salaryLabel?: string // "/мес" или "/кв"
@@ -66,6 +70,8 @@ export interface EmployeeCardProps {
   // Рабочие показатели (для текущих сотрудников)
   productivity?: number
   effortPercent?: number
+  isPartialAllowed?: boolean // Разрешена ли частичная занятость (50/100%)
+
   impact?: {
     efficiencyBonus?: number
     expenseReduction?: number
@@ -99,7 +105,7 @@ export function EmployeeCard({
   role,
   roleLabel,
   roleIcon,
-  stars,
+  stars: providedStars,
   experience,
   salary,
   salaryLabel = '/мес',
@@ -116,6 +122,7 @@ export function EmployeeCard({
   traits,
   productivity,
   effortPercent,
+  isPartialAllowed,
   impact,
   onAction,
   actionLabel,
@@ -130,6 +137,8 @@ export function EmployeeCard({
   showDetails,
   onShowDetails,
 }: EmployeeCardProps) {
+  // Рассчитываем звезды на лету, если они не переданы явно
+  const stars = providedStars ?? calculateStarsFromSkills(skills)
   const getEffectIcon = (key: string) => {
     switch (key.toLowerCase()) {
       case 'health':
@@ -164,9 +173,60 @@ export function EmployeeCard({
     }
   }
 
+  const getImpactLabel = (key: string, value: number) => {
+    const plus = value > 0 ? '+' : ''
+    switch (key) {
+      case 'efficiencyBonus':
+        return {
+          label: `${plus}${value}% Эффективность`,
+          title: 'Повышает общую производительность бизнеса и качество работы',
+        }
+      case 'expenseReduction':
+        return {
+          label: `${plus}${value}% Экономия`,
+          title: 'Снижает операционные расходы за счет оптимизации',
+        }
+      case 'salesBonus':
+        return {
+          label: `${plus}${value}% Продажи`,
+          title: 'Увеличивает объем продаж и привлекает больше клиентов',
+        }
+      case 'reputationBonus':
+        return {
+          label: `${plus}${value}% Репутация`,
+          title: 'Повышает узнаваемость бренда и доверие клиентов',
+        }
+      case 'taxReduction':
+        return {
+          label: `${plus}${value}% Налоги`,
+          title: 'Снижает налоговую нагрузку законными методами',
+        }
+      case 'legalProtection':
+        return {
+          label: `${plus}${value}% Защита`,
+          title: 'Снижает риск проверок и юридических проблем',
+        }
+      case 'staffProductivityBonus':
+        return {
+          label: `${plus}${value}% Команда`,
+          title: 'Повышает продуктивность остальных сотрудников',
+        }
+      default:
+        return { label: `${plus}${value}%`, title: '' }
+    }
+  }
+
   const renderStars = (count: number, max: number = 5, size: string = 'w-3 h-3') => {
+    const starDescriptions = [
+      'Новичок (1★): Требуется обучение и контроль',
+      'Стажер (2★): Базовые навыки, может работать под присмотром',
+      'Специалист (3★): Уверенно выполняет свои задачи',
+      'Профессионал (4★): Высокая квалификация и опыт',
+      'Мастер (5★): Эксперт, может обучать других',
+    ]
+
     return (
-      <div className="flex gap-0.5">
+      <div className="flex gap-0.5" title={starDescriptions[Math.min(count - 1, 4)] || ''}>
         {Array.from({ length: max }, (_, i) => (
           <Star
             key={i}
@@ -212,6 +272,10 @@ export function EmployeeCard({
     result += `${remainingMonths}м`
     return result
   }
+
+  // В реальном приложении здесь будет импорт или поиск по справочнику ролей
+  const roleCfg = role ? getRoleConfig(role) : null
+  const roleDescription = roleCfg?.description || ''
 
   return (
     <div
@@ -262,9 +326,17 @@ export function EmployeeCard({
             {roleIcon || <Briefcase className="w-3.5 h-3.5" />}
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm leading-tight">{name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-white text-sm leading-tight">{name}</h3>
+              {renderStars(stars)}
+            </div>
             <div className="flex flex-col">
-              <p className="text-[10px] text-white/60 uppercase tracking-wider">{roleLabel}</p>
+              <p
+                className="text-[10px] text-white/60 uppercase tracking-wider cursor-help"
+                title={roleDescription}
+              >
+                {roleLabel}
+              </p>
               {company && (
                 <div className="flex items-center gap-1 text-[10px] text-white/40">
                   <Building className="w-2.5 h-2.5" />
@@ -297,40 +369,22 @@ export function EmployeeCard({
                 </span>
               </div>
             )}
-            {impact && (
+            {impact && Object.entries(impact).some(([_, v]) => v !== 0) && (
               <div className="space-y-1 mt-2">
-                {impact.efficiencyBonus && (
-                  <div className="flex items-center gap-1.5 text-green-400">
-                    <TrendingUp className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-wider">
-                      +{impact.efficiencyBonus}% Эффективность
-                    </span>
-                  </div>
-                )}
-                {impact.taxReduction && (
-                  <div className="flex items-center gap-1.5 text-blue-400">
-                    <DollarSign className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-wider">
-                      -{impact.taxReduction}% Налоги
-                    </span>
-                  </div>
-                )}
-                {impact.legalProtection && (
-                  <div className="flex items-center gap-1.5 text-purple-400">
-                    <Briefcase className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-wider">
-                      -{impact.legalProtection}% Юр. риски
-                    </span>
-                  </div>
-                )}
-                {impact.staffProductivityBonus && (
-                  <div className="flex items-center gap-1.5 text-amber-400">
-                    <Zap className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-wider">
-                      +{impact.staffProductivityBonus}% Мотивация команды
-                    </span>
-                  </div>
-                )}
+                {Object.entries(impact).map(([key, value]) => {
+                  if (!value) return null
+                  const { label, title } = getImpactLabel(key, value)
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center gap-1.5 text-green-400 cursor-help"
+                      title={title}
+                    >
+                      <TrendingUp className="w-3 h-3" />
+                      <span className="text-[10px] uppercase tracking-wider">{label}</span>
+                    </div>
+                  )
+                })}
               </div>
             )}
             {cost && (
@@ -425,22 +479,47 @@ export function EmployeeCard({
           </div>
         )}
 
-        {/* Effort Slider (if applicable) */}
+        {/* Effort Toggle or Slider */}
         {onEffortChange && effortPercent !== undefined && (
           <div className="space-y-2 pt-2 border-t border-white/5">
             <div className="flex justify-between items-center">
               <p className="text-[10px] text-white/40 uppercase tracking-widest">Занятость</p>
               <span className="text-xs font-bold text-blue-400">{effortPercent}%</span>
             </div>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              step="5"
-              value={effortPercent}
-              onChange={(e) => onEffortChange(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
-            />
+
+            {isPartialAllowed ? (
+              <div
+                className="flex items-center gap-2 cursor-pointer group"
+                onClick={() => onEffortChange(effortPercent === 100 ? 50 : 100)}
+              >
+                <div
+                  className={`
+                  relative w-10 h-5 rounded-full transition-colors duration-200 ease-in-out
+                  ${effortPercent === 100 ? 'bg-blue-600' : 'bg-white/10'}
+                `}
+                >
+                  <div
+                    className={`
+                    absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform duration-200 ease-in-out
+                    ${effortPercent === 100 ? 'translate-x-5' : 'translate-x-0'}
+                  `}
+                  />
+                </div>
+                <span className="text-[10px] text-white/60 group-hover:text-white transition-colors">
+                  {effortPercent === 100 ? 'Полная ставка' : 'Половина ставки (50%)'}
+                </span>
+              </div>
+            ) : (
+              <input
+                type="range"
+                min="10"
+                max="100"
+                step="5"
+                value={effortPercent}
+                onChange={(e) => onEffortChange(parseInt(e.target.value))}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
+              />
+            )}
           </div>
         )}
       </div>

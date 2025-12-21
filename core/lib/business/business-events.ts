@@ -1,16 +1,33 @@
-import { getRandomNegativeEvent, getRandomPositiveEvent } from '@/core/lib/data-loaders/static-data-loader'
+import {
+  getRandomNegativeEvent,
+  getRandomPositiveEvent,
+} from '@/core/lib/data-loaders/static-data-loader'
 import type { Business, BusinessEvent } from '@/core/types/business.types'
+import type { Skill } from '@/core/types'
 import { getRoleConfig } from './employee-roles.config'
+import { getPlayerRoleBusinessImpact } from './player-roles'
 
 /**
  * Генерирует случайные события для бизнеса
  */
-export function generateBusinessEvents(business: Business, currentTurn: number): BusinessEvent[] {
+export function generateBusinessEvents(
+  business: Business,
+  currentTurn: number,
+  playerSkills?: Skill[],
+): BusinessEvent[] {
   const state = business.state ?? 'active'
   if (state !== 'active') return []
 
   // Считаем бонус защиты от юристов
   let legalProtectionPct = 0
+
+  // Бонус от игрока
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+    legalProtectionPct += playerImpact.legalProtection || 0
+  }
+
+  // Бонус от сотрудников
   business.employees.forEach((emp) => {
     const cfg = getRoleConfig(emp.role)
     const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
@@ -34,16 +51,20 @@ export function generateBusinessEvents(business: Business, currentTurn: number):
   }
 
   for (let i = 0; i < eventCount; i++) {
-    const isNegative = Math.random() < negativeChance;
+    const isNegative = Math.random() < negativeChance
 
     if (isNegative) {
-      const evt = getRandomNegativeEvent();
-      if (!evt) continue;
+      const evt = getRandomNegativeEvent()
+      if (!evt) continue
 
       // Рассчитываем динамические эффекты
       const moneyEffect = evt.effects.moneyPercentage
-        ? Math.round((business.inventory?.currentStock || 0) * (business.inventory?.purchaseCost || 0) * evt.effects.moneyPercentage)
-        : (evt.effects.money || 0);
+        ? Math.round(
+            (business.inventory?.currentStock || 0) *
+              (business.inventory?.purchaseCost || 0) *
+              evt.effects.moneyPercentage,
+          )
+        : evt.effects.money || 0
 
       events.push({
         id: `evt_${Date.now()}_${Math.random()}`,
@@ -54,12 +75,12 @@ export function generateBusinessEvents(business: Business, currentTurn: number):
         effects: {
           efficiency: evt.effects.efficiency || 0,
           reputation: evt.effects.reputation || 0,
-          money: moneyEffect
-        }
-      });
+          money: moneyEffect,
+        },
+      })
     } else {
-      const evt = getRandomPositiveEvent();
-      if (!evt) continue;
+      const evt = getRandomPositiveEvent()
+      if (!evt) continue
 
       events.push({
         id: `evt_${Date.now()}_${Math.random()}`,
@@ -70,11 +91,11 @@ export function generateBusinessEvents(business: Business, currentTurn: number):
         effects: {
           efficiency: evt.effects.efficiency || 0,
           reputation: evt.effects.reputation || 0,
-          money: evt.effects.money || 0
-        }
-      });
+          money: evt.effects.money || 0,
+        },
+      })
     }
   }
 
-  return events;
+  return events
 }

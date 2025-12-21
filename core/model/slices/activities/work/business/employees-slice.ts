@@ -163,16 +163,6 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return
     }
 
-    const newJob: import('@/core/types').Job = {
-      id: `job_business_${businessId}`,
-      title: `${role} в ${business.name}`,
-      company: business.name,
-      salary: salary / 3,
-      cost: { energy: -20 },
-      imageUrl: business.imageUrl || '',
-      description: `Работа в собственном бизнесе на позиции ${role}`,
-    }
-
     const updatedBusinesses = state.player.businesses.map((b) => {
       if (b.id !== businessId) return b
       const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
@@ -198,10 +188,23 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
           role,
           salary,
           startedTurn: state.turn,
-          effortPercent: isManagerial ? (b.playerEmployment?.effortPercent ?? 50) : 100,
+          experience: 0,
+          effortPercent: isManagerial ? 50 : 100,
         },
       }
     })
+
+    const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(role as any)
+    const effortFactor = isManagerial ? 0.5 : 1
+    const newJob: import('@/core/types').Job = {
+      id: `job_business_${businessId}`,
+      title: `${role} в ${business.name}`,
+      company: business.name,
+      salary: Math.round((salary / 3) * effortFactor),
+      cost: { energy: isManagerial ? -10 : -20 },
+      imageUrl: business.imageUrl || '',
+      description: `Работа в собственном бизнесе на позиции ${role}`,
+    }
 
     const updatedJobs = [...state.player.jobs, newJob]
 
@@ -319,6 +322,7 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       if (!biz?.playerEmployment) return j
       const role = biz.playerEmployment.role as any
       const isOperational = ['salesperson', 'technician', 'worker'].includes(role)
+      const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(role)
       const factor = isOperational
         ? 1
         : Math.max(0.1, Math.min(1, (biz.playerEmployment.effortPercent ?? 100) / 100))
@@ -327,6 +331,10 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return {
         ...j,
         salary: Math.round(baseMonthly * factor),
+        cost: {
+          ...j.cost,
+          energy: isManagerial ? Math.round(-10 * factor * 2) / 2 : -20,
+        },
       }
     })
 

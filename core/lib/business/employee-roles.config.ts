@@ -17,6 +17,8 @@ export interface BusinessImpact {
   salesBonus?: (skill: Skill | null) => number
   reputationBonus?: (skill: Skill | null) => number
   taxReduction?: (skill: Skill | null) => number
+  legalProtection?: (skill: Skill | null) => number
+  staffProductivityBonus?: (skill: Skill | null) => number
 }
 
 export interface StaffImpactResult {
@@ -148,6 +150,7 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     businessImpact: {
       taxReduction: (skill) => (skill ? skill.level * 3 : 0), // -3% налогов за уровень
       expenseReduction: (skill) => (skill ? skill.level * 2 : 0), // -2% расходов за уровень
+      legalProtection: (skill) => (skill ? skill.level * 10 : 0), // -10% шанс проверок за уровень
     },
     staffImpact: (stars) => ({
       taxReduction: stars * 3,
@@ -173,6 +176,7 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
 
     businessImpact: {
       efficiencyBonus: (skill) => (skill ? skill.level * 5 : 0), // +5% эффективности за уровень
+      staffProductivityBonus: (skill) => (skill ? skill.level * 2 : 0), // +2% к продуктивности остальных за уровень
     },
     staffImpact: (stars) => ({
       efficiencyBonus: stars * 5,

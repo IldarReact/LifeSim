@@ -19,6 +19,14 @@ export function calculateEfficiency(business: Business, playerSkills?: Skill[]):
 
   // 1.5. Бонус от HR (мотивация команды)
   let hrProductivityBonus = 0
+
+  // Бонус от игрока, если он HR
+  if (playerSkills && playerSkills.length > 0) {
+    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+    hrProductivityBonus += playerImpact.staffProductivityBonus || 0
+  }
+
+  // Бонус от сотрудников
   business.employees.forEach((emp) => {
     const cfg = getRoleConfig(emp.role)
     const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined

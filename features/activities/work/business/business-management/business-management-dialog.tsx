@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  Briefcase,
   DollarSign,
   Globe,
   Info,
@@ -17,6 +18,7 @@ import {
 import React from 'react'
 
 import { EmployeeCard } from '@/shared/components/business/employee-card'
+import { calculateStarsFromSkills } from '@/shared/lib/business/employee-utils'
 import { EmployeeHireDialog } from '../../employee-hire'
 
 import { CONTROL_THRESHOLD, DEFAULT_CANDIDATES_COUNT, ROLE_ICONS, ROLE_LABELS } from './constants'
@@ -43,6 +45,7 @@ import {
   generateCandidates,
   checkMinimumStaffing,
   getRoleConfig,
+  isManagerialRole,
   getPlayerRoleBusinessImpact,
 } from '@/core/lib/business'
 
@@ -109,6 +112,14 @@ export function BusinessManagementDialog({
   const staffingCheck = checkMinimumStaffing(business)
   const playerShare = calculatePlayerShare(business)
   const hasControl = hasControlOverBusiness(business, CONTROL_THRESHOLD)
+
+  // Получаем навыки игрока для отображения
+  const playerSkills = player?.personal.skills || []
+
+  // Рассчитываем звезды игрока на основе навыков
+  // Для игрока звезды — это максимальный уровень среди всех навыков (0-5)
+  const playerStars =
+    playerSkills.length > 0 ? (Math.max(1, ...playerSkills.map((s) => s.level)) as any) : 1
 
   const openHireDialog = (role: EmployeeRole) => {
     setSelectedRole(role)
@@ -708,57 +719,80 @@ export function BusinessManagementDialog({
             business.playerEmployment ||
             business.playerRoles.managerialRoles.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                {/* Рендерим игрока как сотрудника, если он участвует */}
-                {(business.playerEmployment || business.playerRoles.managerialRoles.length > 0) && (
+                {/* Рендерим игрока как сотрудника */}
+                {(business.playerEmployment ||
+                  (business.playerRoles.managerialRoles.length > 0 &&
+                    business.playerRoles.managerialRoles[0])) && (
                   <EmployeeCard
                     id={`player_${player?.id}`}
-                    name={player?.name || 'Вы'}
-                    role={business.playerEmployment?.role || 'manager'}
-                    roleLabel={[
-                      business.playerEmployment?.role
-                        ? `${ROLE_LABELS[business.playerEmployment.role]} (Опер.)`
-                        : null,
-                      ...business.playerRoles.managerialRoles.map((r) => ROLE_LABELS[r]),
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                    roleIcon={
-                      ROLE_ICONS[
-                        business.playerEmployment?.role ||
-                          business.playerRoles.managerialRoles[0] ||
-                          'manager'
+                    name={player?.name || 'Игрок'}
+                    role={
+                      (business.playerEmployment?.role ||
+                        business.playerRoles.managerialRoles[0]) as EmployeeRole
+                    }
+                    roleLabel={
+                      ROLE_LABELS[
+                        (business.playerEmployment?.role ||
+                          business.playerRoles.managerialRoles[0]) as EmployeeRole
                       ]
                     }
-                    stars={5}
-                    salary={business.playerEmployment?.salary || 0}
-                    salaryLabel="/кв"
+                    roleIcon={
+                      ROLE_ICONS[
+                        (business.playerEmployment?.role ||
+                          business.playerRoles.managerialRoles[0]) as EmployeeRole
+                      ]
+                    }
+                    salary={
+                      business.playerEmployment
+                        ? Math.round((business.playerEmployment.salary || 0) / 3)
+                        : 0
+                    }
+                    salaryLabel="/мес"
                     isPlayer={true}
+                    stars={playerStars}
+                    skills={{
+                      efficiency: playerStars * 20,
+                    }}
                     impact={(() => {
-                      if (!player) return undefined
-                      const impact = getPlayerRoleBusinessImpact(business, player.personal.skills)
+                      const impact = getPlayerRoleBusinessImpact(business, playerSkills)
                       return {
                         efficiencyBonus: impact.efficiencyBonus,
                         expenseReduction: impact.expenseReduction,
                         salesBonus: impact.salesBonus,
                         reputationBonus: impact.reputationBonus,
                         taxReduction: impact.taxReduction,
+                        legalProtection: impact.legalProtection,
+                        staffProductivityBonus: impact.staffProductivityBonus,
                       }
                     })()}
                     effortPercent={business.playerEmployment?.effortPercent ?? 100}
-                    onEffortChange={
-                      ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
-                        (business.playerEmployment?.role ||
-                          business.playerRoles.managerialRoles[0]) as any,
-                      )
-                        ? (value) =>
-                            useGameStore.getState().setPlayerEmploymentEffort(business.id, value)
-                        : undefined
+                    isPartialAllowed={isManagerialRole(
+                      (business.playerEmployment?.role ||
+                        business.playerRoles.managerialRoles[0]) as EmployeeRole,
+                    )}
+                    onEffortChange={(value) =>
+                      useGameStore.getState().setPlayerEmploymentEffort(business.id, value)
                     }
-                    onAction={business.playerEmployment ? () => onLeaveJob(business.id) : undefined}
-                    actionLabel="Уволиться"
-                    actionIcon={<Trash2 className="w-3 h-3 mr-1" />}
-                    actionVariant="destructive"
-                    className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30"
+                    onAction={
+                      business.playerEmployment
+                        ? () => onLeaveJob(business.id)
+                        : () =>
+                            onJoinAsEmployee(
+                              business.id,
+                              business.playerRoles.managerialRoles[0] || 'manager',
+                              0,
+                            )
+                    }
+                    actionLabel={business.playerEmployment ? 'Уволиться' : 'Устроиться официально'}
+                    actionIcon={
+                      business.playerEmployment ? (
+                        <Trash2 className="w-3 h-3 mr-1" />
+                      ) : (
+                        <Briefcase className="w-3 h-3 mr-1" />
+                      )
+                    }
+                    actionVariant={business.playerEmployment ? 'destructive' : 'default'}
+                    className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30 shadow-lg"
                   />
                 )}
 

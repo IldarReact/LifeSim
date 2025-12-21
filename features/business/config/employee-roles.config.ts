@@ -1,3 +1,8 @@
+/**
+ * @deprecated This file is redundant. Use core/lib/business/employee-roles.config.ts instead.
+ * @see core/lib/business/employee-roles.config.ts
+ */
+
 import type { Skill } from '@/core/types';
 import type { StatEffect } from '@/core/types/stats.types';
 

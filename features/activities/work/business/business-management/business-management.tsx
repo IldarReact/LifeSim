@@ -10,7 +10,6 @@ import type { Business, EmployeeCandidate } from '@/core/types'
 import { Button } from '@/shared/ui/button'
 import { InfoCard } from '@/shared/ui/info-card'
 
-
 interface BusinessManagementProps {
   business: Business
   playerCash: number
@@ -56,7 +55,7 @@ export function BusinessManagement({
     <div className="max-w-md mx-auto md:mx-0 w-full relative">
       {/* Notification Badge */}
       {proposalsCount > 0 && (
-        <div className="absolute -top-2 -right-2 z-10 bg-gradient-to-br from-orange-500 to-red-600 text-white text-xs font-bold rounded-full min-w-[24px] h-[24px] flex items-center justify-center px-2 shadow-lg border-2 border-white/20 animate-pulse">
+        <div className="absolute -top-2 -right-2 z-10 bg-linear-to-br from-orange-500 to-red-600 text-white text-xs font-bold rounded-full min-w-24px h-24px flex items-center justify-center px-2 shadow-lg border-2 border-white/20 animate-pulse">
           {proposalsCount > 9 ? '9+' : proposalsCount}
         </div>
       )}
@@ -84,6 +83,12 @@ export function BusinessManagement({
             value: `${business.employees.length}/${business.maxEmployees}`,
             icon: <Users className="w-4 h-4" />,
             color: 'text-blue-400',
+          },
+          {
+            label: 'Участие',
+            value: `Э: -${Math.round(business.lastRoleEnergyCost || 0)} | Р: -${Math.round(business.lastRoleSanityCost || 0)}`,
+            icon: <Info className="w-4 h-4" />,
+            color: 'text-amber-400',
           },
         ]}
         modalContent={

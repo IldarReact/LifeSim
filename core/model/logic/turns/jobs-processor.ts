@@ -62,7 +62,7 @@ export function processJobs(
           const skill = { ...updatedSkills[idx] }
           skill.progress += 15
           skill.lastPracticedTurn = currentTurn
-            ; (skill as any).isBeingUsedAtWork = true
+          ;(skill as any).isBeingUsedAtWork = true
 
           if (skill.progress >= 100) {
             skill.level += 1 as any
@@ -116,7 +116,6 @@ export function processJobs(
         },
       })
     } else {
-      remainingApplications.push(app)
       notifications.push({
         id: `reject_${app.id}_${currentTurn}`,
         type: 'info',

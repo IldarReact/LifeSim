@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Heart,
@@ -11,14 +11,13 @@ import {
   Mountain,
   Palette,
   Zap,
-} from "lucide-react";
+} from 'lucide-react'
 
-import { getInflatedPrice } from "@/core/lib/calculations/price-helpers";
-import { getRestActivitiesForCountry } from "@/core/lib/data-loaders/rest-loader";
-import { useGameStore } from "@/core/model/game-store";
-import { Button } from "@/shared/ui/button";
-import { Card } from "@/shared/ui/card";
-
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { getRestActivitiesForCountry } from '@/core/lib/data-loaders/rest-loader'
+import { useGameStore } from '@/core/model/game-store'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 
 const ICON_MAP: Record<string, any> = {
   Heart,
@@ -31,28 +30,28 @@ const ICON_MAP: Record<string, any> = {
   Mountain,
   Palette,
   Zap,
-};
+}
 
 export function RestActivity(): React.JSX.Element | null {
-  const { player, applyStatChanges, countries } = useGameStore();
+  const { player, applyStatChanges, countries } = useGameStore()
 
-  if (!player) return null;
+  if (!player) return null
 
-  const activities = getRestActivitiesForCountry(player.countryId || 'us');
-  const energy = player.personal.stats.energy;
-  const money = player.stats.money;
-  const currentCountry = countries[player.countryId];
+  const activities = getRestActivitiesForCountry(player.countryId || 'us')
+  const energy = player.personal.stats.energy
+  const money = player.stats.money
+  const currentCountry = countries[player.countryId]
 
   const applyRest = (activity: any, inflatedCost: number) => {
-    if (energy < activity.energyCost) return;
-    if (money < inflatedCost) return;
+    if (energy < activity.energyCost) return
+    if (money < inflatedCost) return
 
     applyStatChanges({
       energy: -activity.energyCost,
       money: -inflatedCost,
       ...activity.effects,
-    });
-  };
+    })
+  }
 
   return (
     <div className="min-h-screen pb-20 relative">
@@ -79,12 +78,13 @@ export function RestActivity(): React.JSX.Element | null {
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {activities.map((activity) => {
-            const Icon = ICON_MAP[activity.icon] || Activity;
+            const Icon = ICON_MAP[activity.icon] || Activity
             // Применить инфляцию (категория services ×0.9)
-            const inflatedCost = currentCountry && activity.cost > 0
-              ? getInflatedPrice(activity.cost, currentCountry, 'services')
-              : activity.cost;
-            const canDo = energy >= activity.energyCost && money >= inflatedCost;
+            const inflatedCost =
+              currentCountry && activity.cost > 0
+                ? getInflatedPrice(activity.cost, currentCountry, 'services')
+                : activity.cost
+            const canDo = energy >= activity.energyCost && money >= inflatedCost
 
             return (
               <Card
@@ -92,9 +92,13 @@ export function RestActivity(): React.JSX.Element | null {
                 className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 hover:bg-black/50 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
               >
                 {/* Header with Icon */}
-                <div className={`h-24 bg-gradient-to-br ${activity.bg} relative flex items-center justify-center`}>
+                <div
+                  className={`h-24 bg-linear-to-br ${activity.bg} relative flex items-center justify-center`}
+                >
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                  <Icon className={`w-12 h-12 ${activity.color} relative z-10 drop-shadow-lg transform group-hover:scale-110 transition-transform duration-300`} />
+                  <Icon
+                    className={`w-12 h-12 ${activity.color} relative z-10 drop-shadow-lg transform group-hover:scale-110 transition-transform duration-300`}
+                  />
                 </div>
 
                 <div className="p-5 flex flex-col h-[calc(100%-6rem)]">
@@ -108,48 +112,69 @@ export function RestActivity(): React.JSX.Element | null {
                       <span className="flex items-center gap-1 text-amber-300">
                         <Zap className="w-4 h-4" /> -{activity.energyCost}
                       </span>
-                      <span className={`flex items-center gap-1 ${inflatedCost > 0 ? 'text-red-300' : 'text-emerald-300'}`}>
-                        {inflatedCost > 0 ? `-$${inflatedCost.toLocaleString()}` : "Бесплатно"}
+                      <span
+                        className={`flex items-center gap-1 ${inflatedCost > 0 ? 'text-red-300' : 'text-emerald-300'}`}
+                      >
+                        {inflatedCost > 0 ? `-$${inflatedCost.toLocaleString()}` : 'Бесплатно'}
                       </span>
                     </div>
 
                     {/* Effects */}
                     <div className="grid grid-cols-2 gap-2 mb-4">
                       {Object.entries(activity.effects).map(([key, val]) => {
-                        const icons = { happiness: Heart, health: Activity, sanity: Brain, intelligence: Brain };
-                        const EffectIcon = icons[key as keyof typeof icons] || Activity;
-                        const value = val as number;
-                        const color = value > 0 ? "text-green-400" : "text-red-400";
-                        const labels = { happiness: "Счастье", health: "Здоровье", sanity: "Рассудок", intelligence: "Интеллект" };
+                        const icons = {
+                          happiness: Heart,
+                          health: Activity,
+                          sanity: Brain,
+                          intelligence: Brain,
+                        }
+                        const EffectIcon = icons[key as keyof typeof icons] || Activity
+                        const value = val as number
+                        const color = value > 0 ? 'text-green-400' : 'text-red-400'
+                        const labels = {
+                          happiness: 'Счастье',
+                          health: 'Здоровье',
+                          sanity: 'Рассудок',
+                          intelligence: 'Интеллект',
+                        }
 
                         return (
-                          <div key={key} className="flex items-center gap-2 bg-white/5 rounded-lg p-1.5 px-2">
+                          <div
+                            key={key}
+                            className="flex items-center gap-2 bg-white/5 rounded-lg p-1.5 px-2"
+                          >
                             <EffectIcon className={`w-3.5 h-3.5 ${color}`} />
                             <span className="text-xs font-medium text-white/90">
-                              {value > 0 ? "+" : ""}{value} {labels[key as keyof typeof labels] || key}
+                              {value > 0 ? '+' : ''}
+                              {value} {labels[key as keyof typeof labels] || key}
                             </span>
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   </div>
 
                   <Button
-                    className={`w-full font-bold transition-all ${canDo
-                      ? "bg-white text-black hover:bg-white/90 shadow-lg hover:shadow-white/20"
-                      : "bg-white/10 text-white/40 border border-white/10"
-                      }`}
+                    className={`w-full font-bold transition-all ${
+                      canDo
+                        ? 'bg-white text-black hover:bg-white/90 shadow-lg hover:shadow-white/20'
+                        : 'bg-white/10 text-white/40 border border-white/10'
+                    }`}
                     disabled={!canDo}
                     onClick={() => applyRest(activity, inflatedCost)}
                   >
-                    {canDo ? "Заняться" : energy < activity.energyCost ? "Нет энергии" : "Нет денег"}
+                    {canDo
+                      ? 'Заняться'
+                      : energy < activity.energyCost
+                        ? 'Нет энергии'
+                        : 'Нет денег'}
                   </Button>
                 </div>
               </Card>
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
+  )
 }

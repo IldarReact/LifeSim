@@ -1,11 +1,21 @@
-"use client"
+'use client'
 
-import { Heart, Briefcase, TrendingUp, Landmark, Home, Palmtree, Bell, GraduationCap, ShoppingCart } from "lucide-react"
+import {
+  Heart,
+  Briefcase,
+  TrendingUp,
+  Landmark,
+  Home,
+  Palmtree,
+  Bell,
+  GraduationCap,
+  ShoppingCart,
+} from 'lucide-react'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { GameState } from "@/core/types"
+import { useGameStore } from '@/core/model/game-store'
+import type { GameState } from '@/core/types'
 
-type ActivityId = NonNullable<GameState["activeActivity"]> | "education"
+type ActivityId = NonNullable<GameState['activeActivity']> | 'education'
 
 interface Activity {
   id: ActivityId
@@ -15,25 +25,26 @@ interface Activity {
 }
 
 const ACTIVITIES: readonly Activity[] = [
-  { id: "shop", label: "МАГАЗИН", icon: ShoppingCart, description: "Товары и услуги" },
-  { id: "family", label: "СЕМЬЯ", icon: Heart, description: "Семья и отношения" },
-  { id: "work", label: "РАБОТА", icon: Briefcase, description: "Карьера и доход" },
-  { id: "education", label: "ОБУЧЕНИЕ", icon: GraduationCap, description: "Образование и навыки" },
-  { id: "investments", label: "ИНВЕСТИЦИИ", icon: TrendingUp, description: "Акции и активы" },
-  { id: "banking", label: "БАНКИ", icon: Landmark, description: "Кредиты и депозиты" },
-  { id: "relocation", label: "ПЕРЕЕЗД", icon: Home, description: "Жилище и имущество" },
-  { id: "leisure", label: "ОТДЫХ", icon: Palmtree, description: "Развлечения и здоровье" },
-  { id: "events", label: "СОБЫТИЯ", icon: Bell, description: "История событий" },
+  { id: 'shop', label: 'МАГАЗИН', icon: ShoppingCart, description: 'Товары и услуги' },
+  { id: 'family', label: 'СЕМЬЯ', icon: Heart, description: 'Семья и отношения' },
+  { id: 'work', label: 'РАБОТА', icon: Briefcase, description: 'Карьера и доход' },
+  { id: 'education', label: 'ОБУЧЕНИЕ', icon: GraduationCap, description: 'Образование и навыки' },
+  { id: 'investments', label: 'ИНВЕСТИЦИИ', icon: TrendingUp, description: 'Акции и активы' },
+  { id: 'banking', label: 'БАНКИ', icon: Landmark, description: 'Кредиты и депозиты' },
+  { id: 'relocation', label: 'ПЕРЕЕЗД', icon: Home, description: 'Жилище и имущество' },
+  { id: 'leisure', label: 'ОТДЫХ', icon: Palmtree, description: 'Развлечения и здоровье' },
+  { id: 'events', label: 'СОБЫТИЯ', icon: Bell, description: 'История событий' },
 ]
 
 export function ActivityNavigation(): React.JSX.Element | null {
-  const { activeActivity, setActiveActivity, gameStatus, player, businessProposals } = useGameStore()
+  const { activeActivity, setActiveActivity, gameStatus, player, businessProposals } =
+    useGameStore()
 
-  if (gameStatus !== "playing") return null
+  if (gameStatus !== 'playing') return null
 
   // Подсчёт входящих предложений по бизнесу
   const workNotificationsCount = businessProposals.filter(
-    (p) => p.status === 'pending' && p.initiatorId !== player?.id
+    (p) => p.status === 'pending' && p.initiatorId !== player?.id,
   ).length
 
   const getNotificationCount = (activityId: ActivityId): number => {
@@ -56,10 +67,9 @@ export function ActivityNavigation(): React.JSX.Element | null {
               <button
                 key={activity.id}
                 onClick={() => setActiveActivity(activity.id)}
-                className={`w-16 md:w-20 py-4 px-1 flex flex-col items-center gap-1.5 transition-all relative group ${isActive
-                  ? "text-white"
-                  : "text-white/40 hover:text-white/80 hover:bg-white/5"
-                  }`}
+                className={`w-16 md:w-20 py-4 px-1 flex flex-col items-center gap-1.5 transition-all relative group ${
+                  isActive ? 'text-white' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                }`}
                 title={activity.description}
               >
                 {isActive && (
@@ -68,13 +78,17 @@ export function ActivityNavigation(): React.JSX.Element | null {
 
                 {/* Notification Badge */}
                 {notificationCount > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-br from-orange-500 to-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg border border-white/20 animate-pulse">
+                  <div className="absolute -top-1 -right-1 bg-linear-to-br from-orange-500 to-red-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg border border-white/20 animate-pulse">
                     {notificationCount > 9 ? '9+' : notificationCount}
                   </div>
                 )}
 
-                <Icon className={`w-5 h-5 md:w-6 md:h-6 transition-transform ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
-                <span className="text-[10px] font-bold tracking-wider text-center leading-tight opacity-80">{activity.label}</span>
+                <Icon
+                  className={`w-5 h-5 md:w-6 md:h-6 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
+                />
+                <span className="text-[10px] font-bold tracking-wider text-center leading-tight opacity-80">
+                  {activity.label}
+                </span>
               </button>
             )
           })}

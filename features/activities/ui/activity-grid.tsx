@@ -1,13 +1,13 @@
-"use client"
+'use client'
 
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, X, Heart, TrendingUp, Wallet, Briefcase } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight, X, Heart, TrendingUp, Wallet, Briefcase } from 'lucide-react'
+import { useState } from 'react'
 
-import type { ActivityCard, ActivityGridProps } from "../types"
+import type { ActivityCard, ActivityGridProps } from '../types'
 
-import { Button } from "@/shared/ui/button"
-import { Dialog, DialogContent } from "@/shared/ui/dialog"
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent } from '@/shared/ui/dialog'
 
 export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
   const [selectedCard, setSelectedCard] = useState<ActivityCard | null>(null)
@@ -25,17 +25,19 @@ export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
             {/* Background Image */}
             <div className="absolute inset-0">
               <img
-                src={card.image || "/placeholder.svg"}
+                src={card.image || '/placeholder.svg'}
                 alt={card.title}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent opacity-80" />
             </div>
 
             {/* Content Overlay */}
             <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
               <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
-                <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{card.title}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  {card.title}
+                </h3>
                 <p className="text-xs sm:text-sm font-medium text-white/70 uppercase tracking-widest">
                   {card.subtitle}
                 </p>
@@ -91,7 +93,7 @@ export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
                 {/* Blurred Background */}
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl" />
                 <img
-                  src={selectedCard.image || "/placeholder.svg"}
+                  src={selectedCard.image || '/placeholder.svg'}
                   className="absolute inset-0 w-full h-full object-cover opacity-20 blur-xl"
                   alt="bg"
                 />
@@ -111,18 +113,22 @@ export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
                     <div className="mt-8 sm:mt-12 space-y-4 sm:space-y-6">
                       <div className="aspect-[3/2] w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10">
                         <img
-                          src={selectedCard.image || "/placeholder.svg"}
+                          src={selectedCard.image || '/placeholder.svg'}
                           alt={selectedCard.title}
                           className="w-full h-full object-cover"
                         />
                       </div>
 
                       <div>
-                        <h2 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">{selectedCard.title}</h2>
+                        <h2 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+                          {selectedCard.title}
+                        </h2>
                         <p className="text-lg sm:text-xl text-white/60">{selectedCard.subtitle}</p>
                       </div>
 
-                      <p className="text-white/80 leading-relaxed text-sm sm:text-lg">{selectedCard.description}</p>
+                      <p className="text-white/80 leading-relaxed text-sm sm:text-lg">
+                        {selectedCard.description}
+                      </p>
 
                       <div className="space-y-2 sm:space-y-3 pt-2 sm:pt-4">
                         {selectedCard.stats.map((stat, i) => (
@@ -131,7 +137,9 @@ export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
                             className="flex justify-between items-center p-2 sm:p-3 rounded-lg sm:rounded-xl bg-white/5 border border-white/5"
                           >
                             <span className="text-white/60 text-sm sm:text-base">{stat.label}</span>
-                            <span className="text-white font-bold text-base sm:text-lg">{stat.value}</span>
+                            <span className="text-white font-bold text-base sm:text-lg">
+                              {stat.value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -155,7 +163,9 @@ export function ActivityGrid({ cards }: ActivityGridProps): React.JSX.Element {
                             <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
                           </div>
                           <div>
-                            <h4 className="font-bold text-white text-sm sm:text-base">Статистика</h4>
+                            <h4 className="font-bold text-white text-sm sm:text-base">
+                              Статистика
+                            </h4>
                             <p className="text-xs text-white/50">История изменений</p>
                           </div>
                         </div>

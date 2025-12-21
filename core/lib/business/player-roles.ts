@@ -60,22 +60,50 @@ export function getPlayerActiveRoles(business: Business): EmployeeRole[] {
 export function calculatePlayerRoleEffects(business: Business): StatEffect {
   const activeRoles = getPlayerActiveRoles(business)
 
-  const totalEffect: StatEffect = {
+  const managerialEffect: StatEffect = {
+    energy: 0,
+    sanity: 0,
+  }
+  const operationalEffect: StatEffect = {
     energy: 0,
     sanity: 0,
   }
 
   activeRoles.forEach((role) => {
     const config = getRoleConfig(role)
-    if (config) {
-      const effects = config.playerEffects
-      totalEffect.energy = (totalEffect.energy || 0) + (effects.energy || 0)
-      totalEffect.sanity = (totalEffect.sanity || 0) + (effects.sanity || 0)
-      totalEffect.happiness = (totalEffect.happiness || 0) + (effects.happiness || 0)
-      totalEffect.health = (totalEffect.health || 0) + (effects.health || 0)
-      totalEffect.intelligence = (totalEffect.intelligence || 0) + (effects.intelligence || 0)
+    if (!config) return
+    const effects = config.playerEffects
+
+    if (isManagerialRole(role)) {
+      managerialEffect.energy = (managerialEffect.energy || 0) + (effects.energy || 0)
+      managerialEffect.sanity = (managerialEffect.sanity || 0) + (effects.sanity || 0)
+      managerialEffect.happiness = (managerialEffect.happiness || 0) + (effects.happiness || 0)
+      managerialEffect.health = (managerialEffect.health || 0) + (effects.health || 0)
+      managerialEffect.intelligence =
+        (managerialEffect.intelligence || 0) + (effects.intelligence || 0)
+    } else if (isOperationalRole(role)) {
+      operationalEffect.energy = (operationalEffect.energy || 0) + (effects.energy || 0)
+      operationalEffect.sanity = (operationalEffect.sanity || 0) + (effects.sanity || 0)
+      operationalEffect.happiness = (operationalEffect.happiness || 0) + (effects.happiness || 0)
+      operationalEffect.health = (operationalEffect.health || 0) + (effects.health || 0)
+      operationalEffect.intelligence =
+        (operationalEffect.intelligence || 0) + (effects.intelligence || 0)
     }
   })
+
+  const effortPercent = business.playerEmployment?.effortPercent ?? 100
+  const effortFactor = Math.max(0.1, Math.min(1, effortPercent / 100))
+
+  const totalEffect: StatEffect = {
+    energy: (managerialEffect.energy || 0) + (operationalEffect.energy || 0) * effortFactor,
+    sanity: (managerialEffect.sanity || 0) + (operationalEffect.sanity || 0) * effortFactor,
+    happiness:
+      (managerialEffect.happiness || 0) + (operationalEffect.happiness || 0) * effortFactor,
+    health: (managerialEffect.health || 0) + (operationalEffect.health || 0) * effortFactor,
+    intelligence:
+      (managerialEffect.intelligence || 0) +
+      (operationalEffect.intelligence || 0) * effortFactor,
+  }
 
   return totalEffect
 }

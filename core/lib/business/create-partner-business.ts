@@ -96,7 +96,9 @@ export function createPartnerBusiness(
     minEmployees: 1,
     requiredRoles: [],
     playerRoles: {
-      managerialRoles: ['ceo' as EmployeeRole],
+      managerialRoles: isInitiator
+        ? (['manager', 'accountant'] as EmployeeRole[])
+        : (['ceo'] as EmployeeRole[]),
       operationalRole: null,
     },
     reputation: 50,

@@ -98,9 +98,9 @@ describe('employees-slice', () => {
 
     const afterHireBiz = get().player.businesses[0]
     expect(afterHireBiz.employees.length).toBe(1)
-    expect(afterHireBiz.walletBalance).toBe(1500) // 3000 - 1500
+    expect(afterHireBiz.walletBalance).toBe(3000)
     // Player money unchanged by hire
-    expect(get().player.stats.money).toBe(4000) // 5000 - 1000 deposit only
+    expect(get().player.stats.money).toBe(4000)
     expect(get().player.personal.stats.money).toBe(4000)
   })
 })

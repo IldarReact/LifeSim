@@ -185,6 +185,8 @@ export function processBusinessTurn(
       inventory: financials.newInventory,
       quarterlyIncome: financials.income,
       quarterlyExpenses: financials.expenses,
+      lastRoleEnergyCost: Math.abs(calculatePlayerRoleEffects(updatedBiz).energy || 0),
+      lastRoleSanityCost: Math.abs(calculatePlayerRoleEffects(updatedBiz).sanity || 0),
       lastQuarterSummary: financials.debug
         ? {
             sold: financials.debug.salesVolume,

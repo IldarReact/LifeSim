@@ -76,16 +76,12 @@ export function validateEmployeeHire(
   currentEmployeeCount: number,
   maxEmployees: number,
 ): EmployeeHireValidation {
-  const hasEnoughMoney = playerMoney >= employeeRequiredSalary
+  const hasEnoughMoney = true
   const hasCapacity = currentEmployeeCount < maxEmployees
 
   return {
-    isValid: hasEnoughMoney && hasCapacity,
-    error: !hasEnoughMoney
-      ? 'Недостаточно денег для найма'
-      : !hasCapacity
-        ? 'Достигнут лимит сотрудников'
-        : undefined,
+    isValid: hasCapacity,
+    error: !hasCapacity ? 'Достигнут лимит сотрудников' : undefined,
     details: {
       hasEnoughMoney,
       hasCapacity,

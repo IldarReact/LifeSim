@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { Info } from 'lucide-react'
 import { useState } from 'react'
@@ -20,7 +20,14 @@ export interface InfoCardProps {
   modalContent?: React.ReactNode
 }
 
-export function InfoCard({ title, subtitle, value, imageUrl, details, modalContent }: InfoCardProps): React.JSX.Element {
+export function InfoCard({
+  title,
+  subtitle,
+  value,
+  imageUrl,
+  details,
+  modalContent,
+}: InfoCardProps): React.JSX.Element {
   const [showModal, setShowModal] = useState(false)
 
   return (
@@ -32,11 +39,9 @@ export function InfoCard({ title, subtitle, value, imageUrl, details, modalConte
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${imageUrl})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
-            {subtitle && (
-              <p className="text-white/60 text-sm mb-1">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-white/60 text-sm mb-1">{subtitle}</p>}
             <h3 className="text-2xl font-bold text-white">{title}</h3>
             <p className="text-emerald-400 text-xl font-bold mt-1">{value}</p>
           </div>

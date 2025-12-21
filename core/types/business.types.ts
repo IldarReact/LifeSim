@@ -218,6 +218,7 @@ export interface Business {
     role: EmployeeRole
     salary: number
     startedTurn: number
+    effortPercent?: number
   }
 
   // Партнерские отношения
@@ -229,6 +230,10 @@ export interface Business {
 
   // Метаданные
   imageUrl?: string
+
+  // Последние затраты статов на управление для текущего игрока за квартал
+  lastRoleEnergyCost?: number
+  lastRoleSanityCost?: number
 }
 
 export interface EmployeeCandidate {

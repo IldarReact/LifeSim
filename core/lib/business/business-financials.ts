@@ -272,7 +272,7 @@ export function calculateBusinessFinancials(
 
   return {
     income: Math.round(salesIncome),
-    expenses: Math.round(opEx + purchaseCost + taxAmount), // Total Cash Outflow
+    expenses: Math.round(cogs + opEx + taxAmount), // P&L Expenses (COGS + OpEx + Taxes)
     profit: Math.round(cashFlow), // We return Cash Flow as "profit" for the game money update
     netProfit: Math.round(netProfit),
     cashFlow: Math.round(cashFlow),

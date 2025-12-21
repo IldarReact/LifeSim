@@ -1,44 +1,95 @@
 import {
-  DollarSign, ChevronRight, Target, Star, Heart, Brain,
-  Home, Utensils, Car, School, Pill, CreditCard, AlertCircle
-} from "lucide-react";
-import React from "react";
+  DollarSign,
+  ChevronRight,
+  Target,
+  Star,
+  Heart,
+  Brain,
+  Home,
+  Utensils,
+  Car,
+  School,
+  Pill,
+  CreditCard,
+  AlertCircle,
+} from 'lucide-react'
+import React from 'react'
 
-import { useGameStore } from "@/core/model/game-store";
-import type { LifeGoal } from "@/core/types";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog";
-import { Progress } from "@/shared/ui/progress";
+import { useGameStore } from '@/core/model/game-store'
+import type { LifeGoal } from '@/core/types'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
+import { Progress } from '@/shared/ui/progress'
 
 // Категории расходов (можно вынести в отдельный файл констант)
 const expenseCategories = [
-  { id: "rent", title: "Квартира", amount: 45000, icon: Home, img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600" },
-  { id: "food", title: "Еда", amount: 25000, icon: Utensils, img: "https://images.unsplash.com/photo-1543351611-88a0df7c74e3?w=600" },
-  { id: "transport", title: "Транспорт", amount: 8000, icon: Car, img: "https://images.unsplash.com/photo-1494905998402-39560b62a7b5?w=600" },
-  { id: "education", title: "Образование", amount: 12000, icon: School, img: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600" },
-  { id: "health", title: "Здоровье", amount: 6000, icon: Pill, img: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600" },
-  { id: "taxes", title: "Налоги", amount: 38000, icon: CreditCard, img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600" },
-] as const;
+  {
+    id: 'rent',
+    title: 'Квартира',
+    amount: 45000,
+    icon: Home,
+    img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600',
+  },
+  {
+    id: 'food',
+    title: 'Еда',
+    amount: 25000,
+    icon: Utensils,
+    img: 'https://images.unsplash.com/photo-1543351611-88a0df7c74e3?w=600',
+  },
+  {
+    id: 'transport',
+    title: 'Транспорт',
+    amount: 8000,
+    icon: Car,
+    img: 'https://images.unsplash.com/photo-1494905998402-39560b62a7b5?w=600',
+  },
+  {
+    id: 'education',
+    title: 'Образование',
+    amount: 12000,
+    icon: School,
+    img: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600',
+  },
+  {
+    id: 'health',
+    title: 'Здоровье',
+    amount: 6000,
+    icon: Pill,
+    img: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600',
+  },
+  {
+    id: 'taxes',
+    title: 'Налоги',
+    amount: 38000,
+    icon: CreditCard,
+    img: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600',
+  },
+] as const
 
 export function PlayerCard() {
-  const { player } = useGameStore();
+  const { player } = useGameStore()
 
-  if (!player) return null;
+  if (!player) return null
 
-  const { familyMembers, lifeGoals } = player.personal;
+  const { familyMembers, lifeGoals } = player.personal
 
   // Расчет расходов
-  const familyMods = familyMembers?.reduce((acc, member) => ({
-    expenses: acc.expenses + member.expenses
-  }), { expenses: 0 }) || { expenses: 0 };
+  const familyMods = familyMembers?.reduce(
+    (acc, member) => ({
+      expenses: acc.expenses + member.expenses,
+    }),
+    { expenses: 0 },
+  ) || { expenses: 0 }
 
-  const totalExpenses = expenseCategories.reduce((sum, exp) => sum + exp.amount, 0) + (familyMods.expenses || 0);
+  const totalExpenses =
+    expenseCategories.reduce((sum, exp) => sum + exp.amount, 0) + (familyMods.expenses || 0)
 
   return (
     <div className="space-y-4">
       {/* Карточка Финансов */}
       <div className="relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-md transition-all hover:bg-white/10 group">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-linear-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-6">
@@ -49,8 +100,11 @@ export function PlayerCard() {
               <h2 className="text-2xl font-bold text-white">Финансы</h2>
             </div>
             <div className="text-right">
-              <p className={`text-2xl md:text-3xl font-bold tracking-tight ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {player.quarterlyReport.netProfit > 0 ? '+' : ''}${player.quarterlyReport.netProfit.toLocaleString()}
+              <p
+                className={`text-2xl md:text-3xl font-bold tracking-tight ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+              >
+                {player.quarterlyReport.netProfit > 0 ? '+' : ''}$
+                {player.quarterlyReport.netProfit.toLocaleString()}
               </p>
               <span className="text-sm text-white/50 font-medium">чистая прибыль / кв.</span>
             </div>
@@ -59,7 +113,9 @@ export function PlayerCard() {
           <Dialog>
             <DialogTrigger asChild>
               <Button className="w-full h-12 bg-white/5 hover:bg-white/10 text-white border border-white/10 justify-between px-4 group/btn">
-                <span className="text-white/80 group-hover/btn:text-white transition-colors">Финансовый отчет</span>
+                <span className="text-white/80 group-hover/btn:text-white transition-colors">
+                  Финансовый отчет
+                </span>
                 <ChevronRight className="w-5 h-5 text-white/40 group-hover/btn:text-white transition-colors" />
               </Button>
             </DialogTrigger>
@@ -76,7 +132,9 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-white/60">Общий доход</span>
-                    <span className="text-emerald-400 font-bold text-xl">+${player.quarterlyReport.income.total.toLocaleString()}</span>
+                    <span className="text-emerald-400 font-bold text-xl">
+                      +${player.quarterlyReport.income.total.toLocaleString()}
+                    </span>
                   </div>
                   <div className="pl-4 border-l-2 border-white/10 space-y-1 text-sm">
                     <div className="flex justify-between text-white/40">
@@ -91,7 +149,9 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-white/60">Общие расходы</span>
-                    <span className="text-rose-400 font-bold text-xl">-${player.quarterlyReport.expenses.total.toLocaleString()}</span>
+                    <span className="text-rose-400 font-bold text-xl">
+                      -${player.quarterlyReport.expenses.total.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
@@ -99,15 +159,20 @@ export function PlayerCard() {
                 <div className="bg-white/5 rounded-2xl p-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white/60">Налоги</span>
-                    <span className="text-amber-400 font-bold text-xl">-${player.quarterlyReport.taxes.total.toLocaleString()}</span>
+                    <span className="text-amber-400 font-bold text-xl">
+                      -${player.quarterlyReport.taxes.total.toLocaleString()}
+                    </span>
                   </div>
                 </div>
 
                 {/* Net Profit */}
                 <div className="border-t border-white/10 pt-4 flex justify-between items-center">
                   <span className="text-xl font-bold text-white">Чистая прибыль</span>
-                  <span className={`text-2xl font-bold ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {player.quarterlyReport.netProfit > 0 ? '+' : ''}${player.quarterlyReport.netProfit.toLocaleString()}
+                  <span
+                    className={`text-2xl font-bold ${player.quarterlyReport.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+                  >
+                    {player.quarterlyReport.netProfit > 0 ? '+' : ''}$
+                    {player.quarterlyReport.netProfit.toLocaleString()}
                   </span>
                 </div>
 
@@ -132,7 +197,7 @@ export function PlayerCard() {
             alt="Background"
             className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
         </div>
 
         <div className="relative z-10 p-8 flex flex-col justify-end h-full min-h-[240px]">
@@ -160,7 +225,7 @@ export function PlayerCard() {
                 </DialogTitle>
               </DialogHeader>
               <div className="grid grid-cols-1 gap-4 mt-4">
-                {lifeGoals?.map(goal => (
+                {lifeGoals?.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
                 {(!lifeGoals || lifeGoals.length === 0) && (
@@ -172,12 +237,14 @@ export function PlayerCard() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function GoalCard({ goal }: { goal: LifeGoal }) {
   return (
-    <div className={`bg-white/5 border ${goal.isCompleted ? 'border-green-500/30' : 'border-white/10'} rounded-xl p-4 relative overflow-hidden`}>
+    <div
+      className={`bg-white/5 border ${goal.isCompleted ? 'border-green-500/30' : 'border-white/10'} rounded-xl p-4 relative overflow-hidden`}
+    >
       {goal.isCompleted && (
         <div className="absolute top-0 right-0 bg-green-500/20 px-3 py-1 rounded-bl-xl text-green-400 text-xs font-bold">
           ВЫПОЛНЕНО
@@ -204,18 +271,14 @@ function GoalCard({ goal }: { goal: LifeGoal }) {
       <div className="flex gap-4 text-xs">
         <div className="flex items-center gap-1 text-rose-400">
           <Heart className="w-3 h-3" />
-          <span>
-            +{goal.reward.perTurnReward.happiness ?? 0}/ход
-          </span>
+          <span>+{goal.reward.perTurnReward.happiness ?? 0}/ход</span>
         </div>
 
         <div className="flex items-center gap-1 text-purple-400">
           <Brain className="w-3 h-3" />
-          <span>
-            +{goal.reward.perTurnReward.sanity ?? 0}/ход
-          </span>
+          <span>+{goal.reward.perTurnReward.sanity ?? 0}/ход</span>
         </div>
       </div>
     </div>
-  );
+  )
 }

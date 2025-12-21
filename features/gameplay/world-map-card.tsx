@@ -1,4 +1,4 @@
-import type { CountryEconomy } from "@/core/types"
+import type { CountryEconomy } from '@/core/types'
 
 interface WorldMapCardProps {
   country: CountryEconomy | null
@@ -9,7 +9,7 @@ export function WorldMapCard({ country }: WorldMapCardProps) {
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <div className="aspect-square bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 flex items-center justify-center p-6">
+      <div className="aspect-square bg-linear-to-br from-accent-primary/10 to-accent-secondary/10 flex items-center justify-center p-6">
         <div className="text-center">
           <div className="text-6xl mb-4">🌍</div>
           <h2 className="text-2xl font-bold text-foreground">{country.name}</h2>

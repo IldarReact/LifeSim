@@ -173,6 +173,7 @@ export interface BusinessSlice {
     salary: number,
   ) => void
   leaveBusinessJob: (businessId: string) => void
+  setPlayerEmploymentEffort: (businessId: string, effortPercent: number) => void
 
   // ✅ Multiplayer Business Actions
   addPartnerToBusiness: (

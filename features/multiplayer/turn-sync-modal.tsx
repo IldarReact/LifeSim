@@ -55,7 +55,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCancel()}>
-      <DialogContent className="bg-gradient-to-br from-slate-900 to-slate-800 border-white/10 text-white max-w-md">
+      <DialogContent className="bg-linear-to-br from-slate-900 to-slate-800 border-white/10 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
@@ -75,7 +75,7 @@ export function TurnSyncModal({ isOpen, onCancel, onAllReady }: TurnSyncModalPro
           {/* Прогресс-бар */}
           <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-blue-500 to-emerald-500 h-full transition-all duration-500 ease-out"
+              className="bg-linear-to-r from-blue-500 to-emerald-500 h-full transition-all duration-500 ease-out"
               style={{ width: `${totalPlayers > 0 ? (readyCount / totalPlayers) * 100 : 0}%` }}
             />
           </div>

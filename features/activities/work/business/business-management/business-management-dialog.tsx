@@ -652,14 +652,25 @@ export function BusinessManagementDialog({
             </div>
           )}
 
-          {/* ✅ НОВОЕ: Ваше участие и влияние на статы */}
+          {/* ✅ Персонал и участие (объединено) */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-orange-400" />
-              Ваше участие
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Users className="w-6 h-6 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Персонал и участие</h3>
+              </div>
+              {canHireMore && (
+                <p className="text-sm text-white/60">
+                  Бюджет:{' '}
+                  <span className="text-green-400 font-bold">
+                    ${availableBudget.toLocaleString()}
+                  </span>
+                </p>
+              )}
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Активные роли и влияние на статы */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-white/70 uppercase tracking-wider">
                   Активные роли:
@@ -725,7 +736,7 @@ export function BusinessManagementDialog({
                         </div>
                       )}
                       {sanity !== 0 && (
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify_between items-center">
                           <span className="text-sm text-white/60 flex items-center gap-2">
                             <Activity className="w-4 h-4 text-purple-400" /> Рассудок
                           </span>
@@ -742,109 +753,114 @@ export function BusinessManagementDialog({
                 })()}
               </div>
             </div>
-          </div>
 
-          {/* ✅ НОВОЕ: Работа игрока в бизнесе (Операционная роль) */}
-          <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6">
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-purple-400" />
-              Операционная работа
-            </h3>
-
-            {business.playerEmployment ? (
-              <div className="space-y-4">
-                <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="text-sm text-white/60">Текущая позиция</p>
-                      <p className="text-xl font-bold text-white">
-                        {ROLE_LABELS[business.playerEmployment.role]}
+            {/* Операционная работа игрока */}
+            <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6 mb-6">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-purple-400" />
+                Операционная работа
+              </h3>
+              {business.playerEmployment ? (
+                <div className="space-y-4">
+                  <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="text-sm text-white/60">Текущая позиция</p>
+                        <p className="text-xl font-bold text_white">
+                          {ROLE_LABELS[business.playerEmployment.role]}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-white/60">Зарплата</p>
+                        <p className="text-xl font-bold text-green-400">
+                          ${business.playerEmployment.salary.toLocaleString()}/кв
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm text-white/80">Занятость</label>
+                        <span className="text-sm font-bold text-white">
+                          {business.playerEmployment.effortPercent ?? 100}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="5"
+                        value={business.playerEmployment.effortPercent ?? 100}
+                        onChange={(e) =>
+                          useGameStore
+                            .getState()
+                            .setPlayerEmploymentEffort(business.id, parseInt(e.target.value, 10))
+                        }
+                        className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-400"
+                      />
+                      <p className="text-xs text-white/40 mt-1">
+                        Зарплата и влияние на статы масштабируются по занятости.
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-white/60">Зарплата</p>
-                      <p className="text-xl font-bold text-green-400">
-                        ${business.playerEmployment.salary.toLocaleString()}/кв
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => onLeaveJob(business.id)}
-                    variant="outline"
-                    className="w-full border-red-500/20 hover:bg-red-500/20 text-red-300"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Уволиться
-                  </Button>
-                </div>
-                <p className="text-xs text-white/40 text-center">
-                  Работаете с квартала {business.playerEmployment.startedTurn}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-white/70">
-                  Вы можете устроиться на работу в свой бизнес и получать зарплату каждый квартал.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {availablePositions.map((position) => (
-                    <div
-                      key={position.role}
-                      className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-purple-500/30 transition-colors"
+                    <Button
+                      onClick={() => onLeaveJob(business.id)}
+                      variant="outline"
+                      className="w-full border-red-500/20 hover:bg-red-500/20 text-red-300"
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-lg bg-purple-500/20">
-                            {ROLE_ICONS[position.role]}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-white">{ROLE_LABELS[position.role]}</p>
-                            <p className="text-xs text-white/50">{position.description}</p>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Уволиться
+                    </Button>
+                  </div>
+                  <p className="text-xs text-white/40 text-center">
+                    Работаете с квартала {business.playerEmployment.startedTurn}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-white/70">
+                    Вы можете устроиться на работу в свой бизнес и получать зарплату каждый квартал.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {availablePositions.map((position) => (
+                      <div
+                        key={position.role}
+                        className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-purple-500/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-lg bg-purple-500/20">
+                              {ROLE_ICONS[position.role]}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-white">
+                                {ROLE_LABELS[position.role]}
+                              </p>
+                              <p className="text-xs text-white/50">{position.description}</p>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                          <p className="text-sm text-green-400 font-bold">
+                            ${position.salary.toLocaleString()}/кв
+                          </p>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              onJoinAsEmployee(business.id, position.role, position.salary)
+                            }
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <UserPlus className="w-3 h-3 mr-1" />
+                            Устроиться
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                        <p className="text-sm text-green-400 font-bold">
-                          ${position.salary.toLocaleString()}/кв
-                        </p>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            onJoinAsEmployee(business.id, position.role, position.salary)
-                          }
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          <UserPlus className="w-3 h-3 mr-1" />
-                          Устроиться
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Employees Section */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Users className="w-6 h-6 text-blue-400" />
-                <h3 className="text-xl font-bold text-white">
-                  Сотрудники ({business.employees.length}/{business.maxEmployees})
-                </h3>
-              </div>
-              {canHireMore && (
-                <p className="text-sm text-white/60">
-                  Бюджет:{' '}
-                  <span className="text-green-400 font-bold">
-                    ${availableBudget.toLocaleString()}
-                  </span>
-                </p>
               )}
             </div>
 
-            {/* Employee List */}
+            {/* Список сотрудников */}
             {business.employees.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 {business.employees.map((employee) => {
@@ -924,7 +940,7 @@ export function BusinessManagementDialog({
               </div>
             )}
 
-            {/* Hire Buttons */}
+            {/* Найм сотрудников */}
             {canHireMore ? (
               <div>
                 <h4 className="text-sm font-semibold text-white/70 mb-3 uppercase tracking-wider">

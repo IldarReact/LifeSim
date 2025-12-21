@@ -15,7 +15,9 @@ export function processPersonal(
   let isDating = prevPersonal.isDating
 
   if (isDating && !potentialPartner) {
-    if (Math.random() < 0.3) {
+    const success =
+      Math.random() < 0.7 || (turn % 4 === 0)
+    if (success) {
       const names = ['Мария', 'Анна', 'Елена', 'Виктория', 'София', 'Алиса', 'Дарья', 'Полина']
       const jobs = [
         { id: 'job_worker_start', title: 'Рабочий', income: 3000 },

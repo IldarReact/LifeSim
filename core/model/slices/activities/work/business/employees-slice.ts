@@ -51,12 +51,8 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     const updatedBusinesses = [...state.player.businesses]
     updatedBusinesses[i] = updatedBusiness
 
-    // Deduct from business wallet instead of player money
-    const updatedBusinessWithWallet = {
-      ...updatedBusiness,
-      walletBalance: Math.max(0, (updatedBusiness.walletBalance || 0) - candidate.requestedSalary),
-    }
-    updatedBusinesses[i] = updatedBusinessWithWallet
+    // Apply small energy cost for hiring action
+    get().performTransaction?.({ energy: -10 })
 
     set({
       player: {
@@ -270,6 +266,54 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
               businessId,
               changes: {
                 playerEmployment: undefined,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
+  },
+
+  // Set player's effort percent in their business job
+  setPlayerEmploymentEffort: (businessId: string, effortPercent: number) => {
+    const state = get()
+    if (!state.player) return
+
+    const clamped = Math.max(10, Math.min(100, Math.round(effortPercent)))
+
+    const updatedBusinesses = state.player.businesses.map((b) =>
+      b.id === businessId && b.playerEmployment
+        ? {
+            ...b,
+            playerEmployment: {
+              ...b.playerEmployment,
+              effortPercent: clamped,
+            },
+          }
+        : b,
+    )
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses,
+      },
+    })
+
+    const business = state.player.businesses.find((b) => b.id === businessId)
+    if (business && business.partners && business.partners.length > 0) {
+      business.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                playerEmployment: {
+                  ...(business.playerEmployment || {}),
+                  effortPercent: clamped,
+                },
               },
             },
             toPlayerId: partner.id,

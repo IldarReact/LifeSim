@@ -60,7 +60,7 @@ export function FamilyActivity(): React.JSX.Element | null {
       {/* Potential Partner */}
       {
         potentialPartner && (
-          <div className="bg-gradient-to-r from-rose-500/20 to-purple-500/20 border border-rose-500/30 rounded-2xl p-6">
+          <div className="bg-linear-to-r from-rose-500/20 to-purple-500/20 border border-rose-500/30 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
               <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl border-2 border-white/20">
                 👤

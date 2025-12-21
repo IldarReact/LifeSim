@@ -142,13 +142,22 @@ export function MultiplayerHud() {
               {/* Список игроков */}
               <div className="space-y-2">
                 {players.map((p: Player) => (
-                  <div key={p.clientId} className="flex items-center justify-between text-sm group">
-                    <div className="flex items-center gap-2 text-white/80 group-hover:text-white transition-colors">
+                  <div
+                    key={p.clientId}
+                    className={`flex items-center justify-between text-sm group rounded-lg px-2 py-1 ${
+                      p.isLocal ? 'bg-blue-500/20 border border-blue-500/30' : ''
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center gap-2 transition-colors ${
+                        p.isLocal ? 'text-white' : 'text-white/80 group-hover:text-white'
+                      }`}
+                    >
                       <div
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: p.color }}
                       />
-                      <span className="truncate max-w-[120px]">
+                      <span className="truncate max-w-[120px] font-semibold">
                         {p.name}
                         {p.isLocal && <span className="text-white/40 ml-1">(вы)</span>}
                       </span>

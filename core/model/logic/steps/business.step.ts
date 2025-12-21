@@ -28,22 +28,6 @@ export const businessStep: TurnStep = (ctx, state) => {
     state.statModifiers.sanity = (state.statModifiers.sanity || 0) - sanityCost
   }
 
-  // Уведомление о значительных затратах статов
-  const notifyEnergy =
-    typeof energyCost === 'number' && Number.isFinite(energyCost) ? energyCost : 0
-  const notifySanity =
-    typeof sanityCost === 'number' && Number.isFinite(sanityCost) ? sanityCost : 0
-  if (notifyEnergy > 5 || notifySanity > 5) {
-    state.notifications.push({
-      id: `biz_stats_cost_${ctx.turn}`,
-      type: 'info',
-      title: 'Управление бизнесом',
-      message: `Участие в управлении вашими предприятиями потребовало ${notifyEnergy} энергии и ${notifySanity} рассудка в этом квартале.`,
-      date: formatGameDate(ctx.year, ctx.turn),
-      isRead: false,
-    })
-  }
-
   res.protectedSkills.forEach((s) => state.protectedSkills.add(s))
   state.notifications.push(...res.notifications)
 }

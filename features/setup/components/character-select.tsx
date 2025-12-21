@@ -130,7 +130,7 @@ export function CharacterSelect(): React.JSX.Element | null {
 
   return (
     <CharacterSelectUI
-      setupCountryId={setupCountryId || 'us' || 'ge' || 'br'}
+      setupCountryId={setupCountryId || 'us'}
       onSelect={(archetype) => {
         if (setupCountryId) {
           initializeGame(setupCountryId, archetype)

@@ -3,7 +3,7 @@ import { TrendingUp, AlertCircle, Activity, User } from "lucide-react"
 import type { HumanTrait } from "@/core/types/human-traits.types"
 import humanTraitsData from "@/shared/data/world/commons/human-traits.json"
 
-export const TRAITS_MAP = humanTraitsData.reduce((acc, trait) => {
+export const TRAITS_MAP = (humanTraitsData as any[]).reduce((acc, trait) => {
   acc[trait.id] = trait as HumanTrait
   return acc
 }, {} as Record<string, HumanTrait>)

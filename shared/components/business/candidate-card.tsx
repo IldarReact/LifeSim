@@ -4,23 +4,34 @@ import {
 } from 'lucide-react'
 import React from 'react'
 
-
 import { useInflatedPrice } from '@/core/hooks'
 import type { EmployeeCandidate } from '@/core/types'
 import { EmployeeCard } from '@/shared/components/business/employee-card'
 import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
-
 import { getRoleConfig } from '@/core/lib/business'
-import { getTraitColor, getTraitIcon, TRAITS_MAP } from '@/shared/lib/business/trait-utils'
+import { TRAITS_MAP, getTraitIcon, getTraitColor } from '@/shared/lib/business/trait-utils'
 
 interface CandidateCardProps {
   candidate: EmployeeCandidate
-  isSelected: boolean
-  canAfford: boolean
-  onClick: () => void
+  isSelected?: boolean
+  canAfford?: boolean
+  onClick?: () => void
+  actionLabel?: string
+  actionIcon?: React.ReactNode
+  actionVariant?: 'default' | 'outline' | 'destructive' | 'secondary' | 'ghost'
+  className?: string
 }
 
-export function CandidateCard({ candidate, isSelected, canAfford, onClick }: CandidateCardProps) {
+export function CandidateCard({ 
+  candidate, 
+  isSelected = false, 
+  canAfford = true, 
+  onClick,
+  actionLabel,
+  actionIcon,
+  actionVariant,
+  className
+}: CandidateCardProps) {
   const displaySalary = useInflatedPrice({ salary: candidate.requestedSalary })
 
   const isPlayer = candidate.id.startsWith('player_')
@@ -60,16 +71,16 @@ export function CandidateCard({ candidate, isSelected, canAfford, onClick }: Can
       skills={candidate.skills}
       traits={mappedTraits}
       onAction={onClick}
-      actionLabel={isSelected ? 'Выбрано' : 'Выбрать'}
+      actionLabel={actionLabel || (isSelected ? 'Выбрано' : 'Выбрать')}
       actionIcon={
-        isSelected ? (
+        actionIcon || (isSelected ? (
           <CheckCircle className="w-3 h-3 mr-1" />
         ) : (
           <UserPlus className="w-3 h-3 mr-1" />
-        )
+        ))
       }
-      actionVariant={isSelected ? 'secondary' : 'default'}
-      className={!canAfford ? 'opacity-60' : ''}
+      actionVariant={actionVariant || (isSelected ? 'secondary' : 'default')}
+      className={`${!canAfford ? 'opacity-60' : ''} ${className || ''}`}
     />
   )
 }

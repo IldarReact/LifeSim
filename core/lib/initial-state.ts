@@ -8,9 +8,6 @@ import type { Job } from "@/core/types/job.types"
 import type { Stats } from "@/core/types/stats.types"
 
 // Deprecated: use getCountry(id) instead
-export const INITIAL_COUNTRIES: Record<string, CountryEconomy> = {
-  // Keeping empty object for type compatibility if needed, but ideally should be removed
-}
 
 export function createInitialPlayer(
   archetype: string,

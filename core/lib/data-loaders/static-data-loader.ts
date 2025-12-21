@@ -5,7 +5,7 @@ import businessEvents from '@/shared/data/business/business-events.json'
 import ideaTemplates from '@/shared/data/business/idea-templates.json'
 import employeeData from '@/shared/data/employees/employee-data.json'
 import crisisOptions from '@/shared/data/events/crisis-options.json'
-import countries from '@/shared/data/world/countries.json'
+import { WORLD_COUNTRIES } from './economy-loader'
 import countryArchetypes from '@/shared/data/world/country-archetypes.json'
 
 // Types
@@ -76,8 +76,8 @@ export const getIdeaReplacements = () => ideaTemplates.replacements
 export const getCrisisOptions = () => crisisOptions
 
 // --- Countries ---
-// Приводим JSON к типу CountryEconomy через unknown, чтобы не ломать типы при добавлении новых полей
-export const getInitialCountries = () => countries as unknown as Record<string, CountryEconomy>
+export const getInitialCountries = () =>
+  WORLD_COUNTRIES as unknown as Record<string, CountryEconomy>
 
 // --- Country Archetypes ---
 export const getCountryArchetypes = () => countryArchetypes

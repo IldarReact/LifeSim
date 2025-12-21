@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 
+import { EmployeeCard } from '@/shared/components/business/employee-card'
 import { EmployeeHireDialog } from '../../employee-hire'
 
 import { CONTROL_THRESHOLD, DEFAULT_CANDIDATES_COUNT, ROLE_ICONS, ROLE_LABELS } from './constants'
@@ -37,8 +38,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 import { useGameStore } from '@/core/model/store'
 
-import { calculateBusinessFinancials, generateCandidates } from '@/core/lib/business'
-import { checkMinimumStaffing } from '@/features/business/lib/player-roles'
+import {
+  calculateBusinessFinancials,
+  generateCandidates,
+  checkMinimumStaffing,
+  getRoleConfig,
+  getPlayerRoleBusinessImpact,
+} from '@/core/lib/business'
 
 export function BusinessManagementDialog({
   business,
@@ -704,206 +710,94 @@ export function BusinessManagementDialog({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 {/* Рендерим игрока как сотрудника, если он участвует */}
                 {(business.playerEmployment || business.playerRoles.managerialRoles.length > 0) && (
-                  <div className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-4 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-1">
-                      <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px]">
-                        ВЫ
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-lg bg-purple-500/20">
-                          {ROLE_ICONS[business.playerEmployment?.role || 'manager']}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white text-lg">{player?.name || 'Вы'}</h4>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {business.playerEmployment && (
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px] py-0 px-1.5"
-                              >
-                                {ROLE_LABELS[business.playerEmployment.role]} (Опер.)
-                              </Badge>
-                            )}
-                            {business.playerRoles.managerialRoles.map((role) => (
-                              <Badge
-                                key={role}
-                                variant="outline"
-                                className="bg-orange-500/10 text-orange-400 border-orange-500/20 text-[10px] py-0 px-1.5"
-                              >
-                                {ROLE_LABELS[role]}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      {business.playerEmployment && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onLeaveJob(business.id)}
-                          className="border-red-500/20 hover:bg-red-500/20 text-red-300 h-8 px-2 text-xs"
-                        >
-                          <Trash2 className="w-3 h-3 mr-1" />
-                          Уволиться
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-white/5 rounded-lg p-2.5">
-                        <p className="text-xs text-white/50 mb-1">Зарплата</p>
-                        <p className="text-base font-bold text-green-400">
-                          ${(business.playerEmployment?.salary || 0).toLocaleString()}
-                          <span className="text-[10px] text-white/40 ml-1">/кв</span>
-                        </p>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-2.5">
-                        <p className="text-xs text-white/50 mb-1">Занятость</p>
-                        <p className="text-base font-bold text-white">
-                          {business.playerEmployment?.effortPercent ?? 100}%
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Слайдер занятости для игрока */}
-                    {(() => {
-                      const role = business.playerEmployment?.role
-                      const isManagerial =
-                        ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
-                          role as any,
-                        ) ||
-                        (!role && business.playerRoles.managerialRoles.length > 0)
-
-                      if (isManagerial) {
-                        return (
-                          <div className="mt-2 pt-2 border-t border-white/5">
-                            <input
-                              type="range"
-                              min="10"
-                              max="100"
-                              step="5"
-                              value={business.playerEmployment?.effortPercent ?? 100}
-                              onChange={(e) =>
-                                useGameStore
-                                  .getState()
-                                  .setPlayerEmploymentEffort(
-                                    business.id,
-                                    parseInt(e.target.value, 10),
-                                  )
-                              }
-                              className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-purple-400"
-                            />
-                            <p className="text-[10px] text-white/40 mt-1">
-                              Регулируйте нагрузку и доход
-                            </p>
-                          </div>
-                        )
+                  <EmployeeCard
+                    id={`player_${player?.id}`}
+                    name={player?.name || 'Вы'}
+                    role={business.playerEmployment?.role || 'manager'}
+                    roleLabel={[
+                      business.playerEmployment?.role
+                        ? `${ROLE_LABELS[business.playerEmployment.role]} (Опер.)`
+                        : null,
+                      ...business.playerRoles.managerialRoles.map((r) => ROLE_LABELS[r]),
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                    roleIcon={
+                      ROLE_ICONS[
+                        business.playerEmployment?.role ||
+                          business.playerRoles.managerialRoles[0] ||
+                          'manager'
+                      ]
+                    }
+                    stars={5}
+                    salary={business.playerEmployment?.salary || 0}
+                    salaryLabel="/кв"
+                    isPlayer={true}
+                    impact={(() => {
+                      if (!player) return undefined
+                      const impact = getPlayerRoleBusinessImpact(business, player.personal.skills)
+                      return {
+                        efficiencyBonus: impact.efficiencyBonus,
+                        expenseReduction: impact.expenseReduction,
+                        salesBonus: impact.salesBonus,
+                        reputationBonus: impact.reputationBonus,
+                        taxReduction: impact.taxReduction,
                       }
-                      return null
                     })()}
-                  </div>
+                    effortPercent={business.playerEmployment?.effortPercent ?? 100}
+                    onEffortChange={
+                      ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
+                        (business.playerEmployment?.role ||
+                          business.playerRoles.managerialRoles[0]) as any,
+                      )
+                        ? (value) =>
+                            useGameStore.getState().setPlayerEmploymentEffort(business.id, value)
+                        : undefined
+                    }
+                    onAction={business.playerEmployment ? () => onLeaveJob(business.id) : undefined}
+                    actionLabel="Уволиться"
+                    actionIcon={<Trash2 className="w-3 h-3 mr-1" />}
+                    actionVariant="destructive"
+                    className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30"
+                  />
                 )}
 
                 {/* Рендерим остальных сотрудников */}
                 {business.employees.map((employee) => {
                   const indexedSalary = calculateEmployeeSalary(employee, country)
+                  const isNpcPlayer = employee.id.startsWith('player_')
+
                   return (
-                    <div
+                    <EmployeeCard
                       key={employee.id}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/20 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2.5 rounded-lg bg-blue-500/20">
-                            {ROLE_ICONS[employee.role]}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-white text-lg">{employee.name}</h4>
-                            <div className="flex items-center gap-1">
-                              <p className="text-xs text-white/60 uppercase tracking-wide">
-                                {ROLE_LABELS[employee.role]}
-                              </p>
-                              <span className="text-white/40">•</span>
-                              <div className="flex gap-0.5">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`w-3 h-3 ${star <= employee.stars ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onFireEmployee(business.id, employee.id)}
-                          className="border-red-500/20 hover:bg-red-500/20 text-red-300 h-9 px-3"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Уволить
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="bg-white/5 rounded-lg p-2.5">
-                          <p className="text-xs text-white/50 mb-1">Зарплата</p>
-                          <p className="text-base font-bold text-green-400">
-                            ${indexedSalary.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-2.5">
-                          <p className="text-xs text-white/50 mb-1">
-                            {employee.id.startsWith('player_') ? 'Занятость' : 'Опыт'}
-                          </p>
-                          <p className="text-base font-bold text-white">
-                            {employee.id.startsWith('player_')
-                              ? `${employee.effortPercent ?? 100}%`
-                              : `${Math.floor(employee.experience / 12)}г ${employee.experience % 12}м`}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Слайдер занятости для нанятых игроков */}
-                      {employee.id.startsWith('player_') && (
-                        <div className="mt-2 pt-2 border-t border-white/5">
-                          <input
-                            type="range"
-                            min="10"
-                            max="100"
-                            step="5"
-                            value={employee.effortPercent ?? 100}
-                            onChange={(e) =>
+                      id={employee.id}
+                      name={employee.name}
+                      role={employee.role}
+                      roleLabel={ROLE_LABELS[employee.role]}
+                      roleIcon={ROLE_ICONS[employee.role]}
+                      stars={employee.stars}
+                      experience={employee.experience}
+                      salary={indexedSalary}
+                      salaryLabel="/кв"
+                      productivity={employee.productivity}
+                      impact={(() => {
+                        const cfg = getRoleConfig(employee.role)
+                        return cfg?.staffImpact ? cfg.staffImpact(employee.stars) : undefined
+                      })()}
+                      effortPercent={isNpcPlayer ? employee.effortPercent : undefined}
+                      onEffortChange={
+                        isNpcPlayer
+                          ? (value) =>
                               useGameStore
                                 .getState()
-                                .setEmployeeEffort(
-                                  business.id,
-                                  employee.id,
-                                  parseInt(e.target.value, 10),
-                                )
-                            }
-                            className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-400"
-                          />
-                          <p className="text-[10px] text-white/40 mt-1">
-                            Регулируйте занятость игрока
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        <div>
-                          <div className="flex justify-between items-center text-xs mb-1">
-                            <span className="text-white/60">Продуктивность</span>
-                            <span className="text-white font-bold">{employee.productivity}%</span>
-                          </div>
-                          <Progress value={employee.productivity} className="h-1.5 bg-white/10" />
-                        </div>
-                      </div>
-                    </div>
+                                .setEmployeeEffort(business.id, employee.id, value)
+                          : undefined
+                      }
+                      onAction={() => onFireEmployee(business.id, employee.id)}
+                      actionLabel="Уволить"
+                      actionIcon={<Trash2 className="w-3 h-3 mr-1" />}
+                      actionVariant="destructive"
+                    />
                   )
                 })}
               </div>
@@ -930,6 +824,8 @@ export function BusinessManagementDialog({
                       'marketer',
                       'technician',
                       'worker',
+                      'lawyer',
+                      'hr',
                     ] as EmployeeRole[]
                   ).map((role) => (
                     <Button

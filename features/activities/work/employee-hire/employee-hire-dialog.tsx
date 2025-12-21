@@ -5,7 +5,7 @@ import React from "react"
 
 import { ROLE_LABELS } from "../shared-constants"
 
-import { CandidateCard } from "./components/candidate-card"
+import { CandidateCard } from "@/shared/components/business/candidate-card"
 import { SalarySettings } from "./components/salary-settings"
 import { useHireDialog } from "./hooks/use-hire-dialog"
 import { calculateMonthlySalary } from "./utils/employee-utils"

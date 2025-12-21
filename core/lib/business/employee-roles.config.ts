@@ -25,6 +25,8 @@ export interface StaffImpactResult {
   salesBonus?: number
   reputationBonus?: number
   taxReduction?: number
+  legalProtection?: number // Снижение шанса негативных событий
+  staffProductivityBonus?: number // Бонус к продуктивности остальных сотрудников
 }
 
 /**
@@ -131,7 +133,7 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
   lawyer: {
     type: 'managerial',
     name: 'Юрист',
-    description: 'Решает юридические вопросы, защищает от штрафов и проверок',
+    description: 'Решает юридические вопросы, защищает от штрафов и оптимизирует налоги',
 
     playerEffects: {
       energy: -10,
@@ -144,14 +146,20 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      // Юрист снижает шанс негативных событий (реализуется отдельно)
+      taxReduction: (skill) => (skill ? skill.level * 3 : 0), // -3% налогов за уровень
+      expenseReduction: (skill) => (skill ? skill.level * 2 : 0), // -2% расходов за уровень
     },
+    staffImpact: (stars) => ({
+      taxReduction: stars * 3,
+      expenseReduction: stars * 2,
+      legalProtection: stars * 10, // Каждая звезда снижает шанс негативных событий на 10%
+    }),
   },
 
   hr: {
     type: 'managerial',
     name: 'HR-менеджер',
-    description: 'Управляет персоналом, повышает удовлетворенность сотрудников',
+    description: 'Управляет персоналом, повышает общую эффективность команды',
 
     playerEffects: {
       energy: -9,
@@ -164,8 +172,12 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
     },
 
     businessImpact: {
-      // HR повышает productivity сотрудников (реализуется отдельно)
+      efficiencyBonus: (skill) => (skill ? skill.level * 5 : 0), // +5% эффективности за уровень
     },
+    staffImpact: (stars) => ({
+      efficiencyBonus: stars * 5,
+      staffProductivityBonus: stars * 2, // Каждая звезда дает +2% к продуктивности остальных
+    }),
   },
 
   // ============================================

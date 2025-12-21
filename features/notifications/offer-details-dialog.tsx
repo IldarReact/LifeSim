@@ -1,12 +1,21 @@
-"use client"
+'use client'
 
-import { Building, DollarSign, Users, Briefcase, CheckCircle, XCircle } from "lucide-react"
+import { Building, DollarSign, Users, Briefcase, CheckCircle, XCircle } from 'lucide-react'
 
-import type { GameOffer, JobOfferDetails, PartnershipOfferDetails, ShareSaleOfferDetails } from "@/core/types/game-offers.types"
-import { isJobOffer, isPartnershipOffer, isShareSaleOffer } from "@/core/types/game-offers.types"
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui/dialog"
+import { useGameStore } from '@/core/model/game-store'
+import type {
+  GameOffer,
+  JobOfferDetails,
+  PartnershipOfferDetails,
+  ShareSaleOfferDetails,
+} from '@/core/types/game-offers.types'
+import { isJobOffer, isPartnershipOffer, isShareSaleOffer } from '@/core/types/game-offers.types'
+import type { EmployeeRole } from '@/core/types'
+import { EmployeeCard } from '@/shared/components/business/employee-card'
+import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
 
 interface OfferDetailsDialogProps {
   isOpen: boolean
@@ -16,7 +25,13 @@ interface OfferDetailsDialogProps {
   onReject: () => void
 }
 
-export function OfferDetailsDialog({ isOpen, onClose, offer, onAccept, onReject }: OfferDetailsDialogProps) {
+export function OfferDetailsDialog({
+  isOpen,
+  onClose,
+  offer,
+  onAccept,
+  onReject,
+}: OfferDetailsDialogProps) {
   const isJob = isJobOffer(offer)
   const isPartnership = isPartnershipOffer(offer)
   const isShareSale = isShareSaleOffer(offer)
@@ -31,9 +46,9 @@ export function OfferDetailsDialog({ isOpen, onClose, offer, onAccept, onReject 
             {isShareSale && <DollarSign className="w-6 h-6 text-green-400" />}
 
             <span>
-              {isJob && "Предложение работы"}
-              {isPartnership && "Партнерство"}
-              {isShareSale && "Продажа доли"}
+              {isJob && 'Предложение работы'}
+              {isPartnership && 'Партнерство'}
+              {isShareSale && 'Продажа доли'}
             </span>
           </DialogTitle>
           <div className="pt-2">
@@ -46,8 +61,12 @@ export function OfferDetailsDialog({ isOpen, onClose, offer, onAccept, onReject 
         <div className="py-4 space-y-6">
           {/* Детали оффера */}
           {isJob && <JobOfferContent details={offer.details as JobOfferDetails} />}
-          {isPartnership && <PartnershipOfferContent details={offer.details as PartnershipOfferDetails} />}
-          {isShareSale && <ShareSaleOfferContent details={offer.details as ShareSaleOfferDetails} />}
+          {isPartnership && (
+            <PartnershipOfferContent details={offer.details as PartnershipOfferDetails} />
+          )}
+          {isShareSale && (
+            <ShareSaleOfferContent details={offer.details as ShareSaleOfferDetails} />
+          )}
 
           {/* Сообщение */}
           {offer.message && (
@@ -88,26 +107,18 @@ export function OfferDetailsDialog({ isOpen, onClose, offer, onAccept, onReject 
 function JobOfferContent({ details }: { details: JobOfferDetails }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
-        <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-          <Building className="w-6 h-6 text-blue-400" />
-        </div>
-        <div>
-          <h4 className="font-bold text-lg text-white">{details.businessName}</h4>
-          <p className="text-white/60">Позиция: <span className="text-white font-medium">{details.role}</span></p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-          <p className="text-sm text-white/50 mb-1">Зарплата</p>
-          <p className="text-2xl font-bold text-green-400">${details.salary.toLocaleString()}<span className="text-sm text-white/40 font-normal">/кв</span></p>
-        </div>
-        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-          <p className="text-sm text-white/50 mb-1">KPI Бонус</p>
-          <p className="text-2xl font-bold text-amber-400">{details.kpiBonus}%</p>
-        </div>
-      </div>
+      <EmployeeCard
+        id="job-offer"
+        name={details.role}
+        role={details.role as EmployeeRole}
+        roleLabel={ROLE_LABELS[details.role as EmployeeRole] || details.role}
+        roleIcon={ROLE_ICONS[details.role as EmployeeRole]}
+        company={details.businessName}
+        salary={details.salary}
+        salaryLabel="/кв"
+        stars={3} // Дефолтное значение для оффера
+        impact={details.kpiBonus ? { salesBonus: details.kpiBonus } : undefined}
+      />
     </div>
   )
 }
@@ -133,11 +144,15 @@ function PartnershipOfferContent({ details }: { details: PartnershipOfferDetails
         <div className="h-px bg-white/10" />
         <div className="flex justify-between items-center">
           <span className="text-white/60">Требуемая инвестиция</span>
-          <span className="text-xl font-bold text-white">${details.yourInvestment.toLocaleString()}</span>
+          <span className="text-xl font-bold text-white">
+            ${details.yourInvestment.toLocaleString()}
+          </span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-white/60">Общая стоимость</span>
-          <span className="text-lg font-medium text-white/80">${details.totalCost.toLocaleString()}</span>
+          <span className="text-lg font-medium text-white/80">
+            ${details.totalCost.toLocaleString()}
+          </span>
         </div>
       </div>
     </div>
@@ -169,7 +184,9 @@ function ShareSaleOfferContent({ details }: { details: ShareSaleOfferDetails }) 
         </div>
         <div className="flex justify-between items-center">
           <span className="text-white/60">Оценка бизнеса</span>
-          <span className="text-lg font-medium text-white/80">${details.currentValue.toLocaleString()}</span>
+          <span className="text-lg font-medium text-white/80">
+            ${details.currentValue.toLocaleString()}
+          </span>
         </div>
       </div>
     </div>

@@ -1,28 +1,12 @@
-"use client"
+'use client'
 
-import {
-  Zap,
-  Heart,
-  Brain,
-  LogOut,
-  TrendingUp,
-  Lightbulb,
-  Smile, // Счастье
-} from "lucide-react"
-import React from "react"
+import { LogOut, TrendingUp } from 'lucide-react'
+import React from 'react'
 
-import { useInflatedPrices } from "@/core/hooks"
-import type { Job } from "@/core/types"
-import { Button } from "@/shared/ui/button"
-import { InfoCard } from "@/shared/ui/info-card"
-
-// Тип для одной детали в InfoCard
-type DetailItem = {
-  label: string
-  value: string
-  icon: React.ReactNode
-  color: string
-}
+import { useInflatedPrices } from '@/core/hooks'
+import type { Job } from '@/core/types'
+import { EmployeeCard } from '@/shared/components/business/employee-card'
+import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
 
 interface CurrentJobsSectionProps {
   jobs: Job[]
@@ -41,100 +25,38 @@ export function CurrentJobsSection({ jobs, onQuit }: CurrentJobsSectionProps) {
     )
   }
 
-  // Функция: показывать ли эффект (не 0 и не undefined)
-  const isVisible = (value: number | undefined): boolean => value != null && value !== 0
-
-  // Форматирование значения
-  const formatValue = (value: number, suffix: string = "") => `${value}${suffix}`
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {jobsWithInflation.map((job) => {
-        const cost = job.cost || {}
-
-        const details: DetailItem[] = []
-
-        if (isVisible(cost.energy)) {
-          details.push({
-            label: "Энергия",
-            value: `${cost.energy} /кв`,
-            icon: <Zap className="w-4 h-4" />,
-            color: "text-amber-400",
-          })
-        }
-
-        if (isVisible(cost.happiness)) {
-          details.push({
-            label: "Счастье",
-            value: formatValue(cost.happiness!),
-            icon: <Smile className="w-4 h-4" />,
-            color: cost.happiness! < 0 ? "text-rose-400" : "text-green-400",
-          })
-        }
-
-        if (isVisible(cost.health)) {
-          details.push({
-            label: "Здоровье",
-            value: formatValue(cost.health!),
-            icon: <Heart className="w-4 h-4" />,
-            color: cost.health! >= 0 ? "text-green-400" : "text-rose-400",
-          })
-        }
-
-        if (isVisible(cost.sanity)) {
-          details.push({
-            label: "Рассудок",
-            value: formatValue(cost.sanity!),
-            icon: <Brain className="w-4 h-4" />,
-            color: cost.sanity! >= 0 ? "text-green-400" : "text-rose-400",
-          })
-        }
-
-        if (isVisible(cost.intelligence)) {
-          details.push({
-            label: "Интеллект",
-            value: formatValue(cost.intelligence!),
-            icon: <Lightbulb className="w-4 h-4" />,
-            color: cost.intelligence! >= 0 ? "text-green-400" : "text-rose-400",
-          })
-        }
-
         return (
-          <div key={job.id} className="w-full">
-            <InfoCard
-              title={job.title}
-              subtitle={job.company}
-              value={`$${job.inflatedPrice.toLocaleString()}/мес`}
-              imageUrl={job.imageUrl}
-              details={details}
-              modalContent={
-                <div className="space-y-6">
-                  {job.description && (
-                    <div>
-                      <h4 className="font-semibold mb-2 text-lg">Описание должности</h4>
-                      <p className="text-white/80 leading-relaxed">{job.description}</p>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 pt-4">
-                    <Button className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      Попросить повышение
-                    </Button>
-
-                    <Button
-                      variant="destructive"
-                      className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/20"
-                      onClick={() => onQuit(job.id)}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Уволиться
-                    </Button>
-                  </div>
-                </div>
-              }
-            />
-          </div>
+          <EmployeeCard
+            key={job.id}
+            id={job.id}
+            name={job.title}
+            role="worker"
+            roleLabel="Ваша работа"
+            roleIcon={ROLE_ICONS.worker}
+            company={job.company}
+            salary={job.inflatedPrice}
+            salaryLabel="/мес"
+            stars={
+              job.requirements?.skills
+                ? Math.max(1, ...job.requirements.skills.map((s) => s.level))
+                : 1
+            }
+            avatar={job.imageUrl}
+            cost={job.cost}
+            onAction={() => onQuit(job.id)}
+            actionLabel="Уволиться"
+            actionIcon={<LogOut className="w-3 h-3 mr-1" />}
+            actionVariant="destructive"
+            onSecondaryAction={() => {
+              // TODO: Implement ask for raise logic
+              console.log('Ask for raise')
+            }}
+            secondaryActionLabel="Повышение"
+            secondaryActionIcon={<TrendingUp className="w-3 h-3 mr-1" />}
+          />
         )
       })}
     </div>

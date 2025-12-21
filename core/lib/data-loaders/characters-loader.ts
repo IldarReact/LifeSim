@@ -7,8 +7,8 @@ import usCharacters from '@/shared/data/world/countries/us/characters.json'
 
 const COUNTRY_CHARACTERS: Record<string, CharacterData[]> = {
   us: usCharacters as CharacterData[],
-  ge: geCharacters as CharacterData[],
-  br: brCharacters as CharacterData[],
+  germany: geCharacters as CharacterData[],
+  brazil: brCharacters as CharacterData[],
 }
 
 /**

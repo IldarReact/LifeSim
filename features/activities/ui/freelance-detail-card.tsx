@@ -1,9 +1,9 @@
 "use client"
 
-import { Star, Clock, Zap, DollarSign } from "lucide-react"
+import { Star, Clock, Zap, DollarSign, Info } from "lucide-react"
 import { useState } from "react"
 
-import { Badge } from "@/shared/ui/badge"
+import { EmployeeCard } from "@/shared/components/business/employee-card"
 import { Button } from "@/shared/ui/button"
 import {
   Dialog,
@@ -38,76 +38,22 @@ export function FreelanceDetailCard({
 
   return (
     <>
-      <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-colors">
-        <div className="relative h-32">
-          <img src={image} alt={title} className="w-full h-full object-cover" />
-          <div className="absolute top-2 left-2">
-            <Badge variant="secondary" className="bg-black/60 backdrop-blur-md text-white border-white/10">
-              {category}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-white line-clamp-1">{title}</h3>
-            <div className="flex items-center gap-1 text-green-400 font-bold text-sm whitespace-nowrap ml-2">
-              <DollarSign className="w-3 h-3" />
-              {payment}
-            </div>
-          </div>
-
-          <p className="text-white/60 text-xs mb-3 line-clamp-2 h-8">
-            {description}
-          </p>
-
-          <div className="flex items-center gap-4 mb-3 text-xs">
-            <div className="flex items-center gap-1 text-amber-400">
-              <Zap className="w-3 h-3" />
-              <span>-{energyCost}</span>
-            </div>
-            <div className="flex items-center gap-1 text-white/50">
-              <Clock className="w-3 h-3" />
-              <span>Разовый заказ</span>
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <div className="flex flex-wrap gap-1.5">
-              {requirements.map((req, i) => (
-                <div key={i} className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded text-[10px]">
-                  <span className="text-white/80">{req.skill}</span>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-2 h-2 ${star <= req.level ? "text-yellow-400 fill-yellow-400" : "text-white/20"
-                          }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowDetails(true)}
-              variant="outline"
-              className="flex-1 text-xs h-8 border-white/20 text-white hover:bg-white/10"
-            >
-              Подробнее
-            </Button>
-            <Button
-              onClick={onTakeOrder}
-              className="flex-1 text-xs h-8 bg-white text-black hover:bg-white/90 font-bold"
-            >
-              Взять заказ
-            </Button>
-          </div>
-        </div>
-      </div>
+      <EmployeeCard
+        id={`freelance-${title}`}
+        name={title}
+        role="worker"
+        roleLabel={category}
+        salary={payment}
+        salaryLabel=""
+        stars={Math.max(1, ...requirements.map(r => r.level), 1)}
+        avatar={image}
+        requirements={requirements}
+        cost={{ energy: -energyCost }}
+        onAction={onTakeOrder}
+        actionLabel="Взять заказ"
+        onSecondaryAction={() => setShowDetails(true)}
+        secondaryActionLabel="Подробнее"
+      />
 
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="bg-black/95 border-white/20 text-white max-w-2xl">

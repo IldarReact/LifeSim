@@ -168,7 +168,8 @@ export function BusinessManagementDialog({
           employeeRole: candidate.role,
           employeeSalary: candidate.requestedSalary,
           employeeStars: candidate.stars,
-          isPlayer: isMe,
+          isMe: isMe,
+          employeeId: isMe ? player.id : undefined,
         })
         setHireDialogOpen(false)
 

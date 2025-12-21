@@ -292,7 +292,27 @@ export const createPartnershipBusinessSlice: StateCreator<
           proposal.data.employeeName || 'Unknown',
           proposal.data.employeeRole as EmployeeRole,
           proposal.data.employeeSalary || 0,
+          proposal.data.isMe ? proposal.initiatorId : undefined,
         )
+        set((state) => ({
+          businessProposals: state.businessProposals.map((p) =>
+            p.id === proposalId ? { ...p, status: 'approved' as const } : p,
+          ),
+        }))
+        break
+
+      case 'change_role':
+        console.log('[approveBusinessChange] Changing role:', proposal.data)
+        // Если это игрок, добавляем его как сотрудника для партнера
+        if (proposal.data.isMe) {
+          state.addEmployeeToBusiness(
+            proposal.businessId,
+            proposal.initiatorName || 'Unknown',
+            proposal.data.employeeRole as EmployeeRole,
+            proposal.data.employeeSalary || 0,
+            proposal.initiatorId,
+          )
+        }
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
@@ -407,8 +427,13 @@ export const createPartnershipBusinessSlice: StateCreator<
         break
       case 'hire_employee':
       case 'fire_employee':
+      case 'change_role':
         if (updatedBusiness) {
-          changesToBroadcast = { employees: updatedBusiness.employees }
+          changesToBroadcast = {
+            employees: updatedBusiness.employees,
+            playerEmployment: updatedBusiness.playerEmployment,
+            playerRoles: updatedBusiness.playerRoles,
+          }
         }
         break
       case 'open_branch':

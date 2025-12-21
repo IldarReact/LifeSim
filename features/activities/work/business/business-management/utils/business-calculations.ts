@@ -1,4 +1,5 @@
-import type { Business } from "@/core/types"
+import { getTotalEmployeesCount } from '@/core/lib/business'
+import type { Business } from '@/core/types'
 
 export function calculatePlayerShare(business: Business): number {
   const playerPartner = business.partners.find((p) => p.type === 'player')
@@ -10,8 +11,5 @@ export function hasControlOverBusiness(business: Business, threshold: number = 5
 }
 
 export function canHireMoreEmployees(business: Business): boolean {
-  const playerRolesCount =
-    (business.playerRoles.managerialRoles?.length || 0) +
-    (business.playerRoles.operationalRole ? 1 : 0)
-  return business.employees.length + playerRolesCount < business.maxEmployees
+  return getTotalEmployeesCount(business) < business.maxEmployees
 }

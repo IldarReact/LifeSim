@@ -8,6 +8,7 @@ import { checkMinimumStaffing } from './player-roles'
 
 import { calculateEmployeeKPI } from './employee-calculations'
 import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles'
+import { calculateEfficiency, calculateReputation } from './business-metrics'
 
 import type { Skill } from '@/core/types'
 import type { Business, BusinessInventory } from '@/core/types/business.types'
@@ -88,9 +89,7 @@ export function calculateBusinessFinancials(
   }
 
   // Employee role buffs
-  let employeeEfficiencyBonusPct = 0
   let employeeSalesBonusPct = 0
-  let employeeReputationBonusPct = 0
   let employeeTaxReductionPct = 0
   let employeeExpenseReductionPct = 0
 
@@ -101,9 +100,7 @@ export function calculateBusinessFinancials(
 
     const effortFactor = (emp.effortPercent ?? 100) / 100
 
-    if (impact.efficiencyBonus) employeeEfficiencyBonusPct += impact.efficiencyBonus * effortFactor
     if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus * effortFactor
-    if (impact.reputationBonus) employeeReputationBonusPct += impact.reputationBonus * effortFactor
     if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction * effortFactor
     if (impact.expenseReduction)
       employeeExpenseReductionPct += impact.expenseReduction * effortFactor
@@ -112,18 +109,27 @@ export function calculateBusinessFinancials(
   // Player Skill reduction
   let playerExpenseReductionPct = 0
   let playerSalesBonusPct = 0
-  let playerEfficiencyBonusPct = 0
-  let playerReputationBonusPct = 0
   let playerTaxReductionPct = 0
 
-  if (playerSkills && playerSkills.length > 0) {
-    const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+  const playerImpact =
+    playerSkills && playerSkills.length > 0
+      ? getPlayerRoleBusinessImpact(business, playerSkills)
+      : null
+
+  if (playerImpact) {
     playerExpenseReductionPct = playerImpact.expenseReduction
     playerSalesBonusPct = playerImpact.salesBonus
-    playerEfficiencyBonusPct = playerImpact.efficiencyBonus
-    playerReputationBonusPct = playerImpact.reputationBonus
     playerTaxReductionPct = playerImpact.taxReduction
   }
+
+  // Calculate current efficiency and reputation for financial logic
+  // If preview, we calculate them on the fly to reflect changes in staff/roles
+  const currentEfficiency = isPreview
+    ? calculateEfficiency(business, playerSkills)
+    : business.efficiency
+  const currentReputation = isPreview
+    ? calculateReputation(business, currentEfficiency, playerSkills)
+    : business.reputation
 
   const baseRentPerEmployee = 200
   const baseUtilitiesPerEmployee = 50
@@ -165,8 +171,8 @@ export function calculateBusinessFinancials(
     const baseServiceDemand = business.maxEmployees * 10
 
     // Demand Modifiers
-    const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
-    const reputationMod = business.reputation / 100
+    const efficiencyMod = currentEfficiency / 100
+    const reputationMod = currentReputation / 100
     const priceMod = 1 / Math.max(0.1, priceLevel / 5) // Normalized around 5
 
     // Cycle Effect
@@ -184,8 +190,7 @@ export function calculateBusinessFinancials(
       serviceDemand *= 1 + employeeSalesBonusPct / 100
     }
 
-    if (playerSkills && playerSkills.length > 0) {
-      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+    if (playerImpact) {
       serviceDemand *= 1 + playerImpact.salesBonus / 100
     }
 
@@ -205,8 +210,8 @@ export function calculateBusinessFinancials(
       workersCount += 1
     }
     const baseDemand = workersCount * 50
-    const efficiencyMod = (business.efficiency / 100) * (1 + employeeEfficiencyBonusPct / 100)
-    const reputationMod = business.reputation / 100
+    const efficiencyMod = currentEfficiency / 100
+    const reputationMod = currentReputation / 100
 
     // Demand Elasticity & Cycle
     let marketMod = globalMarketValue
@@ -238,8 +243,7 @@ export function calculateBusinessFinancials(
       finalDemand *= demandFluctuation
     }
 
-    if (playerSkills && playerSkills.length > 0) {
-      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
+    if (playerImpact) {
       finalDemand *= 1 + playerImpact.salesBonus / 100
     }
 
@@ -282,11 +286,8 @@ export function calculateBusinessFinancials(
     if (employeeTaxReductionPct > 0) {
       taxRate *= 1 - Math.min(0.5, employeeTaxReductionPct / 100)
     }
-    if (playerSkills && playerSkills.length > 0) {
-      const playerImpact = getPlayerRoleBusinessImpact(business, playerSkills)
-      if (playerImpact.taxReduction > 0) {
-        taxRate *= 1 - Math.min(0.5, playerImpact.taxReduction / 100)
-      }
+    if (playerImpact && playerImpact.taxReduction > 0) {
+      taxRate *= 1 - Math.min(0.5, playerImpact.taxReduction / 100)
     }
     taxAmount = Math.round(grossProfit * taxRate)
   }

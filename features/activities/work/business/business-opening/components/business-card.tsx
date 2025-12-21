@@ -1,4 +1,6 @@
 import { DollarSign, Users, Zap, CheckCircle, Store, AlertCircle } from "lucide-react"
+import { checkMinimumStaffing, getTotalEmployeesCount } from '@/core/lib/business'
+import type { Business, Skill } from '@/core/types'
 
 import type { BusinessOption, BusinessRequirement } from "../types"
 

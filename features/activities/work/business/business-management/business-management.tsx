@@ -5,7 +5,7 @@ import React from 'react'
 
 import { BusinessManagementDialog } from './business-management-dialog'
 
-import { calculateBusinessFinancials } from '@/core/lib/business/business-utils'
+import { calculateBusinessFinancials, getTotalEmployeesCount } from '@/core/lib/business'
 import type { Business, EmployeeCandidate } from '@/core/types'
 import { Button } from '@/shared/ui/button'
 import { InfoCard } from '@/shared/ui/info-card'
@@ -54,10 +54,7 @@ export function BusinessManagement({
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
 
   // Рассчитываем общее количество сотрудников, включая игрока
-  const playerRolesCount =
-    (business.playerRoles.managerialRoles?.length || 0) +
-    (business.playerRoles.operationalRole ? 1 : 0)
-  const totalEmployees = business.employees.length + playerRolesCount
+  const totalEmployees = getTotalEmployeesCount(business)
 
   return (
     <div className="max-w-md mx-auto md:mx-0 w-full relative">
@@ -131,7 +128,7 @@ export function BusinessManagement({
                   <span className="font-semibold">Сотрудники</span>
                 </div>
                 <p className="text-3xl font-bold">
-                  {business.employees.length}/{business.maxEmployees}
+                  {totalEmployees}/{business.maxEmployees}
                 </p>
               </div>
 

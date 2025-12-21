@@ -64,6 +64,7 @@ export {
   getPlayerRoleBusinessImpact,
   canPlayerTakeRole,
   isRoleFilled,
+  getTotalEmployeesCount,
   checkMinimumStaffing,
   getAutoAssignedManagerialRoles,
   updateAutoAssignedRoles,

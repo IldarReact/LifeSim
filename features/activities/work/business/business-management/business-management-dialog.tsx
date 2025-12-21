@@ -49,6 +49,7 @@ import {
   getPlayerRoleBusinessImpact,
   isRoleFilled,
 } from '@/core/lib/business'
+import { getSingleRoleImpact } from '@/core/lib/business/player-roles'
 
 export function BusinessManagementDialog({
   business,
@@ -130,6 +131,7 @@ export function BusinessManagementDialog({
   const availableBudget = playerCash
   const canHireMore = canHireMoreEmployees(business)
   const staffingCheck = checkMinimumStaffing(business)
+  const totalEmployees = staffingCheck.totalEmployees
   const playerShare = calculatePlayerShare(business)
   const hasControl = hasControlOverBusiness(business, CONTROL_THRESHOLD)
 
@@ -271,7 +273,7 @@ export function BusinessManagementDialog({
 
         <div className="space-y-6 mt-4">
           {/* Metrics Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
               <div className="flex items-center gap-2 mb-2 text-white/60">
                 <TrendingUp className="w-4 h-4" />
@@ -288,6 +290,17 @@ export function BusinessManagementDialog({
               </div>
               <p className="text-2xl font-bold text-red-400">${expenses.toLocaleString()}</p>
               <p className="text-xs text-white/40">в квартал (вкл. зарплаты)</p>
+            </div>
+
+            <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+              <div className="flex items-center gap-2 mb-2 text-white/60">
+                <Users className="w-4 h-4" />
+                <span className="text-xs uppercase tracking-wider">Персонал</span>
+              </div>
+              <p className="text-2xl font-bold text-blue-400">
+                {totalEmployees}/{business.maxEmployees}
+              </p>
+              <p className="text-xs text-white/40">занято слотов</p>
             </div>
 
             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
@@ -763,6 +776,15 @@ export function BusinessManagementDialog({
                       ? (business.playerEmployment?.effortPercent ?? 100)
                       : 100
 
+                    // Рассчитываем звезды именно для этой роли на основе соответствующего навыка
+                    const skillName = roleCfg?.skillGrowth?.name
+                    const playerSkill = skillName
+                      ? playerSkills.find((s) => s.name === skillName)
+                      : null
+                    const specificStars = playerSkill
+                      ? (Math.max(1, Math.min(5, playerSkill.level)) as any)
+                      : 3
+
                     return (
                       <EmployeeCard
                         key={`player-role-${role}-${idx}`}
@@ -776,11 +798,11 @@ export function BusinessManagementDialog({
                         }
                         salaryLabel="/мес"
                         isPlayer={true}
-                        stars={playerStars}
+                        stars={specificStars}
                         skills={playerSkills.reduce((acc, s) => ({ ...acc, [s.id]: s.level }), {
                           efficiency: 100,
                         })}
-                        impact={getPlayerRoleBusinessImpact(business, playerSkills)}
+                        impact={getSingleRoleImpact(role, playerSkills, effortPercent)}
                         costs={
                           roleCfg?.playerEffects
                             ? {

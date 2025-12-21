@@ -199,6 +199,58 @@ export function getPlayerRoleBusinessImpact(
 }
 
 /**
+ * Рассчитать влияние конкретной роли игрока на бизнес
+ */
+export function getSingleRoleImpact(
+  role: EmployeeRole,
+  playerSkills: Skill[],
+  effortPercent: number = 100,
+): PlayerBusinessImpact {
+  const impact: PlayerBusinessImpact = {
+    efficiencyBonus: 0,
+    expenseReduction: 0,
+    salesBonus: 0,
+    reputationBonus: 0,
+    taxReduction: 0,
+    legalProtection: 0,
+    staffProductivityBonus: 0,
+  }
+
+  const config = getRoleConfig(role)
+  if (!config?.businessImpact) return impact
+
+  const factor = isManagerialRole(role) ? Math.max(0.1, Math.min(1, effortPercent / 100)) : 1
+  const skillName = config.skillGrowth?.name
+  const playerSkill = skillName ? playerSkills.find((s) => s.name === skillName) || null : null
+
+  const roleImpact = config.businessImpact
+
+  if (roleImpact.efficiencyBonus) {
+    impact.efficiencyBonus = roleImpact.efficiencyBonus(playerSkill) * factor
+  }
+  if (roleImpact.expenseReduction) {
+    impact.expenseReduction = roleImpact.expenseReduction(playerSkill) * factor
+  }
+  if (roleImpact.salesBonus) {
+    impact.salesBonus = roleImpact.salesBonus(playerSkill) * factor
+  }
+  if (roleImpact.reputationBonus) {
+    impact.reputationBonus = roleImpact.reputationBonus(playerSkill) * factor
+  }
+  if (roleImpact.taxReduction) {
+    impact.taxReduction = roleImpact.taxReduction(playerSkill) * factor
+  }
+  if (roleImpact.legalProtection) {
+    impact.legalProtection = roleImpact.legalProtection(playerSkill) * factor
+  }
+  if (roleImpact.staffProductivityBonus) {
+    impact.staffProductivityBonus = roleImpact.staffProductivityBonus(playerSkill) * factor
+  }
+
+  return impact
+}
+
+/**
  * Проверить, может ли игрок взять указанную роль
  * (для операционных ролей можно проверять наличие навыков)
  */
@@ -230,6 +282,16 @@ export function isRoleFilled(business: Business, role: EmployeeRole): boolean {
 }
 
 /**
+ * Подсчитать общее количество "сотрудников" (включая игрока во всех ролях)
+ */
+export function getTotalEmployeesCount(business: Business): number {
+  const playerRolesCount =
+    (business.playerRoles.managerialRoles?.length || 0) +
+    (business.playerRoles.operationalRole ? 1 : 0)
+  return business.employees.length + playerRolesCount
+}
+
+/**
  * Проверить, выполнены ли минимальные требования к персоналу
  */
 export function checkMinimumStaffing(business: Business): {
@@ -252,11 +314,8 @@ export function checkMinimumStaffing(business: Business): {
     }
   })
 
-  // Подсчитать общее количество "сотрудников" (включая игрока во всех ролях)
-  const playerRolesCount =
-    (business.playerRoles.managerialRoles?.length || 0) +
-    (business.playerRoles.operationalRole ? 1 : 0)
-  const totalEmployees = business.employees.length + playerRolesCount
+  // Подсчитать общее количество "сотрудников"
+  const totalEmployees = getTotalEmployeesCount(business)
 
   // Подсчитать только работников (worker)
   let workerCount = business.employees.filter((e) => e.role === 'worker').length

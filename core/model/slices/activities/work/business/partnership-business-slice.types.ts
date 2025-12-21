@@ -21,6 +21,7 @@ export interface BusinessChangeProposal {
     employeeRole?: string
     employeeSalary?: number
     employeeStars?: number
+    isPlayer?: boolean
 
     // Для fire_employee
     fireEmployeeId?: string
@@ -36,6 +37,8 @@ export interface BusinessChangeProposal {
     // Для change_role
     newRole?: string
     oldRole?: string
+    // Дополнительные поля для случая, когда игрок вступает в роль (используется как hire_employee для игрока)
+    isMe?: boolean
 
     // Для fund_collection
     collectionAmount?: number

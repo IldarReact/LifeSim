@@ -163,7 +163,7 @@ export function BusinessManagementDialog({
       } else if (needsApproval) {
         // 50/50 - отправка предложения
         const proposeChange = useGameStore.getState().proposeBusinessChange
-        proposeChange(business.id, isMe ? 'assign_role' : 'hire_employee', {
+        proposeChange(business.id, isMe ? 'change_role' : 'hire_employee', {
           employeeName: candidate.name,
           employeeRole: candidate.role,
           employeeSalary: candidate.requestedSalary,

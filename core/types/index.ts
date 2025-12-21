@@ -15,6 +15,10 @@ export type {
   Employee,
   BusinessType,
   Business,
+  BusinessInventory,
+  BusinessPartner,
+  BusinessProposal,
+  BusinessChangeType,
   EmployeeCandidate,
 } from './business.types'
 

@@ -1,25 +1,24 @@
-"use client"
+'use client'
 
-import React from "react"
+import React from 'react'
 
-import { ActiveFreelanceSection } from "./active-freelance-section"
-import { BusinessManagement } from "./business/business-management/business-management"
-import { BusinessProposals } from "./business/components/business-proposals"
-import { BusinessesSection } from "./business/components/businesses-section"
-import { CurrentJobsSection } from "./current-jobs-section"
-import { FreelanceSection } from "./freelance-section"
-import { StartupsSection } from "./startups-section"
-import { VacanciesSection } from "./vacancies-section"
+import { ActiveFreelanceSection } from './active-freelance-section'
+import { BusinessManagement } from './business/business-management/business-management'
+import { BusinessProposals } from './business/components/business-proposals'
+import { BusinessesSection } from './business/components/businesses-section'
+import { CurrentJobsSection } from './current-jobs-section'
+import { FreelanceSection } from './freelance-section'
+import { StartupsSection } from './startups-section'
+import { VacanciesSection } from './vacancies-section'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { SkillLevel } from "@/core/types"
-import { FeedbackAnimation } from "@/shared/ui/feedback-animation"
-import { SectionSeparator } from "@/shared/ui/section-separator"
+import { useGameStore } from '@/core/model/game-store'
+import type { SkillLevel } from '@/core/types'
+import { FeedbackAnimation } from '@/shared/ui/feedback-animation'
+import { SectionSeparator } from '@/shared/ui/section-separator'
 
 export function WorkActivity(): React.JSX.Element | null {
   const {
     player,
-    businessProposals,
     applyForJob,
     quitJob,
     applyForFreelance,
@@ -31,7 +30,9 @@ export function WorkActivity(): React.JSX.Element | null {
     setQuantity,
     openBranch,
     joinBusinessAsEmployee,
-    leaveBusinessJob
+    leaveBusinessJob,
+    unassignPlayerRole,
+    businessProposals,
   } = useGameStore()
 
   const [feedback, setFeedback] = React.useState<{
@@ -41,7 +42,7 @@ export function WorkActivity(): React.JSX.Element | null {
   }>({
     show: false,
     success: false,
-    message: ''
+    message: '',
   })
 
   if (!player) return null
@@ -51,22 +52,22 @@ export function WorkActivity(): React.JSX.Element | null {
     company: string,
     salary: string,
     cost: any,
-    requirements: Array<{ skill: string; level: number }>
+    requirements: Array<{ skill: string; level: number }>,
   ) => {
     const energyCost = Math.abs(cost.energy || 0)
     if (player.personal.stats.energy < energyCost) {
       setFeedback({
         show: true,
         success: false,
-        message: 'Недостаточно энергии для собеседования'
+        message: 'Недостаточно энергии для собеседования',
       })
       return
     }
 
     const salaryNum = parseInt(salary.replace(/[^0-9]/g, ''))
-    const reqs = requirements.map(r => ({
+    const reqs = requirements.map((r) => ({
       skillId: r.skill,
-      minLevel: r.level as SkillLevel
+      minLevel: r.level as SkillLevel,
     }))
 
     applyForJob(title, company, salaryNum, cost, reqs)
@@ -78,20 +79,20 @@ export function WorkActivity(): React.JSX.Element | null {
     title: string,
     payment: number,
     energyCost: number,
-    requirements: Array<{ skill: string; level: SkillLevel }>
+    requirements: Array<{ skill: string; level: SkillLevel }>,
   ) => {
     if (player.personal.stats.energy < energyCost) {
       setFeedback({
         show: true,
         success: false,
-        message: 'Недостаточно энергии для выполнения заказа'
+        message: 'Недостаточно энергии для выполнения заказа',
       })
       return
     }
 
-    const reqs = requirements.map(r => ({
+    const reqs = requirements.map((r) => ({
       skillId: r.skill,
-      minLevel: r.level
+      minLevel: r.level,
     }))
 
     applyForFreelance(gigId, title, payment, { energy: energyCost }, reqs)
@@ -113,7 +114,6 @@ export function WorkActivity(): React.JSX.Element | null {
       />
 
       <div className="space-y-8 pb-10">
-
         {/* Active Freelance */}
         {player.activeFreelanceGigs?.length > 0 && (
           <div className="space-y-4">
@@ -133,9 +133,10 @@ export function WorkActivity(): React.JSX.Element | null {
               {player.businesses.map((business) => {
                 // Подсчёт входящих предложений для этого бизнеса
                 const proposalsCount = businessProposals.filter(
-                  (p) => p.businessId === business.id &&
+                  (p) =>
+                    p.businessId === business.id &&
                     p.status === 'pending' &&
-                    p.initiatorId !== player.id
+                    p.initiatorId !== player.id,
                 ).length
 
                 return (
@@ -151,6 +152,7 @@ export function WorkActivity(): React.JSX.Element | null {
                     onOpenBranch={openBranch}
                     onJoinAsEmployee={joinBusinessAsEmployee}
                     onLeaveJob={leaveBusinessJob}
+                    onUnassignRole={unassignPlayerRole}
                   />
                 )
               })}
@@ -164,10 +166,7 @@ export function WorkActivity(): React.JSX.Element | null {
         {/* Current Jobs */}
         <div className="space-y-4">
           <SectionSeparator title="Текущие работы" />
-          <CurrentJobsSection
-            jobs={player?.jobs || []}
-            onQuit={quitJob}
-          />
+          <CurrentJobsSection jobs={player?.jobs || []} onQuit={quitJob} />
         </div>
 
         {/* Vacancies + Freelance + Business */}
@@ -186,7 +185,6 @@ export function WorkActivity(): React.JSX.Element | null {
             <FreelanceSection onTakeOrder={handleFreelanceApply} />
           </div>
         </div>
-
       </div>
     </React.Fragment>
   )

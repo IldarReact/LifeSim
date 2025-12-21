@@ -130,7 +130,7 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     requiredRoles: ['manager', 'accountant', 'lawyer'],
     minEmployees,
     playerRoles: {
-      managerialRoles: ['manager', 'accountant'],
+      managerialRoles: [],
       operationalRole: null,
     },
 

@@ -98,6 +98,7 @@ export interface EmployeeCardProps {
   footer?: React.ReactNode
   showDetails?: boolean
   onShowDetails?: () => void
+  isVacancy?: boolean
 }
 
 export function EmployeeCard({
@@ -136,6 +137,7 @@ export function EmployeeCard({
   footer,
   showDetails,
   onShowDetails,
+  isVacancy,
 }: EmployeeCardProps) {
   // Рассчитываем звезды на лету, если они не переданы явно
   const stars = providedStars ?? calculateStarsFromSkills(skills)
@@ -280,8 +282,14 @@ export function EmployeeCard({
   return (
     <div
       className={`
-        relative bg-white/5 border rounded-xl overflow-hidden transition-all
-        ${isSelected ? 'border-blue-500/50 bg-blue-500/10' : 'border-white/10 hover:border-white/20 hover:bg-white/8'}
+        relative overflow-hidden rounded-2xl border transition-all duration-300 group
+        ${
+          isSelected
+            ? 'ring-2 ring-blue-500 border-blue-500 shadow-lg shadow-blue-500/20'
+            : isVacancy
+              ? 'bg-amber-500/10 border-amber-500/30 border-dashed hover:bg-amber-500/20'
+              : 'bg-zinc-900/40 border-white/10 hover:border-white/20'
+        }
         ${!canAfford ? 'opacity-60' : ''}
         ${className}
       `}
@@ -309,7 +317,7 @@ export function EmployeeCard({
               ? '✓ Заявка отправлена'
               : isPlayer
                 ? 'Онлайн игрок'
-                : company
+                : isVacancy || company
                   ? 'Вакансия'
                   : 'Сотрудник'}
           </Badge>

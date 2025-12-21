@@ -153,6 +153,8 @@ export interface BusinessSlice {
     businessId: string,
     role: import('@/core/types').EmployeeRole | null,
   ) => void
+  assignPlayerRole: (businessId: string, role: import('@/core/types').EmployeeRole) => void
+  unassignPlayerRole: (businessId: string, role: import('@/core/types').EmployeeRole) => void
   freezeBusiness: (businessId: string) => void
   unfreezeBusiness: (businessId: string) => void
   changePrice: (businessId: string, newPrice: number) => void

@@ -11,6 +11,7 @@ export interface BusinessManagementDialogProps {
   onOpenBranch: (sourceBusinessId: string) => void
   onJoinAsEmployee: (businessId: string, role: EmployeeRole, salary: number) => void
   onLeaveJob: (businessId: string) => void
+  onUnassignRole: (businessId: string, role: EmployeeRole) => void
   trigger?: React.ReactNode
 }
 

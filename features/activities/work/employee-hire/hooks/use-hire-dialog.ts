@@ -1,26 +1,26 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from 'react'
 
-import { SALARY_CONFIG, KPI_CONFIG } from "../../shared-constants"
-import { createPlayerCandidate } from "../utils/employee-utils"
+import { SALARY_CONFIG, KPI_CONFIG } from '../../shared-constants'
+import { createPlayerCandidate } from '../utils/employee-utils'
 
-import { getInflatedBaseSalary } from "@/core/lib/calculations/price-helpers"
-import { getOnlinePlayers } from "@/core/lib/multiplayer"
-import { useGameStore } from "@/core/model/game-store"
-import type { EmployeeCandidate } from "@/core/types"
+import { getInflatedBaseSalary } from '@/core/lib/calculations/price-helpers'
+import { getOnlinePlayers } from '@/core/lib/multiplayer'
+import { useGameStore } from '@/core/model/game-store'
+import type { EmployeeCandidate } from '@/core/types'
 
 export function useHireDialog(isOpen: boolean, candidates: EmployeeCandidate[]) {
   const { countries, player } = useGameStore()
   const country = player ? countries[player.countryId] : undefined
-  
+
   // Применяем инфляцию к минимальной зарплате
   const inflatedMinSalary = useMemo(() => {
     return country ? getInflatedBaseSalary(SALARY_CONFIG.MIN, country) : SALARY_CONFIG.MIN
   }, [country])
-  
+
   const inflatedDefaultSalary = useMemo(() => {
     return country ? getInflatedBaseSalary(SALARY_CONFIG.DEFAULT, country) : SALARY_CONFIG.DEFAULT
   }, [country])
-  
+
   const [selectedCandidate, setSelectedCandidate] = useState<EmployeeCandidate | null>(null)
   const [activeTab, setActiveTab] = useState<'npc' | 'players'>('npc')
   const [onlinePlayers, setOnlinePlayers] = useState<any[]>([])
@@ -30,18 +30,24 @@ export function useHireDialog(isOpen: boolean, candidates: EmployeeCandidate[]) 
   useEffect(() => {
     if (isOpen) {
       if (activeTab === 'players') {
-        setOnlinePlayers(getOnlinePlayers().filter(p => !p.isLocal))
+        setOnlinePlayers(getOnlinePlayers())
       }
       setSelectedCandidate(null)
       setCustomSalary(inflatedDefaultSalary)
     }
   }, [isOpen, activeTab, inflatedDefaultSalary])
 
-  const displayCandidates = activeTab === 'npc'
-    ? candidates
-    : onlinePlayers.map(player => 
-        createPlayerCandidate(player, candidates[0]?.role || 'worker', customSalary)
-      )
+  const displayCandidates =
+    activeTab === 'npc'
+      ? candidates
+      : onlinePlayers.map((p) =>
+          createPlayerCandidate(
+            p,
+            candidates[0]?.role || 'worker',
+            customSalary,
+            p.isLocal ? player : undefined,
+          ),
+        )
 
   return {
     selectedCandidate,
@@ -53,6 +59,6 @@ export function useHireDialog(isOpen: boolean, candidates: EmployeeCandidate[]) 
     setCustomSalary,
     customKPI,
     setCustomKPI,
-    inflatedMinSalary
+    inflatedMinSalary,
   }
 }

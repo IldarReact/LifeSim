@@ -60,6 +60,7 @@ export function BusinessManagementDialog({
   onOpenBranch,
   onJoinAsEmployee,
   onLeaveJob,
+  onUnassignRole,
   trigger,
 }: BusinessManagementDialogProps) {
   const [hireDialogOpen, setHireDialogOpen] = React.useState(false)
@@ -70,6 +71,14 @@ export function BusinessManagementDialog({
   const countryId = player?.countryId || 'us'
   const country = countries?.[countryId]
   const availablePositions = getAvailablePositions(country)
+
+  const activePlayerRoles = Array.from(
+    new Set([
+      ...(business.playerRoles.managerialRoles || []),
+      ...(business.playerRoles.operationalRole ? [business.playerRoles.operationalRole] : []),
+      ...(business.playerEmployment ? [business.playerEmployment.role] : []),
+    ]),
+  )
 
   // Локальное состояние для слайдеров
   const [price, setPrice] = React.useState(business.price || 5)
@@ -714,89 +723,57 @@ export function BusinessManagementDialog({
               </div>
             </div>
 
-            {/* Список сотрудников (включая игрока) */}
+            {/* Список сотрудников (включая игрока и вакансии) */}
             {business.employees.length > 0 ||
             business.playerEmployment ||
-            business.playerRoles.managerialRoles.length > 0 ? (
+            business.playerRoles.managerialRoles.length > 0 ||
+            business.playerRoles.operationalRole ||
+            staffingCheck.missingRoles.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                {/* Рендерим игрока как сотрудника */}
-                {(business.playerEmployment ||
-                  (business.playerRoles.managerialRoles.length > 0 &&
-                    business.playerRoles.managerialRoles[0])) && (
-                  <EmployeeCard
-                    id={`player_${player?.id}`}
-                    name={player?.name || 'Игрок'}
-                    role={
-                      (business.playerEmployment?.role ||
-                        business.playerRoles.managerialRoles[0]) as EmployeeRole
-                    }
-                    roleLabel={
-                      ROLE_LABELS[
-                        (business.playerEmployment?.role ||
-                          business.playerRoles.managerialRoles[0]) as EmployeeRole
-                      ]
-                    }
-                    roleIcon={
-                      ROLE_ICONS[
-                        (business.playerEmployment?.role ||
-                          business.playerRoles.managerialRoles[0]) as EmployeeRole
-                      ]
-                    }
-                    salary={
-                      business.playerEmployment
-                        ? Math.round((business.playerEmployment.salary || 0) / 3)
-                        : 0
-                    }
-                    salaryLabel="/мес"
-                    isPlayer={true}
-                    stars={playerStars}
-                    skills={{
-                      efficiency: playerStars * 20,
-                    }}
-                    impact={(() => {
-                      const impact = getPlayerRoleBusinessImpact(business, playerSkills)
-                      return {
-                        efficiencyBonus: impact.efficiencyBonus,
-                        expenseReduction: impact.expenseReduction,
-                        salesBonus: impact.salesBonus,
-                        reputationBonus: impact.reputationBonus,
-                        taxReduction: impact.taxReduction,
-                        legalProtection: impact.legalProtection,
-                        staffProductivityBonus: impact.staffProductivityBonus,
+                {/* 1. Рендерим игрока во всех его ролях */}
+                {activePlayerRoles.map((role, idx) => {
+                  const isEmployed = business.playerEmployment?.role === role
+                  return (
+                    <EmployeeCard
+                      key={`player-role-${role}-${idx}`}
+                      id={`player_${player?.id}_${role}`}
+                      name={player?.name || 'Вы'}
+                      role={role}
+                      roleLabel={ROLE_LABELS[role]}
+                      roleIcon={ROLE_ICONS[role]}
+                      salary={
+                        isEmployed ? Math.round((business.playerEmployment?.salary || 0) / 3) : 0
                       }
-                    })()}
-                    effortPercent={business.playerEmployment?.effortPercent ?? 100}
-                    isPartialAllowed={isManagerialRole(
-                      (business.playerEmployment?.role ||
-                        business.playerRoles.managerialRoles[0]) as EmployeeRole,
-                    )}
-                    onEffortChange={(value) =>
-                      useGameStore.getState().setPlayerEmploymentEffort(business.id, value)
-                    }
-                    onAction={
-                      business.playerEmployment
-                        ? () => onLeaveJob(business.id)
-                        : () =>
-                            onJoinAsEmployee(
-                              business.id,
-                              business.playerRoles.managerialRoles[0] || 'manager',
-                              0,
-                            )
-                    }
-                    actionLabel={business.playerEmployment ? 'Уволиться' : 'Устроиться официально'}
-                    actionIcon={
-                      business.playerEmployment ? (
-                        <Trash2 className="w-3 h-3 mr-1" />
-                      ) : (
-                        <Briefcase className="w-3 h-3 mr-1" />
-                      )
-                    }
-                    actionVariant={business.playerEmployment ? 'destructive' : 'default'}
-                    className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30 shadow-lg"
-                  />
-                )}
+                      salaryLabel="/мес"
+                      isPlayer={true}
+                      stars={playerStars}
+                      skills={playerSkills.reduce((acc, s) => ({ ...acc, [s.id]: s.level }), {})}
+                      impact={(() => {
+                        const impact = getPlayerRoleBusinessImpact(business, playerSkills)
+                        // Возвращаем только те бонусы, которые относятся к текущей роли
+                        // (хотя getPlayerRoleBusinessImpact возвращает общие бонусы игрока)
+                        return impact
+                      })()}
+                      effortPercent={
+                        isEmployed ? (business.playerEmployment?.effortPercent ?? 100) : 100
+                      }
+                      isPartialAllowed={isManagerialRole(role)}
+                      onEffortChange={
+                        isEmployed
+                          ? (value) =>
+                              useGameStore.getState().setPlayerEmploymentEffort(business.id, value)
+                          : undefined
+                      }
+                      onAction={() => onUnassignRole(business.id, role)}
+                      actionLabel="Уволить"
+                      actionIcon={<Trash2 className="w-3 h-3 mr-1" />}
+                      actionVariant="destructive"
+                      className="bg-linear-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30 shadow-lg"
+                    />
+                  )
+                })}
 
-                {/* Рендерим остальных сотрудников */}
+                {/* 2. Рендерим остальных сотрудников */}
                 {business.employees.map((employee) => {
                   const indexedSalary = calculateEmployeeSalary(employee, country)
                   const isNpcPlayer = employee.id.startsWith('player_')
@@ -834,6 +811,24 @@ export function BusinessManagementDialog({
                     />
                   )
                 })}
+
+                {/* 3. Рендерим вакансии для обязательных ролей */}
+                {staffingCheck.missingRoles.map((role, idx) => (
+                  <EmployeeCard
+                    key={`vacancy-${role}-${idx}`}
+                    id={`vacancy-${role}`}
+                    name="Вакансия"
+                    role={role}
+                    roleLabel={ROLE_LABELS[role]}
+                    roleIcon={ROLE_ICONS[role]}
+                    salary={availablePositions.find((p) => p.role === role)?.salary || 0}
+                    salaryLabel="/кв"
+                    isVacancy={true}
+                    actionLabel="Нанять"
+                    actionIcon={<UserPlus className="w-3 h-3 mr-1" />}
+                    onAction={() => openHireDialog(role)}
+                  />
+                ))}
               </div>
             ) : (
               <div className="text-center py-12 mb-6 bg-white/5 rounded-xl border border-dashed border-white/10">

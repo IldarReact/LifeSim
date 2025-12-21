@@ -109,6 +109,20 @@ export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) =
     console.warn('[business-slice] setPlayerOperationalRole delegated, but target not found')
   },
 
+  assignPlayerRole: (businessId, role) => {
+    const s = get() as any
+    if (typeof s.assignPlayerRole === 'function')
+      return (s.assignPlayerRole as any)(businessId, role)
+    console.warn('[business-slice] assignPlayerRole delegated, but target not found')
+  },
+
+  unassignPlayerRole: (businessId, role) => {
+    const s = get() as any
+    if (typeof s.unassignPlayerRole === 'function')
+      return (s.unassignPlayerRole as any)(businessId, role)
+    console.warn('[business-slice] unassignPlayerRole delegated, but target not found')
+  },
+
   freezeBusiness: (businessId) => {
     const s = get() as any
     if (typeof s.freezeBusiness === 'function') return (s.freezeBusiness as any)(businessId)

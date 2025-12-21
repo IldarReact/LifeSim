@@ -19,13 +19,32 @@ export function calculateKPIBonus(salary: number, kpiPercent: number): number {
 }
 
 export function createPlayerCandidate(
-  player: { clientId: string; name: string },
+  playerData: { clientId: string; name: string; isLocal?: boolean },
   defaultRole: EmployeeCandidate['role'],
-  customSalary: number
+  customSalary: number,
+  localPlayerStats?: any // Добавляем статы локального игрока
 ): EmployeeCandidate {
+  // Если это локальный игрок, используем его реальные данные
+  if (playerData.isLocal && localPlayerStats) {
+    const skills = localPlayerStats.personal.skills || []
+    const stars = skills.length > 0 ? Math.max(1, ...skills.map((s: any) => s.level)) : 1
+    
+    return {
+      id: `player_${playerData.clientId}`,
+      name: playerData.name,
+      role: defaultRole,
+      stars: stars as any,
+      experience: 24, // Можно тоже вычислять, если есть данные
+      requestedSalary: customSalary,
+      skills: skills.reduce((acc: any, s: any) => ({ ...acc, [s.id]: s.level }), {}),
+      humanTraits: [] // Можно подтянуть из трейтов игрока
+    }
+  }
+
+  // Для других игроков пока оставляем заглушку или базовые данные
   return {
-    id: `player_${player.clientId}`,
-    name: player.name,
+    id: `player_${playerData.clientId}`,
+    name: playerData.name,
     role: defaultRole,
     stars: 3,
     experience: 24,

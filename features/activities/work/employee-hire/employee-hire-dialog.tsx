@@ -1,19 +1,19 @@
-"use client"
+'use client'
 
-import { CheckCircle, XCircle, Briefcase, Users, Globe } from "lucide-react"
-import React from "react"
+import { CheckCircle, XCircle, Briefcase, Users, Globe } from 'lucide-react'
+import React from 'react'
 
-import { ROLE_LABELS } from "../shared-constants"
+import { ROLE_LABELS } from '../shared-constants'
 
-import { CandidateCard } from "@/shared/components/business/candidate-card"
-import { SalarySettings } from "./components/salary-settings"
-import { useHireDialog } from "./hooks/use-hire-dialog"
-import { calculateMonthlySalary } from "./utils/employee-utils"
+import { CandidateCard } from '@/shared/components/business/candidate-card'
+import { SalarySettings } from './components/salary-settings'
+import { useHireDialog } from './hooks/use-hire-dialog'
+import { calculateMonthlySalary } from './utils/employee-utils'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { EmployeeCandidate } from "@/core/types"
-import { Button } from "@/shared/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
+import { useGameStore } from '@/core/model/game-store'
+import type { EmployeeCandidate } from '@/core/types'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 
 interface EmployeeHireDialogProps {
   isOpen: boolean
@@ -25,8 +25,6 @@ interface EmployeeHireDialogProps {
   businessName: string
 }
 
-
-
 export function EmployeeHireDialog({
   isOpen,
   onClose,
@@ -34,7 +32,7 @@ export function EmployeeHireDialog({
   onHire,
   availableBudget,
   businessId,
-  businessName
+  businessName,
 }: EmployeeHireDialogProps) {
   const { sendOffer } = useGameStore()
   const {
@@ -47,7 +45,7 @@ export function EmployeeHireDialog({
     setCustomSalary,
     customKPI,
     setCustomKPI,
-    inflatedMinSalary
+    inflatedMinSalary,
   } = useHireDialog(isOpen, candidates)
 
   const canAfford = (salary: number) => salary <= availableBudget
@@ -61,7 +59,9 @@ export function EmployeeHireDialog({
             Выбор кандидата - {ROLE_LABELS[candidates[0]?.role]}
           </DialogTitle>
           <p className="text-white/80 text-base mt-2">
-            Доступный бюджет: <span className="text-green-400 font-bold">${availableBudget.toLocaleString()}</span>/мес
+            Доступный бюджет:{' '}
+            <span className="text-green-400 font-bold">${availableBudget.toLocaleString()}</span>
+            /мес
           </p>
         </DialogHeader>
 
@@ -70,7 +70,11 @@ export function EmployeeHireDialog({
           <Button
             variant={activeTab === 'npc' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('npc')}
-            className={activeTab === 'npc' ? 'bg-blue-600' : 'text-white/60 hover:text-white hover:bg-white/10'}
+            className={
+              activeTab === 'npc'
+                ? 'bg-blue-600'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }
           >
             <Users className="w-4 h-4 mr-2" />
             Рынок труда
@@ -78,7 +82,11 @@ export function EmployeeHireDialog({
           <Button
             variant={activeTab === 'players' ? 'default' : 'ghost'}
             onClick={() => setActiveTab('players')}
-            className={activeTab === 'players' ? 'bg-purple-600 hover:bg-purple-700' : 'text-white/60 hover:text-white hover:bg-white/10'}
+            className={
+              activeTab === 'players'
+                ? 'bg-purple-600 hover:bg-purple-700'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
+            }
           >
             <Globe className="w-4 h-4 mr-2" />
             Онлайн игроки
@@ -103,14 +111,16 @@ export function EmployeeHireDialog({
           ))}
         </div>
 
-        {activeTab === 'players' && selectedCandidate && (
-          <SalarySettings
-            salary={customSalary}
-            kpiBonus={customKPI}
-            onSalaryChange={setCustomSalary}
-            onKPIChange={setCustomKPI}
-          />
-        )}
+        {activeTab === 'players' &&
+          selectedCandidate &&
+          !selectedCandidate.id.includes(useGameStore.getState().player?.id || 'none') && (
+            <SalarySettings
+              salary={customSalary}
+              kpiBonus={customKPI}
+              onSalaryChange={setCustomSalary}
+              onKPIChange={setCustomKPI}
+            />
+          )}
 
         {/* Actions */}
         <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
@@ -126,20 +136,29 @@ export function EmployeeHireDialog({
             onClick={() => {
               if (selectedCandidate && canAfford(selectedCandidate.requestedSalary)) {
                 if (activeTab === 'players') {
-                  // Отправляем оффер онлайн-игроку
-                  sendOffer(
-                    'job_offer',
-                    selectedCandidate.id.replace('player_', ''),
-                    selectedCandidate.name,
-                    {
-                      businessId,
-                      businessName,
-                      role: selectedCandidate.role,
-                      salary: customSalary,
-                      kpiBonus: customKPI
-                    },
-                    "Приглашаю присоединиться к моей команде!"
+                  const isLocal = selectedCandidate.id.includes(
+                    useGameStore.getState().player?.id || 'none',
                   )
+
+                  if (isLocal) {
+                    // Назначаем себя на роль напрямую (без оффера)
+                    useGameStore.getState().assignPlayerRole(businessId, selectedCandidate.role)
+                  } else {
+                    // Отправляем оффер онлайн-игроку
+                    sendOffer(
+                      'job_offer',
+                      selectedCandidate.id.replace('player_', ''),
+                      selectedCandidate.name,
+                      {
+                        businessId,
+                        businessName,
+                        role: selectedCandidate.role,
+                        salary: customSalary,
+                        kpiBonus: customKPI,
+                      },
+                      'Приглашаю присоединиться к моей команде!',
+                    )
+                  }
                 } else {
                   // Нанимаем NPC сразу
                   onHire(selectedCandidate)
@@ -151,11 +170,15 @@ export function EmployeeHireDialog({
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle className="w-4 h-4 mr-2" />
-            {activeTab === 'players' ? 'Отправить оффер' : 'Нанять'} {selectedCandidate && (
-              activeTab === 'players'
+            {activeTab === 'players'
+              ? selectedCandidate?.id.includes(useGameStore.getState().player?.id || 'none')
+                ? 'Занять слот'
+                : 'Отправить оффер'
+              : 'Нанять'}{' '}
+            {selectedCandidate &&
+              (activeTab === 'players'
                 ? `за $${calculateMonthlySalary(customSalary).toLocaleString()}/мес`
-                : `за $${selectedCandidate.requestedSalary.toLocaleString()}/мес`
-            )}
+                : `за $${selectedCandidate.requestedSalary.toLocaleString()}/мес`)}
           </Button>
         </div>
       </DialogContent>

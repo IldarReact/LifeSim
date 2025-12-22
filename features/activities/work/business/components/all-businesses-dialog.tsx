@@ -18,33 +18,14 @@ import React from 'react'
 import { useEconomy } from '@/core/hooks'
 import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import {
+  getAllBusinessTypesForCountry,
+  type BusinessTemplate,
+} from '@/core/lib/data-loaders/businesses-loader'
 import { useGameStore } from '@/core/model/store'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
-
-interface BusinessOption {
-  id: string
-  title: string
-  type: string
-  description: string
-  cost: number
-  income: string
-  expenses: string
-  monthlyIncome: number
-  monthlyExpenses: number
-  maxEmployees: number
-  energyCost: number
-  stressImpact: number
-  image: string
-  businessType: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing'
-  requirements: Array<{
-    role: string
-    priority: 'required' | 'recommended' | 'optional'
-    description: string
-    icon: React.ReactNode
-  }>
-}
 
 interface AllBusinessesDialogProps {
   playerCash: number
@@ -53,130 +34,43 @@ interface AllBusinessesDialogProps {
   onError: (message: string) => void
 }
 
-const BUSINESS_OPTIONS: BusinessOption[] = [
-  {
-    id: 'gadget_store',
-    title: 'Магазин гаджетов',
-    type: 'Малый бизнес',
-    description:
-      'Розничная точка продажи смартфонов и аксессуаров в торговом центре. Требует закупки товара и найма продавцов.',
-    cost: 50000,
-    income: '$3,000 - $8,000/мес',
-    expenses: '$2,500/мес',
-    monthlyIncome: 5500,
-    monthlyExpenses: 2500,
-    maxEmployees: 5,
-    energyCost: 15,
-    stressImpact: 2,
-    image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop',
-    businessType: 'retail',
-    requirements: [
-      {
-        role: 'Продавец',
-        priority: 'required',
-        description:
-          'Необходим для обслуживания клиентов и продаж. Напрямую влияет на доход магазина.',
-        icon: <TrendingUp className="w-5 h-5 text-red-400" />,
-      },
-      {
-        role: 'Техник',
-        priority: 'recommended',
-        description:
-          'Обеспечивает техническую поддержку и ремонт гаджетов. Повышает доверие клиентов.',
-        icon: <CheckCircle className="w-5 h-5 text-blue-400" />,
-      },
-      {
-        role: 'Маркетолог',
-        priority: 'optional',
-        description:
-          'Привлекает новых клиентов через рекламу и продвижение. Увеличивает узнаваемость.',
-        icon: <Star className="w-5 h-5 text-green-400" />,
-      },
-    ],
-  },
-  {
-    id: 'car_wash',
-    title: 'Автомойка',
-    type: 'Средний бизнес',
-    description:
-      'Комплекс по обслуживанию автомобилей. Стабильный поток клиентов, но требует контроля качества и обслуживания оборудования.',
-    cost: 120000,
-    income: '$8,000 - $15,000/мес',
-    expenses: '$5,000/мес',
-    monthlyIncome: 11500,
-    monthlyExpenses: 5000,
-    maxEmployees: 8,
-    energyCost: 25,
-    stressImpact: 4,
-    image: 'https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&h=600&fit=crop',
-    businessType: 'service',
-    requirements: [
-      {
-        role: 'Рабочий',
-        priority: 'required',
-        description:
-          'Выполняет основную работу по мойке автомобилей. Минимум 2-3 человека для эффективной работы.',
-        icon: <Users className="w-5 h-5 text-red-400" />,
-      },
-      {
-        role: 'Управляющий',
-        priority: 'recommended',
-        description:
-          'Организует рабочий процесс и контролирует качество. Повышает эффективность на 20%.',
-        icon: <Award className="w-5 h-5 text-blue-400" />,
-      },
-      {
-        role: 'Техник',
-        priority: 'recommended',
-        description:
-          'Обслуживает оборудование и следит за его исправностью. Предотвращает простои.',
-        icon: <Activity className="w-5 h-5 text-blue-400" />,
-      },
-      {
-        role: 'Маркетолог',
-        priority: 'optional',
-        description: 'Привлекает корпоративных клиентов и организует акции.',
-        icon: <Star className="w-5 h-5 text-green-400" />,
-      },
-    ],
-  },
-  {
-    id: 'cafe',
-    title: 'Кофейня',
-    type: 'Малый бизнес',
-    description: 'Уютное место с качественным кофе и выпечкой. Важна локация и атмосфера.',
-    cost: 35000,
-    income: '$2,000 - $5,000/мес',
-    expenses: '$1,500/мес',
-    monthlyIncome: 3500,
-    monthlyExpenses: 1500,
-    maxEmployees: 4,
-    energyCost: 10,
-    stressImpact: 1,
-    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop',
-    businessType: 'cafe',
-    requirements: [
-      {
-        role: 'Рабочий',
-        priority: 'required',
-        description: 'Бариста и официанты для обслуживания гостей. Минимум 2 человека.',
-        icon: <Users className="w-5 h-5 text-red-400" />,
-      },
-      {
-        role: 'Продавец',
-        priority: 'recommended',
-        description: 'Увеличивает средний чек через допродажи и создание приятной атмосферы.',
-        icon: <TrendingUp className="w-5 h-5 text-blue-400" />,
-      },
-      {
-        role: 'Маркетолог',
-        priority: 'optional',
-        description: 'Продвигает кофейню в социальных сетях и привлекает постоянных клиентов.',
-        icon: <Star className="w-5 h-5 text-green-400" />,
-      },
-    ],
-  },
-]
+// Helper to map role to icon (moved from BusinessesSection or shared)
+const getRoleIcon = (role: string, priority: string) => {
+  const colorClass =
+    priority === 'required'
+      ? 'text-red-400'
+      : priority === 'recommended'
+        ? 'text-blue-400'
+        : 'text-green-400'
+
+  const iconClass = `w-5 h-5 ${colorClass}`
+
+  switch (role.toLowerCase()) {
+    case 'salesperson':
+    case 'продавец':
+      return <TrendingUp className={iconClass} />
+    case 'worker':
+    case 'рабочий':
+      return <Users className={iconClass} />
+    case 'technician':
+    case 'техник':
+      return <CheckCircle className={iconClass} />
+    case 'marketer':
+    case 'маркетолог':
+      return <Star className={iconClass} />
+    case 'manager':
+    case 'управляющий':
+      return <AlertCircle className={iconClass} />
+    default:
+      return <CheckCircle className={iconClass} />
+  }
+}
+
+const getBusinessTypeLabel = (initialCost: number) => {
+  if (initialCost < 50000) return 'Малый бизнес'
+  if (initialCost < 100000) return 'Средний бизнес'
+  return 'Крупный бизнес'
+}
 
 export function AllBusinessesDialog({
   playerCash,
@@ -184,29 +78,34 @@ export function AllBusinessesDialog({
   onSuccess,
   onError,
 }: AllBusinessesDialogProps) {
-  const [selectedBusiness, setSelectedBusiness] = React.useState<BusinessOption | null>(null)
+  const [selectedBusinessId, setSelectedBusinessId] = React.useState<string | null>(null)
   const economy = useEconomy()
-  const currentTurn = useGameStore((s) => s.turn)
+  const { player, turn: currentTurn } = useGameStore()
 
-  const handleOpenBusiness = (option: BusinessOption) => {
+  const countryId = player?.countryId || 'us'
+  const businessTemplates = getAllBusinessTypesForCountry(countryId)
+
+  const selectedBusiness = businessTemplates.find((b) => b.id === selectedBusinessId)
+
+  const handleOpenBusiness = (template: BusinessTemplate) => {
     try {
       const inflatedCost = economy
-        ? getInflatedPrice(option.cost, economy, 'business')
-        : option.cost
+        ? getInflatedPrice(template.initialCost, economy, 'business')
+        : template.initialCost
 
       const { business, cost: upfrontCost } = createBusinessPurchase(
         {
-          id: option.id,
-          name: option.title,
-          type: option.businessType,
-          description: option.description,
-          initialCost: option.cost,
-          monthlyIncome: option.monthlyIncome,
-          monthlyExpenses: option.monthlyExpenses,
-          maxEmployees: option.maxEmployees,
-          minEmployees: 1,
-          requiredRoles: option.requirements.map((r) => r.role) as any,
-          upfrontPaymentPercentage: 20, // Default for these options
+          id: template.id,
+          name: template.name,
+          type: template.type as any,
+          description: template.description || '',
+          initialCost: template.initialCost,
+          monthlyIncome: template.monthlyIncome,
+          monthlyExpenses: template.monthlyExpenses,
+          maxEmployees: template.maxEmployees || 5,
+          minEmployees: template.minEmployees || 1,
+          requiredRoles: (template.requiredRoles || []) as any,
+          upfrontPaymentPercentage: template.upfrontPaymentPercentage || 20,
         },
         inflatedCost,
         currentTurn,
@@ -214,7 +113,7 @@ export function AllBusinessesDialog({
 
       if (playerCash >= upfrontCost) {
         onOpenBusiness(business, upfrontCost)
-        onSuccess(`Бизнес "${option.title}" успешно открыт!`)
+        onSuccess(`Бизнес "${template.name}" успешно открыт!`)
       } else {
         onError(`Недостаточно средств. Необходимо $${upfrontCost.toLocaleString()}`)
       }
@@ -244,15 +143,19 @@ export function AllBusinessesDialog({
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/60 mb-1">Доступно</p>
-                <p className="text-white font-bold">{BUSINESS_OPTIONS.length} варианта</p>
+                <p className="text-white font-bold">{businessTemplates.length} варианта</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/60 mb-1">От</p>
-                <p className="text-green-400 font-bold">$35,000</p>
+                <p className="text-green-400 font-bold">
+                  ${Math.min(...businessTemplates.map((b) => b.initialCost)).toLocaleString()}
+                </p>
               </div>
               <div className="bg-white/5 rounded-lg p-3">
                 <p className="text-xs text-white/60 mb-1">До</p>
-                <p className="text-green-400 font-bold">$120,000</p>
+                <p className="text-green-400 font-bold">
+                  ${Math.max(...businessTemplates.map((b) => b.initialCost)).toLocaleString()}
+                </p>
               </div>
             </div>
 
@@ -277,30 +180,44 @@ export function AllBusinessesDialog({
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {BUSINESS_OPTIONS.map((business) => {
-            const canAfford = playerCash >= business.cost
-            const isSelected = selectedBusiness?.id === business.id
+          {businessTemplates.map((template) => {
+            const inflatedCost = economy
+              ? getInflatedPrice(template.initialCost, economy, 'business')
+              : template.initialCost
+
+            const upfrontCost = Math.round(
+              inflatedCost * ((template.upfrontPaymentPercentage || 20) / 100),
+            )
+            const canAfford = playerCash >= upfrontCost
+            const isSelected = selectedBusinessId === template.id
+
+            const typeLabel = getBusinessTypeLabel(template.initialCost)
+            const incomeRange = `$${Math.round(template.monthlyIncome * 0.6).toLocaleString()} - $${Math.round(template.monthlyIncome * 1.5).toLocaleString()}/кв`
+            const expenses = `$${template.monthlyExpenses.toLocaleString()}/кв`
 
             return (
               <div
-                key={business.id}
+                key={template.id}
                 className={`
                   bg-white/5 border rounded-2xl overflow-hidden transition-all cursor-pointer
                   ${isSelected ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'}
                   ${!canAfford && 'opacity-60'}
                 `}
-                onClick={() => setSelectedBusiness(business)}
+                onClick={() => setSelectedBusinessId(template.id)}
               >
                 {/* Image */}
                 <div className="relative h-48">
                   <img
-                    src={business.image}
-                    alt={business.title}
+                    src={
+                      template.imageUrl ||
+                      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop'
+                    }
+                    alt={template.name}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-3 left-3">
                     <Badge className="bg-black/70 backdrop-blur-md text-white border-white/20">
-                      {business.type}
+                      {typeLabel}
                     </Badge>
                   </div>
                   {isSelected && (
@@ -313,39 +230,44 @@ export function AllBusinessesDialog({
                 {/* Content */}
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-2xl font-bold text-white">{business.title}</h3>
+                    <h3 className="text-2xl font-bold text-white">{template.name}</h3>
                     <div
-                      className={`text-xl font-bold flex items-center gap-1 ${canAfford ? 'text-green-400' : 'text-red-400'}`}
+                      className={`text-xl font-bold flex flex-col items-end ${canAfford ? 'text-green-400' : 'text-red-400'}`}
                     >
-                      <DollarSign className="w-5 h-5" />
-                      {business.cost.toLocaleString()}
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-5 h-5" />
+                        {upfrontCost.toLocaleString()}
+                      </div>
+                      <span className="text-[10px] opacity-60 font-normal">
+                        Первоначальный взнос ({template.upfrontPaymentPercentage || 20}%)
+                      </span>
                     </div>
                   </div>
 
-                  <p className="text-white/80 text-sm mb-4 leading-relaxed">
-                    {business.description}
+                  <p className="text-white/80 text-sm mb-4 leading-relaxed line-clamp-2">
+                    {template.description}
                   </p>
 
                   {/* Stats Grid */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="bg-white/5 rounded-lg p-3">
                       <span className="text-xs text-white/60 block mb-1">Доход</span>
-                      <span className="text-green-400 font-bold text-sm">{business.income}</span>
+                      <span className="text-green-400 font-bold text-sm">{incomeRange}</span>
                     </div>
                     <div className="bg-white/5 rounded-lg p-3">
                       <span className="text-xs text-white/60 block mb-1">Расходы</span>
-                      <span className="text-rose-400 font-bold text-sm">{business.expenses}</span>
+                      <span className="text-rose-400 font-bold text-sm">{expenses}</span>
                     </div>
                     <div className="bg-white/5 rounded-lg p-3">
                       <span className="text-xs text-white/60 block mb-1">Сотрудников</span>
                       <span className="text-white font-bold text-sm flex items-center gap-1">
-                        <Users className="w-3 h-3" /> до {business.maxEmployees}
+                        <Users className="w-3 h-3" /> до {template.maxEmployees || 5}
                       </span>
                     </div>
                     <div className="bg-white/5 rounded-lg p-3">
                       <span className="text-xs text-white/60 block mb-1">Энергия</span>
                       <span className="text-amber-400 font-bold text-sm flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> -{business.energyCost}/кв
+                        <Zap className="w-3 h-3" /> -15/кв
                       </span>
                     </div>
                   </div>
@@ -357,9 +279,9 @@ export function AllBusinessesDialog({
                       Рекомендуемые сотрудники
                     </h4>
                     <div className="space-y-2">
-                      {business.requirements.map((req, idx) => (
+                      {(template.employeeRoles || []).map((req, idx) => (
                         <div key={idx} className="flex items-start gap-2">
-                          <div className="mt-0.5">{req.icon}</div>
+                          <div className="mt-0.5">{getRoleIcon(req.role, req.priority)}</div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-white/90 font-medium">{req.role}</span>
@@ -369,7 +291,9 @@ export function AllBusinessesDialog({
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-white/70 mt-0.5">{req.description}</p>
+                            <p className="text-xs text-white/70 mt-0.5 line-clamp-1">
+                              {req.description}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -380,7 +304,7 @@ export function AllBusinessesDialog({
                   <Button
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleOpenBusiness(business)
+                      handleOpenBusiness(template)
                     }}
                     disabled={!canAfford}
                     className={`
@@ -395,7 +319,7 @@ export function AllBusinessesDialog({
                     {canAfford ? (
                       <>
                         <Store className="w-5 h-5 mr-2" />
-                        Открыть за ${business.cost.toLocaleString()}
+                        Открыть за ${upfrontCost.toLocaleString()}
                       </>
                     ) : (
                       <>

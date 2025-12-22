@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import {
   Heart,
   Briefcase,
@@ -37,15 +38,25 @@ const ACTIVITIES: readonly Activity[] = [
 ]
 
 export function ActivityNavigation(): React.JSX.Element | null {
-  const { activeActivity, setActiveActivity, gameStatus, player, businessProposals } =
+  const { activeActivity, setActiveActivity, gameStatus, player, businessProposals, offers } =
     useGameStore()
 
   if (gameStatus !== 'playing') return null
 
-  // Подсчёт входящих предложений по бизнесу
-  const workNotificationsCount = businessProposals.filter(
-    (p) => p.status === 'pending' && p.initiatorId !== player?.id,
-  ).length
+  // Подсчёт входящих уведомлений для раздела "Работа"
+  const workNotificationsCount = React.useMemo(() => {
+    if (!player) return 0
+
+    const pendingProposalsCount = businessProposals.filter(
+      (p) => p.status === 'pending' && p.initiatorId !== player.id,
+    ).length
+
+    const incomingOffersCount = (offers || []).filter(
+      (o) => o.status === 'pending' && o.toPlayerId === player.id,
+    ).length
+
+    return pendingProposalsCount + incomingOffersCount
+  }, [businessProposals, offers, player])
 
   const getNotificationCount = (activityId: ActivityId): number => {
     if (activityId === 'work') {

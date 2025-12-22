@@ -3,7 +3,7 @@ import brBusinesses from '@/shared/data/world/countries/brazil/businesses.json'
 import geBusinesses from '@/shared/data/world/countries/germany/businesses.json'
 import usBusinesses from '@/shared/data/world/countries/us/businesses.json'
 
-export interface BusinessType {
+export interface BusinessTemplate {
   id: string
   name: string
   description?: string
@@ -40,8 +40,8 @@ export interface BusinessType {
   }>
 }
 
-function validateBusinessType(item: unknown): item is BusinessType {
-  const b = item as BusinessType
+function validateBusinessType(item: unknown): item is BusinessTemplate {
+  const b = item as BusinessTemplate
 
   if (!b.id || typeof b.id !== 'string') return false
   if (!b.name || typeof b.name !== 'string') return false
@@ -63,8 +63,8 @@ function validateBusinessType(item: unknown): item is BusinessType {
   return true
 }
 
-function loadBusinessTypes(data: unknown[], source: string): BusinessType[] {
-  const validated: BusinessType[] = []
+function loadBusinessTypes(data: unknown[], source: string): BusinessTemplate[] {
+  const validated: BusinessTemplate[] = []
 
   for (const item of data) {
     if (validateBusinessType(item)) {
@@ -79,14 +79,14 @@ function loadBusinessTypes(data: unknown[], source: string): BusinessType[] {
 }
 
 // Country Data Registry
-const COUNTRY_BUSINESSES: Record<string, BusinessType[]> = {
+const COUNTRY_BUSINESSES: Record<string, BusinessTemplate[]> = {
   us: loadBusinessTypes(usBusinesses, 'us/businesses.json'),
   germany: loadBusinessTypes(geBusinesses, 'germany/businesses.json'),
-  brazil: loadBusinessTypes(brBusinesses, 'brazil/businesses.json')
+  brazil: loadBusinessTypes(brBusinesses, 'brazil/businesses.json'),
 }
 
 // Get business types for specific country
-function getCountryBusinessTypes(countryId: string): BusinessType[] {
+function getCountryBusinessTypes(countryId: string): BusinessTemplate[] {
   if (!COUNTRY_BUSINESSES[countryId]) {
     console.error(`No business types data found for country: ${countryId}`)
     return []
@@ -97,16 +97,22 @@ function getCountryBusinessTypes(countryId: string): BusinessType[] {
 // Export for backward compatibility (defaults to US)
 export const ALL_BUSINESS_TYPES = COUNTRY_BUSINESSES.us || []
 
-export function getBusinessTypeById(id: string, countryId: string = 'us'): BusinessType | undefined {
+export function getBusinessTypeById(
+  id: string,
+  countryId: string = 'us',
+): BusinessTemplate | undefined {
   const businesses = getCountryBusinessTypes(countryId)
-  return businesses.find(b => b.id === id)
+  return businesses.find((b) => b.id === id)
 }
 
-export function getBusinessTypesByCategory(type: string, countryId: string = 'us'): BusinessType[] {
+export function getBusinessTypesByCategory(
+  type: string,
+  countryId: string = 'us',
+): BusinessTemplate[] {
   const businesses = getCountryBusinessTypes(countryId)
-  return businesses.filter(b => b.type === type)
+  return businesses.filter((b) => b.type === type)
 }
 
-export function getAllBusinessTypesForCountry(countryId: string): BusinessType[] {
+export function getAllBusinessTypesForCountry(countryId: string): BusinessTemplate[] {
   return getCountryBusinessTypes(countryId)
 }

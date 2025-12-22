@@ -1,11 +1,8 @@
 'use client'
 
 import { AlertDialogDescription } from '@radix-ui/react-alert-dialog'
-import {
-  LogOut,
-} from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import React from 'react'
-
 
 import { EnergyIndicator } from './energy-indicator'
 import { HappinessIndicator } from './happiness-indicator'
@@ -13,8 +10,8 @@ import { HealthIndicator } from './health-indicator'
 import { IntelligenceIndicator } from './intelligence-indicator'
 import { MoneyIndicator } from './money-indicator'
 import { NotificationsMenu } from './notifications-menu'
+import { WorkIndicator } from './work-indicator'
 import { SanityIndicator } from './sanity-indicator'
-
 
 import { getQuarter } from '@/core/lib/quarter'
 import { useGameStore } from '@/core/model/game-store'
@@ -45,12 +42,9 @@ export function TopStatusBar() {
     happiness:
       getTotalModifier(statMods.happiness, 'happiness') +
       (lifestyleResult.modifiers.happiness || 0),
-    energy:
-      getTotalModifier(statMods.energy, 'energy') + (lifestyleResult.modifiers.energy || 0),
-    health:
-      getTotalModifier(statMods.health, 'health') + (lifestyleResult.modifiers.health || 0),
-    sanity:
-      getTotalModifier(statMods.sanity, 'sanity') + (lifestyleResult.modifiers.sanity || 0),
+    energy: getTotalModifier(statMods.energy, 'energy') + (lifestyleResult.modifiers.energy || 0),
+    health: getTotalModifier(statMods.health, 'health') + (lifestyleResult.modifiers.health || 0),
+    sanity: getTotalModifier(statMods.sanity, 'sanity') + (lifestyleResult.modifiers.sanity || 0),
     intelligence:
       getTotalModifier(statMods.intelligence, 'intelligence') +
       (lifestyleResult.modifiers.intelligence || 0),
@@ -87,43 +81,59 @@ export function TopStatusBar() {
           <div className="hidden lg:flex items-center gap-3 absolute left-1/2 -translate-x-1/2 -bottom-5">
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.happiness >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-rose-500/20 text-rose-300'
+                deltas.happiness >= 0
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-rose-500/20 text-rose-300'
               }`}
             >
-              Радость {deltas.happiness > 0 ? '+' : ''}{deltas.happiness}
+              Радость {deltas.happiness > 0 ? '+' : ''}
+              {deltas.happiness}
             </span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.energy >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-rose-500/20 text-rose-300'
+                deltas.energy >= 0
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-rose-500/20 text-rose-300'
               }`}
             >
-              Энергия {deltas.energy > 0 ? '+' : ''}{deltas.energy}
+              Энергия {deltas.energy > 0 ? '+' : ''}
+              {deltas.energy}
             </span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.health >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-rose-500/20 text-rose-300'
+                deltas.health >= 0
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-rose-500/20 text-rose-300'
               }`}
             >
-              Здоровье {deltas.health > 0 ? '+' : ''}{deltas.health}
+              Здоровье {deltas.health > 0 ? '+' : ''}
+              {deltas.health}
             </span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.sanity >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-rose-500/20 text-rose-300'
+                deltas.sanity >= 0
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-rose-500/20 text-rose-300'
               }`}
             >
-              Рассудок {deltas.sanity > 0 ? '+' : ''}{deltas.sanity}
+              Рассудок {deltas.sanity > 0 ? '+' : ''}
+              {deltas.sanity}
             </span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.intelligence >= 0 ? 'bg-green-500/20 text-green-300' : 'bg-rose-500/20 text-rose-300'
+                deltas.intelligence >= 0
+                  ? 'bg-green-500/20 text-green-300'
+                  : 'bg-rose-500/20 text-rose-300'
               }`}
             >
-              Интеллект {deltas.intelligence > 0 ? '+' : ''}{deltas.intelligence}
+              Интеллект {deltas.intelligence > 0 ? '+' : ''}
+              {deltas.intelligence}
             </span>
           </div>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
+            <WorkIndicator />
             <NotificationsMenu />
 
             <div className="h-8 w-1px bg-white/10" />

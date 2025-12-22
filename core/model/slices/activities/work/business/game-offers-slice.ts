@@ -129,6 +129,54 @@ export const createGameOffersSlice: StateCreator<GameStore, [], [], GameOffersSl
     console.log('[GameOffers] Обработка JOB_OFFER_ACCEPTED:', payload)
 
     // Добавляем игрока как сотрудника в бизнес работодателя
+    // Проверяем, является ли бизнес 50/50 и нужно ли создавать предложение
+    const business = state.player.businesses.find((b) => b.id === payload.businessId)
+
+    // Если бизнес существует и требует одобрения для найма (50/50)
+    if (business && business.partners && business.partners.length > 0) {
+      const requiresApproval = (business: any, playerId: string) => {
+        // Импортируем функцию или дублируем логику, так как мы внутри слайса
+        // Здесь упрощенная логика: если есть партнеры и доля <= 50%, требуется одобрение
+        const partner = business.partners.find((p: any) => p.id === playerId)
+        const share =
+          partner?.ownershipPercentage ||
+          100 -
+            business.partners.reduce((acc: number, p: any) => acc + (p.ownershipPercentage || 0), 0)
+        return share <= 50
+      }
+
+      const needsApproval = requiresApproval(business, state.player.id)
+
+      if (needsApproval) {
+        console.log('[GameOffers] Job offer accepted in 50/50 business, creating proposal')
+        state.proposeBusinessChange(payload.businessId, 'hire_employee', {
+          employeeName: payload.employeeName,
+          employeeRole: payload.role,
+          employeeSalary: payload.salary,
+          employeeStars: 3, // Default for player
+          employeeId: payload.employeeId, // ID игрока
+          isPlayer: true, // Флаг что это игрок
+          isMe: false, // Это не мы сами вступаем, а нанимаем другого игрока
+        })
+
+        // Обновляем статус предложения локально
+        set((state) => ({
+          offers: state.offers.map((o) =>
+            o.id === payload.offerId ? { ...o, status: 'accepted' } : o,
+          ),
+        }))
+
+        // Уведомляем работодателя
+        state.pushNotification?.({
+          type: 'info',
+          title: 'Оффер принят, создано предложение',
+          message: `${payload.employeeName} принял оффер. Создано предложение о найме для партнера.`,
+        })
+        return
+      }
+    }
+
+    // Если одобрение не требуется или бизнес обычный
     state.addEmployeeToBusiness(
       payload.businessId,
       payload.employeeName,

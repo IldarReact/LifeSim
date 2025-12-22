@@ -22,6 +22,9 @@ export interface BusinessChangeProposal {
     employeeSalary?: number
     employeeStars?: number
     isPlayer?: boolean
+    skills?: import('@/core/types').EmployeeSkills
+    experience?: number
+    humanTraits?: import('@/core/types').HumanTrait[]
 
     // Для fire_employee
     fireEmployeeId?: string

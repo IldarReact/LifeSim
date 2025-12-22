@@ -174,10 +174,25 @@ export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) =
   },
 
   // Delegated to `employees-slice`
-  addEmployeeToBusiness: (businessId, employeeName, role, salary, playerId) => {
+  addEmployeeToBusiness: (businessId, employeeName, role, salary, playerId, extraData) => {
     const s = get() as any
     if (typeof s.addEmployeeToBusiness === 'function')
-      return (s.addEmployeeToBusiness as any)(businessId, employeeName, role, salary, playerId)
+      return (s.addEmployeeToBusiness as any)(
+        businessId,
+        employeeName,
+        role,
+        salary,
+        playerId,
+        extraData,
+      )
     console.warn('[business-slice] addEmployeeToBusiness delegated, but target not found')
+  },
+
+  // Delegated to `employees-slice`
+  updateEmployeeInBusiness: (businessId, employeeId, updates) => {
+    const s = get() as any
+    if (typeof s.updateEmployeeInBusiness === 'function')
+      return (s.updateEmployeeInBusiness as any)(businessId, employeeId, updates)
+    console.warn('[business-slice] updateEmployeeInBusiness delegated, but target not found')
   },
 })

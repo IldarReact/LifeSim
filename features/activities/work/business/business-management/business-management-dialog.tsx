@@ -170,6 +170,9 @@ export function BusinessManagementDialog({
           employeeStars: candidate.stars,
           isMe: isMe,
           employeeId: isMe ? player.id : undefined,
+          skills: candidate.skills,
+          experience: candidate.experience,
+          humanTraits: candidate.humanTraits as any,
         })
         setHireDialogOpen(false)
 
@@ -241,8 +244,42 @@ export function BusinessManagementDialog({
   }
 
   const handleUnassignRole = (role: EmployeeRole) => {
-    // Игрок всегда может сам покинуть роль, которую он занимает
-    onUnassignRole(business.id, role)
+    // Проверка прав для партнёрских бизнесов
+    if (business.partners.length > 0 && player) {
+      const canDirect = canMakeDirectChanges(business, player.id)
+      const needsApproval = requiresApproval(business, player.id)
+
+      if (canDirect) {
+        // > 50% - прямое действие
+        onUnassignRole(business.id, role)
+      } else if (needsApproval) {
+        // 50/50 - отправка предложения об увольнении самого себя
+        const proposeChange = useGameStore.getState().proposeBusinessChange
+        proposeChange(business.id, 'fire_employee', {
+          fireEmployeeId: `player_${player.id}`,
+          fireEmployeeName: player.name,
+          isMe: true,
+        })
+
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'info',
+          title: 'Предложение отправлено',
+          message: `Предложение о вашем уходе из роли ${ROLE_LABELS[role]} отправлено партнёру`,
+        })
+      } else {
+        // < 50% - нет прав
+        const pushNotification = useGameStore.getState().pushNotification
+        pushNotification?.({
+          type: 'error',
+          title: 'Недостаточно прав',
+          message: 'У вас недостаточно доли в бизнесе для изменения состава персонала',
+        })
+      }
+    } else {
+      // Обычный бизнес без партнёров
+      onUnassignRole(business.id, role)
+    }
   }
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

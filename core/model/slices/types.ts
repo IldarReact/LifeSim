@@ -197,6 +197,12 @@ export interface BusinessSlice {
     role: import('@/core/types').EmployeeRole,
     salary: number,
     playerId?: string,
+    extraData?: Partial<import('@/core/types').Employee>,
+  ) => void
+  updateEmployeeInBusiness: (
+    businessId: string,
+    employeeId: string,
+    updates: Partial<import('@/core/types').Employee>,
   ) => void
 }
 

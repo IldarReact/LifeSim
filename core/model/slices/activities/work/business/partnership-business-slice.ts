@@ -293,6 +293,12 @@ export const createPartnershipBusinessSlice: StateCreator<
           proposal.data.employeeRole as EmployeeRole,
           proposal.data.employeeSalary || 0,
           proposal.data.isMe ? proposal.initiatorId : undefined,
+          {
+            stars: proposal.data.employeeStars as any,
+            skills: proposal.data.skills,
+            experience: proposal.data.experience,
+            humanTraits: proposal.data.humanTraits as any,
+          },
         )
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
@@ -311,11 +317,22 @@ export const createPartnershipBusinessSlice: StateCreator<
             proposal.data.employeeRole as EmployeeRole,
             proposal.data.employeeSalary || 0,
             proposal.initiatorId,
+            {
+              stars: proposal.data.employeeStars as any,
+              skills: proposal.data.skills,
+              experience: proposal.data.experience,
+              humanTraits: proposal.data.humanTraits as any,
+            },
           )
+        } else if (proposal.data.employeeId) {
+          // Если это существующий сотрудник (не игрок), обновляем его
+          state.updateEmployeeInBusiness(proposal.businessId, proposal.data.employeeId, {
+            role: proposal.data.employeeRole as EmployeeRole,
+            salary: proposal.data.employeeSalary,
+          })
         }
 
-        // Обязательно обновляем статус предложения перед вызовом других экшенов,
-        // чтобы избежать циклов или некорректных состояний
+        // Обязательно обновляем статус предложения перед вызовом других экшенов
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>
             p.id === proposalId ? { ...p, status: 'approved' as const } : p,
@@ -326,7 +343,12 @@ export const createPartnershipBusinessSlice: StateCreator<
       case 'fire_employee':
         console.log('[approveBusinessChange] Firing employee:', proposal.data.fireEmployeeId)
         if (proposal.data.fireEmployeeId) {
-          state.fireEmployee(proposal.businessId, proposal.data.fireEmployeeId)
+          if (proposal.data.isMe) {
+            // Если это сам инициатор предложения уходит из роли
+            state.leaveBusinessJob(proposal.businessId)
+          } else {
+            state.fireEmployee(proposal.businessId, proposal.data.fireEmployeeId)
+          }
         }
         set((state) => ({
           businessProposals: state.businessProposals.map((p) =>

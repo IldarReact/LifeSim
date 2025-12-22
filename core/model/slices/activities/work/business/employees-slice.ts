@@ -180,6 +180,7 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
     role: import('@/core/types').EmployeeRole,
     salary: number,
     playerId?: string,
+    extraData?: Partial<Employee>,
   ) => {
     const state = get()
     if (!state.player) return
@@ -194,14 +195,15 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       id: employeeId,
       name: employeeName,
       role: role as any,
-      stars: 3,
-      skills: {
+      stars: extraData?.stars || 3,
+      skills: extraData?.skills || {
         efficiency: 50,
       },
       salary: salary,
       productivity: 100,
-      experience: 0,
-      humanTraits: [],
+      experience: extraData?.experience || 0,
+      humanTraits: extraData?.humanTraits || [],
+      ...extraData,
     }
 
     // Replace if exists, otherwise append
@@ -380,9 +382,32 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return
     }
 
-    const updatedBusinesses = state.player.businesses.map((b) =>
-      b.id === businessId ? { ...b, playerEmployment: undefined } : b,
-    )
+    const updatedBusinesses = state.player.businesses.map((b) => {
+      if (b.id !== businessId) return b
+
+      // Также удаляем роль из playerRoles
+      const nextPlayerRoles = { ...b.playerRoles }
+      const roleToLeave = b.playerEmployment?.role
+
+      if (roleToLeave) {
+        const isManagerial = ['manager', 'accountant', 'marketer', 'lawyer', 'hr'].includes(
+          roleToLeave as any,
+        )
+        if (isManagerial) {
+          nextPlayerRoles.managerialRoles = (nextPlayerRoles.managerialRoles || []).filter(
+            (r) => r !== roleToLeave,
+          )
+        } else {
+          nextPlayerRoles.operationalRole = null as any
+        }
+      }
+
+      return {
+        ...b,
+        playerRoles: nextPlayerRoles,
+        playerEmployment: undefined,
+      }
+    })
 
     set({
       player: {
@@ -460,6 +485,82 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
               experience: business.playerEmployment.experience || 0,
               humanTraits: [],
               effortPercent: business.playerEmployment.effortPercent || 100,
+            } as any)
+          }
+
+          broadcastEvent({
+            type: 'BUSINESS_UPDATED',
+            payload: {
+              businessId,
+              changes: {
+                employees: syncEmployees,
+              },
+            },
+            toPlayerId: partner.id,
+          })
+        }
+      })
+    }
+  },
+
+  // Update an existing employee's data
+  updateEmployeeInBusiness: (
+    businessId: string,
+    employeeId: string,
+    updates: Partial<Employee>,
+  ) => {
+    const state = get()
+    if (!state.player) return
+
+    const i = state.player.businesses.findIndex((b) => b.id === businessId)
+    if (i === -1) return
+
+    const business = state.player.businesses[i]
+    const existingIndex = business.employees.findIndex((e) => e.id === employeeId)
+
+    if (existingIndex === -1) {
+      console.warn(`[Business] Employee ${employeeId} not found in ${businessId}`)
+      return
+    }
+
+    const updatedEmployees = [...business.employees]
+    updatedEmployees[existingIndex] = {
+      ...updatedEmployees[existingIndex],
+      ...updates,
+    }
+
+    const updatedBusiness = updateBusinessMetrics({
+      ...business,
+      employees: updatedEmployees,
+    })
+
+    const updatedBusinesses = [...state.player.businesses]
+    updatedBusinesses[i] = updatedBusiness
+
+    set({
+      player: {
+        ...state.player,
+        businesses: updatedBusinesses,
+      },
+    })
+
+    // Broadcast to partners
+    if (updatedBusiness.partners && updatedBusiness.partners.length > 0) {
+      updatedBusiness.partners.forEach((partner) => {
+        if (partner.type === 'player') {
+          let syncEmployees = [...updatedBusiness.employees]
+          if (updatedBusiness.playerEmployment) {
+            syncEmployees.push({
+              id: `player_${state.player!.id}`,
+              name: state.player!.name,
+              role: updatedBusiness.playerEmployment.role,
+              stars: 3,
+              skills: { efficiency: 100 },
+              salary: updatedBusiness.playerEmployment.salary,
+              productivity: 100,
+              experience: updatedBusiness.playerEmployment.experience || 0,
+              humanTraits: [],
+              effortPercent: updatedBusiness.playerEmployment.effortPercent || 100,
             } as any)
           }
 

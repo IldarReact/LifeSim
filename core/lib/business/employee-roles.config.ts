@@ -1,5 +1,5 @@
-import type { Skill } from '@/core/types'
-import type { StatEffect } from '@/core/types/stats.types'
+import type { Skill } from '../../types/skill.types'
+import type { StatEffect } from '../../types/stats.types'
 
 /**
  * Тип роли: управленческая или операционная

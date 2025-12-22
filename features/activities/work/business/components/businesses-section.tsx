@@ -9,6 +9,7 @@ import { BusinessDetailDialog } from '../business-management/business-detail-dia
 
 import { useEconomy } from '@/core/hooks'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { createBusinessObject } from '@/core/lib/business'
 import { getAllBusinessTypesForCountry } from '@/core/lib/data-loaders/businesses-loader'
 import { isMultiplayerActive } from '@/core/lib/multiplayer'
 import { useGameStore } from '@/core/model/store'
@@ -17,22 +18,7 @@ import { Button } from '@/shared/ui/button'
 
 interface BusinessesSectionProps {
   playerCash: number
-  onOpenBusiness: (
-    name: string,
-    type: import('@/core/types/business.types').BusinessType,
-    description: string,
-    totalCost: number,
-    upfrontCost: number,
-    creationCost: StatEffect,
-    openingQuarters: number,
-    monthlyIncome: number,
-    monthlyExpenses: number,
-    maxEmployees: number,
-    minWorkers: number,
-    taxRate: number,
-    requiredRoles: import('@/core/types').EmployeeRole[],
-    inventory?: import('@/core/types').BusinessInventory,
-  ) => void
+  onOpenBusiness: (business: import('@/core/types').Business, upfrontCost: number) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
 }
@@ -107,54 +93,44 @@ export function BusinessesSection({
   ) => {
     try {
       const template = businesses.find((b) => b.name === name)
-      if (!template) {
-        onError('Шаблон бизнеса не найден')
-        return
+      const inflatedCost = economy
+        ? getInflatedPrice(template?.initialCost || cost, economy, 'business')
+        : cost
+
+      const creationCost: StatEffect = {
+        energy: -energyCost,
+        money: 0,
+        sanity: -stressImpact,
       }
 
-      const inflatedCost = economy
-        ? getInflatedPrice(template.initialCost, economy, 'business')
-        : template.initialCost
-
-      const { business, cost: upfrontCost } = createBusinessPurchase(
-        {
-          ...template,
-          id: template.id,
-          name: name,
-          description: description,
-          initialCost: template.initialCost,
-          monthlyIncome: monthlyIncome,
-          monthlyExpenses: monthlyExpenses,
-          maxEmployees: maxEmployees,
-          minEmployees: minEmployees,
-          requiredRoles: requiredRoles,
-          inventory: inventory,
-        },
-        inflatedCost,
-        currentTurn,
-      )
+      // Используем 20% как дефолт, если в шаблоне не указано
+      const upfrontPercentage = template?.upfrontPaymentPercentage ?? 20
+      const upfrontCost = Math.round(inflatedCost * (upfrontPercentage / 100))
 
       if (playerCash < upfrontCost) {
         onError(`Недостаточно средств. Необходимо $${upfrontCost.toLocaleString()}`)
         return
       }
 
-      onOpenBusiness(
-        business.name,
-        business.type,
-        business.description,
-        business.initialCost,
+      const business = createBusinessObject({
+        name,
+        type: type as any,
+        description,
+        totalCost: inflatedCost,
         upfrontCost,
-        business.creationCost,
-        business.openingProgress.totalQuarters,
+        creationCost,
+        openingQuarters: 4,
         monthlyIncome,
         monthlyExpenses,
-        business.maxEmployees,
-        business.minEmployees,
-        business.taxRate,
-        business.requiredRoles,
-        business.inventory,
-      )
+        maxEmployees,
+        minEmployees,
+        taxRate: 0.15,
+        requiredRoles,
+        inventory,
+        currentTurn,
+      })
+
+      onOpenBusiness(business, upfrontCost)
       onSuccess(`Вы успешно начали процесс открытия бизнеса "${name}"`)
     } catch (error) {
       console.error('Failed to open business:', error)

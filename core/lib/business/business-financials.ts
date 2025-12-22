@@ -3,17 +3,17 @@ import {
   getQuarterlyInflatedSalary,
   getInflatedSalary,
 } from '../calculations/price-helpers'
-import { getRoleConfig } from './employee-roles.config'
+import { calculateTotalBusinessImpact } from './business-impacts'
 import { checkMinimumStaffing } from './player-roles'
 
 import { calculateEmployeeKPI } from './employee-calculations'
-import { getPlayerRoleBusinessImpact, calculatePlayerRoleEffects } from './player-roles'
+import { calculatePlayerRoleEffects } from './player-roles'
 import { calculateEfficiency, calculateReputation } from './business-metrics'
 
-import type { Skill } from '@/core/types'
-import type { Business, BusinessInventory } from '@/core/types/business.types'
-import type { CountryEconomy } from '@/core/types/economy.types'
-import type { StatEffect } from '@/core/types/stats.types'
+import type { Skill } from '../../types/skill.types'
+import type { Business, BusinessInventory } from '../../types/business.types'
+import type { CountryEconomy } from '../../types/economy.types'
+import type { StatEffect } from '../../types/stats.types'
 
 /**
  * Рассчитывает детальные финансовые показатели бизнеса за квартал
@@ -62,9 +62,9 @@ export function calculateBusinessFinancials(
   }
 
   // 1. Base Expenses (OpEx)
-  let employeesCost = business.employees.reduce((sum, emp) => {
+  let employeesCost = (business.employees || []).reduce((sum, emp) => {
     // We assume emp.salary is monthly. Convert to quarterly with inflation.
-    const monthlySalary = emp.salary
+    const monthlySalary = typeof emp.salary === 'number' && !isNaN(emp.salary) ? emp.salary : 0
     const indexedMonthlySalary = economy
       ? getInflatedSalary(monthlySalary, economy, emp.experience)
       : monthlySalary
@@ -88,39 +88,11 @@ export function calculateBusinessFinancials(
     employeesCost += indexedMonthlySalary * effortFactor * 3
   }
 
-  // Employee role buffs
-  let employeeSalesBonusPct = 0
-  let employeeTaxReductionPct = 0
-  let employeeExpenseReductionPct = 0
-
-  business.employees.forEach((emp) => {
-    const cfg = getRoleConfig(emp.role)
-    const impact = cfg?.staffImpact ? cfg.staffImpact(emp.stars) : undefined
-    if (!impact) return
-
-    const effortFactor = (emp.effortPercent ?? 100) / 100
-
-    if (impact.salesBonus) employeeSalesBonusPct += impact.salesBonus * effortFactor
-    if (impact.taxReduction) employeeTaxReductionPct += impact.taxReduction * effortFactor
-    if (impact.expenseReduction)
-      employeeExpenseReductionPct += impact.expenseReduction * effortFactor
-  })
+  // Calculate consolidated impacts
+  const impacts = calculateTotalBusinessImpact(business, playerSkills)
 
   // Player Skill reduction
-  let playerExpenseReductionPct = 0
-  let playerSalesBonusPct = 0
-  let playerTaxReductionPct = 0
-
-  const playerImpact =
-    playerSkills && playerSkills.length > 0
-      ? getPlayerRoleBusinessImpact(business, playerSkills)
-      : null
-
-  if (playerImpact) {
-    playerExpenseReductionPct = playerImpact.expenseReduction
-    playerSalesBonusPct = playerImpact.salesBonus
-    playerTaxReductionPct = playerImpact.taxReduction
-  }
+  // (Now included in impacts.expenseReductionPct, etc.)
 
   // Calculate current efficiency and reputation for financial logic
   // If preview, we calculate them on the fly to reflect changes in staff/roles
@@ -147,12 +119,8 @@ export function calculateBusinessFinancials(
   let opEx = employeesCost + rent + utilities + insurance
 
   // Apply expense reduction (Lawyers etc.)
-  const totalExpenseReductionPct = Math.min(
-    50,
-    employeeExpenseReductionPct + playerExpenseReductionPct,
-  )
-  if (totalExpenseReductionPct > 0) {
-    opEx *= 1 - totalExpenseReductionPct / 100
+  if (impacts.expenseReductionPct > 0) {
+    opEx *= 1 - impacts.expenseReductionPct / 100
   }
 
   // 2. Sales & COGS
@@ -167,18 +135,20 @@ export function calculateBusinessFinancials(
   if (business.isServiceBased) {
     // === SERVICE BUSINESS ===
     // Price is abstract (1-10 scale usually)
-    const priceLevel = business.price || 5
-    const baseServiceDemand = business.maxEmployees * 10
+    const priceLevel =
+      typeof business.price === 'number' && !isNaN(business.price) ? business.price : 5
+    const baseServiceDemand = (business.maxEmployees || 1) * 10
 
     // Demand Modifiers
-    const efficiencyMod = currentEfficiency / 100
-    const reputationMod = currentReputation / 100
+    const efficiencyMod = (currentEfficiency || 0) / 100
+    const reputationMod = (currentReputation || 0) / 100
     const priceMod = 1 / Math.max(0.1, priceLevel / 5) // Normalized around 5
 
     // Cycle Effect
-    let cycleMod = globalMarketValue
+    let cycleMod =
+      typeof globalMarketValue === 'number' && !isNaN(globalMarketValue) ? globalMarketValue : 1.0
     // In recession (value < 1.0), high prices hurt more
-    if (globalMarketValue < 0.9 && priceLevel > 6) {
+    if (cycleMod < 0.9 && priceLevel > 6) {
       cycleMod *= 0.6 // High price services suffer in crisis
     }
 
@@ -186,39 +156,47 @@ export function calculateBusinessFinancials(
     let serviceDemand = staffing.isValid
       ? baseServiceDemand * efficiencyMod * reputationMod * priceMod * cycleMod
       : 0
-    if (employeeSalesBonusPct > 0) {
-      serviceDemand *= 1 + employeeSalesBonusPct / 100
-    }
 
-    if (playerImpact) {
-      serviceDemand *= 1 + playerImpact.salesBonus / 100
+    if (isNaN(serviceDemand)) serviceDemand = 0
+
+    if (impacts.salesBonusPct > 0) {
+      serviceDemand *= 1 + impacts.salesBonusPct / 100
     }
 
     const pricePerService = 1000 * priceLevel // Base revenue per service
     salesIncome = Math.floor(serviceDemand * pricePerService)
+    if (isNaN(salesIncome)) salesIncome = 0
     // Service business has no COGS in this model, only OpEx
   } else if (inventory) {
     // === PRODUCT BUSINESS ===
-    const sellingPrice = inventory.pricePerUnit
-    const unitCost = inventory.purchaseCost
-    const margin = sellingPrice - unitCost
-    const marginPercent = margin / sellingPrice
+    const sellingPrice =
+      typeof inventory.pricePerUnit === 'number' && !isNaN(inventory.pricePerUnit)
+        ? inventory.pricePerUnit
+        : 100
+    const unitCost =
+      typeof inventory.purchaseCost === 'number' && !isNaN(inventory.purchaseCost)
+        ? inventory.purchaseCost
+        : 50
 
-    let workersCount = business.employees.filter((e) => e.role === 'worker').length
+    const margin = sellingPrice - unitCost
+    const marginPercent = sellingPrice > 0 ? margin / sellingPrice : 0
+
+    let workersCount = (business.employees || []).filter((e) => e.role === 'worker').length
     // Игрок тоже может быть работником
-    if (business.playerRoles.operationalRole === 'worker') {
+    if (business.playerRoles?.operationalRole === 'worker') {
       workersCount += 1
     }
     const baseDemand = workersCount * 50
-    const efficiencyMod = currentEfficiency / 100
-    const reputationMod = currentReputation / 100
+    const efficiencyMod = (currentEfficiency || 0) / 100
+    const reputationMod = (currentReputation || 0) / 100
 
     // Demand Elasticity & Cycle
-    let marketMod = globalMarketValue
+    let marketMod =
+      typeof globalMarketValue === 'number' && !isNaN(globalMarketValue) ? globalMarketValue : 1.0
 
     // Crisis Logic:
     // If Recession (market < 0.9)
-    if (globalMarketValue < 0.9) {
+    if (marketMod < 0.9) {
       if (marginPercent < 0.3) {
         // Low margin / Cheap goods -> Demand is resilient or even grows
         marketMod = Math.max(marketMod, 1.0)
@@ -230,12 +208,15 @@ export function calculateBusinessFinancials(
 
     // Price Elasticity (General)
     // Stronger non-linear elasticity so higher price reduces demand enough to lower revenue
-    const baseElasticity = Math.max(0.1, 1 - (marginPercent - 0.3)) // 30% margin is neutral
+    const validMarginPercent = isNaN(marginPercent) ? 0.3 : marginPercent
+    const baseElasticity = Math.max(0.1, 1 - (validMarginPercent - 0.3)) // 30% margin is neutral
     const priceElasticity = Math.max(0.1, baseElasticity * baseElasticity)
 
     let finalDemand = baseDemand * efficiencyMod * reputationMod * marketMod * priceElasticity
-    if (employeeSalesBonusPct > 0) {
-      finalDemand *= 1 + employeeSalesBonusPct / 100
+    if (isNaN(finalDemand)) finalDemand = 0
+
+    if (impacts.salesBonusPct > 0) {
+      finalDemand *= 1 + impacts.salesBonusPct / 100
     }
 
     if (!isPreview) {
@@ -243,13 +224,14 @@ export function calculateBusinessFinancials(
       finalDemand *= demandFluctuation
     }
 
-    if (playerImpact) {
-      finalDemand *= 1 + playerImpact.salesBonus / 100
-    }
-
     const staffing2 = checkMinimumStaffing(business)
     const computedDemand = staffing2.isValid ? finalDemand : 0
-    salesVolume = Math.min(Math.floor(computedDemand), inventory.currentStock)
+    const currentStock =
+      typeof inventory.currentStock === 'number' && !isNaN(inventory.currentStock)
+        ? inventory.currentStock
+        : 0
+
+    salesVolume = Math.min(Math.floor(isNaN(computedDemand) ? 0 : computedDemand), currentStock)
     salesIncome = salesVolume * sellingPrice
     cogs = salesVolume * unitCost
 
@@ -261,8 +243,8 @@ export function calculateBusinessFinancials(
         typeof business.quantity === 'number' &&
         Number.isFinite(business.quantity) &&
         business.quantity >= 0
-      const targetStock = hasPlan ? business.quantity : inventory.maxStock
-      purchaseAmount = Math.max(0, targetStock - (inventory.currentStock - salesVolume))
+      const targetStock = hasPlan ? business.quantity : inventory.maxStock || 1000
+      purchaseAmount = Math.max(0, targetStock - (currentStock - salesVolume))
     }
     purchaseCost = purchaseAmount * unitCost
   }
@@ -283,11 +265,8 @@ export function calculateBusinessFinancials(
   let taxAmount = 0
   if (grossProfit > 0) {
     let taxRate = business.taxRate || 0.15
-    if (employeeTaxReductionPct > 0) {
-      taxRate *= 1 - Math.min(0.5, employeeTaxReductionPct / 100)
-    }
-    if (playerImpact && playerImpact.taxReduction > 0) {
-      taxRate *= 1 - Math.min(0.5, playerImpact.taxReduction / 100)
+    if (impacts.taxReductionPct > 0) {
+      taxRate *= 1 - impacts.taxReductionPct / 100
     }
     taxAmount = Math.round(grossProfit * taxRate)
   }
@@ -318,7 +297,16 @@ export function calculateBusinessFinancials(
         ...inventory,
         currentStock: Math.max(
           0,
-          Math.min(inventory.maxStock, inventory.currentStock - salesVolume + purchaseAmount),
+          Math.min(
+            typeof inventory.maxStock === 'number' && !isNaN(inventory.maxStock)
+              ? inventory.maxStock
+              : 1000,
+            (typeof inventory.currentStock === 'number' && !isNaN(inventory.currentStock)
+              ? inventory.currentStock
+              : 0) -
+              (isNaN(salesVolume) ? 0 : salesVolume) +
+              (isNaN(purchaseAmount) ? 0 : purchaseAmount),
+          ),
         ),
       }
     : {
@@ -330,20 +318,28 @@ export function calculateBusinessFinancials(
       }
 
   return {
-    income: Math.round(salesIncome),
-    expenses: Math.round(purchaseCost + opEx + taxAmount), // Cash accounting: Use purchaseCost instead of COGS
-    profit: Math.round(cashFlow),
-    netProfit: Math.round(netProfit),
-    cashFlow: Math.round(cashFlow),
+    income: Math.round(isNaN(salesIncome) ? 0 : salesIncome),
+    expenses: Math.round(
+      (isNaN(purchaseCost) ? 0 : purchaseCost) +
+        (isNaN(opEx) ? 0 : opEx) +
+        (isNaN(taxAmount) ? 0 : taxAmount),
+    ), // Cash accounting: Use purchaseCost instead of COGS
+    profit: Math.round(isNaN(cashFlow) ? 0 : cashFlow),
+    netProfit: Math.round(isNaN(netProfit) ? 0 : netProfit),
+    cashFlow: Math.round(isNaN(cashFlow) ? 0 : cashFlow),
     newInventory,
     playerStatEffects: calculatePlayerRoleEffects(business),
     debug: {
-      salesVolume,
-      priceUsed: inventory ? inventory.pricePerUnit : 0,
-      taxAmount,
-      opEx: Math.round(opEx),
-      cogs: Math.round(cogs),
-      grossProfit: Math.round(grossProfit),
+      salesVolume: isNaN(salesVolume) ? 0 : salesVolume,
+      priceUsed: inventory
+        ? typeof inventory.pricePerUnit === 'number' && !isNaN(inventory.pricePerUnit)
+          ? inventory.pricePerUnit
+          : 100
+        : 0,
+      taxAmount: isNaN(taxAmount) ? 0 : taxAmount,
+      opEx: Math.round(isNaN(opEx) ? 0 : opEx),
+      cogs: Math.round(isNaN(cogs) ? 0 : cogs),
+      grossProfit: Math.round(isNaN(grossProfit) ? 0 : grossProfit),
     },
   }
 }

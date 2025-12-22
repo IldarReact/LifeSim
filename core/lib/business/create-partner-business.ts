@@ -41,6 +41,7 @@ export function createPartnerBusiness(
   const { business } = createBusinessPurchase(
     {
       id: businessId,
+      type: offer.details.businessType,
       name: offer.details.businessName,
       description: offer.details.businessDescription,
       initialCost: offer.details.totalCost, // Use totalCost as initialCost for the purchase logic
@@ -58,6 +59,7 @@ export function createPartnerBusiness(
       partnerName: offer.fromPlayerName,
       playerShare: offer.details.yourShare,
       partnerBusinessId,
+      initialState: 'active', // Partner businesses in this flow are usually active immediately
     },
   )
 

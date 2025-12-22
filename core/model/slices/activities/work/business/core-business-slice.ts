@@ -16,22 +16,7 @@ import type { Business, BusinessType, EmployeeRole } from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
 
 export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
-  openBusiness: (
-    name: string,
-    type: BusinessType,
-    description: string,
-    totalCost: number,
-    upfrontCost: number,
-    creationCost: StatEffect,
-    openingQuarters: number,
-    monthlyIncome: number,
-    monthlyExpenses: number,
-    maxEmployees: number,
-    minEmployees: number,
-    taxRate: number,
-    requiredRoles: EmployeeRole[],
-    inventory?: import('@/core/types').BusinessInventory,
-  ) => {
+  openBusiness: (business: Business, upfrontCost: number) => {
     const state = get()
     if (!state.player) return
 
@@ -39,7 +24,7 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
       state.player.stats.money,
       upfrontCost,
       state.player.personal.stats.energy,
-      creationCost,
+      business.creationCost,
     )
 
     if (!validation.isValid) {
@@ -47,47 +32,29 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
       return
     }
 
-    const newBusiness = createBusinessObject({
-      name,
-      type,
-      description,
-      totalCost,
-      upfrontCost,
-      creationCost,
-      openingQuarters,
-      monthlyIncome,
-      monthlyExpenses,
-      maxEmployees,
-      minEmployees,
-      taxRate,
-      requiredRoles,
-      inventory,
-      currentTurn: state.turn,
-    })
-
     const updatedStats = applyStats(state.player.stats, { money: -upfrontCost })
-    const updatedStatEffect = applyStats({ ...state.player.personal.stats, money: 0 }, creationCost)
+    const updatedStatEffect = applyStats(
+      { ...state.player.personal.stats, money: 0 },
+      business.creationCost,
+    )
 
     let finalBusinesses = [...state.player.businesses]
-    let finalNewBusiness = newBusiness
+    let finalNewBusiness = business
 
-    if (shouldCreateNetwork(state.player.businesses, type as BusinessType)) {
+    if (shouldCreateNetwork(state.player.businesses, business.type as BusinessType)) {
       const existingBusiness = state.player.businesses.find(
-        (b) => b.type === type && b.state !== 'frozen',
+        (b) => b.type === business.type && b.state !== 'frozen',
       )
 
       if (existingBusiness) {
-        const { main, branch, networkId } = createNetworkForBusinesses(
-          existingBusiness,
-          newBusiness,
-        )
+        const { main, branch, networkId } = createNetworkForBusinesses(existingBusiness, business)
         finalBusinesses = finalBusinesses.map((b) => (b.id === existingBusiness.id ? main : b))
         finalNewBusiness = branch
-        console.log(`[Business Network] Created network ${networkId} for type "${type}"`)
+        console.log(`[Business Network] Created network ${networkId} for type "${business.type}"`)
       }
     } else {
       const existingNetwork = state.player.businesses.find(
-        (b) => b.type === type && b.networkId && b.state !== 'frozen',
+        (b) => b.type === business.type && b.networkId && b.state !== 'frozen',
       )
 
       if (existingNetwork && existingNetwork.networkId) {
@@ -97,7 +64,7 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
 
         if (mainBranch) {
           finalNewBusiness = addBranchToNetwork(
-            newBusiness,
+            business,
             existingNetwork.networkId,
             mainBranch.price,
           )
@@ -300,34 +267,30 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
     const branchCount = updatedBusinesses.filter((b) => b.networkId === networkId).length
     const branchName = `${sourceBusiness.name.split(' (')[0]} (Branch ${branchCount})`
 
-    const newBranch: Business = {
-      ...sourceBusiness,
-      id: `business_${Date.now()}`,
+    const newBranch = createBusinessObject({
       name: branchName,
-      state: 'opening',
+      type: sourceBusiness.type,
+      description: sourceBusiness.description,
+      totalCost: branchCost,
+      upfrontCost: branchCost,
+      creationCost: { energy: -15 }, // Standard branch energy cost
+      openingQuarters: Math.max(1, Math.round(sourceBusiness.openingProgress.totalQuarters * 0.7)),
+      monthlyIncome: sourceBusiness.monthlyIncome,
+      monthlyExpenses: sourceBusiness.monthlyExpenses,
+      maxEmployees: sourceBusiness.maxEmployees,
+      minEmployees: sourceBusiness.minEmployees,
+      taxRate: sourceBusiness.taxRate,
+      requiredRoles: sourceBusiness.requiredRoles,
+      inventory: sourceBusiness.inventory,
+      currentTurn: state.turn,
+    })
+
+    // Apply network specific properties
+    const finalBranch = {
+      ...newBranch,
       networkId,
       isMainBranch: false,
-      price: sourceBusiness.price,
-      employees: [],
-      inventory: {
-        ...sourceBusiness.inventory,
-        currentStock: 0,
-      },
-      openingProgress: {
-        ...sourceBusiness.openingProgress,
-        quartersLeft: Math.max(1, Math.round(sourceBusiness.openingProgress.totalQuarters * 0.7)),
-        investedAmount: branchCost,
-        totalCost: branchCost,
-        upfrontCost: branchCost,
-      },
-      reputation: 50,
-      efficiency: 50,
-      eventsHistory: [],
-      foundedTurn: state.turn,
-      playerRoles: {
-        managerialRoles: [],
-        operationalRole: null,
-      },
+      price: sourceBusiness.price, // Branches share price with network
     }
 
     const updatedStats = applyStats(state.player.stats, { money: -branchCost })
@@ -341,7 +304,7 @@ export const createCoreBusinessSlice: GameStateCreator<Record<string, unknown>> 
           ...state.player.personal,
           stats: updatedPersonalStats,
         },
-        businesses: [...updatedBusinesses, newBranch],
+        businesses: [...updatedBusinesses, finalBranch],
       },
     })
 

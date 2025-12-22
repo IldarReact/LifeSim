@@ -7,13 +7,58 @@ import {
   getRandomLastName,
   getRandomHumanTraits,
 } from '@/core/lib/data-loaders/static-data-loader'
-import type {
+import {
   EmployeeCandidate,
   EmployeeRole,
   EmployeeStars,
   EmployeeSkills,
+  Employee,
 } from '@/core/types/business.types'
 import type { CountryEconomy } from '@/core/types/economy.types'
+
+/**
+ * Создает объект сотрудника с заданными параметрами
+ */
+export function createEmployeeObject(params: {
+  id?: string
+  name: string
+  role: EmployeeRole
+  stars?: EmployeeStars
+  skills?: EmployeeSkills
+  salary: number
+  experience?: number
+  humanTraits?: string[]
+  productivity?: number
+  effortPercent?: number
+}): Employee {
+  return {
+    id: params.id || `employee_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    name: params.name,
+    role: params.role,
+    stars: params.stars || 3,
+    skills: params.skills || { efficiency: 50 },
+    salary: params.salary,
+    productivity: params.productivity ?? 75,
+    experience: params.experience || 0,
+    humanTraits: params.humanTraits || [],
+    effortPercent: params.effortPercent || 100,
+  }
+}
+
+/**
+ * Создает объект сотрудника на основе кандидата
+ */
+export function createEmployeeFromCandidate(candidate: EmployeeCandidate): Employee {
+  return createEmployeeObject({
+    name: candidate.name,
+    role: candidate.role,
+    stars: candidate.stars,
+    skills: candidate.skills,
+    salary: candidate.requestedSalary,
+    experience: candidate.experience,
+    humanTraits: candidate.humanTraits,
+  })
+}
 
 /**
  * Генерирует случайные навыки для сотрудника на основе роли и звезд

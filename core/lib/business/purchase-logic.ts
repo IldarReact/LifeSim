@@ -9,6 +9,7 @@ import type { StatEffect } from '@/core/types/stats.types'
 export interface BusinessTemplate {
   id: string
   name: string
+  type?: BusinessType
   description: string
   initialCost: number
   monthlyIncome: number
@@ -24,6 +25,7 @@ export interface PartnerConfig {
   partnerId: string
   partnerName: string
   playerShare: number // 0-100
+  initialState?: 'active' | 'opening' // Force state
 }
 
 export interface PurchaseResult {
@@ -47,6 +49,12 @@ export function createBusinessPurchase(
   let playerInvestment: number
   let business: Business & { partnerBusinessId?: string }
 
+  const businessType =
+    template.type ||
+    ((template.id.startsWith('bus_')
+      ? template.id.replace('bus_', '')
+      : template.id) as BusinessType)
+
   if (partnerConfig) {
     // Partner purchase: player pays their share of the total cost
     playerInvestment = Math.round((totalCost * partnerConfig.playerShare) / 100)
@@ -54,14 +62,12 @@ export function createBusinessPurchase(
     // Create business with partner info
     business = createBusinessObject({
       name: template.name,
-      type: (template.id.startsWith('bus_')
-        ? template.id.replace('bus_', '')
-        : template.id) as BusinessType,
+      type: businessType,
       description: template.description,
       totalCost: totalCost,
       upfrontCost: totalCost * (upfrontPercentage / 100), // Internal tracking of upfront cost
       creationCost: { energy: -20 }, // Standard energy cost for starting with partner
-      openingQuarters: 1,
+      openingQuarters: partnerConfig.initialState === 'active' ? 0 : 1,
       monthlyIncome: template.monthlyIncome,
       monthlyExpenses: template.monthlyExpenses,
       maxEmployees: template.maxEmployees,
@@ -70,6 +76,11 @@ export function createBusinessPurchase(
       inventory: template.inventory,
       currentTurn,
     })
+
+    // Special initialization for partner businesses (from existing logic)
+    business.playerRoles.managerialRoles = ['manager']
+    business.hasInsurance = true
+    business.insuranceCost = Math.round(totalCost * 0.01) // 1% of total cost
 
     // Add partner specific data
     business.partners = [
@@ -101,9 +112,7 @@ export function createBusinessPurchase(
 
     business = createBusinessObject({
       name: template.name,
-      type: (template.id.startsWith('bus_')
-        ? template.id.replace('bus_', '')
-        : template.id) as BusinessType,
+      type: businessType,
       description: template.description,
       totalCost: totalCost,
       upfrontCost: playerInvestment,

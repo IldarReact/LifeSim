@@ -157,6 +157,7 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
  * @param networkId - Network ID this branch belongs to
  * @param branchNumber - Branch number for naming
  * @param currentTurn - Current game turn
+ * @param cost - The cost to open this branch
  * @returns New branch business
  */
 export function createBusinessBranch(
@@ -164,6 +165,7 @@ export function createBusinessBranch(
   networkId: string,
   branchNumber: number,
   currentTurn: number,
+  cost: number,
 ): Business {
   const branchName = `${mainBusiness.name.split(' (')[0]} (Филиал ${branchNumber})`
 
@@ -171,17 +173,37 @@ export function createBusinessBranch(
     ...mainBusiness,
     id: `business_${Date.now()}`,
     name: branchName,
+    state: 'opening',
     networkId,
     isMainBranch: false,
-    state: 'active',
     employees: [],
-    openingProgress: {
-      totalQuarters: 0,
-      quartersLeft: 0,
-      investedAmount: 0,
-      totalCost: 0,
-      upfrontCost: 0,
+    inventory: {
+      ...mainBusiness.inventory,
+      currentStock: 0,
     },
+    openingProgress: {
+      totalQuarters: Math.max(
+        1,
+        Math.round((mainBusiness.openingProgress?.totalQuarters || 1) * 0.7),
+      ),
+      quartersLeft: Math.max(
+        1,
+        Math.round((mainBusiness.openingProgress?.totalQuarters || 1) * 0.7),
+      ),
+      investedAmount: cost,
+      totalCost: cost,
+      upfrontCost: cost,
+    },
+    reputation: 50,
+    efficiency: 50,
+    eventsHistory: [],
     foundedTurn: currentTurn,
+    playerRoles: {
+      managerialRoles: [],
+      operationalRole: null,
+    },
+    walletBalance: 0,
+    monthlyIncome: 0,
+    monthlyExpenses: 0,
   }
 }

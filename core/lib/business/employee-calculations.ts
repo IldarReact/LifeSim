@@ -1,4 +1,4 @@
-import type { Employee } from "@/core/types/business.types";
+import type { Employee } from "../../types/business.types";
 
 /**
  * Рассчитывает KPI бонус/штраф для сотрудника

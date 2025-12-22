@@ -1,36 +1,9 @@
 import type { GameStateCreator, BusinessSlice } from '../../../types'
 
 export const createBusinessSlice: GameStateCreator<BusinessSlice> = (set, get) => ({
-  openBusiness: (
-    name,
-    type,
-    description,
-    totalCost,
-    upfrontCost,
-    creationCost,
-    openingQuarters,
-    monthlyIncome,
-    monthlyExpenses,
-    maxEmployees,
-    minEmployees,
-    taxRate,
-  ) => {
+  openBusiness: (business, upfrontCost) => {
     const s = get() as any
-    if (typeof s.openBusiness === 'function')
-      return (s.openBusiness as any)(
-        name,
-        type,
-        description,
-        totalCost,
-        upfrontCost,
-        creationCost,
-        openingQuarters,
-        monthlyIncome,
-        monthlyExpenses,
-        maxEmployees,
-        minEmployees,
-        taxRate,
-      )
+    if (typeof s.openBusiness === 'function') return (s.openBusiness as any)(business, upfrontCost)
     console.warn('[business-slice] openBusiness delegated, but target not found')
   },
 

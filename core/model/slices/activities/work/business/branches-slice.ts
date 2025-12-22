@@ -1,6 +1,7 @@
 import type { GameStateCreator } from '../../../types'
 
 import { applyStats } from '@/core/helpers/apply-stats'
+import { createBusinessBranch } from '@/core/lib/business'
 import type { Business } from '@/core/types'
 
 export const createBranchesSlice: GameStateCreator<{
@@ -36,42 +37,14 @@ export const createBranchesSlice: GameStateCreator<{
 
     // Считаем количество филиалов в этой сети для названия
     const branchCount = updatedBusinesses.filter((b) => b.networkId === networkId).length
-    const branchName = `${sourceBusiness.name.split(' (')[0]} (Филиал ${branchCount})`
 
-    const newBranch: Business = {
-      ...sourceBusiness,
-      id: `business_${Date.now()}`,
-      name: branchName,
-      state: 'opening',
-
+    const newBranch = createBusinessBranch(
+      sourceBusiness,
       networkId,
-      isMainBranch: false,
-      price: sourceBusiness.price,
-
-      employees: [],
-      inventory: {
-        ...sourceBusiness.inventory,
-        currentStock: 0,
-      },
-
-      openingProgress: {
-        ...sourceBusiness.openingProgress,
-        quartersLeft: Math.max(1, Math.round(sourceBusiness.openingProgress.totalQuarters * 0.7)),
-        investedAmount: branchCost,
-        totalCost: branchCost,
-        upfrontCost: branchCost,
-      },
-
-      reputation: 50,
-      efficiency: 50,
-      eventsHistory: [],
-      foundedTurn: state.turn,
-
-      playerRoles: {
-        managerialRoles: [],
-        operationalRole: null,
-      },
-    }
+      branchCount,
+      state.turn,
+      branchCost,
+    )
 
     const updatedStats = applyStats(state.player.stats, {
       money: -branchCost,
@@ -85,6 +58,6 @@ export const createBranchesSlice: GameStateCreator<{
       },
     })
 
-    console.log(`[Business] Открыт филиал: ${branchName} в сети ${networkId}`)
+    console.log(`[Business] Открыт филиал: ${newBranch.name} в сети ${networkId}`)
   },
 })

@@ -1,14 +1,27 @@
-"use client"
+'use client'
 
 import {
-  Store, Users, TrendingUp, DollarSign, Zap,
-  CheckCircle, AlertCircle, Info, Star, Award, Activity
-} from "lucide-react"
-import React from "react"
+  Store,
+  Users,
+  TrendingUp,
+  DollarSign,
+  Zap,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Star,
+  Award,
+  Activity,
+} from 'lucide-react'
+import React from 'react'
 
-import { Badge } from "@/shared/ui/badge"
-import { Button } from "@/shared/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/ui/dialog"
+import { useEconomy } from '@/core/hooks'
+import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
+import { useGameStore } from '@/core/model/store'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
 
 interface BusinessOption {
   id: string
@@ -35,17 +48,7 @@ interface BusinessOption {
 
 interface AllBusinessesDialogProps {
   playerCash: number
-  onOpenBusiness: (
-    name: string,
-    type: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing',
-    description: string,
-    initialCost: number,
-    monthlyIncome: number,
-    monthlyExpenses: number,
-    maxEmployees: number,
-    energyCostPerTurn: number,
-    stressImpact: number
-  ) => void
+  onOpenBusiness: (business: import('@/core/types').Business, upfrontCost: number) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
 }
@@ -55,7 +58,8 @@ const BUSINESS_OPTIONS: BusinessOption[] = [
     id: 'gadget_store',
     title: 'Магазин гаджетов',
     type: 'Малый бизнес',
-    description: 'Розничная точка продажи смартфонов и аксессуаров в торговом центре. Требует закупки товара и найма продавцов.',
+    description:
+      'Розничная точка продажи смартфонов и аксессуаров в торговом центре. Требует закупки товара и найма продавцов.',
     cost: 50000,
     income: '$3,000 - $8,000/мес',
     expenses: '$2,500/мес',
@@ -68,30 +72,34 @@ const BUSINESS_OPTIONS: BusinessOption[] = [
     businessType: 'retail',
     requirements: [
       {
-        role: "Продавец",
+        role: 'Продавец',
         priority: 'required',
-        description: "Необходим для обслуживания клиентов и продаж. Напрямую влияет на доход магазина.",
-        icon: <TrendingUp className="w-5 h-5 text-red-400" />
+        description:
+          'Необходим для обслуживания клиентов и продаж. Напрямую влияет на доход магазина.',
+        icon: <TrendingUp className="w-5 h-5 text-red-400" />,
       },
       {
-        role: "Техник",
+        role: 'Техник',
         priority: 'recommended',
-        description: "Обеспечивает техническую поддержку и ремонт гаджетов. Повышает доверие клиентов.",
-        icon: <CheckCircle className="w-5 h-5 text-blue-400" />
+        description:
+          'Обеспечивает техническую поддержку и ремонт гаджетов. Повышает доверие клиентов.',
+        icon: <CheckCircle className="w-5 h-5 text-blue-400" />,
       },
       {
-        role: "Маркетолог",
+        role: 'Маркетолог',
         priority: 'optional',
-        description: "Привлекает новых клиентов через рекламу и продвижение. Увеличивает узнаваемость.",
-        icon: <Star className="w-5 h-5 text-green-400" />
-      }
-    ]
+        description:
+          'Привлекает новых клиентов через рекламу и продвижение. Увеличивает узнаваемость.',
+        icon: <Star className="w-5 h-5 text-green-400" />,
+      },
+    ],
   },
   {
     id: 'car_wash',
     title: 'Автомойка',
     type: 'Средний бизнес',
-    description: 'Комплекс по обслуживанию автомобилей. Стабильный поток клиентов, но требует контроля качества и обслуживания оборудования.',
+    description:
+      'Комплекс по обслуживанию автомобилей. Стабильный поток клиентов, но требует контроля качества и обслуживания оборудования.',
     cost: 120000,
     income: '$8,000 - $15,000/мес',
     expenses: '$5,000/мес',
@@ -104,30 +112,33 @@ const BUSINESS_OPTIONS: BusinessOption[] = [
     businessType: 'service',
     requirements: [
       {
-        role: "Рабочий",
+        role: 'Рабочий',
         priority: 'required',
-        description: "Выполняет основную работу по мойке автомобилей. Минимум 2-3 человека для эффективной работы.",
-        icon: <Users className="w-5 h-5 text-red-400" />
+        description:
+          'Выполняет основную работу по мойке автомобилей. Минимум 2-3 человека для эффективной работы.',
+        icon: <Users className="w-5 h-5 text-red-400" />,
       },
       {
-        role: "Управляющий",
+        role: 'Управляющий',
         priority: 'recommended',
-        description: "Организует рабочий процесс и контролирует качество. Повышает эффективность на 20%.",
-        icon: <Award className="w-5 h-5 text-blue-400" />
+        description:
+          'Организует рабочий процесс и контролирует качество. Повышает эффективность на 20%.',
+        icon: <Award className="w-5 h-5 text-blue-400" />,
       },
       {
-        role: "Техник",
+        role: 'Техник',
         priority: 'recommended',
-        description: "Обслуживает оборудование и следит за его исправностью. Предотвращает простои.",
-        icon: <Activity className="w-5 h-5 text-blue-400" />
+        description:
+          'Обслуживает оборудование и следит за его исправностью. Предотвращает простои.',
+        icon: <Activity className="w-5 h-5 text-blue-400" />,
       },
       {
-        role: "Маркетолог",
+        role: 'Маркетолог',
         priority: 'optional',
-        description: "Привлекает корпоративных клиентов и организует акции.",
-        icon: <Star className="w-5 h-5 text-green-400" />
-      }
-    ]
+        description: 'Привлекает корпоративных клиентов и организует акции.',
+        icon: <Star className="w-5 h-5 text-green-400" />,
+      },
+    ],
   },
   {
     id: 'cafe',
@@ -146,51 +157,70 @@ const BUSINESS_OPTIONS: BusinessOption[] = [
     businessType: 'cafe',
     requirements: [
       {
-        role: "Рабочий",
+        role: 'Рабочий',
         priority: 'required',
-        description: "Бариста и официанты для обслуживания гостей. Минимум 2 человека.",
-        icon: <Users className="w-5 h-5 text-red-400" />
+        description: 'Бариста и официанты для обслуживания гостей. Минимум 2 человека.',
+        icon: <Users className="w-5 h-5 text-red-400" />,
       },
       {
-        role: "Продавец",
+        role: 'Продавец',
         priority: 'recommended',
-        description: "Увеличивает средний чек через допродажи и создание приятной атмосферы.",
-        icon: <TrendingUp className="w-5 h-5 text-blue-400" />
+        description: 'Увеличивает средний чек через допродажи и создание приятной атмосферы.',
+        icon: <TrendingUp className="w-5 h-5 text-blue-400" />,
       },
       {
-        role: "Маркетолог",
+        role: 'Маркетолог',
         priority: 'optional',
-        description: "Продвигает кофейню в социальных сетях и привлекает постоянных клиентов.",
-        icon: <Star className="w-5 h-5 text-green-400" />
-      }
-    ]
-  }
+        description: 'Продвигает кофейню в социальных сетях и привлекает постоянных клиентов.',
+        icon: <Star className="w-5 h-5 text-green-400" />,
+      },
+    ],
+  },
 ]
 
 export function AllBusinessesDialog({
   playerCash,
   onOpenBusiness,
   onSuccess,
-  onError
+  onError,
 }: AllBusinessesDialogProps) {
   const [selectedBusiness, setSelectedBusiness] = React.useState<BusinessOption | null>(null)
+  const economy = useEconomy()
+  const currentTurn = useGameStore((s) => s.turn)
 
-  const handleOpenBusiness = (business: BusinessOption) => {
-    if (playerCash >= business.cost) {
-      onOpenBusiness(
-        business.title,
-        business.businessType,
-        business.description,
-        business.cost,
-        business.monthlyIncome,
-        business.monthlyExpenses,
-        business.maxEmployees,
-        business.energyCost,
-        business.stressImpact
+  const handleOpenBusiness = (option: BusinessOption) => {
+    try {
+      const inflatedCost = economy
+        ? getInflatedPrice(option.cost, economy, 'business')
+        : option.cost
+
+      const { business, cost: upfrontCost } = createBusinessPurchase(
+        {
+          id: option.id,
+          name: option.title,
+          type: option.businessType,
+          description: option.description,
+          initialCost: option.cost,
+          monthlyIncome: option.monthlyIncome,
+          monthlyExpenses: option.monthlyExpenses,
+          maxEmployees: option.maxEmployees,
+          minEmployees: 1,
+          requiredRoles: option.requirements.map((r) => r.role) as any,
+          upfrontPaymentPercentage: 20, // Default for these options
+        },
+        inflatedCost,
+        currentTurn,
       )
-      onSuccess(`Бизнес "${business.title}" успешно открыт!`)
-    } else {
-      onError('Недостаточно средств для открытия бизнеса')
+
+      if (playerCash >= upfrontCost) {
+        onOpenBusiness(business, upfrontCost)
+        onSuccess(`Бизнес "${option.title}" успешно открыт!`)
+      } else {
+        onError(`Недостаточно средств. Необходимо $${upfrontCost.toLocaleString()}`)
+      }
+    } catch (error) {
+      console.error('Failed to open business:', error)
+      onError('Ошибка при открытии бизнеса')
     }
   }
 
@@ -241,7 +271,8 @@ export function AllBusinessesDialog({
             Выбор бизнеса
           </DialogTitle>
           <p className="text-white/80 text-base mt-2">
-            Ваш бюджет: <span className="text-green-400 font-bold">${playerCash.toLocaleString()}</span>
+            Ваш бюджет:{' '}
+            <span className="text-green-400 font-bold">${playerCash.toLocaleString()}</span>
           </p>
         </DialogHeader>
 
@@ -262,7 +293,11 @@ export function AllBusinessesDialog({
               >
                 {/* Image */}
                 <div className="relative h-48">
-                  <img src={business.image} alt={business.title} className="w-full h-full object-cover" />
+                  <img
+                    src={business.image}
+                    alt={business.title}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute top-3 left-3">
                     <Badge className="bg-black/70 backdrop-blur-md text-white border-white/20">
                       {business.type}
@@ -279,13 +314,17 @@ export function AllBusinessesDialog({
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="text-2xl font-bold text-white">{business.title}</h3>
-                    <div className={`text-xl font-bold flex items-center gap-1 ${canAfford ? 'text-green-400' : 'text-red-400'}`}>
+                    <div
+                      className={`text-xl font-bold flex items-center gap-1 ${canAfford ? 'text-green-400' : 'text-red-400'}`}
+                    >
                       <DollarSign className="w-5 h-5" />
                       {business.cost.toLocaleString()}
                     </div>
                   </div>
 
-                  <p className="text-white/80 text-sm mb-4 leading-relaxed">{business.description}</p>
+                  <p className="text-white/80 text-sm mb-4 leading-relaxed">
+                    {business.description}
+                  </p>
 
                   {/* Stats Grid */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
@@ -346,9 +385,11 @@ export function AllBusinessesDialog({
                     disabled={!canAfford}
                     className={`
                       w-full h-12 font-bold text-base
-                      ${canAfford
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-white/5 text-white/40 cursor-not-allowed'}
+                      ${
+                        canAfford
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-white/5 text-white/40 cursor-not-allowed'
+                      }
                     `}
                   >
                     {canAfford ? (
@@ -376,8 +417,9 @@ export function AllBusinessesDialog({
             <div>
               <h4 className="font-bold text-blue-300 mb-1">Совет по управлению бизнесом</h4>
               <p className="text-white/80 text-sm">
-                После открытия бизнеса обязательно наймите сотрудников. Без команды бизнес не будет приносить прибыль.
-                Начните с обязательных ролей, затем расширяйте штат для увеличения дохода.
+                После открытия бизнеса обязательно наймите сотрудников. Без команды бизнес не будет
+                приносить прибыль. Начните с обязательных ролей, затем расширяйте штат для
+                увеличения дохода.
               </p>
             </div>
           </div>

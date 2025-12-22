@@ -201,17 +201,39 @@ export function processBusinessTurn(
       lastRoleSanityCost: Math.abs(calculatePlayerRoleEffects(updatedBiz).sanity || 0),
       lastQuarterSummary: financials.debug
         ? {
-            sold: financials.debug.salesVolume,
-            priceUsed: financials.debug.priceUsed,
-            salesIncome: financials.income,
-            taxes: financials.debug.taxAmount,
-            expenses: financials.expenses,
-            netProfit: financials.netProfit,
+            sold:
+              typeof financials.debug.salesVolume === 'number' &&
+              !isNaN(financials.debug.salesVolume)
+                ? financials.debug.salesVolume
+                : 0,
+            priceUsed:
+              typeof financials.debug.priceUsed === 'number' && !isNaN(financials.debug.priceUsed)
+                ? financials.debug.priceUsed
+                : 0,
+            salesIncome:
+              typeof financials.income === 'number' && !isNaN(financials.income)
+                ? financials.income
+                : 0,
+            taxes:
+              typeof financials.debug.taxAmount === 'number' && !isNaN(financials.debug.taxAmount)
+                ? financials.debug.taxAmount
+                : 0,
+            expenses:
+              typeof financials.expenses === 'number' && !isNaN(financials.expenses)
+                ? financials.expenses
+                : 0,
+            netProfit:
+              typeof financials.netProfit === 'number' && !isNaN(financials.netProfit)
+                ? financials.netProfit
+                : 0,
             profitDistribution: updatedBiz.partners.map((p) => ({
               partnerId: p.id,
               share: p.share,
               amount: Math.round(
-                financials.netProfit * (Math.max(0, Math.min(100, p.share)) / 100),
+                (typeof financials.netProfit === 'number' && !isNaN(financials.netProfit)
+                  ? financials.netProfit
+                  : 0) *
+                  (Math.max(0, Math.min(100, p.share)) / 100),
               ),
             })),
           }

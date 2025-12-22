@@ -1,12 +1,9 @@
 // Хелперы для расчета цен с учетом инфляции
 import { devLog } from '../debug'
 
-import {
-  type PriceCategory,
-  INFLATION_MULTIPLIERS,
-} from './inflation-engine'
+import { type PriceCategory, INFLATION_MULTIPLIERS } from './inflation-engine'
 
-import type { CountryEconomy } from '@/core/types/economy.types'
+import type { CountryEconomy } from '../../types/economy.types'
 
 /**
  * Универсальная функция для получения цены с учетом инфляции
@@ -22,7 +19,10 @@ export function getInflatedPrice(
   economy: CountryEconomy,
   category: PriceCategory = 'default',
 ): number {
-  if (!basePrice || basePrice <= 0) {
+  if (typeof basePrice !== 'number' || isNaN(basePrice)) {
+    return 0
+  }
+  if (basePrice <= 0) {
     return basePrice
   }
 
@@ -119,6 +119,9 @@ export function getInflatedSalary(
   economy: CountryEconomy,
   quartersPassed: number = 0,
 ): number {
+  if (typeof baseSalary !== 'number' || isNaN(baseSalary)) {
+    return 0
+  }
   if (quartersPassed <= 0) {
     return baseSalary
   }

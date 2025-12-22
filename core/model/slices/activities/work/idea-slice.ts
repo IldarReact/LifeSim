@@ -8,6 +8,7 @@ import {
   calculateDevelopmentCost,
   canDevelopIdea,
 } from '@/core/lib/idea-generator'
+import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
 import type { Business } from '@/core/types'
 
 export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set, get) => ({
@@ -142,95 +143,54 @@ export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set,
     // Но openBusiness требует много параметров.
     // Упростим: создадим бизнес напрямую и добавим в массив
 
-    const newBusiness: Business = {
-      id: `biz_${Date.now()}`,
-      name: idea.name,
-      type: idea.type,
-      description: idea.description,
-      state: 'active',
+    const { business } = createBusinessPurchase(
+      {
+        id: `biz_${Date.now()}`,
+        name: idea.name,
+        type: idea.type,
+        description: idea.description,
+        initialCost: idea.investedAmount,
+        monthlyIncome: 0,
+        monthlyExpenses: 0,
+        maxEmployees: 5,
+        minEmployees: 1,
+        upfrontPaymentPercentage: 0, // Already paid via investment
+      },
+      idea.investedAmount,
+      state.turn,
+    )
 
-      lastQuarterlyUpdate: state.turn,
-      createdAt: state.turn,
-      monthlyIncome: 0,
-      monthlyExpenses: 0,
-      autoPurchaseAmount: 0,
-
-      price: 5,
-      quantity: 100,
-      isServiceBased: idea.type === 'service' || idea.type === 'tech',
-      networkId: undefined,
-      isMainBranch: true,
-      partners: [],
-      proposals: [],
-
-      initialCost: idea.investedAmount,
-      quarterlyIncome: 0,
-      quarterlyExpenses: 0,
-      currentValue: idea.investedAmount,
-
-      employees: [],
-      maxEmployees: 5, // Начальный лимит
-      minEmployees: 1,
-
-      reputation: Math.max(
-        0,
-        Math.min(
-          100,
-          50 +
-            idea.marketDemand * 0.3 +
-            (idea.riskLevel === 'low'
-              ? 5
-              : idea.riskLevel === 'high'
-                ? -5
-                : idea.riskLevel === 'very_high'
-                  ? -10
-                  : 0) +
-            (Math.random() - 0.5) * (idea.riskLevel === 'very_high' ? 40 : 20),
-        ),
+    // Override specific idea-based metrics
+    business.reputation = Math.max(
+      0,
+      Math.min(
+        100,
+        50 +
+          idea.marketDemand * 0.3 +
+          (idea.riskLevel === 'low'
+            ? 5
+            : idea.riskLevel === 'high'
+              ? -5
+              : idea.riskLevel === 'very_high'
+                ? -10
+                : 0) +
+          (Math.random() - 0.5) * (idea.riskLevel === 'very_high' ? 40 : 20),
       ),
-      efficiency: Math.max(0, Math.min(100, 50 + idea.potentialReturn * 10)),
-
-      taxRate: 0.2, // Базовая ставка
-      hasInsurance: false,
-      insuranceCost: 0,
-
-      creationCost: { energy: 0, money: 0 }, // Уже оплачено инвестициями
-
-      playerRoles: {
-        managerialRoles: [],
-        operationalRole: null,
-      },
-      requiredRoles: [], // Будет заполнено логикой бизнеса
-
-      inventory: {
-        currentStock: 0,
-        maxStock: 500,
-        pricePerUnit: 0,
-        purchaseCost: 0,
-        autoPurchaseAmount: 0,
-      },
-
-      openingProgress: {
-        totalQuarters: 0,
-        quartersLeft: 0,
-        investedAmount: idea.investedAmount,
-        totalCost: idea.investedAmount,
-        upfrontCost: 0,
-      },
-
-      eventsHistory: [],
-      foundedTurn: state.turn,
-    }
+    )
+    business.efficiency = Math.max(0, Math.min(100, 50 + idea.potentialReturn * 10))
+    business.state = 'active' // Ideas are usually active immediately when launched
+    business.openingProgress.quartersLeft = 0 // Already developed
+    business.creationCost = { energy: 0, money: 0 } // Already paid
 
     set({
       player: {
         ...state.player,
         businessIdeas: updatedIdeas,
-        businesses: [...state.player.businesses, newBusiness],
+        businesses: [...state.player.businesses, business],
       },
     })
 
-    console.log(`[Idea] Бизнес запущен: ${newBusiness.name}`)
+    console.log(`[Idea] Бизнес запущен: ${business.name}`)
   },
 
   discardIdea: (ideaId: string) => {

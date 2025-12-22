@@ -1,7 +1,12 @@
 import type { GameStateCreator } from '../../../types'
 
 import { applyStats } from '@/core/helpers/apply-stats'
-import { updateBusinessMetrics, validateEmployeeHire } from '@/core/lib/business'
+import {
+  updateBusinessMetrics,
+  validateEmployeeHire,
+  createEmployeeFromCandidate,
+  createEmployeeObject,
+} from '@/core/lib/business'
 import { broadcastEvent } from '@/core/lib/multiplayer'
 import type { Employee, EmployeeCandidate } from '@/core/types'
 
@@ -33,17 +38,7 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
       return
     }
 
-    const newEmployee: Employee = {
-      id: `employee_${Date.now()}`,
-      name: candidate.name,
-      role: candidate.role,
-      stars: candidate.stars,
-      skills: candidate.skills,
-      salary: candidate.requestedSalary,
-      productivity: 75,
-      experience: candidate.experience,
-      humanTraits: candidate.humanTraits,
-    }
+    const newEmployee = createEmployeeFromCandidate(candidate)
 
     const employees = [...business.employees, newEmployee]
 
@@ -190,24 +185,20 @@ export const createEmployeesSlice: GameStateCreator<Record<string, unknown>> = (
 
     const business = state.player.businesses[i]
 
-    const employeeId = playerId ? `player_${playerId}` : `emp_${Date.now()}`
-    const newEmployee: Employee = {
-      id: employeeId,
+    const newEmployee = createEmployeeObject({
+      id: playerId ? `player_${playerId}` : undefined,
       name: employeeName,
       role: role as any,
-      stars: extraData?.stars || 3,
-      skills: extraData?.skills || {
-        efficiency: 50,
-      },
+      stars: extraData?.stars,
+      skills: extraData?.skills,
       salary: salary,
-      productivity: 100,
-      experience: extraData?.experience || 0,
-      humanTraits: extraData?.humanTraits || [],
-      ...extraData,
-    }
+      experience: extraData?.experience,
+      humanTraits: extraData?.humanTraits,
+      productivity: 100, // Player or partner added employee usually has full productivity
+    })
 
     // Replace if exists, otherwise append
-    const existingIndex = business.employees.findIndex((e) => e.id === employeeId)
+    const existingIndex = business.employees.findIndex((e) => e.id === newEmployee.id)
     let newEmployees = [...business.employees]
     if (existingIndex !== -1) {
       newEmployees[existingIndex] = newEmployee

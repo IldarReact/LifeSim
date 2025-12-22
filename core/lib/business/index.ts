@@ -35,6 +35,8 @@ export {
   calculateSalary,
   generateEmployeeCandidate,
   generateCandidates,
+  createEmployeeFromCandidate,
+  createEmployeeObject,
 } from './employee-generator'
 
 export { calculateEmployeeKPI } from './employee-calculations'

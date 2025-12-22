@@ -126,21 +126,7 @@ export interface FamilySlice {
 
 export interface BusinessSlice {
   // Actions
-  openBusiness: (
-    name: string,
-    type: import('@/core/types').BusinessType,
-    description: string,
-    totalCost: number,
-    upfrontCost: number,
-    creationCost: StatEffect,
-    openingQuarters: number,
-    monthlyIncome: number,
-    monthlyExpenses: number,
-    maxEmployees: number,
-    minEmployees: number,
-    taxRate: number,
-    requiredRoles: import('@/core/types').EmployeeRole[],
-  ) => void
+  openBusiness: (business: import('@/core/types').Business, upfrontCost: number) => void
   hireEmployee: (businessId: string, candidate: import('@/core/types').EmployeeCandidate) => void
   fireEmployee: (businessId: string, employeeId: string) => void
   closeBusiness: (businessId: string) => void

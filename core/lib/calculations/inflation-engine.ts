@@ -17,7 +17,7 @@
  * - ✅ Now: Can apply to any category with INFLATION_MULTIPLIERS
  */
 
-import type { CountryEconomy, EconomicEvent } from '@/core/types/economy.types'
+import type { CountryEconomy, EconomicEvent } from '../../types/economy.types'
 
 /**
  * Category-specific inflation multipliers

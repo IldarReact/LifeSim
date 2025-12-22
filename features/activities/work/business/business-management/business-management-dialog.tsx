@@ -126,6 +126,14 @@ export function BusinessManagementDialog({
     country,
   )
 
+  // Validate values to avoid NaN
+  const safeIncome = typeof income === 'number' && !isNaN(income) ? income : 0
+  const safeExpenses = typeof expenses === 'number' && !isNaN(expenses) ? expenses : 0
+  const safeForecastIncome =
+    typeof forecastIncome === 'number' && !isNaN(forecastIncome) ? forecastIncome : 0
+  const safeForecastExpenses =
+    typeof forecastExpenses === 'number' && !isNaN(forecastExpenses) ? forecastExpenses : 0
+
   const availableBudget = playerCash
   const canHireMore = canHireMoreEmployees(business)
   const staffingCheck = checkMinimumStaffing(business)
@@ -378,7 +386,7 @@ export function BusinessManagementDialog({
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-wider">Доход</span>
               </div>
-              <p className="text-2xl font-bold text-green-400">${income.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-400">${safeIncome.toLocaleString()}</p>
               <p className="text-xs text-white/40">в квартал</p>
             </div>
 
@@ -387,7 +395,7 @@ export function BusinessManagementDialog({
                 <TrendingDown className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-wider">Расходы</span>
               </div>
-              <p className="text-2xl font-bold text-red-400">${expenses.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-red-400">${safeExpenses.toLocaleString()}</p>
               <p className="text-xs text-white/40">в квартал (вкл. зарплаты)</p>
             </div>
 
@@ -491,13 +499,13 @@ export function BusinessManagementDialog({
                 <div>
                   <p className="text-sm text-white/60">Прогнозируемый доход</p>
                   <p className="text-2xl font-bold text-emerald-400">
-                    +${forecastIncome.toLocaleString()}
+                    +${safeForecastIncome.toLocaleString()}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-white/60">Прогнозируемые расходы</p>
                   <p className="text-2xl font-bold text-rose-400">
-                    -${forecastExpenses.toLocaleString()}
+                    -${safeForecastExpenses.toLocaleString()}
                   </p>
                 </div>
                 <div className="col-span-2 flex justify-between items-center border-t border-white/5 pt-2">

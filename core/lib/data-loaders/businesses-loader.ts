@@ -14,6 +14,7 @@ export interface BusinessType {
   isServiceBased: boolean // Является ли бизнес услуговым
   initialCost: number
   upfrontCost: number // Первоначальный взнос
+  upfrontPaymentPercentage?: number // Процент первоначального взноса (опционально)
   openingQuarters: number // Сколько кварталов нужно для открытия
   monthlyIncome: number
   monthlyExpenses: number

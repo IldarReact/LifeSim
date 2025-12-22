@@ -12,6 +12,7 @@ import {
   Star,
   Award,
   Activity,
+  Globe,
 } from 'lucide-react'
 import React from 'react'
 
@@ -22,14 +23,22 @@ import {
   getAllBusinessTypesForCountry,
   type BusinessTemplate,
 } from '@/core/lib/data-loaders/businesses-loader'
+import { isMultiplayerActive } from '@/core/lib/multiplayer'
 import { useGameStore } from '@/core/model/store'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
+import { PartnerSelectionDialog } from '../../partner-selection-dialog'
 
 interface AllBusinessesDialogProps {
   playerCash: number
   onOpenBusiness: (business: import('@/core/types').Business, upfrontCost: number) => void
+  onOpenWithPartner?: (
+    partnerId: string,
+    partnerName: string,
+    playerShare: number,
+    template: BusinessTemplate,
+  ) => void
   onSuccess: (message: string) => void
   onError: (message: string) => void
 }
@@ -75,10 +84,13 @@ const getBusinessTypeLabel = (initialCost: number) => {
 export function AllBusinessesDialog({
   playerCash,
   onOpenBusiness,
+  onOpenWithPartner,
   onSuccess,
   onError,
 }: AllBusinessesDialogProps) {
   const [selectedBusinessId, setSelectedBusinessId] = React.useState<string | null>(null)
+  const [partnerDialogOpen, setPartnerDialogOpen] = React.useState(false)
+  const [templateForPartner, setTemplateForPartner] = React.useState<BusinessTemplate | null>(null)
   const economy = useEconomy()
   const { player, turn: currentTurn } = useGameStore()
 
@@ -179,7 +191,7 @@ export function AllBusinessesDialog({
           </p>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 gap-6 mt-6">
           {businessTemplates.map((template) => {
             const inflatedCost = economy
               ? getInflatedPrice(template.initialCost, economy, 'business')
@@ -301,38 +313,75 @@ export function AllBusinessesDialog({
                   </div>
 
                   {/* Action Button */}
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleOpenBusiness(template)
-                    }}
-                    disabled={!canAfford}
-                    className={`
-                      w-full h-12 font-bold text-base
-                      ${
-                        canAfford
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-white/5 text-white/40 cursor-not-allowed'
-                      }
-                    `}
-                  >
-                    {canAfford ? (
-                      <>
-                        <Store className="w-5 h-5 mr-2" />
-                        Открыть за ${upfrontCost.toLocaleString()}
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle className="w-5 h-5 mr-2" />
-                        Недостаточно средств
-                      </>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenBusiness(template)
+                      }}
+                      disabled={!canAfford}
+                      className={`
+                        w-full h-12 font-bold text-base
+                        ${
+                          canAfford
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-white/5 text-white/40 cursor-not-allowed'
+                        }
+                      `}
+                    >
+                      {canAfford ? (
+                        <>
+                          <Store className="w-5 h-5 mr-2" />
+                          Открыть за ${upfrontCost.toLocaleString()}
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-5 h-5 mr-2" />
+                          Недостаточно средств
+                        </>
+                      )}
+                    </Button>
+
+                    {onOpenWithPartner && isMultiplayerActive() && (
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setTemplateForPartner(template)
+                          setPartnerDialogOpen(true)
+                        }}
+                        variant="outline"
+                        className="w-full h-12 border-purple-500/30 hover:bg-purple-500/10 text-white font-bold text-base"
+                      >
+                        <Globe className="w-5 h-5 mr-2 text-purple-400" />
+                        Открыть с партнером
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
+
+        {/* Partner Selection Dialog */}
+        {templateForPartner && (
+          <PartnerSelectionDialog
+            isOpen={partnerDialogOpen}
+            onClose={() => {
+              setPartnerDialogOpen(false)
+              setTemplateForPartner(null)
+            }}
+            businessName={templateForPartner.name}
+            businessCost={
+              economy
+                ? getInflatedPrice(templateForPartner.initialCost, economy, 'business')
+                : templateForPartner.initialCost
+            }
+            onSelectPartner={(partnerId, partnerName, playerShare) => {
+              onOpenWithPartner?.(partnerId, partnerName, playerShare, templateForPartner)
+            }}
+          />
+        )}
 
         {/* Info Banner */}
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-6">

@@ -60,13 +60,14 @@ export function getInflatedPrice(
   let cumulativeMultiplier = 1.0
   for (const inflation of chronologicalHistory) {
     // Apply inflation with category multiplier
-    cumulativeMultiplier *= 1 + (inflation * categoryMultiplier) / 100
+    const validInflation = typeof inflation === 'number' && !isNaN(inflation) ? inflation : 0
+    cumulativeMultiplier *= 1 + (validInflation * categoryMultiplier) / 100
   }
 
   // Round to nearest integer for prices
   const inflatedPrice = Math.round(basePrice * cumulativeMultiplier)
 
-  return inflatedPrice
+  return isNaN(inflatedPrice) ? basePrice : inflatedPrice
 }
 
 /**

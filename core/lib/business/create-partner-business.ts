@@ -1,4 +1,5 @@
 import type { Business, BusinessType, EmployeeRole } from '@/core/types/business.types'
+import { createBusinessPurchase } from './purchase-logic'
 
 export function createPartnerBusiness(
   offer: {
@@ -10,6 +11,12 @@ export function createPartnerBusiness(
       yourInvestment: number
       yourShare: number
       businessId?: string
+      monthlyIncome?: number
+      monthlyExpenses?: number
+      maxEmployees?: number
+      minEmployees?: number
+      requiredRoles?: EmployeeRole[]
+      inventory?: import('@/core/types').BusinessInventory
     }
     fromPlayerId: string
     fromPlayerName: string
@@ -31,86 +38,37 @@ export function createPartnerBusiness(
     yourInvestment: offer.details.yourInvestment,
   })
 
-  const isServiceBased =
-    offer.details.businessType === 'service' || offer.details.businessType === 'tech'
+  const { business } = createBusinessPurchase(
+    {
+      id: businessId,
+      name: offer.details.businessName,
+      description: offer.details.businessDescription,
+      initialCost: offer.details.totalCost, // Use totalCost as initialCost for the purchase logic
+      monthlyIncome: offer.details.monthlyIncome || 0,
+      monthlyExpenses: offer.details.monthlyExpenses || 0,
+      maxEmployees: offer.details.maxEmployees || 5,
+      minEmployees: offer.details.minEmployees,
+      requiredRoles: offer.details.requiredRoles,
+      inventory: offer.details.inventory,
+    },
+    offer.details.totalCost,
+    currentTurn,
+    {
+      partnerId: offer.fromPlayerId,
+      partnerName: offer.fromPlayerName,
+      playerShare: offer.details.yourShare,
+      partnerBusinessId,
+    },
+  )
 
-  const business: Business & { partnerBusinessId?: string } = {
-    id: businessId,
-    name: offer.details.businessName,
-    type: offer.details.businessType,
-    description: offer.details.businessDescription,
-    state: 'active',
-    lastQuarterlyUpdate: currentTurn,
-    createdAt: currentTurn,
-    price: 5, // Default mid-range price
-    quantity: isServiceBased ? 0 : 100,
-    isServiceBased,
-    networkId: undefined,
-    isMainBranch: false,
-    partnerBusinessId,
-    partnerId: offer.fromPlayerId,
-    partnerName: offer.fromPlayerName,
-    playerShare: offer.details.yourShare,
-    playerInvestment: offer.details.yourInvestment,
-    partners: [
-      // Текущий игрок
-      {
-        id: playerId,
-        name: 'Вы', // Будет заменено на реальное имя в UI
-        type: 'player' as const,
-        share: offer.details.yourShare,
-        investedAmount: offer.details.yourInvestment,
-        relation: 100, // Максимальное отношение к себе
-      },
-      // Партнёр
-      {
-        id: offer.fromPlayerId,
-        name: offer.fromPlayerName,
-        type: 'player' as const,
-        share: 100 - offer.details.yourShare,
-        investedAmount: offer.details.totalCost - offer.details.yourInvestment,
-        relation: 50,
-      },
-    ],
-    proposals: [],
-    openingProgress: {
-      totalQuarters: 0,
-      quartersLeft: 0,
-      investedAmount: offer.details.totalCost,
-      totalCost: offer.details.totalCost,
-      upfrontCost: offer.details.totalCost * 0.2, // Match 20% default
-    },
-    creationCost: { energy: -20 }, // Cost should be negative
-    initialCost: offer.details.totalCost,
-    quarterlyIncome: 0,
-    quarterlyExpenses: 0,
-    monthlyIncome: 0,
-    monthlyExpenses: 0,
-    autoPurchaseAmount: 0,
-    currentValue: offer.details.totalCost,
-    walletBalance: 0,
-    taxRate: 0.15,
-    hasInsurance: false,
-    insuranceCost: 0,
-    inventory: {
-      currentStock: isServiceBased ? 0 : 1000,
-      maxStock: isServiceBased ? 0 : 1000,
-      pricePerUnit: isServiceBased ? 0 : 100,
-      purchaseCost: isServiceBased ? 0 : 50,
-      autoPurchaseAmount: 0,
-    },
-    employees: [],
-    maxEmployees: 10, // Default to a reasonable number
-    minEmployees: 1,
-    requiredRoles: [],
-    playerRoles: {
-      managerialRoles: [],
-      operationalRole: null,
-    },
-    reputation: 50,
-    efficiency: 50,
-    eventsHistory: [],
-    foundedTurn: currentTurn,
+  // Ensure the ID from the offer is preserved if it exists
+  if (offer.details.businessId) {
+    business.id = offer.details.businessId
+  }
+
+  // Override the 'Вы' placeholder with the correct playerId
+  if (business.partners[0]) {
+    business.partners[0].id = playerId
   }
 
   return business

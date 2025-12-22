@@ -345,6 +345,11 @@ export function BusinessManagementDialog({
     }
   }
 
+  const formatCurrency = (value: number) => {
+    if (value === undefined || value === null || isNaN(value)) return '0'
+    return value.toLocaleString()
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -534,32 +539,32 @@ export function BusinessManagementDialog({
                       <div className="flex justify-between">
                         <span className="text-xs text-white/60">Цена продажи</span>
                         <span className="text-sm font-semibold">
-                          ${business.lastQuarterSummary.priceUsed.toLocaleString()}
+                          ${formatCurrency(business.lastQuarterSummary.priceUsed)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-white/60">Доход</span>
                         <span className="text-sm font-semibold text-emerald-400">
-                          +${business.lastQuarterSummary.salesIncome.toLocaleString()}
+                          +${formatCurrency(business.lastQuarterSummary.salesIncome)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-white/60">Налоги</span>
                         <span className="text-sm font-semibold text-amber-300">
-                          -${business.lastQuarterSummary.taxes.toLocaleString()}
+                          -${formatCurrency(business.lastQuarterSummary.taxes)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-white/60">Расходы</span>
                         <span className="text-sm font-semibold text-rose-400">
-                          -${business.lastQuarterSummary.expenses.toLocaleString()}
+                          -${formatCurrency(business.lastQuarterSummary.expenses)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-white/60">Прибыль (после налога)</span>
                         <span className="text-sm font-semibold">
                           {business.lastQuarterSummary.netProfit >= 0 ? '+' : ''}$
-                          {business.lastQuarterSummary.netProfit.toLocaleString()}
+                          {formatCurrency(business.lastQuarterSummary.netProfit)}
                         </span>
                       </div>
                     </div>

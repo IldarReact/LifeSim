@@ -19,7 +19,7 @@ interface BusinessesSectionProps {
   playerCash: number
   onOpenBusiness: (
     name: string,
-    type: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing',
+    type: import('@/core/types/business.types').BusinessType,
     description: string,
     totalCost: number,
     upfrontCost: number,
@@ -76,6 +76,8 @@ const getBusinessTypeLabel = (risk: string, initialCost: number) => {
   return 'Крупный бизнес'
 }
 
+import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
+
 export function BusinessesSection({
   playerCash,
   onOpenBusiness,
@@ -85,10 +87,11 @@ export function BusinessesSection({
   const { player, sendOffer } = useGameStore()
   const countryId = player?.countryId || 'us'
   const economy = useEconomy()
+  const currentTurn = useGameStore((s) => s.turn)
 
   const businesses = getAllBusinessTypesForCountry(countryId)
 
-  const handleOpenBusiness = (
+  const handleOpenBusiness = async (
     name: string,
     type: 'retail' | 'service' | 'cafe' | 'tech' | 'manufacturing',
     description: string,
@@ -102,26 +105,60 @@ export function BusinessesSection({
     stressImpact: number,
     inventory?: import('@/core/types').BusinessInventory,
   ) => {
-    if (playerCash >= cost) {
+    try {
+      const template = businesses.find((b) => b.name === name)
+      if (!template) {
+        onError('Шаблон бизнеса не найден')
+        return
+      }
+
+      const inflatedCost = economy
+        ? getInflatedPrice(template.initialCost, economy, 'business')
+        : template.initialCost
+
+      const { business, cost: upfrontCost } = createBusinessPurchase(
+        {
+          ...template,
+          id: template.id,
+          name: name,
+          description: description,
+          initialCost: template.initialCost,
+          monthlyIncome: monthlyIncome,
+          monthlyExpenses: monthlyExpenses,
+          maxEmployees: maxEmployees,
+          minEmployees: minEmployees,
+          requiredRoles: requiredRoles,
+          inventory: inventory,
+        },
+        inflatedCost,
+        currentTurn,
+      )
+
+      if (playerCash < upfrontCost) {
+        onError(`Недостаточно средств. Необходимо $${upfrontCost.toLocaleString()}`)
+        return
+      }
+
       onOpenBusiness(
-        name,
-        type,
-        description,
-        cost,
-        cost * 0.2, // Upfront cost
-        { energy: -energyCost },
-        1, // Opening quarters
+        business.name,
+        business.type,
+        business.description,
+        business.initialCost,
+        upfrontCost,
+        business.creationCost,
+        business.openingProgress.totalQuarters,
         monthlyIncome,
         monthlyExpenses,
-        maxEmployees,
-        minEmployees,
-        0.15, // Tax rate
-        requiredRoles,
-        inventory,
+        business.maxEmployees,
+        business.minEmployees,
+        business.taxRate,
+        business.requiredRoles,
+        business.inventory,
       )
       onSuccess(`Вы успешно начали процесс открытия бизнеса "${name}"`)
-    } else {
-      onError('Недостаточно средств для открытия этого бизнеса')
+    } catch (error) {
+      console.error('Failed to open business:', error)
+      onError('Ошибка при открытии бизнеса')
     }
   }
 
@@ -131,9 +168,17 @@ export function BusinessesSection({
     partnerName: string,
     playerShare: number,
   ) => {
-    const cost = business.initialCost || business.cost || 0
-    const playerInvestment = Math.round((cost * playerShare) / 100)
-    const partnerInvestment = cost - playerInvestment
+    const inflatedCost = economy
+      ? getInflatedPrice(business.initialCost, economy, 'business')
+      : business.initialCost
+
+    const { cost: playerInvestment } = createBusinessPurchase(business, inflatedCost, currentTurn, {
+      partnerId,
+      partnerName,
+      playerShare,
+    })
+
+    const partnerInvestment = inflatedCost - playerInvestment
 
     if (playerCash < playerInvestment) {
       onError('Недостаточно средств для вашей доли инвестиций!')
@@ -149,7 +194,7 @@ export function BusinessesSection({
         businessType: business.type,
         businessName: business.name,
         businessDescription: business.description,
-        totalCost: cost,
+        totalCost: inflatedCost,
         partnerShare: 100 - playerShare,
         partnerInvestment: partnerInvestment,
         yourShare: playerShare,

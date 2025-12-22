@@ -159,6 +159,7 @@
     "isServiceBased": false,
     "initialCost": 50000,
     "upfrontCost": 35000,
+    "upfrontPaymentPercentage": 20,
     "openingQuarters": 1,
     "monthlyIncome": 32000,
     "monthlyExpenses": 16000,

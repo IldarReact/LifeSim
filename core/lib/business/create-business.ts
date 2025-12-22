@@ -109,8 +109,8 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     // Financials
     creationCost,
     initialCost: totalCost,
-    quarterlyIncome: (monthlyIncome || 0) * 3,
-    quarterlyExpenses: (monthlyExpenses || 0) * 3,
+    quarterlyIncome: (monthlyIncome || 0) * 3 || 0,
+    quarterlyExpenses: (monthlyExpenses || 0) * 3 || 0,
     currentValue: totalCost,
     taxRate: taxRate || 0.15,
     walletBalance: 0,

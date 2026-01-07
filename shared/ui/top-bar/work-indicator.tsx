@@ -3,7 +3,7 @@
 import { Briefcase } from 'lucide-react'
 import React from 'react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { cn } from '@/shared/utils/utils'
 
 export function WorkIndicator() {

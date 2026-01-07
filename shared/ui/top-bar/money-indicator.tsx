@@ -3,13 +3,13 @@ import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { useState, useMemo } from 'react'
 
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
+import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import { getShopItem } from '@/core/lib/shop-helpers'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
+import type { QuarterlyReport } from '@/core/types'
 import { getItemCost } from '@/core/types/shop.types'
 import { cn } from '@/shared/utils/utils'
-import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
-import type { QuarterlyReport } from '@/core/types'
 
 export function MoneyIndicator() {
   const { player, countries } = useGameStore()
@@ -21,6 +21,13 @@ export function MoneyIndicator() {
     if (!player) {
       return createEmptyQuarterlyReport()
     }
+
+    // Use the last stored quarterly report to show past results, as requested
+    // This removes "expected income" (forecast) from the top bar
+    if (player.quarterlyReport) {
+      return player.quarterlyReport
+    }
+
     const countryEconomy = countries[player.countryId]
     if (!countryEconomy) {
       return createEmptyQuarterlyReport()
@@ -35,9 +42,16 @@ export function MoneyIndicator() {
 
     let businessRevenue = 0
     let businessExpenses = 0
+    let businessTaxes = 0
     player.businesses.forEach((b) => {
-      businessRevenue += b.quarterlyIncome
-      businessExpenses += b.quarterlyExpenses
+      const sharePct = typeof b.playerShare === 'number' ? b.playerShare : 100
+      const shareFactor = Math.max(0, Math.min(100, sharePct)) / 100
+
+      // Use stored values from last turn instead of recalculating forecast
+      // This prevents "flickering" and matches the actual financial report
+      businessRevenue += Math.round((b.quarterlyIncome || 0) * shareFactor)
+      businessExpenses += Math.round((b.quarterlyExpenses || 0) * shareFactor)
+      businessTaxes += Math.round((b.quarterlyTax || 0) * shareFactor)
     })
 
     // Расчёт расходов по категориям
@@ -114,6 +128,7 @@ export function MoneyIndicator() {
       businessFinancialsOverride: {
         income: businessRevenue,
         expenses: businessExpenses,
+        taxes: businessTaxes,
       },
       expensesBreakdown: {
         food: foodExpenses,

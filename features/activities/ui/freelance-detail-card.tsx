@@ -1,17 +1,18 @@
-"use client"
+'use client'
 
-import { Star, Clock, Zap, DollarSign, Info } from "lucide-react"
-import { useState } from "react"
+import { Star } from 'lucide-react'
+import { useState } from 'react'
 
-import { EmployeeCard } from "@/shared/components/business/employee-card"
-import { Button } from "@/shared/ui/button"
+import { EmployeeCard } from '../../../shared/components/business/employee-card'
+
+import { Button } from '@/shared/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog"
+} from '@/shared/ui/dialog'
 
 interface FreelanceDetailCardProps {
   title: string
@@ -32,7 +33,7 @@ export function FreelanceDetailCard({
   energyCost,
   requirements,
   image,
-  onTakeOrder
+  onTakeOrder,
 }: FreelanceDetailCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
@@ -45,7 +46,7 @@ export function FreelanceDetailCard({
         roleLabel={category}
         salary={payment}
         salaryLabel=""
-        stars={Math.max(1, ...requirements.map(r => r.level), 1)}
+        stars={Math.max(1, ...requirements.map((r) => r.level), 1)}
         avatar={image}
         requirements={requirements}
         cost={{ energy: -energyCost }}
@@ -59,16 +60,12 @@ export function FreelanceDetailCard({
         <DialogContent className="bg-black/95 border-white/20 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">{title}</DialogTitle>
-            <DialogDescription className="text-white/60">
-              Категория: {category}
-            </DialogDescription>
+            <DialogDescription className="text-white/60">Категория: {category}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="bg-white/5 rounded-lg p-4">
-              <p className="text-white/80 leading-relaxed mb-4">
-                {description}
-              </p>
+              <p className="text-white/80 leading-relaxed mb-4">{description}</p>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -86,14 +83,18 @@ export function FreelanceDetailCard({
               <p className="text-sm text-white/50 mb-2">Требуемые навыки:</p>
               <div className="space-y-2">
                 {requirements.map((req, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg p-3">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between bg-white/5 rounded-lg p-3"
+                  >
                     <span className="text-white">{req.skill}</span>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
                           key={star}
-                          className={`w-4 h-4 ${star <= req.level ? "text-yellow-400 fill-yellow-400" : "text-white/20"
-                            }`}
+                          className={`w-4 h-4 ${
+                            star <= req.level ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'
+                          }`}
                         />
                       ))}
                     </div>

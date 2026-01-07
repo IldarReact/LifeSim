@@ -1,103 +1,74 @@
-import { checkMinimumStaffing, getTotalEmployeesCount } from './player-roles'
-import { calculateTotalBusinessImpact } from './business-impacts'
-import { getRoleConfig, isManagerialRole } from './employee-roles.config'
-
-import type { Skill } from '../../types/skill.types'
 import type { Business } from '../../types/business.types'
+import type { Skill } from '../../types/skill.types'
+import { BUSINESS_BALANCE } from '../data-loaders/business-balance-loader'
+
+import { calculateTotalBusinessImpact } from './business-impacts'
+import { getRoleConfig } from './employee-roles.config'
+import { checkMinimumStaffing, getTotalEmployeesCount } from './player-roles'
+
 
 /**
- * Рассчитывает эффективность бизнеса (0-100)
+ * Рассчитывает эффективность бизнеса (может быть > 100)
  */
 export function calculateEfficiency(business: Business, playerSkills?: Skill[]): number {
+  const { metrics } = BUSINESS_BALANCE
   const state = business.state ?? 'active'
   if (state !== 'active') return 0
 
   // 1. Проверка минимального персонала
   const staffingCheck = checkMinimumStaffing(business)
-  if (!staffingCheck.isValid) {
-    return 0
-  }
+  // Убираем жесткий возврат 0, если персонал не дотягивает.
+  // Вместо этого даем штраф к эффективности, но не обнуляем её совсем,
+  // так как есть базовая автоматизация (efficiencyBase в impacts).
+  const staffingPenalty = staffingCheck.isValid ? 1 : metrics.minStaffingPenalty
 
-  // 1.5. Бонус от HR (мотивация команды)
+  // 2. Получаем консолидированные влияния (включая сотрудников и игрока)
   const impacts = calculateTotalBusinessImpact(business, playerSkills)
-  const hrProductivityBonus = impacts.staffProductivityBonus
 
-  // 2. Базовая эффективность от сотрудников и игрока в операционных ролях
-  let totalEfficiency = 0
-  let managerBonus = 0
+  // 3. Базовая эффективность
+  let efficiency = (isNaN(impacts.efficiencyBase) ? 0 : impacts.efficiencyBase) * staffingPenalty
 
-  // Вклад сотрудников
-  business.employees.forEach((emp) => {
-    const effortFactor = (emp.effortPercent ?? 100) / 100
-    // HR повышает продуктивность всех сотрудников
-    const effectiveProductivity = Math.min(100, emp.productivity + hrProductivityBonus)
-    const contribution = emp.skills.efficiency * (effectiveProductivity / 100) * effortFactor
-
-    if (emp.role === 'manager') {
-      managerBonus += (emp.skills.efficiency / 100) * 10 * effortFactor // До +10% от каждого менеджера
-    }
-
-    totalEfficiency += contribution
-  })
-
-  // Вклад игрока в операционной роли (если есть)
-  if (business.playerRoles.operationalRole) {
-    const role = business.playerRoles.operationalRole
-    const config = getRoleConfig(role)
-    if (config) {
-      // Для игрока в операционной роли считаем вклад как 100% эффективность + бонусы от навыков
-      const baseContribution = 80 // Базовый вклад игрока
-      const skillContribution = impacts.efficiencyBonus // Use consolidated efficiency bonus
-      totalEfficiency += baseContribution + skillContribution
-    }
-  }
-
-  // Средняя эффективность команды
-  // Считаем только тех, кто вносил вклад в totalEfficiency (сотрудники + игрок в операционной роли)
-  // Управленческие роли игрока добавляют свои бонусы отдельно (шаг 4) и не должны размывать среднее
-  const operationalSlots =
-    business.employees.length + (business.playerRoles.operationalRole ? 1 : 0)
-  let avgEfficiency = operationalSlots > 0 ? totalEfficiency / operationalSlots : 0
-
-  // 3. Бонус менеджера
-  avgEfficiency += managerBonus
-
-  // 4. ✅ Влияние управленческих ролей игрока
-  // (Now included in managerBonus or handled separately)
-  // We already added impacts.efficiencyBonus to player contribution if they are in operational role.
-  // If player is in managerial role, it should also be added.
-  if (!business.playerRoles.operationalRole) {
-    avgEfficiency += impacts.efficiencyBonus
+  // 4. Применяем множитель от менеджеров и HR (в процентах)
+  const multiplier = isNaN(impacts.efficiencyMultiplierPct) ? 0 : impacts.efficiencyMultiplierPct
+  if (multiplier > 0) {
+    efficiency *= 1 + multiplier / 100
   }
 
   // 5. Влияние событий (последние 4 события)
   const recentEvents = (business.eventsHistory || []).slice(-4)
-  const eventImpact = recentEvents.reduce((sum, event) => sum + (event.effects.efficiency || 0), 0)
+  const eventImpact = recentEvents.reduce((sum, event) => {
+    const eff = event.effects.efficiency || 0
+    return sum + (isNaN(eff) ? 0 : eff)
+  }, 0)
 
-  // Итоговая эффективность
-  const finalEfficiency = Math.min(100, Math.max(0, avgEfficiency + eventImpact))
+  // Итоговая эффективность (без ограничения в 100%)
+  const finalEfficiency = Math.max(0, efficiency + (isNaN(eventImpact) ? 0 : eventImpact))
 
-  return Math.round(finalEfficiency)
+  return Math.round(isNaN(finalEfficiency) ? 0 : finalEfficiency)
 }
 
 /**
- * Рассчитывает репутацию бизнеса (0-100)
+ * Рассчитывает репутацию бизнеса (может быть > 100)
  */
 export function calculateReputation(
   business: Business,
   currentEfficiency: number,
   playerSkills?: Skill[],
 ): number {
+  const { metrics } = BUSINESS_BALANCE
+  const EFFICIENCY_WEIGHT = metrics.efficiencyWeight // Вес эффективности в репутации
+  const TEAM_STARS_WEIGHT = metrics.teamStarsWeight // Вес звезд команды в репутации
+
   // Репутация меняется медленно, стремясь к текущей эффективности
   // Но также зависит от маркетинга и событий
 
   // 1. Влияние эффективности (вес 60%)
-  const efficiencyImpact = currentEfficiency * 0.6
+  const efficiencyImpact = (isNaN(currentEfficiency) ? 0 : currentEfficiency) * EFFICIENCY_WEIGHT
 
   // 2. Влияние команды (звезды) (вес 20%)
   const totalSlots = getTotalEmployeesCount(business)
 
-  let totalStars = business.employees.reduce((sum, e) => sum + e.stars, 0)
+  let totalStars = business.employees.reduce((sum, e) => sum + (isNaN(e.stars) ? 3 : e.stars), 0)
 
   // Добавляем звезды игрока для каждой его роли
   const activeRoles = [
@@ -111,28 +82,34 @@ export function calculateReputation(
     const playerSkill =
       playerSkills && skillName ? playerSkills.find((s) => s.name === skillName) : null
     const stars = playerSkill ? Math.max(1, Math.min(5, playerSkill.level)) : 3
-    totalStars += stars
+    totalStars += isNaN(stars) ? 3 : stars
   })
 
   const avgStars = totalSlots > 0 ? totalStars / totalSlots : 0
-  const teamImpact = (avgStars / 5) * 100 * 0.2 // 5 звезд = 100 * 0.2 = 20
+  const teamImpact = (isNaN(avgStars) ? 0 : avgStars / 5) * 100 * TEAM_STARS_WEIGHT // 5 звезд = 20 ед. репутации к базе
 
-  // 3. Маркетинг и прямые бонусы репутации (вес 20%)
-  // Мы используем reputationBonus из impacts, который уже включает вклад маркетологов и игрока
+  // 3. Маркетинг и прямые бонусы репутации
   const impacts = calculateTotalBusinessImpact(business, playerSkills)
-  const marketingAndPlayerBonus = impacts.reputationBonus
+  const marketingAndPlayerBonus = isNaN(impacts.reputationBonus) ? 0 : impacts.reputationBonus
 
   // 5. События (прямое влияние)
   const recentEvents = (business.eventsHistory || []).slice(-4)
-  const eventImpact = recentEvents.reduce((sum, event) => sum + (event.effects.reputation || 0), 0)
+  const eventImpact = recentEvents.reduce((sum, event) => {
+    const rep = event.effects.reputation || 0
+    return sum + (isNaN(rep) ? 0 : rep)
+  }, 0)
 
   // Целевая репутация
-  const targetReputation = efficiencyImpact + teamImpact + marketingAndPlayerBonus + eventImpact
+  const targetReputation =
+    efficiencyImpact + teamImpact + marketingAndPlayerBonus + (isNaN(eventImpact) ? 0 : eventImpact)
 
-  // Плавное изменение (сдвиг на 10% к цели каждый ход)
-  const newReputation = business.reputation + (targetReputation - business.reputation) * 0.1
+  // Плавное изменение (сдвиг на 20% к цели каждый ход)
+  const SMOOTHING_FACTOR = metrics.reputationSmoothing
+  const currentRep = isNaN(business.reputation) ? 0 : business.reputation
+  const newReputation = currentRep + (targetReputation - currentRep) * SMOOTHING_FACTOR
 
-  return Math.min(100, Math.max(0, Math.round(newReputation)))
+  // Итоговая репутация (без ограничения в 100%)
+  return Math.max(0, Math.round(isNaN(newReputation) ? 0 : newReputation))
 }
 
 /**

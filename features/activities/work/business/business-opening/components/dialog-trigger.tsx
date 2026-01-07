@@ -1,10 +1,22 @@
 import { Store, Info } from 'lucide-react'
 
-import { BUSINESS_OPTIONS } from './business-options'
+import { formatCurrency } from '../../utils/business-ui-mappers'
+
+import { useBusinessOptions } from './business-options'
 
 import { Button } from '@/shared/ui/button'
 
 export function BusinessOpeningTrigger() {
+  const businessOptions = useBusinessOptions()
+
+  const minCost = businessOptions.length > 0
+    ? Math.min(...businessOptions.map(b => b.cost))
+    : 0
+
+  const maxCost = businessOptions.length > 0
+    ? Math.max(...businessOptions.map(b => b.cost))
+    : 0
+
   return (
     <div className="cursor-pointer">
       <div className="bg-white/5 border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all hover:bg-white/8">
@@ -23,15 +35,15 @@ export function BusinessOpeningTrigger() {
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-white/5 rounded-lg p-3">
             <p className="text-xs text-white/60 mb-1">Доступно</p>
-            <p className="text-white font-bold">{BUSINESS_OPTIONS.length} варианта</p>
+            <p className="text-white font-bold">{businessOptions.length} варианта</p>
           </div>
           <div className="bg-white/5 rounded-lg p-3">
             <p className="text-xs text-white/60 mb-1">От</p>
-            <p className="text-green-400 font-bold">$35,000</p>
+            <p className="text-green-400 font-bold">{formatCurrency(minCost)}</p>
           </div>
           <div className="bg-white/5 rounded-lg p-3">
             <p className="text-xs text-white/60 mb-1">До</p>
-            <p className="text-green-400 font-bold">$120,000</p>
+            <p className="text-green-400 font-bold">{formatCurrency(maxCost)}</p>
           </div>
         </div>
 

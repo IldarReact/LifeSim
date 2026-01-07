@@ -1,9 +1,9 @@
 // Хелперы для расчета цен с учетом инфляции
+import type { CountryEconomy } from '../../types/economy.types'
 import { devLog } from '../debug'
 
 import { type PriceCategory, INFLATION_MULTIPLIERS } from './inflation-engine'
 
-import type { CountryEconomy } from '../../types/economy.types'
 
 /**
  * Универсальная функция для получения цены с учетом инфляции

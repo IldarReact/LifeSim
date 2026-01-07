@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import { User, Users } from "lucide-react"
+import { User, Users } from 'lucide-react'
 
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
+import { useGameStore } from '@/core/model/store'
+import { Button } from '@/shared/ui/button'
 
 export function MainMenu() {
   const { startSinglePlayer } = useGameStore()
 
   const handleCreateLobby = () => {
-    const roomId = Math.random().toString(36).slice(2, 10);
-    window.location.href = `/lobby?room=${roomId}`;
+    const roomId = Math.random().toString(36).slice(2, 10)
+    window.location.href = `/lobby?room=${roomId}`
   }
 
   return (
@@ -40,14 +40,14 @@ export function MainMenu() {
             <Users className="w-8 h-8 mr-4 text-emerald-400 group-hover:scale-110 transition-transform" />
             <div className="text-left">
               <div className="font-bold text-white">Мультиплеер</div>
-              <div className="text-sm text-white/60 font-normal">Создать лобби и играть с друзьями</div>
+              <div className="text-sm text-white/60 font-normal">
+                Создать лобби и играть с друзьями
+              </div>
             </div>
           </Button>
         </div>
 
-        <div className="text-center text-white/20 text-sm">
-          v0.1.0 Alpha
-        </div>
+        <div className="text-center text-white/20 text-sm">v0.1.0 Alpha</div>
       </div>
     </div>
   )

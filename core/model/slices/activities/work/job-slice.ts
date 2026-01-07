@@ -154,6 +154,108 @@ export const createJobSlice: StateCreator<GameStore, [], [], JobSlice> = (set, g
     })
   },
 
+  askForRaise: (jobId: string) => {
+    const state = get()
+    const player = state.player
+    if (!player) return
+
+    const job = player.jobs.find((j) => j.id === jobId)
+    if (!job) return
+
+    const energyCost = 15
+    if (player.personal.stats.energy < energyCost) {
+      set((state) => ({
+        notifications: [
+          {
+            id: `err_${Date.now()}`,
+            type: 'warning',
+            title: 'Недостаточно энергии',
+            message: 'Вы слишком устали для серьезного разговора с начальством.',
+            date: formatGameDate(state.year, state.turn),
+            isRead: false,
+          },
+          ...state.notifications,
+        ],
+      }))
+      return
+    }
+
+    // Chance calculation: base 30% + intelligence/2
+    const intelligence = player.personal.stats.intelligence || 0
+    const chance = 30 + intelligence / 2
+    const roll = Math.random() * 100
+    const isSuccess = roll < chance
+
+    if (isSuccess) {
+      const raisePercent = 10 + Math.random() * 10 // 10-20% raise
+      const oldSalary = job.salary
+      const newSalary = Math.round(oldSalary * (1 + raisePercent / 100))
+      const salaryDiff = newSalary - oldSalary
+
+      set((state) => ({
+        player: state.player
+          ? {
+              ...state.player,
+              stats: {
+                ...state.player.stats,
+                energy: state.player.stats.energy - energyCost,
+              },
+              personal: {
+                ...state.player.personal,
+                stats: {
+                  ...state.player.personal.stats,
+                  energy: state.player.personal.stats.energy - energyCost,
+                },
+              },
+              jobs: state.player.jobs.map((j) => (j.id === jobId ? { ...j, salary: newSalary } : j)),
+              quarterlySalary: state.player.quarterlySalary + salaryDiff * 3,
+            }
+          : null,
+        notifications: [
+          {
+            id: `raise_success_${Date.now()}`,
+            type: 'success',
+            title: 'Повышение получено!',
+            message: `Ваш разговор прошел успешно. Зарплата в ${job.company} выросла на ${Math.round(raisePercent)}% (+$${salaryDiff}/мес).`,
+            date: formatGameDate(state.year, state.turn),
+            isRead: false,
+          },
+          ...state.notifications,
+        ],
+      }))
+    } else {
+      set((state) => ({
+        player: state.player
+          ? {
+              ...state.player,
+              stats: {
+                ...state.player.stats,
+                energy: state.player.stats.energy - energyCost,
+              },
+              personal: {
+                ...state.player.personal,
+                stats: {
+                  ...state.player.personal.stats,
+                  energy: state.player.personal.stats.energy - energyCost,
+                },
+              },
+            }
+          : null,
+        notifications: [
+          {
+            id: `raise_fail_${Date.now()}`,
+            type: 'info',
+            title: 'В повышении отказано',
+            message: `Начальство в ${job.company} пока не готово платить вам больше. Попробуйте улучшить свои навыки.`,
+            date: formatGameDate(state.year, state.turn),
+            isRead: false,
+          },
+          ...state.notifications,
+        ],
+      }))
+    }
+  },
+
   acceptExternalJob: (jobTitle: string, company: string, salary: number, businessId: string) => {
     const state = get()
     if (!state.player) return

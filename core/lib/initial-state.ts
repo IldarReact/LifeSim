@@ -1,22 +1,20 @@
-import { createDebt } from "@/core/lib/calculations/debt-helpers"
-import { createEmptyQuarterlyReport } from "@/core/lib/calculations/financial-helpers"
-import { getCharacterByArchetype } from "@/core/lib/data-loaders/characters-loader"
-import { getStartingJob, getJobById } from "@/core/lib/data-loaders/jobs-loader"
-import type { CountryEconomy } from "@/core/types/economy.types"
-import type { PlayerState } from "@/core/types/game.types"
-import type { Job } from "@/core/types/job.types"
-import type { Stats } from "@/core/types/stats.types"
+import { createDebt } from '@/core/lib/calculations/debt-helpers'
+import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
+import { getCharacterByArchetype } from '@/core/lib/data-loaders/characters-loader'
+import { getStartingJob, getJobById } from '@/core/lib/data-loaders/jobs-loader'
+import type { Player } from '@/core/types/game.types'
+import type { Job } from '@/core/types/job.types'
+import type { Stats } from '@/core/types/stats.types'
 
 // Deprecated: use getCountry(id) instead
 
-export function createInitialPlayer(
-  archetype: string,
-  countryId: string
-): PlayerState {
+export function createInitialPlayer(archetype: string, countryId: string): Player {
   const characterData = getCharacterByArchetype(archetype, countryId)
 
   if (!characterData) {
-    throw new Error(`Character data not found for archetype "${archetype}" in country "${countryId}"`)
+    throw new Error(
+      `Character data not found for archetype "${archetype}" in country "${countryId}"`,
+    )
   }
 
   const baseStats: Stats = {
@@ -46,18 +44,18 @@ export function createInitialPlayer(
     // Fallback если вакансий нет (не должно случиться)
     id: `job_${Date.now()}`,
     title: characterData.name,
-    company: "Start Corp",
+    company: 'Start Corp',
     salary: characterData.startingSalary ?? 0,
     cost: {
-      energy: -20
+      energy: -20,
     },
     imageUrl: characterData.imageUrl,
     description: characterData.description,
   }
 
-  const base: PlayerState = {
+  const base: Player = {
     id: `player_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-    name: "Player",
+    name: 'Player',
     countryId,
     age: 24,
 
@@ -81,12 +79,13 @@ export function createInitialPlayer(
         colleagues: 50,
       },
 
-      skills: characterData.startingSkills?.map(s => ({
-        ...s,
-        level: Math.min(5, Math.max(0, s.level)) as 0 | 1 | 2 | 3 | 4 | 5,
-        progress: 0,
-        lastPracticedTurn: -1
-      })) ?? [],
+      skills:
+        characterData.startingSkills?.map((s) => ({
+          ...s,
+          level: Math.min(5, Math.max(0, s.level)) as 0 | 1 | 2 | 3 | 4 | 5,
+          progress: 0,
+          lastPracticedTurn: -1,
+        })) ?? [],
       activeCourses: [],
       activeUniversity: [],
       buffs: [],
@@ -109,7 +108,7 @@ export function createInitialPlayer(
     // Обязательные расходы (нельзя снизить до 0)
     activeLifestyle: {
       food: 'food_home', // Дефолт: готовит сам
-      transport: 'tr_public' // Дефолт: общественный транспорт
+      transport: 'tr_public', // Дефолт: общественный транспорт
     },
 
     // Текущее жильё (обязательно)
@@ -123,19 +122,21 @@ export function createInitialPlayer(
 
   // Add starting debts if any
   if (characterData.startingDebts && characterData.startingDebts.length > 0) {
-    characterData.startingDebts.forEach(debt => {
-      finalState.debts.push(createDebt({
-        id: debt.id,
-        name: debt.name,
-        type: debt.type as any,
-        principalAmount: debt.principalAmount,
-        remainingAmount: debt.remainingAmount,
-        interestRate: debt.interestRate,
-        quarterlyPayment: debt.quarterlyPayment,
-        termQuarters: debt.termQuarters,
-        remainingQuarters: debt.remainingQuarters,
-        startTurn: 0
-      }))
+    characterData.startingDebts.forEach((debt) => {
+      finalState.debts.push(
+        createDebt({
+          id: debt.id,
+          name: debt.name,
+          type: debt.type,
+          principalAmount: debt.principalAmount,
+          remainingAmount: debt.remainingAmount,
+          interestRate: debt.interestRate,
+          quarterlyPayment: debt.quarterlyPayment,
+          termQuarters: debt.termQuarters,
+          remainingQuarters: debt.remainingQuarters,
+          startTurn: 0,
+        }),
+      )
     })
   }
 

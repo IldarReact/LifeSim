@@ -2,7 +2,6 @@ import type { GameStateCreator } from '../../../types'
 
 import { applyStats } from '@/core/helpers/apply-stats'
 import { createBusinessBranch } from '@/core/lib/business'
-import type { Business } from '@/core/types'
 
 export const createBranchesSlice: GameStateCreator<{
   openBranch: (sourceBusinessId: string) => void

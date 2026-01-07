@@ -13,6 +13,7 @@ import '@/core/lib/persistence/clear-saves'
 import { MainMenu } from '@/features/menu/main-menu'
 import { useOffersSync } from '@/features/multiplayer/use-offers-sync'
 import { OffersList } from '@/features/notifications/offers-list'
+import { YearReportModal } from '@/features/reports/year-report-modal'
 import { CharacterSelect } from '@/features/setup/components'
 import { WorldSelect } from '@/features/setup/components'
 
@@ -56,6 +57,7 @@ export default function Page() {
         </div>
       </div>
       <EventModal />
+      <YearReportModal />
 
       {/* Notifications & Overlays */}
       <OffersList />

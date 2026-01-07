@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { getShopItem } from '@/core/lib/shop-helpers'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 
 export function useHousingCapacity() {
   const { player } = useGameStore()
@@ -14,7 +14,7 @@ export function useHousingCapacity() {
         isOvercrowded: false,
         overcrowdingPercent: 0,
         penalty: 0,
-        status: 'none' as const
+        status: 'none' as const,
       }
     }
 
@@ -23,9 +23,7 @@ export function useHousingCapacity() {
     const capacity = (housing && 'capacity' in housing ? (housing.capacity as number) : 2) || 2
 
     const isOvercrowded = familySize > capacity
-    const overcrowdingPercent = isOvercrowded 
-      ? ((familySize - capacity) / capacity) * 100 
-      : 0
+    const overcrowdingPercent = isOvercrowded ? ((familySize - capacity) / capacity) * 100 : 0
     const penalty = isOvercrowded ? Math.ceil(overcrowdingPercent / 10) : 0
 
     let status: 'none' | 'warning' | 'critical' = 'none'
@@ -38,7 +36,7 @@ export function useHousingCapacity() {
       isOvercrowded,
       overcrowdingPercent,
       penalty,
-      status
+      status,
     }
   }, [player?.housingId, player?.countryId, player?.personal.familyMembers])
 }

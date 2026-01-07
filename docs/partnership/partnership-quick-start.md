@@ -17,7 +17,7 @@
    - `rejectBusinessChange()` - отклонить
    - `updateBusinessDirectly()` - прямое изменение (> 50%)
 
-4. **Обработчики событий** (`core/model/game-store.ts`)
+4. **Обработчики событий** (`core/model/multiplayer-sync.ts`)
    - Автоматическая синхронизация через Liveblocks
    - Обработка всех типов событий
 
@@ -37,10 +37,10 @@ const handlePriceChange = (newPrice: number) => {
   set((state) => ({
     player: {
       ...state.player!,
-      businesses: state.player!.businesses.map(b =>
-        b.id === businessId ? { ...b, price: newPrice } : b
-      )
-    }
+      businesses: state.player!.businesses.map((b) =>
+        b.id === businessId ? { ...b, price: newPrice } : b,
+      ),
+    },
   }))
 }
 
@@ -57,7 +57,7 @@ const handlePriceChange = (newPrice: number) => {
     pushNotification({
       type: 'error',
       title: 'Недостаточно прав',
-      message: 'У вас < 50% доли в бизнесе'
+      message: 'У вас < 50% доли в бизнесе',
     })
   }
 }
@@ -98,7 +98,7 @@ function WorkActivity() {
   return (
     <div>
       {/* Ваш существующий UI */}
-      
+
       {/* Добавьте компонент предложений */}
       <BusinessProposals />
     </div>
@@ -113,7 +113,7 @@ function BusinessManagementDialog({ business }: Props) {
   const player = useGameStore(state => state.player)
   const proposeChange = useGameStore(state => state.proposeBusinessChange)
   const updateDirect = useGameStore(state => state.updateBusinessDirectly)
-  
+
   if (!player) return null
 
   const share = getPlayerShare(business, player.id)
@@ -123,8 +123,8 @@ function BusinessManagementDialog({ business }: Props) {
   return (
     <div>
       {/* Цена */}
-      <input 
-        type="number" 
+      <input
+        type="number"
         value={price}
         onChange={(e) => setPrice(Number(e.target.value))}
         disabled={share < 50} // Блокируем для < 50%
@@ -143,8 +143,8 @@ function BusinessManagementDialog({ business }: Props) {
       </button>
 
       {/* Количество */}
-      <input 
-        type="number" 
+      <input
+        type="number"
         value={quantity}
         onChange={(e) => setQuantity(Number(e.target.value))}
         disabled={share < 50}
@@ -169,11 +169,13 @@ function BusinessManagementDialog({ business }: Props) {
 ## Что нужно сделать дальше
 
 ### Обязательно:
+
 1. ✅ Интегрировать проверки прав в `BusinessManagementDialog.tsx`
 2. ✅ Добавить компонент `BusinessProposals` в UI
 3. ✅ Обновить все места, где меняются параметры бизнеса
 
 ### Опционально:
+
 1. Добавить уведомления при получении предложений
 2. Добавить звуковые сигналы
 3. Добавить историю предложений
@@ -191,14 +193,13 @@ function BusinessManagementDialog({ business }: Props) {
 Чтобы добавить новый тип изменения:
 
 1. Добавьте тип в `BusinessChangeType`:
+
 ```typescript
-export type BusinessChangeType = 
-  | 'price'
-  | 'quantity'
-  | 'your_new_type' // ← добавьте здесь
+export type BusinessChangeType = 'price' | 'quantity' | 'your_new_type' // ← добавьте здесь
 ```
 
 2. Обновите payload в событии:
+
 ```typescript
 data: {
   newPrice?: number
@@ -208,9 +209,10 @@ data: {
 ```
 
 3. Используйте в коде:
+
 ```typescript
 proposeBusinessChange(businessId, 'your_new_type', {
-  yourNewField: value
+  yourNewField: value,
 })
 ```
 

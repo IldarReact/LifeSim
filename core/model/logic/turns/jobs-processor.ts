@@ -1,5 +1,5 @@
 import { formatGameDate } from '@/core/lib/quarter'
-import type { JobApplication, Skill, Notification } from '@/core/types'
+import type { Job, JobApplication, Skill, Notification, SkillLevel } from '@/core/types'
 import type { EconomicCycle } from '@/core/types/economy.types'
 
 interface JobsResult {
@@ -7,11 +7,11 @@ interface JobsResult {
   notifications: Notification[]
   remainingApplications: JobApplication[]
   protectedSkills: string[]
-  updatedJobs: any[]
+  updatedJobs: Job[]
 }
 
 export function processJobs(
-  jobs: any[],
+  jobs: Job[],
   pendingApplications: JobApplication[],
   updatedSkills: Skill[],
   currentTurn: number,
@@ -20,7 +20,7 @@ export function processJobs(
 ): JobsResult {
   const notifications: Notification[] = []
   const protectedSkills = new Set<string>()
-  const updatedJobs: any[] = []
+  const updatedJobs: Job[] = []
 
   // 1. Process Jobs
   for (const job of jobs) {
@@ -54,7 +54,7 @@ export function processJobs(
     if (!isFired) {
       updatedJobs.push(job)
 
-      job.requirements?.skills?.forEach((req: any) => {
+      job.requirements?.skills?.forEach((req: { name: string; level: number }) => {
         protectedSkills.add(req.name)
 
         const idx = updatedSkills.findIndex((s) => s.name === req.name)
@@ -62,10 +62,12 @@ export function processJobs(
           const skill = { ...updatedSkills[idx] }
           skill.progress += 15
           skill.lastPracticedTurn = currentTurn
-          ;(skill as any).isBeingUsedAtWork = true
+          skill.isBeingUsedAtWork = true
 
           if (skill.progress >= 100) {
-            skill.level += 1 as any
+            if (skill.level < 5) {
+              skill.level = (skill.level + 1) as SkillLevel
+            }
             skill.progress = 0
             notifications.push({
               id: `skill_up_${skill.name}_${currentTurn}`,
@@ -129,11 +131,7 @@ export function processJobs(
 
   // 3. Skill decay
   updatedSkills = updatedSkills.map((skill) => {
-    if (
-      protectedSkills.has(skill.name) ||
-      (skill as any).isBeingStudied ||
-      (skill as any).isBeingUsedAtWork
-    ) {
+    if (protectedSkills.has(skill.name) || skill.isBeingStudied || skill.isBeingUsedAtWork) {
       return skill
     }
 

@@ -20,7 +20,7 @@ describe('Work Activity - Inflation UI Tests', () => {
     interestRate: 2.0,
     unemployment: 4.1,
     taxRate: 24,
-    corporateTaxRate: 0.21,
+    corporateTaxRate: 21,
     salaryModifier: 1.8,
     costOfLivingModifier: 1.6,
     baseSalaries: {
@@ -29,24 +29,22 @@ describe('Work Activity - Inflation UI Tests', () => {
       accountant: 4000,
       marketer: 3500,
       technician: 3000,
-      worker: 2200
+      worker: 2200,
     },
     activeEvents: [],
-    inflationHistory: [3.1, 3.0, 3.2]
+    inflationHistory: [3.1, 3.0, 3.2],
   }
-
-
 
   describe('VacanciesSection', () => {
     it('должен применить инфляцию ко всем вакансиям', () => {
       const salaries = [3000, 8000]
-      const results = salaries.map(s => getInflatedBaseSalary(s, baseEconomy))
+      const results = salaries.map((s) => getInflatedBaseSalary(s, baseEconomy))
 
       expect(results[0]).toBeGreaterThan(3000)
       expect(results[1]).toBeGreaterThan(8000)
 
       const display = `$${results[0].toLocaleString()}/мес`
-      expect(display).toMatch(/\$[\d,]+\/мес/)
+      expect(display).toMatch(/\$[\d\s,]+\/мес/)
     })
   })
 
@@ -55,7 +53,7 @@ describe('Work Activity - Inflation UI Tests', () => {
       const hyperEconomy: CountryEconomy = {
         ...baseEconomy,
         inflation: 20,
-        inflationHistory: [20, 19, 21, 18, 20]
+        inflationHistory: [20, 19, 21, 18, 20],
       }
 
       const result = getInflatedSalary(5000, hyperEconomy, 12)

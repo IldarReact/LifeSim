@@ -12,7 +12,7 @@ import { RestActivity } from '../activities/rest/rest-activity'
 import { ShopActivity } from '../activities/shop'
 import { WorkActivity } from '../activities/work/work-activity'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { Button } from '@/shared/ui/button'
 import { ExpandableCard } from '@/shared/ui/expandable-card'
 

@@ -8,7 +8,7 @@ import {
   subscribeToTurnReadyStatus,
   setTurnReady,
 } from '@/core/lib/multiplayer'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { GameState } from '@/core/types'
 import { BanksActivity } from '@/features/activities/bank/banks-activity'
 import { EducationActivity } from '@/features/activities/education/education-activity'
@@ -124,9 +124,10 @@ export function ActivityContent(): React.JSX.Element | null {
             flex items-center gap-2 sm:gap-3 group backdrop-blur-md
             transition-all shadow-2xl
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${isWaiting
-              ? 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
-              : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+            ${
+              isWaiting
+                ? 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]'
             }
           `}
         >

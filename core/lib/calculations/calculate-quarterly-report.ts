@@ -3,17 +3,13 @@ import { calculateBusinessOwnerQuarterlyReport } from './report/business-owner'
 import { calculateEmployeeQuarterlyReport } from './report/employee'
 import { calculateMixedQuarterlyReport } from './report/mixed'
 
-import type {
-  PlayerState,
-  QuarterlyReport,
-} from '@/core/types'
+import type { Player, QuarterlyReport } from '@/core/types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-
 
 /**
  * Determines the player's primary activity type
  */
-export function determinePlayerType(player: PlayerState): 'employee' | 'business_owner' | 'mixed' {
+export function determinePlayerType(player: Player): 'employee' | 'business_owner' | 'mixed' {
   const hasJob = player.quarterlySalary > 0 || player.jobs.length > 0
   const hasBusiness = player.businesses.length > 0
 
@@ -23,7 +19,7 @@ export function determinePlayerType(player: PlayerState): 'employee' | 'business
 }
 
 interface QuarterlyReportParams {
-  player: PlayerState
+  player: Player
   country: CountryEconomy
   familyIncome: number
   familyExpenses: number
@@ -35,16 +31,10 @@ interface QuarterlyReportParams {
   businessFinancialsOverride?: {
     income: number
     expenses: number
+    taxes: number
   }
   lifestyleExpenses?: number
-  expensesBreakdown?: {
-    food: number
-    housing: number
-    transport: number
-    credits: number
-    mortgage: number
-    other: number
-  }
+  expensesBreakdown?: Record<string, number>
 }
 
 // Delegated implementations moved to smaller modules under report/
@@ -57,10 +47,10 @@ export function calculateQuarterlyReport(params: QuarterlyReportParams): Quarter
 
   switch (playerType) {
     case 'employee':
-      return calculateEmployeeQuarterlyReport(params as any)
+      return calculateEmployeeQuarterlyReport(params)
     case 'business_owner':
-      return calculateBusinessOwnerQuarterlyReport(params as any)
+      return calculateBusinessOwnerQuarterlyReport(params)
     case 'mixed':
-      return calculateMixedQuarterlyReport(params as any)
+      return calculateMixedQuarterlyReport(params)
   }
 }

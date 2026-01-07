@@ -56,6 +56,10 @@ describe('offers partnership flow', () => {
       yourShare: 50,
       yourInvestment: 5000,
       businessId: 'biz_1',
+      employeeRoles: [
+        { role: 'manager' as const, priority: 'required' as const, description: 'Manager' },
+        { role: 'accountant' as const, priority: 'required' as const, description: 'Accountant' },
+      ],
     }
 
     const offer: GameOffer = {

@@ -8,7 +8,7 @@ import {
 } from '@/core/lib/calculations/price-helpers'
 import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
 import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
-
+import type { PriceCategory } from '@/core/lib/calculations/inflation-engine'
 
 export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set, get) => ({
   buyItem: (itemId: string) => {
@@ -25,7 +25,7 @@ export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set,
     // Применяем инфляцию к цене
     let cost = baseCost
     if (country) {
-      const category =
+      const category: PriceCategory =
         item.category === 'food'
           ? 'food'
           : item.category === 'health'
@@ -37,11 +37,11 @@ export const createShopSlice: StateCreator<GameStore, [], [], ShopSlice> = (set,
                 : 'default'
 
       if (isRecurringItem(item)) {
-        cost = getInflatedShopPrice(baseCost, country, category as any)
+        cost = getInflatedShopPrice(baseCost, country, category)
       } else if (item.category === 'housing' && item.price) {
         cost = getInflatedHousingPrice(item.price, country)
       } else if (item.price) {
-        cost = getInflatedShopPrice(item.price, country, category as any)
+        cost = getInflatedShopPrice(item.price, country, category)
       }
     }
 

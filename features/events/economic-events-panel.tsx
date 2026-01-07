@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   AlertTriangle,
@@ -7,13 +7,13 @@ import {
   Zap,
   Activity,
   ArrowUp,
-  ArrowDown
-} from "lucide-react";
+  ArrowDown,
+} from 'lucide-react'
 
-import { useGameStore } from "@/core/model/game-store";
-import type { EconomicEvent } from "@/core/types";
-import { Badge } from "@/shared/ui/badge";
-import { Card } from "@/shared/ui/card";
+import { useGameStore } from '@/core/model/store'
+import type { EconomicEvent } from '@/core/types'
+import { Badge } from '@/shared/ui/badge'
+import { Card } from '@/shared/ui/card'
 
 const eventIcons: Record<EconomicEvent['type'], React.ReactNode> = {
   crisis: <AlertTriangle className="w-5 h-5 text-red-400" />,
@@ -22,7 +22,7 @@ const eventIcons: Record<EconomicEvent['type'], React.ReactNode> = {
   inflation_spike: <Zap className="w-5 h-5 text-yellow-400" />,
   rate_hike: <ArrowUp className="w-5 h-5 text-blue-400" />,
   rate_cut: <ArrowDown className="w-5 h-5 text-cyan-400" />,
-};
+}
 
 const eventColors: Record<EconomicEvent['type'], string> = {
   crisis: 'bg-red-500/10 border-red-500/20',
@@ -31,18 +31,18 @@ const eventColors: Record<EconomicEvent['type'], string> = {
   inflation_spike: 'bg-yellow-500/10 border-yellow-500/20',
   rate_hike: 'bg-blue-500/10 border-blue-500/20',
   rate_cut: 'bg-cyan-500/10 border-cyan-500/20',
-};
+}
 
 export function EconomicEventsPanel() {
-  const { player, countries } = useGameStore();
+  const { player, countries } = useGameStore()
 
-  if (!player) return null;
+  if (!player) return null
 
-  const country = countries[player.countryId];
-  const activeEvents = country?.activeEvents || [];
+  const country = countries[player.countryId]
+  const activeEvents = country?.activeEvents || []
 
   if (activeEvents.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -53,14 +53,9 @@ export function EconomicEventsPanel() {
       </div>
 
       {activeEvents.map((event) => (
-        <Card
-          key={event.id}
-          className={`p-4 border ${eventColors[event.type]} backdrop-blur-sm`}
-        >
+        <Card key={event.id} className={`p-4 border ${eventColors[event.type]} backdrop-blur-sm`}>
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-white/5">
-              {eventIcons[event.type]}
-            </div>
+            <div className="p-2 rounded-lg bg-white/5">{eventIcons[event.type]}</div>
 
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
@@ -76,8 +71,13 @@ export function EconomicEventsPanel() {
                 {event.effects.inflationChange && (
                   <div className="flex items-center gap-1">
                     <span className="text-white/50">Инфляция:</span>
-                    <span className={event.effects.inflationChange > 0 ? 'text-red-400' : 'text-emerald-400'}>
-                      {event.effects.inflationChange > 0 ? '+' : ''}{event.effects.inflationChange}%
+                    <span
+                      className={
+                        event.effects.inflationChange > 0 ? 'text-red-400' : 'text-emerald-400'
+                      }
+                    >
+                      {event.effects.inflationChange > 0 ? '+' : ''}
+                      {event.effects.inflationChange}%
                     </span>
                   </div>
                 )}
@@ -85,8 +85,13 @@ export function EconomicEventsPanel() {
                 {event.effects.keyRateChange && (
                   <div className="flex items-center gap-1">
                     <span className="text-white/50">Ключ. ставка:</span>
-                    <span className={event.effects.keyRateChange > 0 ? 'text-red-400' : 'text-emerald-400'}>
-                      {event.effects.keyRateChange > 0 ? '+' : ''}{event.effects.keyRateChange}%
+                    <span
+                      className={
+                        event.effects.keyRateChange > 0 ? 'text-red-400' : 'text-emerald-400'
+                      }
+                    >
+                      {event.effects.keyRateChange > 0 ? '+' : ''}
+                      {event.effects.keyRateChange}%
                     </span>
                   </div>
                 )}
@@ -94,8 +99,13 @@ export function EconomicEventsPanel() {
                 {event.effects.gdpGrowthChange && (
                   <div className="flex items-center gap-1">
                     <span className="text-white/50">Рост ВВП:</span>
-                    <span className={event.effects.gdpGrowthChange > 0 ? 'text-emerald-400' : 'text-red-400'}>
-                      {event.effects.gdpGrowthChange > 0 ? '+' : ''}{event.effects.gdpGrowthChange}%
+                    <span
+                      className={
+                        event.effects.gdpGrowthChange > 0 ? 'text-emerald-400' : 'text-red-400'
+                      }
+                    >
+                      {event.effects.gdpGrowthChange > 0 ? '+' : ''}
+                      {event.effects.gdpGrowthChange}%
                     </span>
                   </div>
                 )}
@@ -103,8 +113,13 @@ export function EconomicEventsPanel() {
                 {event.effects.unemploymentChange && (
                   <div className="flex items-center gap-1">
                     <span className="text-white/50">Безработица:</span>
-                    <span className={event.effects.unemploymentChange > 0 ? 'text-red-400' : 'text-emerald-400'}>
-                      {event.effects.unemploymentChange > 0 ? '+' : ''}{event.effects.unemploymentChange}%
+                    <span
+                      className={
+                        event.effects.unemploymentChange > 0 ? 'text-red-400' : 'text-emerald-400'
+                      }
+                    >
+                      {event.effects.unemploymentChange > 0 ? '+' : ''}
+                      {event.effects.unemploymentChange}%
                     </span>
                   </div>
                 )}
@@ -114,5 +129,5 @@ export function EconomicEventsPanel() {
         </Card>
       ))}
     </div>
-  );
+  )
 }

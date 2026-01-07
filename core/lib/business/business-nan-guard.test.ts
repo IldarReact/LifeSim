@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { calculateBusinessFinancials } from './business-financials'
-import { getInflatedPrice, getInflatedSalary } from '../calculations/price-helpers'
-import type { Business, Employee, EmployeeRole } from '../../types/business.types'
-import type { Skill } from '../../types/skill.types'
+
+import type { Business, Employee } from '../../types/business.types'
 import type { CountryEconomy } from '../../types/economy.types'
+import { getInflatedPrice, getInflatedSalary } from '../calculations/price-helpers'
+
+import { calculateBusinessFinancials } from './business-financials'
 
 describe('Business Financials NaN Guards', () => {
   // Base mock business generator
@@ -28,18 +29,19 @@ describe('Business Financials NaN Guards', () => {
     initialCost: 10000,
     quarterlyIncome: 0,
     quarterlyExpenses: 0,
+    quarterlyTax: 0,
     currentValue: 10000,
     employees: [],
     maxEmployees: 5,
     minEmployees: 1,
     reputation: 50,
     efficiency: 50,
-    taxRate: 0.2,
+    taxRate: 20,
     hasInsurance: false,
     insuranceCost: 0,
     creationCost: { energy: 0, money: 0 },
     playerRoles: { managerialRoles: [], operationalRole: null },
-    requiredRoles: [],
+    employeeRoles: [],
     inventory: {
       currentStock: 1000,
       maxStock: 1000,
@@ -72,7 +74,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN()
       expect(result.income).toBeGreaterThanOrEqual(0)
@@ -90,7 +92,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN()
     })
@@ -108,7 +110,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN()
       expect(result.income).toBe(0) // 0 efficiency usually means 0 demand
@@ -125,7 +127,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true, undefined, NaN)
+      const result = calculateBusinessFinancials(business, false, undefined, NaN)
 
       expect(result.income).not.toBeNaN()
     })
@@ -143,7 +145,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN()
       expect(result.expenses).not.toBeNaN()
@@ -163,7 +165,21 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
+    })
+
+    it('should handle NaN current stock', () => {
+      const business = createMockBusiness({
+        isServiceBased: false,
+        inventory: {
+          currentStock: NaN,
+          maxStock: 1000,
+          pricePerUnit: 50,
+          purchaseCost: 20,
+          autoPurchaseAmount: 0,
+        },
+      })
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN()
       expect(result.newInventory.currentStock).not.toBeNaN()
@@ -180,7 +196,7 @@ describe('Business Financials NaN Guards', () => {
           autoPurchaseAmount: 0,
         },
       })
-      const result = calculateBusinessFinancials(business, true)
+      const result = calculateBusinessFinancials(business, false)
 
       expect(result.income).not.toBeNaN() // Sales income 0
       expect(result.income).toBe(0)

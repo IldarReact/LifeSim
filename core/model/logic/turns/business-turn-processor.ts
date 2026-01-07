@@ -19,6 +19,7 @@ export interface BusinessTurnResult {
   updatedSkills: Skill[]
   totalIncome: number
   totalExpenses: number
+  totalTax: number
   playerRoleEnergyCost: number
   playerRoleSanityCost: number
   notifications: Notification[]
@@ -40,6 +41,7 @@ export function processBusinessTurn(
   const updatedSkills = [...playerSkills]
   let totalIncome = 0
   let totalExpenses = 0
+  let totalTax = 0
   let playerRoleEnergyCost = 0
   let playerRoleSanityCost = 0
   const notifications: Notification[] = []
@@ -172,6 +174,7 @@ export function processBusinessTurn(
     const shareFactor = Math.max(0, Math.min(100, playerSharePct)) / 100
     totalIncome += Math.round(financials.income * shareFactor)
     totalExpenses += Math.round(financials.expenses * shareFactor)
+    totalTax += Math.round(financials.taxAmount * shareFactor)
 
     // 7. Update employee experience (+3 months per quarter, scaled by effort)
     updatedBiz.employees = updatedBiz.employees.map((emp) => {
@@ -197,6 +200,7 @@ export function processBusinessTurn(
       inventory: financials.newInventory,
       quarterlyIncome: financials.income,
       quarterlyExpenses: financials.expenses,
+      quarterlyTax: financials.taxAmount,
       lastRoleEnergyCost: Math.abs(calculatePlayerRoleEffects(updatedBiz).energy || 0),
       lastRoleSanityCost: Math.abs(calculatePlayerRoleEffects(updatedBiz).sanity || 0),
       lastQuarterSummary: financials.debug
@@ -222,6 +226,9 @@ export function processBusinessTurn(
               typeof financials.expenses === 'number' && !isNaN(financials.expenses)
                 ? financials.expenses
                 : 0,
+            expensesBreakdown: financials.debug.expensesBreakdown,
+            reputationChange: updatedBiz.reputation - biz.reputation,
+            efficiencyChange: updatedBiz.efficiency - biz.efficiency,
             netProfit:
               typeof financials.netProfit === 'number' && !isNaN(financials.netProfit)
                 ? financials.netProfit
@@ -246,6 +253,7 @@ export function processBusinessTurn(
     updatedSkills,
     totalIncome,
     totalExpenses,
+    totalTax,
     playerRoleEnergyCost,
     playerRoleSanityCost,
     notifications,

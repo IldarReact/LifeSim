@@ -1,5 +1,8 @@
+import type { StaffImpactResult, EmployeeRole } from '../../types/business.types'
 import type { Skill } from '../../types/skill.types'
 import type { StatEffect } from '../../types/stats.types'
+
+import rolesData from '@/shared/data/business/roles.json'
 
 /**
  * Тип роли: управленческая или операционная
@@ -12,23 +15,14 @@ export type RoleType = 'managerial' | 'operational'
  * Влияние роли на бизнес
  */
 export interface BusinessImpact {
-  efficiencyBonus?: (skill: Skill | null) => number
+  efficiencyBase?: (skill: Skill | null) => number
+  efficiencyMultiplier?: (skill: Skill | null) => number
   expenseReduction?: (skill: Skill | null) => number
   salesBonus?: (skill: Skill | null) => number
   reputationBonus?: (skill: Skill | null) => number
   taxReduction?: (skill: Skill | null) => number
   legalProtection?: (skill: Skill | null) => number
   staffProductivityBonus?: (skill: Skill | null) => number
-}
-
-export interface StaffImpactResult {
-  efficiencyBonus?: number
-  expenseReduction?: number
-  salesBonus?: number
-  reputationBonus?: number
-  taxReduction?: number
-  legalProtection?: number // Снижение шанса негативных событий
-  staffProductivityBonus?: number // Бонус к продуктивности остальных сотрудников
 }
 
 /**
@@ -53,6 +47,18 @@ export interface EmployeeRoleConfig {
   staffImpact?: (stars: number) => StaffImpactResult
 }
 
+interface RawRoleData {
+  type: RoleType
+  name: string
+  description: string
+  playerEffects: StatEffect
+  skillGrowth: {
+    name: string
+    progressPerQuarter: number
+  } | null
+  impactCoefficients: Record<string, number>
+}
+
 /**
  * Конфигурация всех ролей сотрудников
  */
@@ -62,125 +68,69 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
   // ============================================
 
   manager: {
-    type: 'managerial',
-    name: 'Управляющий',
-    description: 'Организует процессы, мотивирует команду, принимает стратегические решения',
-
-    playerEffects: {
-      energy: -10,
-      sanity: -1,
-    },
-
-    skillGrowth: {
-      name: 'Менеджмент',
-      progressPerQuarter: 20,
-    },
-
+    ...(rolesData.manager as unknown as RawRoleData),
     businessImpact: {
-      efficiencyBonus: (skill) => (skill ? skill.level * 5 : 0),
+      efficiencyMultiplier: (skill) =>
+        skill ? skill.level * rolesData.manager.impactCoefficients.efficiencyMultiplier : 0,
     },
     staffImpact: (stars) => ({
-      efficiencyBonus: stars * 4,
+      efficiencyMultiplier: stars * rolesData.manager.impactCoefficients.staffEfficiencyMultiplier,
     }),
   },
 
   accountant: {
-    type: 'managerial',
-    name: 'Бухгалтер',
-    description: 'Контролирует финансы, оптимизирует налоги, снижает расходы',
-
-    playerEffects: {
-      energy: -8,
-      sanity: -1,
-    },
-
-    skillGrowth: {
-      name: 'Бухгалтерия',
-      progressPerQuarter: 20,
-    },
-
+    ...(rolesData.accountant as unknown as RawRoleData),
     businessImpact: {
-      taxReduction: (skill) => (skill ? skill.level * 2 : 0),
+      taxReduction: (skill) =>
+        skill ? skill.level * rolesData.accountant.impactCoefficients.taxReduction : 0,
     },
     staffImpact: (stars) => ({
-      taxReduction: stars * 2,
+      taxReduction: stars * rolesData.accountant.impactCoefficients.staffTaxReduction,
     }),
   },
 
   marketer: {
-    type: 'managerial',
-    name: 'Маркетолог',
-    description: 'Повышает узнаваемость бренда, привлекает клиентов',
-
-    playerEffects: {
-      energy: -12,
-      sanity: -1,
-    },
-
-    skillGrowth: {
-      name: 'Маркетинг',
-      progressPerQuarter: 20,
-    },
-
+    ...(rolesData.marketer as unknown as RawRoleData),
     businessImpact: {
-      reputationBonus: (skill) => (skill ? skill.level * 2 : 0), // +2 репутации за уровень
-      salesBonus: (skill) => (skill ? skill.level * 3 : 0), // +3% продаж за уровень
+      reputationBonus: (skill) =>
+        skill ? skill.level * rolesData.marketer.impactCoefficients.reputationBonus : 0,
+      salesBonus: (skill) =>
+        skill ? skill.level * rolesData.marketer.impactCoefficients.salesBonus : 0,
     },
     staffImpact: (stars) => ({
-      salesBonus: stars * 3,
-      reputationBonus: stars * 2,
+      salesBonus: stars * rolesData.marketer.impactCoefficients.staffSalesBonus,
+      reputationBonus: stars * rolesData.marketer.impactCoefficients.staffReputationBonus,
     }),
   },
 
   lawyer: {
-    type: 'managerial',
-    name: 'Юрист',
-    description: 'Решает юридические вопросы, защищает от штрафов и оптимизирует налоги',
-
-    playerEffects: {
-      energy: -10,
-      sanity: -2,
-    },
-
-    skillGrowth: {
-      name: 'Юриспруденция',
-      progressPerQuarter: 15,
-    },
-
+    ...(rolesData.lawyer as unknown as RawRoleData),
     businessImpact: {
-      taxReduction: (skill) => (skill ? skill.level * 3 : 0), // -3% налогов за уровень
-      expenseReduction: (skill) => (skill ? skill.level * 2 : 0), // -2% расходов за уровень
-      legalProtection: (skill) => (skill ? skill.level * 10 : 0), // -10% шанс проверок за уровень
+      taxReduction: (skill) =>
+        skill ? skill.level * rolesData.lawyer.impactCoefficients.taxReduction : 0,
+      expenseReduction: (skill) =>
+        skill ? skill.level * rolesData.lawyer.impactCoefficients.expenseReduction : 0,
+      legalProtection: (skill) =>
+        skill ? skill.level * rolesData.lawyer.impactCoefficients.legalProtection : 0,
     },
     staffImpact: (stars) => ({
-      taxReduction: stars * 3,
-      expenseReduction: stars * 2,
-      legalProtection: stars * 10, // Каждая звезда снижает шанс негативных событий на 10%
+      taxReduction: stars * rolesData.lawyer.impactCoefficients.staffTaxReduction,
+      expenseReduction: stars * rolesData.lawyer.impactCoefficients.staffExpenseReduction,
+      legalProtection: stars * rolesData.lawyer.impactCoefficients.staffLegalProtection,
     }),
   },
 
   hr: {
-    type: 'managerial',
-    name: 'HR-менеджер',
-    description: 'Управляет персоналом, повышает общую эффективность команды',
-
-    playerEffects: {
-      energy: -9,
-      sanity: -1,
-    },
-
-    skillGrowth: {
-      name: 'Управление персоналом',
-      progressPerQuarter: 18,
-    },
-
+    ...(rolesData.hr as unknown as RawRoleData),
     businessImpact: {
-      efficiencyBonus: (skill) => (skill ? skill.level * 5 : 0), // +5% эффективности за уровень
-      staffProductivityBonus: (skill) => (skill ? skill.level * 2 : 0), // +2% к продуктивности остальных за уровень
+      efficiencyMultiplier: (skill) =>
+        skill ? skill.level * rolesData.hr.impactCoefficients.efficiencyMultiplier : 0,
+      staffProductivityBonus: (skill) =>
+        skill ? skill.level * rolesData.hr.impactCoefficients.staffProductivityBonus : 0,
     },
     staffImpact: (stars) => ({
-      efficiencyBonus: stars * 5,
-      staffProductivityBonus: stars * 2, // Каждая звезда дает +2% к продуктивности остальных
+      efficiencyMultiplier: stars * rolesData.hr.impactCoefficients.staffEfficiencyMultiplier,
+      staffProductivityBonus: stars * rolesData.hr.impactCoefficients.staffStaffProductivityBonus,
     }),
   },
 
@@ -189,68 +139,42 @@ export const EMPLOYEE_ROLES_CONFIG: Record<string, EmployeeRoleConfig> = {
   // ============================================
 
   salesperson: {
-    type: 'operational',
-    name: 'Продавец',
-    description: 'Работает с клиентами, увеличивает продажи',
-
-    playerEffects: {
-      energy: -15,
-      sanity: -2,
-    },
-
-    skillGrowth: {
-      name: 'Продажи',
-      progressPerQuarter: 20,
-    },
-
+    ...(rolesData.salesperson as unknown as RawRoleData),
     businessImpact: {
-      salesBonus: (skill) => (skill ? skill.level * 10 : 5), // +10% за уровень, минимум +5%
+      salesBonus: (skill) =>
+        skill
+          ? skill.level * rolesData.salesperson.impactCoefficients.salesBonusPerLevel
+          : rolesData.salesperson.impactCoefficients.salesBonusMin,
     },
     staffImpact: (stars) => ({
-      salesBonus: stars * 2.5,
+      salesBonus: stars * rolesData.salesperson.impactCoefficients.staffSalesBonus,
     }),
   },
 
   technician: {
-    type: 'operational',
-    name: 'Техник',
-    description: 'Обслуживает оборудование, повышает качество продукции',
-
-    playerEffects: {
-      energy: -16,
-      sanity: -1,
-    },
-
-    skillGrowth: {
-      name: 'Инженерия',
-      progressPerQuarter: 20,
-    },
-
+    ...(rolesData.technician as unknown as RawRoleData),
     businessImpact: {
-      efficiencyBonus: (skill) => (skill ? skill.level * 8 : 5), // +8% за уровень
+      efficiencyMultiplier: (skill) =>
+        skill
+          ? skill.level * rolesData.technician.impactCoefficients.efficiencyBasePerLevel
+          : rolesData.technician.impactCoefficients.efficiencyBaseMin,
     },
     staffImpact: (stars) => ({
-      efficiencyBonus: stars * 2,
+      efficiencyMultiplier:
+        rolesData.technician.impactCoefficients.staffEfficiencyBase *
+        (1 + rolesData.technician.impactCoefficients.staffEfficiencyStarBonus * stars),
     }),
   },
 
   worker: {
-    type: 'operational',
-    name: 'Работник',
-    description: 'Выполняет основную работу, производит товары/услуги',
-
-    playerEffects: {
-      energy: -18,
-      sanity: -2,
-    },
-
-    skillGrowth: null, // Работник не дает роста навыков
-
+    ...(rolesData.worker as unknown as RawRoleData),
     businessImpact: {
-      efficiencyBonus: () => 5, // Фиксированный бонус +5%
+      efficiencyBase: () => rolesData.worker.impactCoefficients.playerEfficiencyBase,
     },
     staffImpact: (stars) => ({
-      efficiencyBonus: stars * 1,
+      efficiencyBase:
+        rolesData.worker.impactCoefficients.staffEfficiencyBase *
+        (1 + rolesData.worker.impactCoefficients.staffEfficiencyStarBonus * stars),
     }),
   },
 }
@@ -281,13 +205,13 @@ export function isOperationalRole(role: string): boolean {
 /**
  * Получить список всех управленческих ролей
  */
-export function getManagerialRoles(): string[] {
-  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isManagerialRole)
+export function getManagerialRoles(): EmployeeRole[] {
+  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isManagerialRole) as EmployeeRole[]
 }
 
 /**
  * Получить список всех операционных ролей
  */
-export function getOperationalRoles(): string[] {
-  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isOperationalRole)
+export function getOperationalRoles(): EmployeeRole[] {
+  return Object.keys(EMPLOYEE_ROLES_CONFIG).filter(isOperationalRole) as EmployeeRole[]
 }

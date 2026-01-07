@@ -1,7 +1,6 @@
 import type { TurnStep } from '../turn/turn-step'
 import { processBusinessTurn } from '../turns/business-turn-processor'
 
-import { formatGameDate } from '@/core/lib/quarter'
 
 export const businessStep: TurnStep = (ctx, state) => {
   const res = processBusinessTurn(
@@ -17,6 +16,7 @@ export const businessStep: TurnStep = (ctx, state) => {
 
   state.business.totalIncome = res.totalIncome
   state.business.totalExpenses = res.totalExpenses
+  state.business.totalTax = res.totalTax
 
   // Применяем затраты статов от ролей игрока
   const energyCost = res.playerRoleEnergyCost

@@ -13,8 +13,8 @@ export interface BusinessTemplate {
   quantity: number // Количество производимого товара за квартал
   isServiceBased: boolean // Является ли бизнес услуговым
   initialCost: number
-  upfrontCost: number // Первоначальный взнос
-  upfrontPaymentPercentage?: number // Процент первоначального взноса (опционально)
+  upfrontCost: number // Полная стоимость (бывший взнос)
+  upfrontPaymentPercentage?: number // Опционально
   openingQuarters: number // Сколько кварталов нужно для открытия
   monthlyIncome: number
   monthlyExpenses: number
@@ -26,18 +26,14 @@ export interface BusinessTemplate {
     purchaseCost: number
     autoPurchaseAmount: number
   }
-  requiredRoles: string[] // Роли сотрудников
-  risk: 'low' | 'medium' | 'high'
-  requiredSkills?: Array<{ name: string; level: number }>
-  requiredEmployees?: {
-    min: number
-    recommended: number
-  }
-  employeeRoles?: Array<{
-    role: string
+  employeeRoles: Array<{
+    role: import('@/core/types').EmployeeRole
     priority: 'required' | 'recommended' | 'optional'
     description: string
   }>
+  risk: 'low' | 'medium' | 'high'
+  energyCost?: number
+  stressImpact?: number
 }
 
 function validateBusinessType(item: unknown): item is BusinessTemplate {
@@ -57,8 +53,11 @@ function validateBusinessType(item: unknown): item is BusinessTemplate {
   if (typeof b.maxEmployees !== 'number' || b.maxEmployees < 0) return false
   if (typeof b.minEmployees !== 'number' || b.minEmployees < 0) return false
   if (!b.inventory || typeof b.inventory !== 'object') return false
-  if (!Array.isArray(b.requiredRoles)) return false
   if (!b.risk || typeof b.risk !== 'string') return false
+  if (!Array.isArray(b.employeeRoles) || b.employeeRoles.length === 0) {
+    console.error(`Business ${b.id} missing employeeRoles`)
+    return false
+  }
 
   return true
 }

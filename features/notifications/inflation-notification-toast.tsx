@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from "@/core/model/store"
 
 export function InflationNotificationToast() {
   const inflationNotification = useGameStore((state) => state.inflationNotification)

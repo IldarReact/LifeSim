@@ -16,7 +16,7 @@ import React from 'react'
 import { calculateQuarterlyReport } from '@/core/lib/calculations/calculate-quarterly-report'
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import { getShopItem } from '@/core/lib/shop-helpers'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { getItemCost } from '@/core/types/shop.types'
 import { Progress } from '@/shared/ui/progress'
 
@@ -27,7 +27,6 @@ export function FamilyFinancesCard() {
 
   const { familyMembers } = player.personal
   const country = countries[player.countryId]
-  const taxRate = country?.taxRate || 0.13
 
   // --- РАСЧЕТ ДОХОДОВ ---
   const playerSalary = player.quarterlySalary
@@ -35,9 +34,11 @@ export function FamilyFinancesCard() {
   // Доход от бизнесов
   let businessRevenue = 0
   let businessExpensesTotal = 0
+  let businessTaxesTotal = 0
   player.businesses.forEach((b) => {
     businessRevenue += b.quarterlyIncome
     businessExpensesTotal += b.quarterlyExpenses
+    businessTaxesTotal += b.quarterlyTax || 0
   })
 
   // Доход от членов семьи (с инфляцией для зарплат)
@@ -143,6 +144,7 @@ export function FamilyFinancesCard() {
     businessFinancialsOverride: {
       income: businessRevenue,
       expenses: businessExpensesTotal,
+      taxes: businessTaxesTotal,
     },
     expensesBreakdown,
   })

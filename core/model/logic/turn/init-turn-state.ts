@@ -21,7 +21,7 @@ export function initTurnState(ctx: TurnContext): TurnState {
     // meta
     turn: ctx.turn,
     year: ctx.year,
-    gameStatus: prev.gameStatus as any || 'playing',
+    gameStatus: prev.gameStatus || 'playing',
     isAborted: false,
     gameOverReason: null,
 
@@ -50,6 +50,7 @@ export function initTurnState(ctx: TurnContext): TurnState {
         credits: 0,
         mortgage: 0,
         other: 0,
+        total: 0,
       },
       modifiers: {},
     },
@@ -58,6 +59,7 @@ export function initTurnState(ctx: TurnContext): TurnState {
     business: {
       totalIncome: 0,
       totalExpenses: 0,
+      totalTax: 0,
     },
 
     // working stats

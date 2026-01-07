@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { Lightbulb, GraduationCap, Brain } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { Lightbulb, GraduationCap, Brain } from 'lucide-react'
+import { useState } from 'react'
 
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
-import { useGameStore } from "@/core/model/game-store"
-import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
+import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
+import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
+import { useGameStore } from '@/core/model/store'
 
 export function IntelligenceIndicator() {
   const { player, countries } = useGameStore()
@@ -26,9 +26,13 @@ export function IntelligenceIndicator() {
       >
         <div className="flex items-center gap-1">
           <Lightbulb className="w-5 h-5 text-yellow-400" />
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.intelligence || 0)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">
+            {Math.round(player?.personal?.stats?.intelligence || 0)}
+          </span>
         </div>
-        <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Интеллект</span>
+        <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
+          Интеллект
+        </span>
       </button>
 
       <AnimatePresence>
@@ -51,37 +55,56 @@ export function IntelligenceIndicator() {
                     <Brain className="w-3.5 h-3.5" />
                     Базовый уровень
                   </span>
-                  <span className="text-white/70 font-medium">{player.personal.stats.intelligence}</span>
+                  <span className="text-white/70 font-medium">
+                    {player.personal.stats.intelligence}
+                  </span>
                 </div>
 
                 {statMods.intelligence.map((mod, index) => (
-                  <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={(mod.intelligence || 0) < 0 ? "text-red-500 flex items-center gap-2" : "text-green-500 flex items-center gap-2"}>
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors"
+                  >
+                    <span
+                      className={
+                        (mod.intelligence || 0) < 0
+                          ? 'text-red-500 flex items-center gap-2'
+                          : 'text-green-500 flex items-center gap-2'
+                      }
+                    >
                       <GraduationCap className="w-3.5 h-3.5" />
                       {mod.source}
                     </span>
                     <span className="text-white/70 font-medium">{mod.intelligence}</span>
                   </div>
                 ))}
-                
+
                 {lifestyleIntelligenceMod !== 0 && (
                   <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={lifestyleIntelligenceMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
+                    <span
+                      className={
+                        lifestyleIntelligenceMod > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
                       Образ жизни (еда, жильё, транспорт)
                     </span>
                     <span className="text-white/70 font-medium">
-                      {lifestyleIntelligenceMod > 0 ? "+" : ""}{lifestyleIntelligenceMod}
+                      {lifestyleIntelligenceMod > 0 ? '+' : ''}
+                      {lifestyleIntelligenceMod}
                     </span>
                   </div>
                 )}
 
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
-                    <span className="text-white flex items-center gap-2">
-                      Итого изменение
-                    </span>
-                    <span className={`text-white text-sm ${(intelligenceMod + lifestyleIntelligenceMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-                      {(intelligenceMod + lifestyleIntelligenceMod) > 0 ? "+" : ""}{intelligenceMod + lifestyleIntelligenceMod}
+                    <span className="text-white flex items-center gap-2">Итого изменение</span>
+                    <span
+                      className={`text-white text-sm ${intelligenceMod + lifestyleIntelligenceMod >= 0 ? 'text-green-400' : 'text-rose-400'}`}
+                    >
+                      {intelligenceMod + lifestyleIntelligenceMod > 0 ? '+' : ''}
+                      {intelligenceMod + lifestyleIntelligenceMod}
                     </span>
                   </div>
                 </div>

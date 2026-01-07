@@ -10,11 +10,10 @@ import { HealthIndicator } from './health-indicator'
 import { IntelligenceIndicator } from './intelligence-indicator'
 import { MoneyIndicator } from './money-indicator'
 import { NotificationsMenu } from './notifications-menu'
-import { WorkIndicator } from './work-indicator'
 import { SanityIndicator } from './sanity-indicator'
 
 import { getQuarter } from '@/core/lib/quarter'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { MultiplayerHud } from '@/features/multiplayer/multiplayer-hub'
 import {
   AlertDialog,
@@ -27,8 +26,6 @@ import {
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
-import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
-import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
 
 export function TopStatusBar() {
   const { player, turn, year, resetGame, countries } = useGameStore()
@@ -36,19 +33,6 @@ export function TopStatusBar() {
   if (!player) return null
 
   const currentCountry = countries[player.countryId]
-  const statMods = calculateStatModifiers(player)
-  const lifestyleResult = processLifestyle(player, countries)
-  const deltas = {
-    happiness:
-      getTotalModifier(statMods.happiness, 'happiness') +
-      (lifestyleResult.modifiers.happiness || 0),
-    energy: getTotalModifier(statMods.energy, 'energy') + (lifestyleResult.modifiers.energy || 0),
-    health: getTotalModifier(statMods.health, 'health') + (lifestyleResult.modifiers.health || 0),
-    sanity: getTotalModifier(statMods.sanity, 'sanity') + (lifestyleResult.modifiers.sanity || 0),
-    intelligence:
-      getTotalModifier(statMods.intelligence, 'intelligence') +
-      (lifestyleResult.modifiers.intelligence || 0),
-  }
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 px-4 py-2 md:px-6 md:py-3">
@@ -78,62 +62,8 @@ export function TopStatusBar() {
             <div className="h-8 w-1px bg-white/10" />
             <IntelligenceIndicator />
           </div>
-          <div className="hidden lg:flex items-center gap-3 absolute left-1/2 -translate-x-1/2 -bottom-5">
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.happiness >= 0
-                  ? 'bg-green-500/20 text-green-300'
-                  : 'bg-rose-500/20 text-rose-300'
-              }`}
-            >
-              Радость {deltas.happiness > 0 ? '+' : ''}
-              {deltas.happiness}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.energy >= 0
-                  ? 'bg-green-500/20 text-green-300'
-                  : 'bg-rose-500/20 text-rose-300'
-              }`}
-            >
-              Энергия {deltas.energy > 0 ? '+' : ''}
-              {deltas.energy}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.health >= 0
-                  ? 'bg-green-500/20 text-green-300'
-                  : 'bg-rose-500/20 text-rose-300'
-              }`}
-            >
-              Здоровье {deltas.health > 0 ? '+' : ''}
-              {deltas.health}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.sanity >= 0
-                  ? 'bg-green-500/20 text-green-300'
-                  : 'bg-rose-500/20 text-rose-300'
-              }`}
-            >
-              Рассудок {deltas.sanity > 0 ? '+' : ''}
-              {deltas.sanity}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                deltas.intelligence >= 0
-                  ? 'bg-green-500/20 text-green-300'
-                  : 'bg-rose-500/20 text-rose-300'
-              }`}
-            >
-              Интеллект {deltas.intelligence > 0 ? '+' : ''}
-              {deltas.intelligence}
-            </span>
-          </div>
-
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
-            <WorkIndicator />
             <NotificationsMenu />
 
             <div className="h-8 w-1px bg-white/10" />

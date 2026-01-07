@@ -18,38 +18,38 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
 
   // Actions
   setSetupCountry: (id: string) => {
-    ; (set as any)(
-      { setupCountryId: id, gameStatus: 'select_character' },
-      false,
-      'game/setSetupCountry',
-    )
+    set({ setupCountryId: id, gameStatus: 'select_character' }, false, 'game/setSetupCountry')
   },
 
   startSinglePlayer: () => {
-    ; (set as any)({
-      gameStatus: 'setup',
-      countries: WORLD_COUNTRIES
-    }, false, 'game/startSinglePlayer')
+    set(
+      {
+        gameStatus: 'setup',
+        countries: WORLD_COUNTRIES,
+      },
+      false,
+      'game/startSinglePlayer',
+    )
   },
 
   initializeGame: (countryId: string, archetype: string) => {
     const cId = countryId || get().setupCountryId
     if (!cId) return
-      ; (set as any)(
-        {
-          turn: 1,
-          year: 2024,
-          gameStatus: 'playing',
-          countries: WORLD_COUNTRIES,
-          player: createInitialPlayer(archetype, cId),
-          history: [],
-          notifications: [],
-          pendingApplications: [],
-          pendingFreelanceApplications: [],
-        },
-        false,
-        'game/initializeGame',
-      )
+    set(
+      {
+        turn: 1,
+        year: 2024,
+        gameStatus: 'playing',
+        countries: WORLD_COUNTRIES,
+        player: createInitialPlayer(archetype, cId),
+        history: [],
+        notifications: [],
+        pendingApplications: [],
+        pendingFreelanceApplications: [],
+      },
+      false,
+      'game/initializeGame',
+    )
   },
 
   resetGame: () => {
@@ -73,7 +73,7 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   setActiveActivity: (activity: string | null) => {
-    ; (set as any)({ activeActivity: activity }, false, 'game/setActiveActivity')
+    set({ activeActivity: activity }, false, 'game/setActiveActivity')
   },
 
   nextTurn: () => {
@@ -164,6 +164,9 @@ export const createGameSlice: GameStateCreator<GameSlice> = (set, get) => ({
   },
 
   clearInflationNotification: () => {
-    ; (set as any)({ inflationNotification: null }, false, 'game/clearInflationNotification')
+    set({ inflationNotification: null }, false, 'game/clearInflationNotification')
+  },
+  closeYearReport: () => {
+    set({ gameStatus: 'playing' }, false, 'game/closeYearReport')
   },
 })

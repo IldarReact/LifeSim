@@ -7,7 +7,8 @@ const SAVE_KEY = 'lifesim_save_v1'
 const CURRENT_VERSION = 1
 
 // Secret key for HMAC (в продакшене должен быть в .env)
-const SECRET_KEY = process.env.NEXT_PUBLIC_SAVE_SECRET || 'lifesim-default-secret-key-change-in-production'
+const SECRET_KEY =
+  process.env.NEXT_PUBLIC_SAVE_SECRET || 'lifesim-default-secret-key-change-in-production'
 
 // Strict mode: reject corrupted/modified saves
 const STRICT_MODE = process.env.NODE_ENV === 'production'
@@ -21,6 +22,12 @@ interface SaveData {
 // HMAC-SHA256 checksum for anti-tampering
 function calculateChecksum(data: string): string {
   return CryptoJS.HmacSHA256(data, SECRET_KEY).toString()
+}
+
+declare global {
+  interface Window {
+    __saveClearedFlag?: boolean
+  }
 }
 
 export const saveManager = {
@@ -37,10 +44,12 @@ export const saveManager = {
       }
 
       // Skip if in setup/menu phase (before game fully initialized)
-      if (state.gameStatus === 'menu' ||
+      if (
+        state.gameStatus === 'menu' ||
         state.gameStatus === 'setup' ||
         state.gameStatus === 'select_country' ||
-        state.gameStatus === 'select_character') {
+        state.gameStatus === 'select_character'
+      ) {
         return
       }
 
@@ -53,12 +62,16 @@ export const saveManager = {
       const validation = GameStateSchema.safeParse(state)
       if (!validation.success) {
         console.error('❌ Save validation failed:')
-        console.error('Detailed errors:', validation.error.errors.map(e => ({
-          path: e.path.join('.'),
-          message: e.message,
-          code: e.code,
-          received: (e as any).received
-        })))
+        console.error(
+          'Detailed errors:',
+          validation.error.errors.map((e) => ({
+            path: e.path.join('.'),
+            message: e.message,
+            code: e.code,
+            received:
+              'received' in e ? (e as unknown as Record<string, unknown>).received : undefined,
+          })),
+        )
         console.error('First 3 errors in detail:', validation.error.errors.slice(0, 3))
 
         if (STRICT_MODE) {
@@ -78,7 +91,7 @@ export const saveManager = {
       const saveData: SaveData = {
         version: CURRENT_VERSION,
         data: serialized,
-        checksum
+        checksum,
       }
 
       // 5. Write
@@ -121,7 +134,7 @@ export const saveManager = {
         const migratedData = migrateState(
           superjson.parse(saveData.data),
           saveData.version,
-          CURRENT_VERSION
+          CURRENT_VERSION,
         )
         // Re-serialize after migration
         saveData.data = superjson.stringify(migratedData)
@@ -134,12 +147,17 @@ export const saveManager = {
       const validation = GameStateSchema.safeParse(state)
       if (!validation.success) {
         console.error('❌ Loaded state schema validation failed:')
-        console.error('Errors:', validation.error.errors.map(e => ({
-          path: e.path.join('.'),
-          message: e.message,
-          code: e.code
-        })))
-        console.warn('💡 Hint: If you recently updated the game, your old save might be incompatible.')
+        console.error(
+          'Errors:',
+          validation.error.errors.map((e) => ({
+            path: e.path.join('.'),
+            message: e.message,
+            code: e.code,
+          })),
+        )
+        console.warn(
+          '💡 Hint: If you recently updated the game, your old save might be incompatible.',
+        )
         console.warn('💡 Try clearing localStorage or starting a new game.')
 
         if (STRICT_MODE) {
@@ -150,7 +168,7 @@ export const saveManager = {
           this.clear()
           // Устанавливаем флаг для UI
           if (typeof window !== 'undefined') {
-            (window as any).__saveClearedFlag = true
+            window.__saveClearedFlag = true
           }
           return null
         }
@@ -174,5 +192,5 @@ export const saveManager = {
       return
     }
     localStorage.removeItem(SAVE_KEY)
-  }
+  },
 }

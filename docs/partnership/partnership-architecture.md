@@ -174,7 +174,7 @@ core/
     ├── store.ts
     │   └─ createPartnershipBusinessSlice()
     │
-    └── game-store.ts
+    └── multiplayer-sync.ts
         └─ enableMultiplayerSync()
             └─ Event handlers
 ```
@@ -182,22 +182,26 @@ core/
 ## Принципы проектирования
 
 ### 1. Разделение ответственности
+
 - **UI** - только отображение и вызов actions
 - **Store** - бизнес-логика и state management
 - **Permissions** - проверка прав доступа
 - **Events** - синхронизация между игроками
 
 ### 2. Типобезопасность
+
 - Все события строго типизированы
 - Discriminated unions для GameEvent
 - Автокомплит и проверка типов в IDE
 
 ### 3. Масштабируемость
+
 - Легко добавить новые типы изменений
 - Легко добавить новые проверки прав
 - Легко расширить события
 
 ### 4. Простота использования
+
 - Понятные имена функций
 - Минимум кода в UI
 - Автоматическая синхронизация
@@ -207,15 +211,14 @@ core/
 ### Добавить новый тип изменения "Ребрендинг"
 
 1. **Добавить тип**:
+
 ```typescript
 // business.types.ts
-export type BusinessChangeType = 
-  | 'price'
-  | 'quantity'
-  | 'rebrand' // ← новый тип
+export type BusinessChangeType = 'price' | 'quantity' | 'rebrand' // ← новый тип
 ```
 
 2. **Расширить payload**:
+
 ```typescript
 // events.types.ts
 data: {
@@ -227,10 +230,11 @@ data: {
 ```
 
 3. **Использовать**:
+
 ```typescript
 proposeBusinessChange(businessId, 'rebrand', {
   newName: 'Новое название',
-  newDescription: 'Новое описание'
+  newDescription: 'Новое описание',
 })
 ```
 

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { LifeGoal } from '@/core/types'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
@@ -200,7 +200,7 @@ export function PlayerCard() {
           <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent" />
         </div>
 
-        <div className="relative z-10 p-8 flex flex-col justify-end h-full min-h-[240px]">
+        <div className="relative z-10 p-8 flex flex-col justify-end h-full min-h-240px">
           <div className="mb-6">
             <h2 className="text-4xl font-bold text-white mb-2">{player.name}</h2>
             <div className="flex items-center gap-3 text-white/70">

@@ -1,13 +1,14 @@
-"use client"
+'use client'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { GameStatus } from "@/core/types"
-import { GameEnd } from "@/features/end/ui"
-import { EventModal } from "@/features/events/event-modal"
-import { ActivityNavigation, ActivityContent } from "@/features/gameplay/ui"
-import { MainMenu } from "@/features/menu/main-menu"
-import { WorldSelect, CharacterSelect } from "@/features/setup/components"
-import { TopStatusBar } from "@/shared/ui/top-bar/top-status-bar"
+import { useGameStore } from '@/core/model/store'
+import type { GameStatus } from '@/core/types'
+import { GameEnd } from '@/features/end/ui'
+import { EventModal } from '@/features/events/event-modal'
+import { ActivityNavigation, ActivityContent } from '@/features/gameplay/ui'
+import { MainMenu } from '@/features/menu/main-menu'
+import { WorldSelect, CharacterSelect } from '@/features/setup/components'
+import { YearReportModal } from '@/features/reports/year-report-modal'
+import { TopStatusBar } from '@/shared/ui/top-bar/top-status-bar'
 
 const GameplayScreen = () => (
   <div className="min-h-screen bg-background flex flex-col">
@@ -28,7 +29,6 @@ const GameEndScreenWrapper = () => (
   </div>
 )
 
-
 const SCREENS: Record<GameStatus, React.ComponentType> = {
   menu: MainMenu,
   setup: WorldSelect,
@@ -36,6 +36,7 @@ const SCREENS: Record<GameStatus, React.ComponentType> = {
   select_character: CharacterSelect,
   playing: GameplayScreen,
   ended: GameEndScreenWrapper,
+  year_report: YearReportModal,
 }
 
 export function GameBoard() {

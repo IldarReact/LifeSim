@@ -39,6 +39,16 @@ export function createEmptyTaxesBreakdown(): TaxesBreakdown {
   };
 }
 
+/**
+ * Safely converts a potentially null, undefined, or NaN value to a number.
+ */
+export function sanitizeNumber(val: number | null | undefined): number {
+  if (val === null || val === undefined || isNaN(val)) {
+    return 0;
+  }
+  return val;
+}
+
 export function createEmptyQuarterlyReport(): QuarterlyReport {
   return {
     income: createEmptyIncomeBreakdown(),

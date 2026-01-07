@@ -1,8 +1,11 @@
-import type { GameStateCreator } from '../../../types'
+import type { GameStore } from '../../../types'
 
 import { canChangePrice, syncPriceToNetwork } from '@/core/lib/business/business-network'
+import type { Business } from '@/core/types/business.types'
+import type { PricingProductionSlice } from '../../../types/business.types'
+import type { GameStateCreator } from '../../../types'
 
-export const createPricingProductionSlice: GameStateCreator<Record<string, unknown>> = (
+export const createPricingProductionSlice: GameStateCreator<PricingProductionSlice> = (
   set,
   get,
 ) => ({
@@ -40,12 +43,12 @@ export const createPricingProductionSlice: GameStateCreator<Record<string, unkno
       console.log(`[Pricing] Price changed for "${business.name}": ${oldPrice} → ${clampedPrice}`)
     }
 
-    const k = 0.15
-    const recalcInventoryPrice = (b: any) => {
+    const k = 15 // markup coefficient per price level
+    const recalcInventoryPrice = (b: Business): Business => {
       if (b.isServiceBased || !b.inventory) return b
       const level = b.price || 5
       const cost = b.inventory.purchaseCost
-      const newPricePerUnit = Math.round(cost * (1 + k * (level - 5)))
+      const newPricePerUnit = Math.round(cost * (1 + (k / 100) * (level - 5)))
       return {
         ...b,
         inventory: {
@@ -66,12 +69,14 @@ export const createPricingProductionSlice: GameStateCreator<Record<string, unkno
       )
     }
 
-    set({
-      player: {
-        ...state.player,
-        businesses: updatedBusinesses,
-      },
-    })
+    set((state) => ({
+      player: state.player
+        ? {
+            ...state.player,
+            businesses: updatedBusinesses,
+          }
+        : null,
+    }))
   },
 
   setQuantity: (businessId: string, newQuantity: number) => {
@@ -95,11 +100,40 @@ export const createPricingProductionSlice: GameStateCreator<Record<string, unkno
       `[Pricing] Production plan changed for "${business.name}": ${oldQuantity} → ${Math.round(newQuantity)} units`,
     )
 
-    set({
-      player: {
-        ...state.player,
-        businesses: updatedBusinesses,
-      },
+    set((state) => ({
+      player: state.player
+        ? {
+            ...state.player,
+            businesses: updatedBusinesses,
+          }
+        : null,
+    }))
+  },
+
+  setAutoPurchase: (businessId: string, amount: number) => {
+    const state = get()
+    if (!state.player) return
+
+    const updatedBusinesses = state.player.businesses.map((b) => {
+      if (b.id === businessId && b.inventory) {
+        return {
+          ...b,
+          inventory: {
+            ...b.inventory,
+            autoPurchaseAmount: amount,
+          },
+        }
+      }
+      return b
     })
+
+    set((state) => ({
+      player: state.player
+        ? {
+            ...state.player,
+            businesses: updatedBusinesses,
+          }
+        : null,
+    }))
   },
 })

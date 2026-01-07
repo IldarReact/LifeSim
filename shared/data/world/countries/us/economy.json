@@ -8,7 +8,7 @@
   "keyRate": 5.33,
   "unemployment": 4.1,
   "taxRate": 24,
-  "corporateTaxRate": 0.21,
+  "corporateTaxRate": 24,
   "salaryModifier": 1.8,
   "costOfLivingModifier": 1.6,
   "baseSalaries": {

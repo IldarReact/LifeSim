@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
-import { createEmployeesSlice } from '../activities/work/business/employees-slice'
 import { createCoreBusinessSlice } from '../activities/work/business/core-business-slice'
+import { createEmployeesSlice } from '../activities/work/business/employees-slice'
 
 describe('employees-slice', () => {
   it('exports a creator function', () => {
@@ -44,12 +44,12 @@ describe('employees-slice', () => {
             minEmployees: 1,
             reputation: 50,
             efficiency: 50,
-            taxRate: 0.15,
+            taxRate: 15,
             hasInsurance: false,
             insuranceCost: 0,
             creationCost: { energy: 0, money: 0 },
             playerRoles: { managerialRoles: [], operationalRole: null },
-            requiredRoles: [],
+            employeeRoles: [],
             inventory: {
               currentStock: 1000,
               maxStock: 1000,

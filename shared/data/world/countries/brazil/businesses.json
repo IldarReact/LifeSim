@@ -1,18 +1,20 @@
 [
   {
-    "id": "bus_acai",
+    "id": "bus_food_acai",
     "name": "Açaí Shop",
     "type": "food",
     "description": "Магазин асаи — тренд в Рио и Сан-Паулу",
+    "energyCost": 15,
+    "stressImpact": 2,
     "price": 12,
     "quantity": 600,
     "isServiceBased": false,
     "initialCost": 55000,
-    "upfrontCost": 35000,
+    "upfrontCost": 11000,
     "openingQuarters": 2,
     "monthlyIncome": 28000,
     "monthlyExpenses": 16000,
-    "maxEmployees": 6,
+    "maxEmployees": 30,
     "minEmployees": 3,
     "inventory": {
       "maxStock": 4000,
@@ -20,26 +22,36 @@
       "purchaseCost": 5.5,
       "autoPurchaseAmount": 1000
     },
-    "requiredRoles": [
-      "salesperson",
-      "worker"
+    "employeeRoles": [
+      {
+        "role": "manager",
+        "priority": "required",
+        "description": "Управление магазином и закупками ягод"
+      },
+      {
+        "role": "salesperson",
+        "priority": "required",
+        "description": "Обслуживание клиентов и приготовление боулов"
+      }
     ],
     "risk": "medium"
   },
   {
-    "id": "bus_lavajato",
+    "id": "bus_service_carwash",
     "name": "Lava Jato",
     "type": "service",
     "description": "Ручная автомойка — бразильская классика",
+    "energyCost": 25,
+    "stressImpact": 4,
     "price": 25,
     "quantity": 0,
     "isServiceBased": true,
     "initialCost": 180000,
-    "upfrontCost": 120000,
+    "upfrontCost": 36000,
     "openingQuarters": 3,
     "monthlyIncome": 32000,
     "monthlyExpenses": 18000,
-    "maxEmployees": 10,
+    "maxEmployees": 50,
     "minEmployees": 5,
     "inventory": {
       "maxStock": 0,
@@ -47,10 +59,22 @@
       "purchaseCost": 0,
       "autoPurchaseAmount": 0
     },
-    "requiredRoles": [
-      "worker",
-      "salesperson",
-      "manager"
+    "employeeRoles": [
+      {
+        "role": "manager",
+        "priority": "required",
+        "description": "Управление персоналом и контроль качества"
+      },
+      {
+        "role": "worker",
+        "priority": "required",
+        "description": "Ручная мойка автомобилей"
+      },
+      {
+        "role": "salesperson",
+        "priority": "recommended",
+        "description": "Привлечение клиентов и доп. услуги"
+      }
     ],
     "risk": "low"
   }

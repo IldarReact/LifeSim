@@ -1,8 +1,11 @@
 'use client'
 
-import { Building, DollarSign, Users, Briefcase, CheckCircle, XCircle } from 'lucide-react'
+import { DollarSign, Users, Briefcase, CheckCircle, XCircle } from 'lucide-react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { EmployeeCard } from '../../shared/components/business/employee-card'
+
+import { getRoleConfig } from '@/core/lib/business'
+import type { EmployeeRole, StaffImpactResult } from '@/core/types'
 import type {
   GameOffer,
   JobOfferDetails,
@@ -10,14 +13,10 @@ import type {
   ShareSaleOfferDetails,
 } from '@/core/types/game-offers.types'
 import { isJobOffer, isPartnershipOffer, isShareSaleOffer } from '@/core/types/game-offers.types'
-import type { EmployeeRole } from '@/core/types'
-import { EmployeeCard } from '@/shared/components/business/employee-card'
 import { ROLE_LABELS, ROLE_ICONS } from '@/shared/constants/business'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/ui/dialog'
-
-import { getRoleConfig } from '@/core/lib/business'
 
 interface OfferDetailsDialogProps {
   isOpen: boolean
@@ -125,7 +124,7 @@ function JobOfferContent({ details }: { details: JobOfferDetails }) {
         stars={3} // Дефолтное значение для оффера
         impact={{
           ...baseImpact,
-          salesBonus: (baseImpact.salesBonus || 0) + (details.kpiBonus || 0),
+          salesBonus: ((baseImpact as StaffImpactResult).salesBonus || 0) + (details.kpiBonus || 0),
         }}
       />
     </div>

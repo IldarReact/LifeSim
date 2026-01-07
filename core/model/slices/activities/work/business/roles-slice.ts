@@ -1,6 +1,6 @@
-import { isManagerialRole } from '@/core/lib/business/employee-roles.config'
 import type { GameStateCreator } from '../../../types'
 
+import { isManagerialRole } from '@/core/lib/business/employee-roles.config'
 import type { EmployeeRole } from '@/core/types/business.types'
 
 export const createRolesSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({

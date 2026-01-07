@@ -1,23 +1,17 @@
-"use client"
+'use client'
 
-import type { MouseEvent } from "react"
-
-import { useGameStore } from "@/core/model/game-store"
+import { useGameStore } from '@/core/model/store'
 
 export function YearReportModal() {
-  const { gameStatus, history, turn } = useGameStore()
+  const { gameStatus, history, closeYearReport } = useGameStore()
 
-  // This modal doesn't seem to be used in the current implementation
-  // The game doesn't have a "year_report" status
-  // Returning null for now until the feature is properly implemented
-  if (gameStatus !== "ended") return null
+  if (gameStatus !== 'year_report') return null
 
   const lastSnapshot = history[history.length - 1]
   if (!lastSnapshot) return null
 
-  const handleClose = (event: MouseEvent<HTMLButtonElement>): void => {
-    // TODO: Implement close functionality when year report feature is added
-    console.log("Close year report", event)
+  const handleClose = (): void => {
+    closeYearReport()
   }
 
   return (

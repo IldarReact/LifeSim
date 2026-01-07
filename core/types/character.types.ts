@@ -1,4 +1,5 @@
 import type { Stats } from './stats.types'
+import type { Debt } from './finance.types'
 
 export interface CharacterSkill {
   id: string
@@ -9,7 +10,7 @@ export interface CharacterSkill {
 export interface CharacterDebt {
   id: string
   name: string
-  type: string
+  type: Debt['type']
   principalAmount: number
   remainingAmount: number
   interestRate: number

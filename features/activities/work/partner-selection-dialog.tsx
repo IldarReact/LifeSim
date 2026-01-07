@@ -4,6 +4,7 @@ import { Users, DollarSign, CheckCircle, XCircle, Globe, User } from "lucide-rea
 import React from "react"
 
 import { getOnlinePlayers } from "@/core/lib/multiplayer"
+import { Player } from "@/features/multiplayer/multiplayer-hub"
 import { Button } from "@/shared/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 
@@ -22,8 +23,8 @@ export function PartnerSelectionDialog({
   businessCost,
   onSelectPartner
 }: PartnerSelectionDialogProps) {
-  const [onlinePlayers, setOnlinePlayers] = React.useState<any[]>([])
-  const [selectedPlayer, setSelectedPlayer] = React.useState<any | null>(null)
+  const [onlinePlayers, setOnlinePlayers] = React.useState<Player[]>([])
+  const [selectedPlayer, setSelectedPlayer] = React.useState<Player | null>(null)
   const [playerShare, setPlayerShare] = React.useState<number>(50) // Доля игрока в процентах
 
   React.useEffect(() => {

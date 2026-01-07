@@ -1,6 +1,12 @@
-import type { Business, EmployeeRole, EmployeeCandidate } from "@/core/types"
+import type { Business, EmployeeRole, EmployeeCandidate } from '@/core/types'
 
 export interface BusinessManagementDialogProps {
+  businessId: string | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export interface BusinessManagementProps {
   business: Business
   playerCash: number
   proposalsCount?: number
@@ -12,7 +18,6 @@ export interface BusinessManagementDialogProps {
   onJoinAsEmployee: (businessId: string, role: EmployeeRole, salary: number) => void
   onLeaveJob: (businessId: string) => void
   onUnassignRole: (businessId: string, role: EmployeeRole) => void
-  trigger?: React.ReactNode
 }
 
 export interface AvailablePosition {

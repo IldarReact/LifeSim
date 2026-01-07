@@ -1,11 +1,12 @@
+import { getRoleConfig } from './employee-roles.config'
+import { getPlayerRoleBusinessImpact } from './player-roles'
+
 import {
   getRandomNegativeEvent,
   getRandomPositiveEvent,
 } from '@/core/lib/data-loaders/static-data-loader'
-import type { Business, BusinessEvent } from '@/core/types/business.types'
 import type { Skill } from '@/core/types'
-import { getRoleConfig } from './employee-roles.config'
-import { getPlayerRoleBusinessImpact } from './player-roles'
+import type { Business, BusinessEvent } from '@/core/types/business.types'
 
 /**
  * Генерирует случайные события для бизнеса

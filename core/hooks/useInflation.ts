@@ -10,9 +10,9 @@ import {
   getInflatedHousingPrice,
   getInflatedEducationPrice,
   getInflatedShopPrice,
-  getInflatedBaseSalary
+  getInflatedBaseSalary,
 } from '@/core/lib/calculations/price-helpers'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 // Type guards для автоопределения категории
@@ -29,7 +29,7 @@ type PriceableItem =
  * Main hook - автоматически применяет инфляцию
  */
 export function useInflatedPrice(item: PriceableItem): number {
-  const economy = useGameStore(state => {
+  const economy = useGameStore((state) => {
     if (!state.countries || !state.player?.countryId) return undefined
     return state.countries[state.player.countryId]
   })
@@ -41,12 +41,13 @@ export function useInflatedPrice(item: PriceableItem): number {
     }
 
     // Get base price (handle recurring items)
-    const basePrice = ('costPerTurn' in item && item.costPerTurn) 
-      ? item.costPerTurn 
-      : ('price' in item && item.price) 
-        ? item.price 
-        : 0
-    
+    const basePrice =
+      'costPerTurn' in item && item.costPerTurn
+        ? item.costPerTurn
+        : 'price' in item && item.price
+          ? item.price
+          : 0
+
     if (!basePrice) return 0
     if (!economy) return basePrice
 
@@ -77,28 +78,30 @@ export function useInflatedPrice(item: PriceableItem): number {
  * Hook для массива items (списки товаров)
  */
 export function useInflatedPrices<T extends PriceableItem>(
-  items: T[]
+  items: T[],
 ): Array<T & { inflatedPrice: number }> {
-  const economy = useGameStore(state => {
+  const economy = useGameStore((state) => {
     if (!state.countries || !state.player?.countryId) return undefined
     return state.countries[state.player.countryId]
   })
 
   return useMemo(() => {
-    if (!economy) return items.map(item => ({ 
-      ...item, 
-      inflatedPrice: 'salary' in item 
-        ? item.salary 
-        : ('costPerTurn' in item && item.costPerTurn) 
-          ? item.costPerTurn 
-          : ('price' in item && item.price) 
-            ? item.price 
-            : 0
-    }))
+    if (!economy)
+      return items.map((item) => ({
+        ...item,
+        inflatedPrice:
+          'salary' in item
+            ? item.salary
+            : 'costPerTurn' in item && item.costPerTurn
+              ? item.costPerTurn
+              : 'price' in item && item.price
+                ? item.price
+                : 0,
+      }))
 
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item,
-      inflatedPrice: calculateInflatedPrice(item, economy)
+      inflatedPrice: calculateInflatedPrice(item, economy),
     }))
   }, [items, economy])
 }
@@ -107,7 +110,7 @@ export function useInflatedPrices<T extends PriceableItem>(
  * Hook для прямого доступа к economy (если нужна кастомная логика)
  */
 export function useEconomy(): CountryEconomy | undefined {
-  return useGameStore(state => {
+  return useGameStore((state) => {
     if (!state.countries || !state.player?.countryId) return undefined
     return state.countries[state.player.countryId]
   })
@@ -119,12 +122,13 @@ function calculateInflatedPrice(item: PriceableItem, economy: CountryEconomy): n
     return getInflatedBaseSalary(item.salary, economy)
   }
 
-  const basePrice = ('costPerTurn' in item && item.costPerTurn) 
-    ? item.costPerTurn 
-    : ('price' in item && item.price) 
-      ? item.price 
-      : 0
-  
+  const basePrice =
+    'costPerTurn' in item && item.costPerTurn
+      ? item.costPerTurn
+      : 'price' in item && item.price
+        ? item.price
+        : 0
+
   if (!basePrice) return 0
 
   const category = item.category

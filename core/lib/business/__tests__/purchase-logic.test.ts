@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { createBusinessPurchase } from '../purchase-logic'
 import type { BusinessTemplate } from '../purchase-logic'
 
@@ -12,7 +13,7 @@ describe('createBusinessPurchase', () => {
     monthlyExpenses: 5000,
     maxEmployees: 5,
     minEmployees: 1,
-    requiredRoles: [],
+    employeeRoles: [],
     inventory: undefined,
     upfrontPaymentPercentage: 20,
   }
@@ -23,23 +24,24 @@ describe('createBusinessPurchase', () => {
     const inflatedCost = 120000 // Inflation applied
     const result = createBusinessPurchase(mockTemplate, inflatedCost, currentTurn)
 
-    // Check cost calculation
-    expect(result.cost).toBe(24000) // 20% of 120000
+    // Check cost calculation - Always 100% per current logic
+    expect(result.cost).toBe(120000)
 
     // Check business object
     expect(result.business.name).toBe('Test Business')
     expect(result.business.initialCost).toBe(120000)
-    expect(result.business.openingProgress.investedAmount).toBe(24000)
+    expect(result.business.openingProgress.investedAmount).toBe(120000)
     expect(result.business.partners).toEqual([])
   })
 
-  it('should create a solo business correctly with custom upfront percentage', () => {
+  it('should create a solo business correctly even if template has upfront percentage', () => {
     const templateWithCustomUpfront = { ...mockTemplate, upfrontPaymentPercentage: 50 }
     const inflatedCost = 100000
     const result = createBusinessPurchase(templateWithCustomUpfront, inflatedCost, currentTurn)
 
-    expect(result.cost).toBe(50000) // 50% of 100000
-    expect(result.business.openingProgress.investedAmount).toBe(50000)
+    // Should still be 100% because createBusinessPurchase ignores upfrontPaymentPercentage
+    expect(result.cost).toBe(100000)
+    expect(result.business.openingProgress.investedAmount).toBe(100000)
   })
 
   it('should create a partner business correctly', () => {

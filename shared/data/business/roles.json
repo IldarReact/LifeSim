@@ -1,0 +1,147 @@
+{
+  "manager": {
+    "type": "managerial",
+    "name": "Управляющий",
+    "description": "Организует процессы, мотивирует команду, принимает стратегические решения",
+    "playerEffects": {
+      "energy": -10,
+      "sanity": -1
+    },
+    "skillGrowth": {
+      "name": "Менеджмент",
+      "progressPerQuarter": 20
+    },
+    "impactCoefficients": {
+      "efficiencyMultiplier": 10,
+      "staffEfficiencyMultiplier": 10
+    }
+  },
+  "accountant": {
+    "type": "managerial",
+    "name": "Бухгалтер",
+    "description": "Контролирует финансы, оптимизирует налоги, снижает расходы",
+    "playerEffects": {
+      "energy": -8,
+      "sanity": -1
+    },
+    "skillGrowth": {
+      "name": "Бухгалтерия",
+      "progressPerQuarter": 20
+    },
+    "impactCoefficients": {
+      "taxReduction": 6,
+      "staffTaxReduction": 6
+    }
+  },
+  "marketer": {
+    "type": "managerial",
+    "name": "Маркетолог",
+    "description": "Повышает узнаваемость бренда, привлекает клиентов",
+    "playerEffects": {
+      "energy": -12,
+      "sanity": -1
+    },
+    "skillGrowth": {
+      "name": "Маркетинг",
+      "progressPerQuarter": 20
+    },
+    "impactCoefficients": {
+      "reputationBonus": 6,
+      "salesBonus": 8,
+      "staffSalesBonus": 8,
+      "staffReputationBonus": 6
+    }
+  },
+  "lawyer": {
+    "type": "managerial",
+    "name": "Юрист",
+    "description": "Решает юридические вопросы, защищает от штрафов и оптимизирует налоги",
+    "playerEffects": {
+      "energy": -10,
+      "sanity": -2
+    },
+    "skillGrowth": {
+      "name": "Юриспруденция",
+      "progressPerQuarter": 15
+    },
+    "impactCoefficients": {
+      "taxReduction": 8,
+      "expenseReduction": 6,
+      "legalProtection": 15,
+      "staffTaxReduction": 8,
+      "staffExpenseReduction": 6,
+      "staffLegalProtection": 15
+    }
+  },
+  "hr": {
+    "type": "managerial",
+    "name": "HR-менеджер",
+    "description": "Управляет персоналом, повышает общую эффективность команды",
+    "playerEffects": {
+      "energy": -9,
+      "sanity": -1
+    },
+    "skillGrowth": {
+      "name": "Управление персоналом",
+      "progressPerQuarter": 18
+    },
+    "impactCoefficients": {
+      "efficiencyMultiplier": 12,
+      "staffProductivityBonus": 8,
+      "staffEfficiencyMultiplier": 12,
+      "staffStaffProductivityBonus": 8
+    }
+  },
+  "salesperson": {
+    "type": "operational",
+    "name": "Продавец",
+    "description": "Работает с клиентами, увеличивает продажи",
+    "playerEffects": {
+      "energy": -15,
+      "sanity": -2
+    },
+    "skillGrowth": {
+      "name": "Продажи",
+      "progressPerQuarter": 20
+    },
+    "impactCoefficients": {
+      "salesBonusPerLevel": 20,
+      "salesBonusMin": 10,
+      "staffSalesBonus": 8
+    }
+  },
+  "technician": {
+    "type": "operational",
+    "name": "Техник",
+    "description": "Обслуживает оборудование, повышает качество продукции",
+    "playerEffects": {
+      "energy": -16,
+      "sanity": -1
+    },
+    "skillGrowth": {
+      "name": "Инженерия",
+      "progressPerQuarter": 20
+    },
+    "impactCoefficients": {
+      "efficiencyBasePerLevel": 15,
+      "efficiencyBaseMin": 10,
+      "staffEfficiencyBase": 8,
+      "staffEfficiencyStarBonus": 0.25
+    }
+  },
+  "worker": {
+    "type": "operational",
+    "name": "Работник",
+    "description": "Выполняет основную работу, производит товары/услуги",
+    "playerEffects": {
+      "energy": -18,
+      "sanity": -2
+    },
+    "skillGrowth": null,
+    "impactCoefficients": {
+      "playerEfficiencyBase": 15,
+      "staffEfficiencyBase": 5,
+      "staffEfficiencyStarBonus": 0.3
+    }
+  }
+}

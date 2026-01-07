@@ -49,7 +49,7 @@ export function generateBusinessIdea(
 
   for (const [placeholder, jsonKey] of Object.entries(mapping)) {
     if (name.includes(placeholder) || description.includes(placeholder)) {
-      const options = (REPLACEMENTS as any)[jsonKey] as string[]
+      const options = REPLACEMENTS[jsonKey]
       if (options && options.length > 0) {
         const replacement = options[Math.floor(Math.random() * options.length)]
         name = name.replace(new RegExp(placeholder, 'g'), replacement)

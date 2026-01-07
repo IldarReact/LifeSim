@@ -1,10 +1,10 @@
-import type { PlayerState, StatModifiers, StatModifier } from '@/core/types'
+import type { Player, StatModifiers, StatModifier } from '@/core/types'
 import { StatEffect } from "@/core/types/stats.types";
 
 /**
  * Собирает все модификаторы статов из разных источников
  */
-export function calculateStatModifiers(player: PlayerState): StatModifiers {
+export function calculateStatModifiers(player: Player): StatModifiers {
   const modifiers: StatModifiers = {
     money: [],
     happiness: [],

@@ -43,6 +43,44 @@ export interface BusinessPosition {
   role: EmployeeRole
   salary: number
   description: string
+  priority?: 'required' | 'recommended' | 'optional'
+}
+
+/**
+ * Роль в бизнесе с описанием и приоритетом (из конфига/шаблона)
+ */
+export interface BusinessRoleTemplate {
+  role: EmployeeRole
+  priority: 'required' | 'recommended' | 'optional'
+  description: string
+}
+
+/**
+ * Влияние роли на бизнес (результат)
+ */
+export interface StaffImpactResult {
+  efficiencyBase?: number // Базовое значение эффективности (абсолютное)
+  efficiencyMultiplier?: number // Бонус к эффективности команды (в процентах)
+  expenseReduction?: number
+  salesBonus?: number
+  reputationBonus?: number
+  taxReduction?: number
+  legalProtection?: number // Снижение шанса негативных событий
+  staffProductivityBonus?: number // Бонус к продуктивности остальных сотрудников
+}
+
+/**
+ * Влияние игрока на бизнес
+ */
+export interface PlayerBusinessImpact {
+  efficiencyBase: number
+  efficiencyMultiplier: number
+  expenseReduction: number
+  salesBonus: number
+  reputationBonus: number
+  taxReduction: number
+  legalProtection: number
+  staffProductivityBonus: number
 }
 
 export type BusinessType =
@@ -63,6 +101,48 @@ export interface BusinessInventory {
   autoPurchaseAmount: number // Сколько закупать каждый квартал
 }
 
+export interface EmployeeData {
+  firstNames: string[]
+  lastNames: string[]
+  humanTraits: string[]
+  roleDescriptions: Record<EmployeeRole, { strengths: string[]; weaknesses: string[] }>
+  roleModifiers: Record<EmployeeRole, StaffImpactResult>
+  baseSalaries: Record<EmployeeRole, number>
+  starMultipliers: number[]
+}
+
+export interface BusinessFinancials {
+  income: number
+  expenses: number
+  taxAmount: number
+  profit: number
+  netProfit: number
+  cashFlow: number
+  newInventory: BusinessInventory
+  playerStatEffects: StatEffect
+  debug?: {
+    productionCapacity?: number
+    salesVolume: number
+    marketDemand: number
+    purchaseAmount: number
+    purchaseCost: number
+    priceUsed: number
+    unitCost: number
+    taxAmount: number
+    opEx: number
+    cogs: number
+    grossProfit: number
+    expensesBreakdown: {
+      employees: number
+      inventory: number
+      marketing: number
+      rent: number
+      equipment: number
+      other: number
+    }
+  }
+}
+
 export type PartnerType = 'player' | 'npc'
 
 export interface BusinessPartner {
@@ -74,44 +154,83 @@ export interface BusinessPartner {
   relation: number // 0-100, 50 = нейтрально
 }
 
-export type ProposalType =
-  | 'change_price'
-  | 'change_quantity'
-  | 'withdraw_dividends'
-  | 'expand_network'
-
 export type BusinessChangeType =
   | 'price' // Изменение цены
   | 'quantity' // Изменение количества
-  | 'hire_employee' // Найм сотрудника
+  | 'hire_employee' // Наем сотрудника
   | 'fire_employee' // Увольнение сотрудника
   | 'freeze' // Заморозка бизнеса
   | 'unfreeze' // Разморозка бизнеса
   | 'open_branch' // Открытие филиала
+  | 'branch' // Открытие филиала (alias)
+  | 'dividend' // Вывод дивидендов
   | 'auto_purchase' // Изменение автозакупки
   | 'change_role' // Изменение роли игрока
   | 'fund_collection' // Сбор средств партнёрами
+  | 'promote_employee' // Повышение сотрудника
+  | 'demote_employee' // Понижение сотрудника
+  | 'set_salary' // Изменение зарплаты сотрудника
 
 export interface BusinessProposal {
   id: string
-  type: ProposalType
+  businessId: string
+  changeType: BusinessChangeType
   initiatorId: string
-
-  // Данные предложения
-  payload: {
-    newPrice?: number
-    newQuantity?: number
-    amount?: number // для дивидендов
-  }
-
-  // Голосование
-  votes: {
-    [partnerId: string]: boolean // true = ЗА, false = ПРОТИВ
-  }
-
+  initiatorName: string
   status: 'pending' | 'approved' | 'rejected'
-  createdTurn: number
-  resolvedTurn?: number
+  createdAt: number
+  votes?: Record<string, boolean>
+  data: {
+    // Для price
+    newPrice?: number
+
+    // Для dividend
+    amount?: number
+
+    // Для quantity
+    newQuantity?: number
+
+    // Для hire_employee
+    employeeId?: string
+    employeeName?: string
+    employeeRole?: string
+    employeeSalary?: number
+    employeeStars?: number
+    isPlayer?: boolean
+    skills?: import('./business.types').EmployeeSkills
+    experience?: number
+    humanTraits?: string[]
+
+    // Для fire_employee
+    fireEmployeeId?: string
+    fireEmployeeName?: string
+
+    // Для open_branch
+    branchName?: string
+    branchCost?: number
+
+    // Для auto_purchase
+    autoPurchaseAmount?: number
+
+    // Для change_role
+    newRole?: string
+    oldRole?: string
+    // Дополнительные поля для случая, когда игрок вступает в роль (используется как hire_employee для игрока)
+    isMe?: boolean
+
+    // Для fund_collection
+    collectionAmount?: number
+
+    // Для promote_employee / demote_employee
+    newSalary?: number
+    newStars?: number
+    promoteEmployeeId?: string
+    promoteEmployeeName?: string
+    demoteEmployeeId?: string
+    demoteEmployeeName?: string
+    salaryEmployeeId?: string
+    salaryEmployeeName?: string
+  }
 }
 
 export interface BusinessEvent {
@@ -159,6 +278,7 @@ export interface Business {
   initialCost: number // Стартовый капитал
   quarterlyIncome: number // Доход за последний квартал
   quarterlyExpenses: number // Расходы за последний квартал
+  quarterlyTax: number // Налог за последний квартал
   currentValue: number // Текущая стоимость бизнеса
   walletBalance?: number // Деньги бизнеса (кошелёк для операций)
   lastQuarterSummary?: {
@@ -168,11 +288,21 @@ export interface Business {
     taxes: number
     expenses: number
     netProfit: number
+    reputationChange?: number
+    efficiencyChange?: number
     profitDistribution?: { partnerId: string; share: number; amount: number }[]
+    expensesBreakdown?: {
+      employees: number
+      inventory: number
+      marketing: number
+      rent: number
+      equipment: number
+      other: number
+    }
   }
 
   // Налоги и страховка
-  taxRate: number // Ставка налога (0-1, например 0.15 = 15%)
+  taxRate: number // Ставка налога (0-100, например 15 = 15%)
   hasInsurance: boolean // Есть ли страховка
   insuranceCost: number // Стоимость страховки за квартал
 
@@ -182,7 +312,7 @@ export interface Business {
   // Сотрудники
   employees: Employee[]
   maxEmployees: number // Максимум сотрудников
-  requiredRoles: EmployeeRole[] // Обязательные роли (хотя бы по одному на каждую)
+  employeeRoles: BusinessRoleTemplate[] // Структурированные роли из шаблона
   minEmployees: number // Минимум сотрудников всего
 
   // Роли игрока в бизнесе
@@ -225,6 +355,7 @@ export interface Business {
     startedTurn: number
     experience: number // Кварталы работы (для инфляции)
     effortPercent?: number
+    productivity?: number // Текущая продуктивность (0-100)
   }
 
   // Партнерские отношения
@@ -252,4 +383,5 @@ export interface EmployeeCandidate {
   experience: number
   avatar?: string
   humanTraits: string[] // ID черт характера из human-traits.json
+  countryId?: string
 }

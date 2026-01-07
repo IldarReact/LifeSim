@@ -1,52 +1,6 @@
-import type { Business, BusinessChangeType } from '@/core/types/business.types'
+import type { Business, BusinessChangeType, BusinessProposal } from '@/core/types/business.types'
 
-export interface BusinessChangeProposal {
-  id: string
-  businessId: string
-  changeType: BusinessChangeType
-  initiatorId: string
-  initiatorName: string
-  status: 'pending' | 'approved' | 'rejected'
-  createdAt: number
-  data: {
-    // Для price
-    newPrice?: number
-
-    // Для quantity
-    newQuantity?: number
-
-    // Для hire_employee
-    employeeId?: string
-    employeeName?: string
-    employeeRole?: string
-    employeeSalary?: number
-    employeeStars?: number
-    isPlayer?: boolean
-    skills?: import('@/core/types').EmployeeSkills
-    experience?: number
-    humanTraits?: import('@/core/types').HumanTrait[]
-
-    // Для fire_employee
-    fireEmployeeId?: string
-    fireEmployeeName?: string
-
-    // Для open_branch
-    branchName?: string
-    branchCost?: number
-
-    // Для auto_purchase
-    autoPurchaseAmount?: number
-
-    // Для change_role
-    newRole?: string
-    oldRole?: string
-    // Дополнительные поля для случая, когда игрок вступает в роль (используется как hire_employee для игрока)
-    isMe?: boolean
-
-    // Для fund_collection
-    collectionAmount?: number
-  }
-}
+export type BusinessChangeProposal = BusinessProposal
 
 export interface PartnershipBusinessSlice {
   // Предложения изменений

@@ -76,12 +76,17 @@ export function validateEmployeeHire(
   currentEmployeeCount: number,
   maxEmployees: number,
 ): EmployeeHireValidation {
-  const hasEnoughMoney = true
-  const hasCapacity = currentEmployeeCount < maxEmployees
+  // Применяем 5x расширение лимита персонала (logic-only per user request)
+  const expandedMaxEmployees = maxEmployees * 5
+
+  const hasEnoughMoney = true // Зарплата выплачивается ежеквартально, не авансом
+  const hasCapacity = currentEmployeeCount < expandedMaxEmployees
 
   return {
     isValid: hasCapacity,
-    error: !hasCapacity ? 'Достигнут лимит сотрудников' : undefined,
+    error: !hasCapacity
+      ? `Достигнут лимит сотрудников (${currentEmployeeCount}/${expandedMaxEmployees})`
+      : undefined,
     details: {
       hasEnoughMoney,
       hasCapacity,

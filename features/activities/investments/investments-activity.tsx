@@ -4,7 +4,7 @@ import { TrendingUp, Home, Coins, ChartLine, Plus, Minus } from 'lucide-react'
 import { useState } from 'react'
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
@@ -128,7 +128,7 @@ export function InvestmentsActivity(): React.JSX.Element | null {
             return (
               <button
                 key={key}
-                onClick={() => setActiveTab(key as any)}
+                onClick={() => setActiveTab(key as keyof typeof investmentCategories)}
                 className={`px-8 py-4 rounded-2xl flex items-center gap-3 transition-all ${
                   isActive
                     ? 'bg-white/10 border border-white/20 text-zinc-100'

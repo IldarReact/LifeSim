@@ -5,6 +5,7 @@ export type GameEventType =
   | 'PARTNERSHIP_ACCEPTED'
   | 'PARTNERSHIP_UPDATED'
   | 'OFFER_SENT'
+  | 'OFFER_ACCEPTED'
   | 'OFFER_REJECTED'
   | 'JOB_OFFER_ACCEPTED'
   | 'BUSINESS_SYNC'
@@ -34,6 +35,7 @@ export interface PartnershipAcceptedEvent extends BaseGameEvent {
     partnerInvestment: number
     yourShare: number
     yourInvestment: number
+    employeeRoles: import('./business.types').BusinessRoleTemplate[]
   }
 }
 
@@ -61,6 +63,14 @@ export interface OfferRejectedEvent extends BaseGameEvent {
   }
 }
 
+export interface OfferAcceptedEvent extends BaseGameEvent {
+  type: 'OFFER_ACCEPTED'
+  payload: {
+    offerId: string
+    acceptedBy: string
+  }
+}
+
 export interface JobOfferAcceptedEvent extends BaseGameEvent {
   type: 'JOB_OFFER_ACCEPTED'
   payload: {
@@ -68,7 +78,7 @@ export interface JobOfferAcceptedEvent extends BaseGameEvent {
     employeeId: string
     employeeName: string
     businessId: string
-    role: string
+    role: import('./business.types').EmployeeRole
     salary: number
   }
 }
@@ -77,8 +87,8 @@ export interface JobOfferAcceptedEvent extends BaseGameEvent {
 export interface BusinessSyncEvent extends BaseGameEvent {
   type: 'BUSINESS_SYNC'
   payload: {
-    businessId: string
-    [key: string]: any
+    business: import('./business.types').Business
+    targetPlayerId: string
   }
 }
 
@@ -96,17 +106,10 @@ export interface BusinessChangeProposedEvent extends BaseGameEvent {
   payload: {
     businessId: string
     proposalId: string
-    changeType: BusinessChangeType
+    changeType: import('./business.types').BusinessChangeType
     initiatorId: string
     initiatorName: string
-    data: {
-      newPrice?: number
-      newQuantity?: number
-      employeeId?: string
-      employeeName?: string
-      employeeRole?: string
-      employeeSalary?: number
-    }
+    data: import('./business.types').BusinessProposal['data']
   }
 }
 
@@ -135,21 +138,22 @@ export interface BusinessUpdatedEvent extends BaseGameEvent {
     changes: {
       price?: number
       quantity?: number
-      employees?: any[]
+      employees?: import('./business.types').Employee[]
       state?: 'active' | 'frozen' | 'opening'
-      [key: string]: any
+      [key: string]: unknown
     }
   }
 }
 
-export type GameEvent<T = any> =
+export type GameEvent =
   | PartnershipAcceptedEvent
   | PartnershipUpdatedEvent
   | OfferSentEvent
+  | OfferAcceptedEvent
   | OfferRejectedEvent
   | BusinessSyncEvent
   | BusinessChangeProposedEvent
   | BusinessChangeApprovedEvent
   | BusinessChangeRejectedEvent
   | BusinessUpdatedEvent
-  | ({ type: string; payload: T } & BaseGameEvent)
+  | JobOfferAcceptedEvent

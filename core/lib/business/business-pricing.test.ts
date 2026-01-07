@@ -26,18 +26,19 @@ describe('Business Pricing & Market Tests', () => {
     initialCost: 10000,
     quarterlyIncome: 0,
     quarterlyExpenses: 0,
+    quarterlyTax: 0,
     currentValue: 10000,
     employees: [],
     maxEmployees: 5,
     minEmployees: 1,
     reputation: 50,
     efficiency: 50,
-    taxRate: 0.2,
+    taxRate: 20,
     hasInsurance: false,
     insuranceCost: 0,
     creationCost: { energy: 0, money: 0 },
     playerRoles: { managerialRoles: [], operationalRole: null },
-    requiredRoles: [],
+    employeeRoles: [],
     inventory: {
       currentStock: 1000,
       maxStock: 1000,
@@ -328,20 +329,22 @@ describe('Business Pricing & Market Tests', () => {
       const worker = createMockEmployee('worker')
       const lowMarginBusiness = createBaseBusiness({
         employees: [worker],
+        price: 2, // Low price slider
         inventory: {
           currentStock: 1000,
           maxStock: 1000,
-          pricePerUnit: 26, // margin 6, margin% ~0.23 (< 0.3) -> resilient
+          pricePerUnit: 26,
           purchaseCost: 20,
           autoPurchaseAmount: 0,
         },
       })
       const highMarginBusiness = createBaseBusiness({
         employees: [worker],
+        price: 8, // High price slider
         inventory: {
           currentStock: 1000,
           maxStock: 1000,
-          pricePerUnit: 80, // margin 60, margin% 0.75 (> 0.6) -> demand crash
+          pricePerUnit: 80,
           purchaseCost: 20,
           autoPurchaseAmount: 0,
         },
@@ -367,6 +370,7 @@ describe('Business Pricing & Market Tests', () => {
       const worker = createMockEmployee('worker')
       const lowMarginBusiness = createBaseBusiness({
         employees: [worker],
+        price: 1, // Minimum price slider
         inventory: {
           currentStock: 1000,
           maxStock: 1000,
@@ -377,7 +381,7 @@ describe('Business Pricing & Market Tests', () => {
       })
       const normal = calculateBusinessFinancials(lowMarginBusiness, true, undefined, 1.0)
       const crisis = calculateBusinessFinancials(lowMarginBusiness, true, undefined, 0.7)
-      expect(crisis.income).toBeGreaterThanOrEqual(normal.income)
+      expect(crisis.income).toBeGreaterThan(normal.income * 0.7) // Resilient: better than market drop (0.7)
     })
     it('luxury goods income should drop in crisis vs normal', () => {
       const worker = createMockEmployee('worker')

@@ -1,5 +1,5 @@
-import { SKILL_STAR_DIVISOR } from '@/features/activities/work/shared-constants'
 import type { EmployeeSkills } from '@/core/types'
+import { SKILL_STAR_DIVISOR } from '@/features/activities/work/shared-constants'
 
 /**
  * Рассчитывает количество звезд на основе навыков.

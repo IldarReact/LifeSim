@@ -2,9 +2,8 @@ import type { StateCreator } from 'zustand'
 
 import type { GameStore, PlayerSlice } from './types'
 
-import { PlayerState } from '@/core/types'
+import { Player } from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
-
 
 export const createPlayerSlice: StateCreator<GameStore, [], [], PlayerSlice> = (set, get) => ({
   // State
@@ -35,7 +34,7 @@ export const createPlayerSlice: StateCreator<GameStore, [], [], PlayerSlice> = (
     }))
   },
 
-  updatePlayer: (updater: Partial<PlayerState> | ((prev: PlayerState) => Partial<PlayerState>)) => {
+  updatePlayer: (updater: Partial<Player> | ((prev: Player) => Partial<Player>)) => {
     set((state) => {
       const prev = state.player
       if (!prev) return state

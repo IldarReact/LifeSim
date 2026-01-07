@@ -1,7 +1,8 @@
 // core/lib/multiplayer/index.ts
-import { createClient } from '@liveblocks/client'
+import { createClient, type Room, type User } from '@liveblocks/client'
 
 import { Player } from '@/features/multiplayer/multiplayer-hub'
+import type { GameEvent } from '@/core/types/events.types'
 
 type Presence = {
   name: string
@@ -13,8 +14,11 @@ type Presence = {
   color: string
 }
 
+// Using unknown for Storage, UserMeta, and GameEvent for events
+type RoomInstance = Room<Presence, Record<string, any>, Record<string, any>, any>
+
 let client: ReturnType<typeof createClient> | null = null
-let roomInstance: any = null
+let roomInstance: RoomInstance | null = null
 
 function getClient() {
   if (!client) {
@@ -50,7 +54,12 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
     return id
   }
 
-  const { room } = clientInstance.enterRoom<Presence, any, any, any>(id, {
+  const { room } = clientInstance.enterRoom<
+    Presence,
+    Record<string, any>,
+    Record<string, any>,
+    any
+  >(id, {
     initialPresence: {
       name: randomName,
       isReady: false,
@@ -62,7 +71,7 @@ export function initMultiplayer(inputRoomId?: string, isCreator: boolean = false
     },
   })
 
-  roomInstance = room
+  roomInstance = room as unknown as RoomInstance
 
   return id
 }
@@ -87,7 +96,7 @@ export function getOnlinePlayers(): Player[] {
   const others = roomInstance.getOthers()
   const self = roomInstance.getSelf()
 
-  const players: Player[] = others.map((other: any) => ({
+  const players: Player[] = others.map((other: User<Presence, Record<string, unknown>>) => ({
     clientId: String(other.connectionId),
     name: other.presence.name || 'Игрок',
     color: other.presence.color || '#94a3b8',
@@ -219,14 +228,14 @@ export function triggerTurnAdvance() {
   // Не используем
 }
 
-export function broadcastEvent(event: any) {
+export function broadcastEvent(event: GameEvent) {
   if (!roomInstance) return
   roomInstance.broadcastEvent(event)
 }
 
-export function subscribeToEvents(callback: (event: any) => void) {
+export function subscribeToEvents(callback: (event: GameEvent) => void) {
   if (!roomInstance) return () => {}
-  return roomInstance.subscribe('event', ({ event }: { event: any }) => callback(event))
+  return roomInstance.subscribe('event', ({ event }: { event: GameEvent }) => callback(event))
 }
 
 export const getSharedState = () => ({

@@ -13,12 +13,12 @@ export function useOffersSync() {
   const { player, pushNotification } = useGameStore()
 
   useEffect(() => {
-    const unsubscribe = subscribeToEvents(({ type, payload }) => {
+    const unsubscribe = subscribeToEvents((event) => {
       const myConnectionId = getMyConnectionId()
-      console.log('[OffersSync] Event received:', type, payload, 'My ID:', myConnectionId)
+      console.log('[OffersSync] Event received:', event.type, event.payload, 'My ID:', myConnectionId)
 
-      if (type === 'OFFER_SENT') {
-        const offer = payload.offer as GameOffer
+      if (event.type === 'OFFER_SENT') {
+        const { offer } = event.payload
         console.log(
           '[OffersSync] Checking offer recipient:',
           offer.toPlayerId,
@@ -45,8 +45,8 @@ export function useOffersSync() {
             },
           })
         }
-      } else if (type === 'OFFER_ACCEPTED') {
-        const { offerId, acceptedBy } = payload
+      } else if (event.type === 'OFFER_ACCEPTED') {
+        const { offerId } = event.payload
         const state = useGameStore.getState()
 
         // Обновляем статус оффера
@@ -65,6 +65,7 @@ export function useOffersSync() {
             title: 'Предложение принято!',
             message: `${offer.toPlayerName} принял ваше предложение`,
             type: 'success',
+            data: { type: 'success' },
           })
 
           if (isJobOffer(offer)) {
@@ -115,8 +116,8 @@ export function useOffersSync() {
             }
           }
         }
-      } else if (type === 'BUSINESS_SYNC') {
-        const { business, targetPlayerId } = payload
+      } else if (event.type === 'BUSINESS_SYNC') {
+        const { business, targetPlayerId } = event.payload
         const myId = getMyConnectionId()
 
         if (targetPlayerId === myId) {
@@ -127,10 +128,11 @@ export function useOffersSync() {
             title: 'Бизнес добавлен',
             message: `Вы стали совладельцем ${business.name}`,
             type: 'success',
+            data: { type: 'success' },
           })
         }
-      } else if (type === 'OFFER_REJECTED') {
-        const { offerId, rejectedBy } = payload
+      } else if (event.type === 'OFFER_REJECTED') {
+        const { offerId } = event.payload
 
         // Обновляем статус оффера
         useGameStore.setState((state) => ({
@@ -144,6 +146,7 @@ export function useOffersSync() {
             title: 'Предложение отклонено',
             message: `${offer.toPlayerName} отклонил ваше предложение`,
             type: 'warning',
+            data: { type: 'warning' },
           })
         }
       }

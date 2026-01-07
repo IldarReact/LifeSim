@@ -1,8 +1,8 @@
 import { getShopItem } from '@/core/lib/shop-helpers'
-import type { PlayerState } from '@/core/types'
+import type { Player, FamilyMember } from '@/core/types'
 import { getItemCost, isRecurringItem } from '@/core/types/shop.types'
 
-export function calculateFoodExpenses(player: PlayerState, costModifier: number = 1.0): number {
+export function calculateFoodExpenses(player: Player, costModifier: number = 1.0): number {
   let total = 0
   const countryId = player.countryId
 
@@ -14,7 +14,7 @@ export function calculateFoodExpenses(player: PlayerState, costModifier: number 
   }
 
   // Еда членов семьи
-  player.personal.familyMembers.forEach(member => {
+  player.personal.familyMembers.forEach((member) => {
     if (member.type === 'pet') return
     const foodId = member.foodPreference
     if (foodId) {
@@ -26,7 +26,7 @@ export function calculateFoodExpenses(player: PlayerState, costModifier: number 
   return Math.round(total)
 }
 
-export function calculateTransportExpenses(player: PlayerState, costModifier: number = 1.0): number {
+export function calculateTransportExpenses(player: Player, costModifier: number = 1.0): number {
   let total = 0
   const countryId = player.countryId
 
@@ -38,7 +38,7 @@ export function calculateTransportExpenses(player: PlayerState, costModifier: nu
   }
 
   // Транспорт членов семьи
-  player.personal.familyMembers.forEach(member => {
+  player.personal.familyMembers.forEach((member) => {
     if (member.type === 'pet' || member.age < 10) return
     const transportId = member.transportPreference
     if (transportId) {
@@ -50,7 +50,7 @@ export function calculateTransportExpenses(player: PlayerState, costModifier: nu
   return Math.round(total)
 }
 
-export function calculateHousingExpenses(player: PlayerState, costModifier: number = 1.0): number {
+export function calculateHousingExpenses(player: Player, costModifier: number = 1.0): number {
   const housingId = player.housingId
   if (!housingId) return 0
 
@@ -66,17 +66,17 @@ export function calculateHousingExpenses(player: PlayerState, costModifier: numb
   }
 }
 
-export function calculateLifestyleExpenses(player: PlayerState, costModifier: number = 1.0) {
+export function calculateLifestyleExpenses(player: Player, costModifier: number = 1.0) {
   const food = calculateFoodExpenses(player, costModifier)
   const transport = calculateTransportExpenses(player, costModifier)
   const housing = calculateHousingExpenses(player, costModifier)
 
   const credits = player.debts
-    .filter(d => d.type !== 'mortgage')
+    .filter((d) => d.type !== 'mortgage')
     .reduce((sum, debt) => sum + debt.quarterlyInterest, 0)
 
   const mortgage = player.debts
-    .filter(d => d.type === 'mortgage')
+    .filter((d) => d.type === 'mortgage')
     .reduce((sum, debt) => sum + debt.quarterlyInterest, 0)
 
   const other = 0
@@ -88,27 +88,31 @@ export function calculateLifestyleExpenses(player: PlayerState, costModifier: nu
     credits,
     mortgage,
     other,
-    total: food + transport + housing + credits + mortgage + other
+    total: food + transport + housing + credits + mortgage + other,
   }
 }
 
-export function calculateMemberExpenses(member: any, countryId?: string, costModifier: number = 1.0): number {
+export function calculateMemberExpenses(
+  member: FamilyMember,
+  countryId?: string,
+  costModifier: number = 1.0,
+): number {
   let total = 0
-  
+
   // Питание
   if (member.type !== 'pet') {
     const foodId = member.foodPreference || 'food_homemade'
     const item = getShopItem(foodId, countryId)
     if (item) total += getItemCost(item) * costModifier
   }
-  
+
   // Транспорт
   if (member.type !== 'pet' && member.age >= 10) {
     const transportId = member.transportPreference || 'transport_public'
     const item = getShopItem(transportId, countryId)
     if (item) total += getItemCost(item) * costModifier
   }
-  
+
   // Другое (страховки, мелочи)
   if (member.type === 'wife' || member.type === 'husband') {
     total += 300 * costModifier // Базовые расходы партнера
@@ -117,6 +121,6 @@ export function calculateMemberExpenses(member: any, countryId?: string, costMod
   } else if (member.type === 'pet') {
     total += 200 * costModifier // Расходы на питомца
   }
-  
+
   return Math.round(total)
 }

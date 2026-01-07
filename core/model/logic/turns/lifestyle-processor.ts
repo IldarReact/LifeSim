@@ -1,13 +1,26 @@
 import { getShopItemById } from '@/core/lib/data-loaders/shop-loader'
 import { calculateMemberExpenses } from '@/core/lib/lifestyle-expenses'
 import { calculateLifestyleExpenses } from '@/core/lib/lifestyle-expenses'
-import type { CountryEconomy } from '@/core/types'
-import type { PlayerState, FamilyMember } from '@/core/types'
+import type { CountryEconomy, Player, FamilyMember, ExpensesBreakdown } from '@/core/types'
 import traitsData from '@/shared/data/world/commons/human-traits.json'
+
+/**
+ * Breakdown of lifestyle expenses.
+ * This is a subset of ExpensesBreakdown used for lifestyle processing.
+ */
+export interface LifestyleExpensesBreakdown {
+  food: number
+  transport: number
+  housing: number
+  credits: number
+  mortgage: number
+  other: number
+  total: number
+}
 
 interface LifestyleResult {
   updatedFamilyMembers: FamilyMember[]
-  lifestyleExpensesBreakdown: any
+  lifestyleExpensesBreakdown: LifestyleExpensesBreakdown
   lifestyleExpenses: number
   modifiers: {
     happiness: number
@@ -19,7 +32,7 @@ interface LifestyleResult {
 }
 
 export function processLifestyle(
-  player: PlayerState,
+  player: Player,
   countries: Record<string, CountryEconomy>,
 ): LifestyleResult {
   const countryId = player.countryId
@@ -66,17 +79,17 @@ export function processLifestyle(
       if (housing.effects.sanity) sanity += housing.effects.sanity
       if (housing.effects.health) health += housing.effects.health
     }
-    
+
     // Overcrowding penalty
     if (housing && 'capacity' in housing && housing.capacity) {
       const familySize = 1 + (player.personal.familyMembers?.length || 0)
       const capacity = (housing.capacity as number) || 2
-      
+
       if (familySize > capacity) {
         const overcrowdingPercent = ((familySize - capacity) / capacity) * 100
         // Formula: -1 per 10% overcrowding (rounded up)
         const penalty = Math.ceil(overcrowdingPercent / 10)
-        
+
         happiness -= penalty
         sanity -= penalty
         intelligence -= Math.floor(penalty / 2)

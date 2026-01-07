@@ -1,12 +1,14 @@
 'use client'
 
 import React from 'react'
+
 import { AllBusinessesDialog } from './all-businesses-dialog'
-import { useGameStore } from '@/core/model/store'
+
 import { useEconomy } from '@/core/hooks'
-import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
+import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import type { BusinessTemplate } from '@/core/lib/data-loaders/businesses-loader'
+import { useGameStore } from '@/core/model/store'
 
 interface BusinessesSectionProps {
   playerCash: number
@@ -41,14 +43,14 @@ export function BusinessesSection({
       {
         id: template.id,
         name: template.name,
-        type: template.type as any,
+        type: template.type,
         description: template.description || '',
         initialCost: template.initialCost,
         monthlyIncome: template.monthlyIncome,
         monthlyExpenses: template.monthlyExpenses,
-        maxEmployees: template.maxEmployees || 5,
+        maxEmployees: template.maxEmployees || 25,
         minEmployees: template.minEmployees || 1,
-        requiredRoles: (template.requiredRoles || []) as any,
+        employeeRoles: template.employeeRoles || [],
         upfrontPaymentPercentage: template.upfrontPaymentPercentage || 20,
       },
       inflatedCost,
@@ -81,6 +83,7 @@ export function BusinessesSection({
         partnerInvestment: partnerInvestment,
         yourShare: playerShare,
         yourInvestment: playerInvestment,
+        employeeRoles: template.employeeRoles || [],
       },
       `Предлагаю открыть ${template.name} вместе!`,
     )

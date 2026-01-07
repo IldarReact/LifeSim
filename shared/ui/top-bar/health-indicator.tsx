@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Zap } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { TrendingUp, TrendingDown, Zap } from 'lucide-react'
+import { useState } from 'react'
 
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
-import { useGameStore } from "@/core/model/game-store"
-import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
+import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
+import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
+import { useGameStore } from '@/core/model/store'
 
 export function HealthIndicator() {
   const { player, countries } = useGameStore()
@@ -25,7 +25,9 @@ export function HealthIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">❤️</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.health || 0)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">
+            {Math.round(player?.personal?.stats?.health || 0)}
+          </span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Здоровье</span>
       </button>
@@ -46,37 +48,65 @@ export function HealthIndicator() {
               </div>
               <div className="space-y-2">
                 {statMods.health.map((mod, index) => (
-                  <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={mod.health && mod.health > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                      {mod.health && mod.health > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors"
+                  >
+                    <span
+                      className={
+                        mod.health && mod.health > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
+                      {mod.health && mod.health > 0 ? (
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5" />
+                      )}
                       {mod.source}
                     </span>
                     <span className="text-white font-medium">
-                      {mod.health && mod.health > 0 ? "+" : ""}{mod.health}
+                      {mod.health && mod.health > 0 ? '+' : ''}
+                      {mod.health}
                     </span>
                   </div>
                 ))}
-                
+
                 {lifestyleHealthMod !== 0 && (
                   <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={lifestyleHealthMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                      {lifestyleHealthMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    <span
+                      className={
+                        lifestyleHealthMod > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
+                      {lifestyleHealthMod > 0 ? (
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5" />
+                      )}
                       Образ жизни (еда, жильё, транспорт)
                     </span>
                     <span className="text-white font-medium">
-                      {lifestyleHealthMod > 0 ? "+" : ""}{lifestyleHealthMod}
+                      {lifestyleHealthMod > 0 ? '+' : ''}
+                      {lifestyleHealthMod}
                     </span>
                   </div>
                 )}
-                
+
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
                     <span className="text-white flex items-center gap-2">
                       <Zap className="w-4 h-4" />
                       Итого изменение
                     </span>
-                    <span className={`text-white text-sm ${(healthMod + lifestyleHealthMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-                      {(healthMod + lifestyleHealthMod) > 0 ? "+" : ""}{healthMod + lifestyleHealthMod}
+                    <span
+                      className={`text-white text-sm ${healthMod + lifestyleHealthMod >= 0 ? 'text-green-400' : 'text-rose-400'}`}
+                    >
+                      {healthMod + lifestyleHealthMod > 0 ? '+' : ''}
+                      {healthMod + lifestyleHealthMod}
                     </span>
                   </div>
                 </div>

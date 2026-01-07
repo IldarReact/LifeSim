@@ -1,6 +1,6 @@
-import { SKILL_STAR_DIVISOR, MONTHS_PER_QUARTER } from "../../shared-constants"
+import { SKILL_STAR_DIVISOR, MONTHS_PER_QUARTER } from '../../shared-constants'
 
-import type { EmployeeCandidate } from "@/core/types"
+import type { EmployeeCandidate, Player, EmployeeStars, Skill, EmployeeSkills } from '@/core/types'
 
 export function getSkillStarsCount(value: number): number {
   return Math.round(value / SKILL_STAR_DIVISOR)
@@ -22,25 +22,24 @@ export function createPlayerCandidate(
   playerData: { clientId: string; name: string; isLocal?: boolean },
   defaultRole: EmployeeCandidate['role'],
   customSalary: number,
-  localPlayerStats?: any // Добавляем статы локального игрока
+  localPlayerStats?: Player, // Используем тип Player
 ): EmployeeCandidate {
   // Если это локальный игрок, используем его реальные данные
   if (playerData.isLocal && localPlayerStats) {
     const skills = localPlayerStats.personal.skills || []
-    const stars = skills.length > 0 ? Math.max(1, ...skills.map((s: any) => s.level)) : 1
-    
+    const stars = skills.length > 0 ? Math.max(1, ...skills.map((s) => s.level)) : 1
+
     return {
       id: `player_${playerData.clientId}`,
       name: playerData.name,
       role: defaultRole,
-      stars: stars as any,
+      stars: stars as EmployeeStars,
       experience: 24, // Можно тоже вычислять, если есть данные
       requestedSalary: customSalary,
-      skills: skills.reduce(
-        (acc: any, s: any) => ({ ...acc, [s.id]: s.level }),
-        { efficiency: 100 },
-      ),
-      humanTraits: [] // Можно подтянуть из трейтов игрока
+      skills: skills.reduce((acc: EmployeeSkills, s: Skill) => ({ ...acc, [s.id]: s.level }), {
+        efficiency: 100,
+      } as EmployeeSkills),
+      humanTraits: [], // Можно подтянуть из трейтов игрока
     }
   }
 
@@ -53,8 +52,8 @@ export function createPlayerCandidate(
     experience: 24,
     requestedSalary: customSalary,
     skills: {
-      efficiency: 80
+      efficiency: 80,
     },
-    humanTraits: ['ambitious', 'creative']
+    humanTraits: ['ambitious', 'creative'],
   }
 }

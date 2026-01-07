@@ -20,12 +20,17 @@ export type {
   BusinessProposal,
   BusinessChangeType,
   EmployeeCandidate,
+  BusinessRoleTemplate,
+  BusinessPosition,
+  StaffImpactResult,
+  PlayerBusinessImpact,
 } from './business.types'
-
-
 
 // Business ideas
 export type { RiskLevel, IdeaStage, BusinessIdea, IdeaTemplate } from './idea.types'
+
+// Game offers
+export type { GameOffer, JobOffer, PartnershipOffer, ShareSaleOffer } from './game-offers.types'
 
 // Market types
 export type { GlobalMarketCondition, MarketEvent } from './market.types'
@@ -80,6 +85,9 @@ export type {
 // Shop types
 export type { ShopCategory, ShopItem } from './shop.types'
 
+// Rest types
+export type { RestActivity } from './rest.types'
+
 // Notification types
 export type { Notification } from '@/core/types/notification.types'
 
@@ -87,7 +95,7 @@ export type { Notification } from '@/core/types/notification.types'
 export type { PersonalLife } from './personal.types'
 
 // Game state types
-export type { GameStatus, PlayerState, HistoryEntry, GameState } from './game.types'
+export type { GameStatus, GameOverReason, Player, HistoryEntry, GameState } from './game.types'
 
 // Inflation
 export type { InflationNotification } from '@/core/lib/calculations/inflation-engine'

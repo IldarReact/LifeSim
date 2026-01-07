@@ -100,6 +100,7 @@ export function generateEmployeeCandidate(
   role: EmployeeRole,
   stars?: EmployeeStars,
   economy?: CountryEconomy,
+  countryId?: string,
 ): EmployeeCandidate {
   // Распределение звезд если не указано: 1★ (40%), 2★ (30%), 3★ (20%), 4★ (8%), 5★ (2%)
   let candidateStars: EmployeeStars = 1
@@ -113,8 +114,8 @@ export function generateEmployeeCandidate(
     else if (rand > 0.4) candidateStars = 2
   }
 
-  const firstName = getRandomFirstName()
-  const lastName = getRandomLastName()
+  const firstName = getRandomFirstName(countryId)
+  const lastName = getRandomLastName(countryId)
   const skills = generateSkills(role, candidateStars)
   const salary = calculateSalary(role, candidateStars, economy)
 
@@ -144,6 +145,7 @@ export function generateEmployeeCandidate(
     experience,
     avatar,
     humanTraits,
+    countryId,
   }
 }
 
@@ -154,10 +156,11 @@ export function generateCandidates(
   role: EmployeeRole,
   count: number = 3,
   economy?: CountryEconomy,
+  countryId?: string,
 ): EmployeeCandidate[] {
   const candidates: EmployeeCandidate[] = []
   for (let i = 0; i < count; i++) {
-    candidates.push(generateEmployeeCandidate(role, undefined, economy))
+    candidates.push(generateEmployeeCandidate(role, undefined, economy, countryId))
   }
   return candidates
 }

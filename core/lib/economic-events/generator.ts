@@ -33,5 +33,5 @@ export function generateEconomicEvent(
 ): EconomicEvent | null {
   if (Math.random() > 0.1) return null
   const type = selectEventType(currentEconomy)
-  return createEconomicEvent(type as any, turn)
+  return createEconomicEvent(type, turn)
 }

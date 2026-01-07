@@ -6,91 +6,102 @@ import type { EmployeeRole } from './business.types'
 
 // Типы предложений
 export type OfferType =
-  | 'job_offer'              // Предложение работы
-  | 'business_partnership'   // Предложение открыть бизнес вместе
-  | 'share_sale'             // Предложение купить/продать долю бизнеса
+  | 'job_offer' // Предложение работы
+  | 'business_partnership' // Предложение открыть бизнес вместе
+  | 'share_sale' // Предложение купить/продать долю бизнеса
 
 // Статусы предложения
 export type OfferStatus =
-  | 'pending'    // Ожидает ответа
-  | 'accepted'   // Принято
-  | 'rejected'   // Отклонено
-  | 'expired'    // Истекло
-  | 'cancelled'  // Отменено отправителем
+  | 'pending' // Ожидает ответа
+  | 'accepted' // Принято
+  | 'rejected' // Отклонено
+  | 'expired' // Истекло
+  | 'cancelled' // Отменено отправителем
 
 // Детали предложения работы
 export interface JobOfferDetails {
   businessId: string
   businessName: string
   role: EmployeeRole
-  salary: number        // Квартальная зарплата
-  kpiBonus: number      // Процент бонуса за KPI
+  salary: number // Квартальная зарплата
+  kpiBonus: number // Процент бонуса за KPI
   description?: string
 }
 
 // Детали предложения партнерства
 export interface PartnershipOfferDetails {
-  businessId: string        // ID создаваемого/существующего бизнеса
+  businessId: string // ID создаваемого/существующего бизнеса
   businessType: string
   businessName: string
   businessDescription: string
   totalCost: number
-  partnerShare: number      // Процент доли партнера
+  partnerShare: number // Процент доли партнера
   partnerInvestment: number // Сумма инвестиций партнера
-  yourShare: number         // Процент доли получателя
-  yourInvestment: number    // Сумма инвестиций получателя
+  yourShare: number // Процент доли получателя
+  yourInvestment: number // Сумма инвестиций получателя
+  employeeRoles: import('./business.types').BusinessRoleTemplate[]
 }
 
 // Детали предложения купить/продать долю
 export interface ShareSaleOfferDetails {
   businessId: string
   businessName: string
-  sharePercent: number  // Процент доли для продажи
-  price: number         // Цена за долю
-  currentValue: number  // Текущая стоимость бизнеса
+  sharePercent: number // Процент доли для продажи
+  price: number // Цена за долю
+  currentValue: number // Текущая стоимость бизнеса
 }
 
 // Объединенный тип деталей
-export type OfferDetails =
-  | JobOfferDetails
-  | PartnershipOfferDetails
-  | ShareSaleOfferDetails
+export type OfferDetails = JobOfferDetails | PartnershipOfferDetails | ShareSaleOfferDetails
 
-// Основной интерфейс предложения
-export interface GameOffer {
+// Базовый интерфейс предложения
+export interface BaseGameOffer {
   id: string
-  type: OfferType
-
   // Отправитель
   fromPlayerId: string
   fromPlayerName: string
-
   // Получатель
   toPlayerId: string
   toPlayerName: string
-
-  // Детали (зависят от типа)
-  details: OfferDetails
-
   // Метаданные
   status: OfferStatus
   createdTurn: number
-  expiresInTurns: number  // Через сколько кварталов истечет
-
+  expiresInTurns: number // Через сколько кварталов истечет
   // Дополнительная информация
-  message?: string  // Сообщение от отправителя
+  message?: string // Сообщение от отправителя
 }
 
+// Специализированные типы предложений
+export interface JobOffer extends BaseGameOffer {
+  type: 'job_offer'
+  details: JobOfferDetails
+}
+
+export interface PartnershipOffer extends BaseGameOffer {
+  type: 'business_partnership'
+  details: PartnershipOfferDetails
+}
+
+export interface ShareSaleOffer extends BaseGameOffer {
+  type: 'share_sale'
+  details: ShareSaleOfferDetails
+}
+
+// Основной тип предложения - теперь это дискриминированное объединение
+export type GameOffer = JobOffer | PartnershipOffer | ShareSaleOffer
+
 // Type guards для проверки типа деталей
-export function isJobOffer(offer: GameOffer): offer is GameOffer & { details: JobOfferDetails } {
+export function isJobOffer(offer: GameOffer): offer is JobOffer {
   return offer.type === 'job_offer'
 }
 
-export function isPartnershipOffer(offer: GameOffer): offer is GameOffer & { details: PartnershipOfferDetails } {
+export function isPartnershipOffer(offer: GameOffer): offer is PartnershipOffer {
   return offer.type === 'business_partnership'
 }
 
-export function isShareSaleOffer(offer: GameOffer): offer is GameOffer & { details: ShareSaleOfferDetails } {
+export function isShareSaleOffer(
+  offer: GameOffer,
+): offer is GameOffer & { details: ShareSaleOfferDetails } {
   return offer.type === 'share_sale'
 }
 

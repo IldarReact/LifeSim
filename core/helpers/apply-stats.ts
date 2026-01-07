@@ -7,8 +7,10 @@ export function applyStats<T extends Partial<Stats>>(
   const result = { ...base };
 
   (Object.keys(effect) as Array<keyof StatEffect>).forEach((key) => {
-    if (key in result && typeof result[key] === 'number') {
-      (result as any)[key] = (result[key] as number) + (effect[key] || 0);
+    const k = key as keyof T;
+    const currentVal = result[k];
+    if (typeof currentVal === 'number') {
+      result[k] = (currentVal + (effect[key] || 0)) as T[keyof T];
     }
   });
 

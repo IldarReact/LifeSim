@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { CountryEconomy } from "@/core/types"
-import { ExpandableCard } from "@/shared/ui/expandable-card"
+import { useGameStore } from '@/core/model/store'
+import type { CountryEconomy } from '@/core/types'
+import { ExpandableCard } from '@/shared/ui/expandable-card'
 
 export function CountrySelector() {
   const { countries, setSetupCountry } = useGameStore()
@@ -22,7 +22,7 @@ export function CountrySelector() {
             <ExpandableCard
               key={country.id}
               title={country.name}
-              description={`${country.archetype.replace(/_/g, " ")}`}
+              description={`${country.archetype.replace(/_/g, ' ')}`}
               image={`/placeholder.svg?height=120&width=120&query=flag+${country.name}`}
             >
               <div className="space-y-4">

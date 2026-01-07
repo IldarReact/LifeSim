@@ -7,17 +7,20 @@
 ## Права доступа
 
 ### > 50% доли
+
 - **Полный контроль** над бизнесом
 - Может вносить изменения **напрямую** без согласования
 - Изменения **автоматически синхронизируются** с партнёром
 
 ### = 50% доли
+
 - **Требуется согласование** для любых изменений
 - Отправляет **предложение** партнёру
 - Партнёр может **одобрить** или **отклонить**
 - После одобрения изменения применяются к обоим
 
 ### < 50% доли
+
 - **Только просмотр**
 - Не может вносить изменения
 - Получает обновления от партнёра
@@ -25,13 +28,13 @@
 ## Типы изменений
 
 ```typescript
-type BusinessChangeType = 
-  | 'price'           // Изменение цены
-  | 'quantity'        // Изменение количества производства
-  | 'hire_employee'   // Найм сотрудника
-  | 'fire_employee'   // Увольнение сотрудника
-  | 'freeze'          // Заморозка бизнеса
-  | 'unfreeze'        // Разморозка бизнеса
+type BusinessChangeType =
+  | 'price' // Изменение цены
+  | 'quantity' // Изменение количества производства
+  | 'hire_employee' // Найм сотрудника
+  | 'fire_employee' // Увольнение сотрудника
+  | 'freeze' // Заморозка бизнеса
+  | 'unfreeze' // Разморозка бизнеса
 ```
 
 ## API
@@ -39,10 +42,10 @@ type BusinessChangeType =
 ### Проверка прав
 
 ```typescript
-import { 
-  canMakeDirectChanges, 
-  requiresApproval, 
-  getPlayerShare 
+import {
+  canMakeDirectChanges,
+  requiresApproval,
+  getPlayerShare
 } from '@/core/lib/business/partnership-permissions'
 
 const business = /* ваш бизнес */
@@ -68,7 +71,7 @@ const updateBusinessDirectly = useGameStore((state) => state.updateBusinessDirec
 updateBusinessDirectly(businessId, {
   price: 150,
   quantity: 100,
-  state: 'active'
+  state: 'active',
 })
 ```
 
@@ -78,17 +81,17 @@ updateBusinessDirectly(businessId, {
 const proposeBusinessChange = useGameStore((state) => state.proposeBusinessChange)
 
 proposeBusinessChange(businessId, 'price', {
-  newPrice: 150
+  newPrice: 150,
 })
 
 proposeBusinessChange(businessId, 'quantity', {
-  newQuantity: 100
+  newQuantity: 100,
 })
 
 proposeBusinessChange(businessId, 'hire_employee', {
   employeeName: 'Иван Иванов',
   employeeRole: 'manager',
-  employeeSalary: 5000
+  employeeSalary: 5000,
 })
 ```
 
@@ -111,14 +114,10 @@ rejectBusinessChange(proposalId)
 const proposals = useGameStore((state) => state.businessProposals)
 
 // Входящие (от партнёров)
-const incoming = proposals.filter(
-  p => p.status === 'pending' && p.initiatorId !== player.id
-)
+const incoming = proposals.filter((p) => p.status === 'pending' && p.initiatorId !== player.id)
 
 // Исходящие (ваши)
-const outgoing = proposals.filter(
-  p => p.initiatorId === player.id
-)
+const outgoing = proposals.filter((p) => p.initiatorId === player.id)
 ```
 
 ## События
@@ -126,6 +125,7 @@ const outgoing = proposals.filter(
 Система использует следующие события для синхронизации:
 
 ### BUSINESS_CHANGE_PROPOSED
+
 Отправляется при создании предложения (50/50)
 
 ```typescript
@@ -144,6 +144,7 @@ const outgoing = proposals.filter(
 ```
 
 ### BUSINESS_CHANGE_APPROVED
+
 Отправляется при одобрении предложения
 
 ```typescript
@@ -159,6 +160,7 @@ const outgoing = proposals.filter(
 ```
 
 ### BUSINESS_CHANGE_REJECTED
+
 Отправляется при отклонении предложения
 
 ```typescript
@@ -174,6 +176,7 @@ const outgoing = proposals.filter(
 ```
 
 ### BUSINESS_UPDATED
+
 Отправляется при любом изменении бизнеса
 
 ```typescript
@@ -268,7 +271,7 @@ core/
     │   ├── partnership-business-slice.ts       # Логика
     │   └── partnership-business-slice.types.ts # Типы
     ├── store.ts                  # Подключение slice
-    └── game-store.ts             # Обработка событий
+    └── multiplayer-sync.ts       # Обработка событий
 ```
 
 ## Тестирование

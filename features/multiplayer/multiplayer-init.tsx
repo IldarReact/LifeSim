@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
+import { useEffect } from 'react'
 
-import { enableMultiplayerSync } from "@/core/model/game-store";
+import { enableMultiplayerSync } from '@/core/model/multiplayer-sync'
 
 export function MultiplayerInit() {
   useEffect(() => {
-    enableMultiplayerSync();
-  }, []);
+    enableMultiplayerSync()
+  }, [])
 
   // Ничего не рендерится — только запускает синхронизацию
-  return null;
+  return null
 }

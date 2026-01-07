@@ -63,12 +63,12 @@ describe('pricing-production-slice', () => {
             minEmployees: 1,
             reputation: 50,
             efficiency: 50,
-            taxRate: 0.15,
+            taxRate: 15,
             hasInsurance: false,
             insuranceCost: 0,
             creationCost: { energy: 0, money: 0 },
             playerRoles: { managerialRoles: [], operationalRole: null },
-            requiredRoles: [],
+            employeeRoles: [],
             inventory: {
               currentStock: 1000,
               maxStock: 1000,
@@ -95,7 +95,7 @@ describe('pricing-production-slice', () => {
 
     const b = state().player!.businesses[0] as any
     expect(b.price).toBe(8)
-    const expectedPricePerUnit = Math.round(20 * (1 + 0.15 * (8 - 5)))
+    const expectedPricePerUnit = Math.round(20 * (1 + (15 / 100) * (8 - 5)))
     expect(b.inventory.pricePerUnit).toBe(expectedPricePerUnit)
   })
 })

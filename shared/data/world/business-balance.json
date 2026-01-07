@@ -1,0 +1,31 @@
+{
+  "staffing": {
+    "payrollTaxRate": 15,
+    "baseRentPerEmployee": 150,
+    "baseUtilitiesPerEmployee": 30,
+    "minFixedCosts": 100
+  },
+  "production": {
+    "baseProductionPerWorker": 300,
+    "baseProductDemandPerMaxEmp": 150,
+    "baseServiceDemandPerMaxEmp": 25,
+    "baseServiceRevenuePerLevel": 2000
+  },
+  "elasticity": {
+    "priceSliderStep": 0.5,
+    "safePriceThreshold": 0.6,
+    "demandExponent": 2.5,
+    "reputationSafetyBonus": 0.3
+  },
+  "metrics": {
+    "baseEfficiency": 25,
+    "baseReputationBonus": 15,
+    "minStaffingPenalty": 0.3,
+    "efficiencyWeight": 0.6,
+    "teamStarsWeight": 0.2,
+    "reputationSmoothing": 0.2,
+    "minStaffEfficiencyReduction": 0.7,
+    "maxTaxReduction": 0.8,
+    "maxExpenseReduction": 0.5
+  }
+}

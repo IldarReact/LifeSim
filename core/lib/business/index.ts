@@ -67,6 +67,7 @@ export {
   canPlayerTakeRole,
   isRoleFilled,
   getTotalEmployeesCount,
+  getEffectiveMaxEmployees,
   checkMinimumStaffing,
   getAutoAssignedManagerialRoles,
   updateAutoAssignedRoles,

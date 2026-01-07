@@ -15,7 +15,7 @@ export function SaveClearedNotification() {
   useEffect(() => {
     // Проверяем, было ли сохранение очищено
     const checkCleared = () => {
-      const logs = (window as any).__saveClearedFlag
+      const logs = (window as Window & { __saveClearedFlag?: boolean }).__saveClearedFlag
       if (logs) {
         setShow(true)
       }

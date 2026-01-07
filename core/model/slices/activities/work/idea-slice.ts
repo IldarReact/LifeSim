@@ -3,13 +3,12 @@ import type { StateCreator } from 'zustand'
 import type { GameStore, IdeaSlice } from '../../types'
 
 import { applyStats } from '@/core/helpers/apply-stats'
+import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
 import {
   generateBusinessIdea,
   calculateDevelopmentCost,
   canDevelopIdea,
 } from '@/core/lib/idea-generator'
-import { createBusinessPurchase } from '@/core/lib/business/purchase-logic'
-import type { Business } from '@/core/types'
 
 export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set, get) => ({
   generateIdea: () => {
@@ -152,9 +151,13 @@ export const createIdeaSlice: StateCreator<GameStore, [], [], IdeaSlice> = (set,
         initialCost: idea.investedAmount,
         monthlyIncome: 0,
         monthlyExpenses: 0,
-        maxEmployees: 5,
+        maxEmployees: 25,
         minEmployees: 1,
         upfrontPaymentPercentage: 0, // Already paid via investment
+        employeeRoles: [
+          { role: 'manager', priority: 'required', description: 'Manager' },
+          { role: 'accountant', priority: 'required', description: 'Accountant' },
+        ],
       },
       idea.investedAmount,
       state.turn,

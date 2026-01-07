@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import {
   Heart,
   Briefcase,
@@ -12,8 +11,9 @@ import {
   GraduationCap,
   ShoppingCart,
 } from 'lucide-react'
+import React from 'react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { GameState } from '@/core/types'
 
 type ActivityId = NonNullable<GameState['activeActivity']> | 'education'
@@ -41,8 +41,6 @@ export function ActivityNavigation(): React.JSX.Element | null {
   const { activeActivity, setActiveActivity, gameStatus, player, businessProposals, offers } =
     useGameStore()
 
-  if (gameStatus !== 'playing') return null
-
   // Подсчёт входящих уведомлений для раздела "Работа"
   const workNotificationsCount = React.useMemo(() => {
     if (!player) return 0
@@ -57,6 +55,8 @@ export function ActivityNavigation(): React.JSX.Element | null {
 
     return pendingProposalsCount + incomingOffersCount
   }, [businessProposals, offers, player])
+
+  if (gameStatus !== 'playing') return null
 
   const getNotificationCount = (activityId: ActivityId): number => {
     if (activityId === 'work') {

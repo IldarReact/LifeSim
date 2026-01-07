@@ -1,9 +1,9 @@
 import { formatGameDate } from '@/core/lib/quarter'
 import type { Notification } from '@/core/types'
-import type { PlayerState } from '@/core/types'
+import type { Player } from '@/core/types'
 
 export function processPersonal(
-  prevPersonal: PlayerState['personal'],
+  prevPersonal: Player['personal'],
   playerAge: number,
   turn: number,
   year: number,

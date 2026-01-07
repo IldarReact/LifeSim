@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Zap } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { TrendingUp, TrendingDown, Zap } from 'lucide-react'
+import { useState } from 'react'
 
-import { calculateStatModifiers } from "@/core/lib/calculations/stat-modifiers"
-import { useGameStore } from "@/core/model/game-store"
-import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
+import { calculateStatModifiers } from '@/core/lib/calculations/stat-modifiers'
+import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
+import { useGameStore } from '@/core/model/store'
 
 export function EnergyIndicator() {
   const { player, countries } = useGameStore()
@@ -16,7 +16,7 @@ export function EnergyIndicator() {
   const statMods = calculateStatModifiers(player)
   const lifestyleResult = processLifestyle(player, countries)
   const lifestyleEnergyMod = lifestyleResult.modifiers.energy
-  
+
   // Расчёт итоговой энергии: 100 (восстановление) + все модификаторы
   const totalEnergyMods = statMods.energy.reduce((sum, mod) => sum + (mod.energy || 0), 0)
   const calculatedEnergy = 100 + totalEnergyMods + lifestyleEnergyMod
@@ -29,7 +29,9 @@ export function EnergyIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">⚡</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.max(0, Math.min(100, calculatedEnergy))}</span>
+          <span className="text-lg font-bold text-white tabular-nums">
+            {Math.max(0, Math.min(100, calculatedEnergy))}
+          </span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Энергия</span>
       </button>
@@ -58,25 +60,50 @@ export function EnergyIndicator() {
                 </div>
 
                 {statMods.energy.map((mod, index) => (
-                  <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={(mod.energy || 0) > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                      {(mod.energy || 0) > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors"
+                  >
+                    <span
+                      className={
+                        (mod.energy || 0) > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
+                      {(mod.energy || 0) > 0 ? (
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5" />
+                      )}
                       {mod.source}
                     </span>
                     <span className="text-white/70 font-medium">
-                      {(mod.energy || 0) > 0 ? "+" : ""}{mod.energy}
+                      {(mod.energy || 0) > 0 ? '+' : ''}
+                      {mod.energy}
                     </span>
                   </div>
                 ))}
-                
+
                 {lifestyleEnergyMod !== 0 && (
                   <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={lifestyleEnergyMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                      {lifestyleEnergyMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    <span
+                      className={
+                        lifestyleEnergyMod > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
+                      {lifestyleEnergyMod > 0 ? (
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5" />
+                      )}
                       Образ жизни (еда, жильё, транспорт)
                     </span>
                     <span className="text-white/70 font-medium">
-                      {lifestyleEnergyMod > 0 ? "+" : ""}{lifestyleEnergyMod}
+                      {lifestyleEnergyMod > 0 ? '+' : ''}
+                      {lifestyleEnergyMod}
                     </span>
                   </div>
                 )}
@@ -87,7 +114,9 @@ export function EnergyIndicator() {
                       <Zap className="w-4 h-4" />
                       Итого
                     </span>
-                    <span className="text-white text-sm">{Math.max(0, Math.min(100, calculatedEnergy))}</span>
+                    <span className="text-white text-sm">
+                      {Math.max(0, Math.min(100, calculatedEnergy))}
+                    </span>
                   </div>
                 </div>
               </div>

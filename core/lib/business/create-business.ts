@@ -6,7 +6,12 @@
  * ✅ Single responsibility: create properly initialized Business object
  */
 
-import type { Business, BusinessType } from '@/core/types/business.types'
+import type {
+  Business,
+  BusinessType,
+  BusinessRoleTemplate,
+  BusinessInventory,
+} from '@/core/types'
 import type { StatEffect } from '@/core/types/stats.types'
 
 export interface CreateBusinessParams {
@@ -22,8 +27,8 @@ export interface CreateBusinessParams {
   maxEmployees: number
   minEmployees?: number
   taxRate?: number
-  requiredRoles?: import('@/core/types').EmployeeRole[]
-  inventory?: import('@/core/types').BusinessInventory
+  employeeRoles: BusinessRoleTemplate[]
+  inventory?: BusinessInventory
   currentTurn: number
 }
 
@@ -65,8 +70,8 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     monthlyExpenses = 0,
     maxEmployees,
     minEmployees = 1,
-    taxRate = 0.15,
-    requiredRoles = [],
+    taxRate = 15,
+    employeeRoles = [],
     inventory: initialInventory,
     currentTurn,
   } = params
@@ -111,8 +116,9 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     initialCost: totalCost,
     quarterlyIncome: (monthlyIncome || 0) * 3 || 0,
     quarterlyExpenses: (monthlyExpenses || 0) * 3 || 0,
+    quarterlyTax: 0,
     currentValue: totalCost,
-    taxRate: taxRate || 0.15,
+    taxRate: taxRate || 15,
     walletBalance: 0,
 
     // Insurance
@@ -121,7 +127,7 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
 
     // Inventory (for non-service businesses)
     inventory: initialInventory || {
-      currentStock: isServiceBased ? 0 : 1000,
+      currentStock: 0,
       maxStock: isServiceBased ? 0 : 1000,
       pricePerUnit: isServiceBased ? 0 : 100,
       purchaseCost: isServiceBased ? 0 : 50,
@@ -131,7 +137,7 @@ export function createBusinessObject(params: CreateBusinessParams): Business {
     // Staffing
     employees: [],
     maxEmployees,
-    requiredRoles: [],
+    employeeRoles,
     minEmployees,
     playerRoles: {
       managerialRoles: [],
@@ -181,6 +187,7 @@ export function createBusinessBranch(
       ...mainBusiness.inventory,
       currentStock: 0,
     },
+    quarterlyTax: 0,
     openingProgress: {
       totalQuarters: Math.max(
         1,

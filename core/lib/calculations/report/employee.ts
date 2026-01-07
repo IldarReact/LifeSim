@@ -1,7 +1,9 @@
+import { calculateQuarterlyTaxes } from '../calculate-quarterly-taxes'
 import { getInflatedPrice } from '../price-helpers'
+import { sanitizeNumber } from '../financial-helpers'
 
 import type {
-  PlayerState,
+  Player,
   QuarterlyReport,
   IncomeBreakdown,
   ExpensesBreakdown,
@@ -10,7 +12,7 @@ import type {
 import type { CountryEconomy } from '@/core/types/economy.types'
 
 export function calculateEmployeeQuarterlyReport(params: {
-  player: PlayerState
+  player: Player
   country: CountryEconomy
   familyIncome: number
   familyExpenses: number
@@ -24,17 +26,24 @@ export function calculateEmployeeQuarterlyReport(params: {
   const {
     player,
     country,
-    familyIncome,
-    familyExpenses,
-    assetIncome,
-    assetMaintenance,
-    debtInterest,
-    buffIncomeMod,
-  } = params as any
+    familyIncome: rawFamilyIncome,
+    familyExpenses: rawFamilyExpenses,
+    assetIncome: rawAssetIncome,
+    assetMaintenance: rawAssetMaintenance,
+    debtInterest: rawDebtInterest,
+    buffIncomeMod: rawBuffIncomeMod,
+  } = params
+
+  const familyIncome = sanitizeNumber(rawFamilyIncome)
+  const familyExpenses = sanitizeNumber(rawFamilyExpenses)
+  const assetIncome = sanitizeNumber(rawAssetIncome)
+  const assetMaintenance = sanitizeNumber(rawAssetMaintenance)
+  const debtInterest = sanitizeNumber(rawDebtInterest)
+  const buffIncomeMod = sanitizeNumber(rawBuffIncomeMod)
 
   // Income (с инфляцией)
-  const baseSalary = player.jobs.reduce((sum: number, job: any) => {
-    const monthlySalary = job.salary
+  const baseSalary = (player.jobs || []).reduce((sum: number, job) => {
+    const monthlySalary = sanitizeNumber(job.salary)
     // Применить инфляцию к зарплате
     const inflatedMonthlySalary = getInflatedPrice(monthlySalary, country, 'salaries')
     return sum + inflatedMonthlySalary * 3
@@ -51,23 +60,25 @@ export function calculateEmployeeQuarterlyReport(params: {
     total: totalIncome,
   }
 
-  const incomeTax = totalIncome * (country.taxRate / 100)
-  const propertyTax = player.assets
-    .filter((a: any) => a.type === 'housing')
-    .reduce((sum: number, a: any) => sum + a.currentValue * 0.00125, 0)
+  // Centralized tax calculation
+  const personalTaxes = calculateQuarterlyTaxes({
+    income: totalIncome,
+    assets: player.assets || [],
+    country,
+  })
 
   const taxes: TaxesBreakdown = {
-    income: Math.round(incomeTax),
+    income: personalTaxes.income,
     business: 0,
-    capital: 0,
-    property: Math.round(propertyTax),
-    total: Math.round(incomeTax + propertyTax),
+    capital: personalTaxes.capital,
+    property: personalTaxes.property,
+    total: personalTaxes.total,
   }
 
   const netIncome = totalIncome - taxes.total
 
   const breakdown = params.expensesBreakdown || {
-    food: params.lifestyleExpenses || 0,
+    food: sanitizeNumber(params.lifestyleExpenses),
     housing: 0,
     transport: 0,
     credits: debtInterest,
@@ -76,25 +87,31 @@ export function calculateEmployeeQuarterlyReport(params: {
   }
 
   const expenses: ExpensesBreakdown = {
-    living: Math.round(breakdown.food + breakdown.housing + breakdown.transport + breakdown.other),
-    food: Math.round(breakdown.food),
-    housing: Math.round(breakdown.housing),
-    transport: Math.round(breakdown.transport),
-    credits: Math.round(breakdown.credits),
-    mortgage: Math.round(breakdown.mortgage),
-    other: Math.round(breakdown.other),
-    family: Math.round(familyExpenses),
-    business: 0,
-    debtInterest: Math.round(debtInterest),
-    assetMaintenance: Math.round(assetMaintenance),
-    total: Math.round(
-      breakdown.food +
-        breakdown.housing +
-        breakdown.transport +
-        breakdown.other +
-        debtInterest +
-        assetMaintenance,
+    living: Math.round(
+      sanitizeNumber(breakdown.food) +
+        sanitizeNumber(breakdown.housing) +
+        sanitizeNumber(breakdown.transport) +
+        sanitizeNumber(breakdown.other),
     ),
+    food: Math.round(sanitizeNumber(breakdown.food)),
+    housing: Math.round(sanitizeNumber(breakdown.housing)),
+    transport: Math.round(sanitizeNumber(breakdown.transport)),
+    credits: Math.round(sanitizeNumber(breakdown.credits)),
+    mortgage: Math.round(sanitizeNumber(breakdown.mortgage)),
+    other: Math.round(sanitizeNumber(breakdown.other)),
+    family: 0, // Deprecated
+    business: 0,
+    debtInterest: debtInterest,
+    assetMaintenance: assetMaintenance,
+    total:
+      Math.round(
+        sanitizeNumber(breakdown.food) +
+          sanitizeNumber(breakdown.housing) +
+          sanitizeNumber(breakdown.transport) +
+          sanitizeNumber(breakdown.other),
+      ) +
+      debtInterest +
+      assetMaintenance,
   }
 
   const netProfit = netIncome - expenses.total
@@ -103,7 +120,7 @@ export function calculateEmployeeQuarterlyReport(params: {
     income,
     expenses,
     taxes,
-    netProfit: Math.round(netProfit),
+    netProfit: Math.round(sanitizeNumber(netProfit)),
     warning: netProfit < 0 ? 'Вы теряете деньги!' : null,
   }
 }

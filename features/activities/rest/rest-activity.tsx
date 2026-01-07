@@ -15,11 +15,13 @@ import {
 
 import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
 import { getRestActivitiesForCountry } from '@/core/lib/data-loaders/rest-loader'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
+import type { RestActivity as IRestActivity } from '@/core/types'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import type { LucideIcon } from 'lucide-react'
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   Heart,
   Brain,
   Activity,
@@ -42,7 +44,7 @@ export function RestActivity(): React.JSX.Element | null {
   const money = player.stats.money
   const currentCountry = countries[player.countryId]
 
-  const applyRest = (activity: any, inflatedCost: number) => {
+  const applyRest = (activity: IRestActivity, inflatedCost: number) => {
     if (energy < activity.energyCost) return
     if (money < inflatedCost) return
 

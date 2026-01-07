@@ -1,6 +1,6 @@
 [
   {
-    "id": "bus_phone",
+    "id": "bus_retail_gadgets",
     "name": "Cell Phone Store",
     "type": "retail",
     "description": "Продажа iPhone, Samsung и контрактов от Verizon/AT&T",
@@ -8,11 +8,13 @@
     "quantity": 180,
     "isServiceBased": false,
     "initialCost": 85000,
-    "upfrontCost": 60000,
+    "upfrontCost": 17000,
     "openingQuarters": 2,
     "monthlyIncome": 28000,
     "monthlyExpenses": 18500,
-    "maxEmployees": 7,
+    "energyCost": 15,
+    "stressImpact": 2,
+    "maxEmployees": 35,
     "minEmployees": 3,
     "inventory": {
       "maxStock": 600,
@@ -20,37 +22,32 @@
       "purchaseCost": 520,
       "autoPurchaseAmount": 150
     },
-    "requiredRoles": [
-      "salesperson",
-      "technician",
-      "manager"
-    ],
-    "availablePositions": [
+    "employeeRoles": [
       {
         "role": "manager",
-        "salary": 8000,
-        "description": "Управление магазином, контроль продаж и персонала"
+        "priority": "required",
+        "description": "Управление магазином и персоналом"
       },
       {
         "role": "salesperson",
-        "salary": 5500,
-        "description": "Продажа телефонов и консультация клиентов"
+        "priority": "required",
+        "description": "Продажа телефонов и консультация"
       },
       {
         "role": "technician",
-        "salary": 6000,
-        "description": "Настройка устройств и техническая поддержка"
+        "priority": "recommended",
+        "description": "Настройка устройств и поддержка"
       },
       {
         "role": "accountant",
-        "salary": 7000,
-        "description": "Ведение бухгалтерии и финансовый учет"
+        "priority": "optional",
+        "description": "Финансовый учет"
       }
     ],
     "risk": "medium"
   },
   {
-    "id": "bus_carwash",
+    "id": "bus_service_carwash",
     "name": "Express Car Wash",
     "type": "service",
     "description": "Автомойка с подписками Unlimited Wash Club",
@@ -58,11 +55,13 @@
     "quantity": 0,
     "isServiceBased": true,
     "initialCost": 450000,
-    "upfrontCost": 300000,
+    "upfrontCost": 90000,
     "openingQuarters": 5,
     "monthlyIncome": 52000,
     "monthlyExpenses": 24500,
-    "maxEmployees": 10,
+    "energyCost": 30,
+    "stressImpact": 3,
+    "maxEmployees": 100,
     "minEmployees": 4,
     "inventory": {
       "maxStock": 0,
@@ -70,87 +69,74 @@
       "purchaseCost": 0,
       "autoPurchaseAmount": 0
     },
-    "requiredRoles": [
-      "worker",
-      "manager",
-      "technician"
-    ],
-    "availablePositions": [
+    "employeeRoles": [
       {
         "role": "manager",
-        "salary": 9000,
-        "description": "Управление автомойкой и координация работы"
+        "priority": "required",
+        "description": "Координация работы автомойки"
       },
       {
         "role": "worker",
-        "salary": 4500,
-        "description": "Мойка автомобилей и обслуживание клиентов"
+        "priority": "required",
+        "description": "Обслуживание автомобилей"
       },
       {
         "role": "technician",
-        "salary": 6500,
-        "description": "Обслуживание оборудования автомойки"
+        "priority": "required",
+        "description": "Обслуживание оборудования"
       },
       {
         "role": "marketer",
-        "salary": 7500,
-        "description": "Привлечение клиентов и продвижение подписок"
+        "priority": "recommended",
+        "description": "Привлечение клиентов"
       }
     ],
     "risk": "low"
   },
   {
-    "id": "bus_coffee",
+    "id": "bus_food_coffee",
     "name": "Drive-Thru Coffee Stand",
     "type": "food",
     "description": "Кофейня с проездом — классика американских пригородов",
-    "price": 6,
-    "quantity": 2400,
+    "price": 4,
+    "quantity": 400,
     "isServiceBased": false,
-    "initialCost": 135000,
-    "upfrontCost": 90000,
+    "initialCost": 120000,
+    "upfrontCost": 24000,
     "openingQuarters": 3,
-    "monthlyIncome": 38000,
-    "monthlyExpenses": 24500,
-    "maxEmployees": 8,
-    "minEmployees": 4,
+    "monthlyIncome": 35000,
+    "monthlyExpenses": 21000,
+    "energyCost": 20,
+    "stressImpact": 2,
+    "maxEmployees": 40,
+    "minEmployees": 2,
     "inventory": {
-      "maxStock": 5000,
-      "pricePerUnit": 5.5,
-      "purchaseCost": 2.1,
-      "autoPurchaseAmount": 1200
+      "maxStock": 1200,
+      "pricePerUnit": 4,
+      "purchaseCost": 1.2,
+      "autoPurchaseAmount": 300
     },
-    "requiredRoles": [
-      "worker",
-      "salesperson",
-      "manager"
-    ],
-    "availablePositions": [
+    "employeeRoles": [
       {
         "role": "manager",
-        "salary": 7500,
-        "description": "Управление кофейней и контроль качества"
+        "priority": "required",
+        "description": "Управление кофейней"
       },
       {
         "role": "worker",
-        "salary": 4000,
-        "description": "Приготовление кофе и обслуживание клиентов"
+        "priority": "required",
+        "description": "Бариста и приготовление напитков"
       },
       {
-        "role": "salesperson",
-        "salary": 5000,
-        "description": "Работа с клиентами и продажи"
-      },
-      {
-        "role": "accountant",
-        "salary": 6500,
-        "description": "Финансовый учет и управление запасами"
+        "role": "worker",
+        "priority": "recommended",
+        "description": "Помощник бариста"
       }
     ],
-    "risk": "high"
+    "risk": "low"
   },
   {
-    "id": "bus_vape",
+    "id": "bus_retail_vape",
     "name": "Vape Shop",
     "type": "retail",
     "description": "Магазин вейпов и жидкостей — американская классика",
@@ -158,12 +144,13 @@
     "quantity": 900,
     "isServiceBased": false,
     "initialCost": 50000,
-    "upfrontCost": 35000,
-    "upfrontPaymentPercentage": 20,
+    "upfrontCost": 10000,
     "openingQuarters": 1,
     "monthlyIncome": 32000,
     "monthlyExpenses": 16000,
-    "maxEmployees": 4,
+    "energyCost": 10,
+    "stressImpact": 1,
+    "maxEmployees": 20,
     "minEmployees": 2,
     "inventory": {
       "maxStock": 3000,
@@ -171,25 +158,16 @@
       "purchaseCost": 10,
       "autoPurchaseAmount": 800
     },
-    "requiredRoles": [
-      "salesperson",
-      "worker"
-    ],
-    "availablePositions": [
+    "employeeRoles": [
       {
         "role": "manager",
-        "salary": 6500,
-        "description": "Управление магазином и закупками"
+        "priority": "recommended",
+        "description": "Управление магазином"
       },
       {
         "role": "salesperson",
-        "salary": 5000,
-        "description": "Продажа вейпов и консультация клиентов"
-      },
-      {
-        "role": "worker",
-        "salary": 3800,
-        "description": "Помощь в магазине и работа с товаром"
+        "priority": "required",
+        "description": "Консультация и продажи"
       }
     ],
     "risk": "high"

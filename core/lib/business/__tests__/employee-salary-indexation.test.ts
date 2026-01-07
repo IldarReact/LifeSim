@@ -15,7 +15,7 @@ describe('Employee Salary Indexation Tests', () => {
     interestRate: 2.0,
     unemployment: 5.0,
     taxRate: 20,
-    corporateTaxRate: 0.2,
+    corporateTaxRate: 20,
     salaryModifier: 1.0,
     costOfLivingModifier: 1.0,
     baseSalaries: {

@@ -73,9 +73,8 @@ export const createBankSlice: StateCreator<GameStore, [], [], BankSlice> = (set,
       remainingQuarters: termQuarters,
       quarterlyPrincipal,
       quarterlyInterest,
-      // Безопасно: если currentQuarter нет — берём 0
-      startTurn:
-        (get() as any).currentQuarter ?? (get() as any).turn ?? (get() as any).quarter ?? 0,
+      // Используем turn из GameStore
+      startTurn: get().turn,
     }
 
     set({

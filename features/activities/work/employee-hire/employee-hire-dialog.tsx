@@ -1,19 +1,20 @@
 'use client'
 
-import { CheckCircle, XCircle, Briefcase, Users, Globe } from 'lucide-react'
+import { CheckCircle, Briefcase, Users, Globe } from 'lucide-react'
 import React from 'react'
 
 import { ROLE_LABELS } from '../shared-constants'
 
-import { CandidateCard } from '@/shared/components/business/candidate-card'
 import { SalarySettings } from './components/salary-settings'
 import { useHireDialog } from './hooks/use-hire-dialog'
 import { calculateMonthlySalary } from './utils/employee-utils'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { EmployeeCandidate } from '@/core/types'
+import { CandidateCard } from '@/shared/components/business/candidate-card'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { cn } from '@/shared/utils/utils'
 
 interface EmployeeHireDialogProps {
   isOpen: boolean
@@ -93,96 +94,85 @@ export function EmployeeHireDialog({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div className="flex flex-col gap-4">
           {displayCandidates.length === 0 && (
-            <div className="col-span-3 text-center py-12 text-white/40">
-              {activeTab === 'players' ? 'Нет игроков онлайн' : 'Нет доступных кандидатов'}
+            <div className="text-center py-12 bg-white/2 rounded-2xl border border-dashed border-white/10">
+              <Users className="w-8 h-8 text-white/20 mx-auto mb-2" />
+              <p className="text-white/40 text-sm">
+                {activeTab === 'players' ? 'Нет игроков онлайн' : 'Нет доступных кандидатов'}
+              </p>
             </div>
           )}
 
-          {displayCandidates.map((candidate) => {
-            const isLocal = candidate.id.includes(useGameStore.getState().player?.id || 'none')
-            return (
-              <CandidateCard
-                key={candidate.id}
-                candidate={candidate}
-                isSelected={selectedCandidate?.id === candidate.id}
-                isMe={isLocal}
-                canAfford={canAfford(candidate.requestedSalary)}
-                onClick={() => setSelectedCandidate(candidate)}
-              />
-            )
-          })}
+          {displayCandidates.map((candidate) => (
+            <CandidateCard
+              key={candidate.id}
+              candidate={candidate}
+              isSelected={selectedCandidate?.id === candidate.id}
+              isMe={
+                candidate.id.startsWith('player_') ||
+                candidate.id === `player_${useGameStore.getState().player?.id || 'local'}`
+              }
+              canAfford={true} // Убираем блокировку на уровне карточки для простоты клика
+              onClick={() => setSelectedCandidate(candidate)}
+            />
+          ))}
         </div>
 
         {activeTab === 'players' &&
           selectedCandidate &&
-          !selectedCandidate.id.includes(useGameStore.getState().player?.id || 'none') && (
-            <SalarySettings
-              salary={customSalary}
-              kpiBonus={customKPI}
-              onSalaryChange={setCustomSalary}
-              onKPIChange={setCustomKPI}
-            />
+          !selectedCandidate.id.startsWith('player_') && (
+            <div className="mt-6">
+              <SalarySettings
+                salary={customSalary}
+                kpiBonus={customKPI}
+                onSalaryChange={setCustomSalary}
+                onKPIChange={setCustomKPI}
+              />
+            </div>
           )}
 
         {/* Actions */}
-        <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
+        <div className="flex gap-3 mt-8 pt-6 border-t border-white/5">
           <Button
             onClick={onClose}
-            variant="outline"
-            className="flex-1 border-white/10 hover:bg-white/10 text-white"
+            variant="ghost"
+            className="px-6 h-12 rounded-xl text-white/40 hover:text-white hover:bg-white/5 font-bold uppercase text-[10px] tracking-widest transition-all"
           >
-            <XCircle className="w-4 h-4 mr-2" />
             Отмена
           </Button>
           <Button
             onClick={() => {
-              if (selectedCandidate && canAfford(selectedCandidate.requestedSalary)) {
-                if (activeTab === 'players') {
-                  const isLocal = selectedCandidate.id.includes(
-                    useGameStore.getState().player?.id || 'none',
-                  )
-
-                  if (isLocal) {
-                    // Назначаем себя на роль напрямую (без оффера)
-                    useGameStore.getState().assignPlayerRole(businessId, selectedCandidate.role)
-                  } else {
-                    // Отправляем оффер онлайн-игроку
-                    sendOffer(
-                      'job_offer',
-                      selectedCandidate.id.replace('player_', ''),
-                      selectedCandidate.name,
-                      {
-                        businessId,
-                        businessName,
-                        role: selectedCandidate.role,
-                        salary: customSalary,
-                        kpiBonus: customKPI,
-                      },
-                      'Приглашаю присоединиться к моей команде!',
-                    )
-                  }
-                } else {
-                  // Нанимаем NPC сразу
-                  onHire(selectedCandidate)
-                }
-                onClose()
+              if (selectedCandidate) {
+                onHire(selectedCandidate)
               }
             }}
-            disabled={!selectedCandidate || !canAfford(selectedCandidate?.requestedSalary || 0)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!selectedCandidate}
+            className={cn(
+              'flex-1 h-12 rounded-xl font-black uppercase text-xs tracking-widest transition-all',
+              activeTab === 'players' ? 'bg-purple-600' : 'bg-blue-600',
+              'disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed',
+            )}
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {activeTab === 'players'
-              ? selectedCandidate?.id.includes(useGameStore.getState().player?.id || 'none')
-                ? 'Занять слот'
-                : 'Отправить оффер'
-              : 'Нанять'}{' '}
-            {selectedCandidate &&
-              (activeTab === 'players'
-                ? `за $${calculateMonthlySalary(customSalary).toLocaleString()}/мес`
-                : `за $${selectedCandidate.requestedSalary.toLocaleString()}/мес`)}
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span>
+                {activeTab === 'players'
+                  ? selectedCandidate?.id.startsWith('player_')
+                    ? 'Занять слот'
+                    : 'Отправить оффер'
+                  : 'Нанять'}
+              </span>
+              {selectedCandidate && (
+                <span className="ml-2 opacity-60">
+                  $
+                  {(activeTab === 'players'
+                    ? calculateMonthlySalary(customSalary)
+                    : selectedCandidate.requestedSalary
+                  ).toLocaleString()}
+                </span>
+              )}
+            </div>
           </Button>
         </div>
       </DialogContent>

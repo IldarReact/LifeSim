@@ -1,0 +1,12 @@
+{
+  "firstNames": [
+    "Lukas", "Leon", "Finn", "Elias", "Paul", "Ben", "Noah", "Luis", "Jonas", "Felix",
+    "Maximilian", "Julian", "Moritz", "Jakob", "Anton", "David", "Simon", "Philipp", "Jan", "Erik",
+    "Mia", "Emma", "Hannah", "Sofia", "Anna", "Lea", "Lina", "Marie", "Mila", "Ella",
+    "Clara", "Laura", "Johanna", "Julia", "Charlotte", "Sophie", "Nele", "Sarah", "Lara", "Marlene"
+  ],
+  "lastNames": [
+    "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Schulz", "Hoffmann",
+    "Schäfer", "Koch", "Bauer", "Richter", "Klein", "Wolf", "Schröder", "Neumann", "Schwarz", "Zimmermann"
+  ]
+}

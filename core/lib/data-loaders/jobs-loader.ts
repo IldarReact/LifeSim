@@ -57,8 +57,7 @@ export function getJobById(id: string, countryId: string = 'us'): Job | undefine
 
 export function getJobsByCategory(category: string, countryId: string = 'us'): Job[] {
   const jobs = getCountryJobs(countryId)
-  // Assuming jobs have a category field, adjust if needed
-  return jobs.filter(j => (j as any).category === category)
+  return jobs.filter(j => j.category === category)
 }
 
 export function getAllJobsForCountry(countryId: string): Job[] {

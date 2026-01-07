@@ -1,12 +1,25 @@
-import type { EmployeeRole, EmployeeStars } from '@/core/types/business.types'
+import { WORLD_COUNTRIES } from './economy-loader'
+
+import type { EmployeeRole, EmployeeStars, EmployeeData } from '@/core/types/business.types'
 import type { CountryEconomy } from '@/core/types/economy.types'
-import type { IdeaTemplate } from '@/core/types/idea.types'
+import type { IdeaTemplate, IdeaReplacements } from '@/core/types/idea.types'
 import businessEvents from '@/shared/data/business/business-events.json'
 import ideaTemplates from '@/shared/data/business/idea-templates.json'
-import employeeData from '@/shared/data/employees/employee-data.json'
+const employeeData = _employeeData as unknown as EmployeeData
 import crisisOptions from '@/shared/data/events/crisis-options.json'
-import { WORLD_COUNTRIES } from './economy-loader'
+
+// Country Candidates
+import _employeeData from '@/shared/data/employees/employee-data.json'
+import brazilCandidates from '@/shared/data/world/countries/brazil/candidates.json'
+import germanyCandidates from '@/shared/data/world/countries/germany/candidates.json'
+import usCandidates from '@/shared/data/world/countries/us/candidates.json'
 import countryArchetypes from '@/shared/data/world/country-archetypes.json'
+
+const COUNTRY_CANDIDATES: Record<string, { firstNames: string[]; lastNames: string[] }> = {
+  brazil: brazilCandidates,
+  germany: germanyCandidates,
+  us: usCandidates,
+}
 
 // Types
 
@@ -14,15 +27,15 @@ import countryArchetypes from '@/shared/data/world/country-archetypes.json'
 export const getEmployeeData = () => employeeData
 
 export const getRoleDescription = (role: EmployeeRole) => {
-  return (employeeData.roleDescriptions as any)[role]
+  return employeeData.roleDescriptions[role]
 }
 
 export const getRoleModifiers = (role: EmployeeRole) => {
-  return (employeeData.roleModifiers as any)[role]
+  return employeeData.roleModifiers[role]
 }
 
 export const getBaseSalary = (role: EmployeeRole) => {
-  return (employeeData.baseSalaries as any)[role]
+  return employeeData.baseSalaries[role]
 }
 
 export const getStarMultiplier = (stars: EmployeeStars) => {
@@ -30,13 +43,15 @@ export const getStarMultiplier = (stars: EmployeeStars) => {
   return employeeData.starMultipliers[stars - 1] || 1.0
 }
 
-export const getRandomFirstName = () => {
-  const names = employeeData.firstNames
+export const getRandomFirstName = (countryId?: string) => {
+  const countryData = countryId ? COUNTRY_CANDIDATES[countryId] : null
+  const names = countryData?.firstNames || employeeData.firstNames
   return names[Math.floor(Math.random() * names.length)]
 }
 
-export const getRandomLastName = () => {
-  const names = employeeData.lastNames
+export const getRandomLastName = (countryId?: string) => {
+  const countryData = countryId ? COUNTRY_CANDIDATES[countryId] : null
+  const names = countryData?.lastNames || employeeData.lastNames
   return names[Math.floor(Math.random() * names.length)]
 }
 
@@ -70,7 +85,7 @@ export const getRandomPositiveEvent = () => {
 
 // --- Idea Templates ---
 export const getIdeaTemplates = () => ideaTemplates.templates as unknown as IdeaTemplate[]
-export const getIdeaReplacements = () => ideaTemplates.replacements
+export const getIdeaReplacements = () => ideaTemplates.replacements as unknown as IdeaReplacements
 
 // --- Crisis Options ---
 export const getCrisisOptions = () => crisisOptions

@@ -16,6 +16,7 @@
 ### 1. Обновить BusinessManagementDialog.tsx
 
 #### Текущий код (небезопасный):
+
 ```typescript
 const handlePriceChange = (newPrice: number) => {
   // Прямое изменение без проверки прав
@@ -24,8 +25,13 @@ const handlePriceChange = (newPrice: number) => {
 ```
 
 #### Новый код (с проверкой прав):
+
 ```typescript
-import { canMakeDirectChanges, requiresApproval, getPlayerShare } from '@/core/lib/business/partnership-permissions'
+import {
+  canMakeDirectChanges,
+  requiresApproval,
+  getPlayerShare,
+} from '@/core/lib/business/partnership-permissions'
 
 const handlePriceChange = (newPrice: number) => {
   const player = useGameStore.getState().player
@@ -42,13 +48,14 @@ const handlePriceChange = (newPrice: number) => {
     pushNotification({
       type: 'error',
       title: 'Недостаточно прав',
-      message: 'У вас < 50% доли в бизнесе'
+      message: 'У вас < 50% доли в бизнесе',
     })
   }
 }
 ```
 
 **Файлы для изменения:**
+
 - [ ] `features/activities/work/components/BusinessManagementDialog.tsx`
   - [ ] Импортировать утилиты проверки прав
   - [ ] Импортировать actions из store
@@ -79,6 +86,7 @@ function BusinessHeader({ business }: Props) {
 ```
 
 **Файлы для изменения:**
+
 - [ ] `features/activities/work/components/BusinessManagementDialog.tsx`
   - [ ] Добавить индикатор прав в заголовок
 
@@ -91,7 +99,7 @@ function WorkActivity() {
   return (
     <div>
       {/* Существующий UI */}
-      
+
       {/* Добавить компонент предложений */}
       <BusinessProposals />
     </div>
@@ -100,6 +108,7 @@ function WorkActivity() {
 ```
 
 **Файлы для изменения:**
+
 - [ ] Скопировать `BusinessProposals.example.tsx` → `BusinessProposals.tsx`
 - [ ] Добавить стили для компонента
 - [ ] Интегрировать в `work-activity.tsx`
@@ -114,6 +123,7 @@ grep -r "changePrice\|setQuantity\|updateBusiness" features/
 ```
 
 **Места для проверки:**
+
 - [ ] Изменение цены
 - [ ] Изменение количества
 - [ ] Найм сотрудников
@@ -124,18 +134,19 @@ grep -r "changePrice\|setQuantity\|updateBusiness" features/
 ### 5. Добавить уведомления
 
 ```typescript
-// В game-store.ts уже настроены обработчики
+// В multiplayer-sync.ts уже настроены обработчики
 // Но можно добавить дополнительные уведомления
 
 if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
   state.onBusinessChangeProposed(event)
-  
+
   // Дополнительно: показать toast
   toast.info(`${event.payload.initiatorName} предлагает изменить бизнес`)
 }
 ```
 
 **Опционально:**
+
 - [ ] Добавить toast-уведомления
 - [ ] Добавить звуковые сигналы
 - [ ] Добавить бейдж с количеством предложений
@@ -143,12 +154,14 @@ if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
 ### 6. Тестирование
 
 **Сценарий 1: Владелец с > 50%**
+
 - [ ] Создать партнёрство 60/40
 - [ ] Изменить цену
 - [ ] Проверить, что изменение применилось мгновенно
 - [ ] Проверить, что партнёр получил обновление
 
 **Сценарий 2: Равные доли 50/50**
+
 - [ ] Создать партнёрство 50/50
 - [ ] Попробовать изменить цену
 - [ ] Проверить, что появилось предложение
@@ -157,6 +170,7 @@ if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
 - [ ] Проверить, что изменения применились у обоих
 
 **Сценарий 3: Миноритарий < 50%**
+
 - [ ] Создать партнёрство 40/60
 - [ ] Попробовать изменить цену
 - [ ] Проверить, что появилась ошибка
@@ -165,6 +179,7 @@ if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
 ### 7. Стилизация
 
 **Добавить стили для:**
+
 - [ ] `.proposal-card` - карточка предложения
 - [ ] `.status-pending` - статус "ожидает"
 - [ ] `.status-approved` - статус "одобрено"
@@ -177,16 +192,19 @@ if (event.type === 'BUSINESS_CHANGE_PROPOSED') {
 ## Опциональные улучшения
 
 ### Приоритет 1 (Важно)
+
 - [ ] Добавить таймаут для автоматического отклонения предложений (например, 24 часа)
 - [ ] Добавить историю предложений
 - [ ] Добавить фильтры для предложений (активные/архив)
 
 ### Приоритет 2 (Желательно)
+
 - [ ] Добавить возможность отменить своё предложение
 - [ ] Добавить комментарии к предложениям
 - [ ] Добавить групповые предложения (для > 2 партнёров)
 
 ### Приоритет 3 (Можно позже)
+
 - [ ] Добавить аналитику по предложениям
 - [ ] Добавить шаблоны предложений
 - [ ] Добавить автоматические правила (например, автоодобрение мелких изменений)
@@ -232,6 +250,7 @@ npm run lint
 ## Контакты
 
 При возникновении вопросов см. документацию:
+
 - `docs/partnership-README.md` - обзор
 - `docs/partnership-quick-start.md` - быстрый старт
 - `docs/partnership-architecture.md` - архитектура

@@ -10,16 +10,16 @@ import brTransport from '@/shared/data/world/countries/brazil/transport.json'
 import geHousing from '@/shared/data/world/countries/germany/housing.json'
 import geFood from '@/shared/data/world/countries/germany/shop-categories/food.json'
 import geHealth from '@/shared/data/world/countries/germany/shop-categories/health.json'
+import geServices from '@/shared/data/world/countries/germany/shop-categories/services.json'
 import geTransport from '@/shared/data/world/countries/germany/transport.json'
 import usHousing from '@/shared/data/world/countries/us/housing.json'
 import usFood from '@/shared/data/world/countries/us/shop-categories/food.json'
-import usTransport from '@/shared/data/world/countries/us/transport.json'
 import usHealth from '@/shared/data/world/countries/us/shop-categories/health.json'
 import usServices from '@/shared/data/world/countries/us/shop-categories/services.json'
+import usTransport from '@/shared/data/world/countries/us/transport.json'
 
 
 // Germany
-import geServices from '@/shared/data/world/countries/germany/shop-categories/services.json'
 
 
 // Brazil
@@ -30,7 +30,8 @@ import geServices from '@/shared/data/world/countries/germany/shop-categories/se
  */
 
 function validateShopItem(item: unknown): item is ShopItem {
-  const i = item as any
+  if (!item || typeof item !== 'object') return false
+  const i = item as Record<string, unknown>
 
   if (!i.id || !i.name || !i.category) return false
 

@@ -2,31 +2,24 @@ import type { StateCreator } from 'zustand'
 
 import type { GameStore, FamilySlice } from '../../types'
 
-import { applyStats } from '@/core/helpers/apply-stats'
-import { FAMILY_PRICES } from '@/core/lib/calculations/family-prices'
-import { getInflatedPrice } from '@/core/lib/calculations/price-helpers'
-import type { FamilyMember } from '@/core/types'
+
+import { processGoalCompletion } from './utils/goal-logic'
+import { createNewMember } from './utils/member-factory'
+import {
+  processStartDating,
+  processAcceptPartner,
+  processTryForBaby,
+  processAdoptPet,
+} from './utils/relationship-logic'
+
+import { calculateMemberExpenses } from '@/core/lib/lifestyle-expenses'
 
 export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (set, get) => ({
   // ------------------------------------------------------------
   // ADD FAMILY MEMBER
   // ------------------------------------------------------------
   addFamilyMember: (name, type, age, income, expenses) => {
-    const newMember: FamilyMember = {
-      id: `family_${Date.now()}`,
-      name,
-      type,
-      age,
-      relationLevel: 50,
-      income,
-      expenses,
-      passiveEffects: {
-        happiness: type === 'pet' ? 2 : 5,
-        sanity: type === 'pet' ? 3 : 1,
-        health: 0,
-      },
-      foodPreference: type === 'pet' ? undefined : 'food_homemade', // Дефолт для людей
-    }
+    const newMember = createNewMember(name, type, age, income, expenses)
 
     get().updatePlayer((prev) => ({
       personal: {
@@ -73,30 +66,17 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
     const { player } = get()
     if (!player) return
 
-    const goal = player.personal.lifeGoals.find((g) => g.id === goalId)
-    if (!goal || goal.isCompleted) return
+    const result = processGoalCompletion(player, goalId)
+    if (!result) return
 
-    get().updatePlayer((prev) => {
-      const updatedStats = applyStats(prev.personal.stats, { happiness: 10, sanity: 10 })
-      return {
-        personal: {
-          ...prev.personal,
-          lifeGoals: prev.personal.lifeGoals.map((g) =>
-            g.id === goalId ? { ...g, isCompleted: true, progress: g.target } : g,
-          ),
-          stats: {
-            ...updatedStats,
-            happiness: Math.min(100, updatedStats.happiness),
-            sanity: Math.min(100, updatedStats.sanity),
-          },
-        },
-      }
-    })
+    get().updatePlayer((prev) => ({
+      personal: result.personal,
+    }))
 
     get().pushNotification({
       type: 'success',
       title: 'Цель достигнута! 🎉',
-      message: `Вы достигли цели «${goal.title}»`,
+      message: `Вы достигли цели «${result.goalTitle}»`,
     })
   },
 
@@ -107,29 +87,21 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
     const { player, countries } = get()
     if (!player) return
 
-    const energy = player.personal.stats.energy
-    const money = player.stats.money
-
-    // Применить инфляцию к цене
-    const economy = countries[player.countryId]
-    const datingCost = economy
-      ? getInflatedPrice(FAMILY_PRICES.DATING_SEARCH, economy, 'services')
-      : FAMILY_PRICES.DATING_SEARCH
-
-    if (energy < FAMILY_PRICES.DATING_ENERGY_COST || money < datingCost) return
+    const result = processStartDating(player, countries)
+    if (!result) return
 
     get().updatePlayer((prev) => ({
       stats: {
         ...prev.stats,
-        money: prev.stats.money - datingCost,
+        money: prev.stats.money - result.money,
       },
       personal: {
         ...prev.personal,
         isDating: true,
         stats: {
           ...prev.personal.stats,
-          energy: prev.personal.stats.energy - FAMILY_PRICES.DATING_ENERGY_COST,
-          money: prev.personal.stats.money - datingCost,
+          energy: prev.personal.stats.energy - result.energy,
+          money: prev.personal.stats.money - result.money,
         },
       },
     }))
@@ -146,60 +118,24 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
   // ------------------------------------------------------------
   acceptPartner: () => {
     const { player, countries } = get()
-    if (!player || !player.personal.potentialPartner) return
+    if (!player) return
 
-    const partner = player.personal.potentialPartner
-
-    // Применить инфляцию к расходам партнёра
-    const economy = countries[player.countryId]
-    const partnerExpenses = economy
-      ? getInflatedPrice(FAMILY_PRICES.PARTNER_QUARTERLY_EXPENSES, economy, 'services')
-      : FAMILY_PRICES.PARTNER_QUARTERLY_EXPENSES
-
-    const jobs = [
-      { id: 'job_worker_start', title: 'Рабочий', income: 3000 },
-      { id: 'job_indebted_start', title: 'Офисный работник', income: 18000 },
-      { id: 'job_marketing', title: 'Digital Marketing Specialist', income: 22500 },
-    ]
-    const partnerJob = jobs.find((j) => j.title === partner.occupation) || jobs[0]
-
-    const newMember: FamilyMember = {
-      id: partner.id,
-      name: partner.name,
-      type: 'wife',
-      age: partner.age,
-      relationLevel: 50,
-      income: partner.income,
-      expenses: 0,
-      passiveEffects: {
-        happiness: 5,
-        sanity: 2,
-        health: 0,
-      },
-      foodPreference: 'food_homemade',
-      transportPreference: 'transport_public',
-      occupation: partner.occupation,
-      jobId: partnerJob.id,
-    }
-
-    // Рассчитать расходы партнера
-    const { calculateMemberExpenses } = require('@/core/lib/lifestyle-expenses')
-    const costModifier = economy?.costOfLivingModifier || 1.0
-    newMember.expenses = calculateMemberExpenses(newMember, player.countryId, costModifier)
+    const result = processAcceptPartner(player, countries, calculateMemberExpenses)
+    if (!result) return
 
     get().updatePlayer((prev) => ({
       personal: {
         ...prev.personal,
         potentialPartner: null,
         isDating: false,
-        familyMembers: [...prev.personal.familyMembers, newMember],
+        familyMembers: [...prev.personal.familyMembers, result.newMember],
       },
     }))
 
     get().pushNotification({
       type: 'success',
       title: 'Новые отношения!',
-      message: `Вы начали отношения с ${partner.name}.`,
+      message: `Вы начали отношения с ${result.partnerName}.`,
     })
   },
 
@@ -222,20 +158,13 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
     const { player } = get()
     if (!player) return
 
-    const hasPartner = player.personal.familyMembers.some(
-      (m) => m.type === 'wife' || m.type === 'husband',
-    )
-
-    if (!hasPartner) return
+    const result = processTryForBaby(player)
+    if (!result) return
 
     get().updatePlayer((prev) => ({
       personal: {
         ...prev.personal,
-        pregnancy: {
-          turnsLeft: 3,
-          isTwins: Math.random() < 0.1,
-          motherId: 'wife',
-        },
+        pregnancy: result.pregnancy,
       },
     }))
 
@@ -253,37 +182,17 @@ export const createFamilySlice: StateCreator<GameStore, [], [], FamilySlice> = (
     const { player, countries } = get()
     if (!player) return
 
-    if (player.stats.money < cost) return
-
-    // Применить инфляцию к расходам питомца
-    const economy = countries[player.countryId]
-    const petExpenses = economy
-      ? getInflatedPrice(FAMILY_PRICES.PET_QUARTERLY_EXPENSES, economy, 'services')
-      : FAMILY_PRICES.PET_QUARTERLY_EXPENSES
-
-    const newPet: FamilyMember = {
-      id: `pet_${Date.now()}`,
-      name,
-      type: 'pet',
-      age: 1,
-      relationLevel: 80,
-      income: 0,
-      expenses: petExpenses,
-      passiveEffects: {
-        happiness: 3,
-        sanity: 2,
-        health: 0,
-      },
-    }
+    const result = processAdoptPet(player, countries, cost, name)
+    if (!result) return
 
     get().updatePlayer((prev) => ({
       stats: {
         ...prev.stats,
-        money: prev.stats.money - cost,
+        money: prev.stats.money - result.cost,
       },
       personal: {
         ...prev.personal,
-        familyMembers: [...prev.personal.familyMembers, newPet],
+        familyMembers: [...prev.personal.familyMembers, result.newPet],
       },
     }))
 

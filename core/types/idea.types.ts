@@ -47,3 +47,11 @@ export interface IdeaTemplate {
   returnRange: [number, number]
   investmentRange: [number, number]
 }
+
+export interface IdeaReplacements {
+  categories: string[]
+  niches: string[]
+  fields: string[]
+  products: string[]
+  [key: string]: string[]
+}

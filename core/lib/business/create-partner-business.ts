@@ -1,5 +1,11 @@
-import type { Business, BusinessType, EmployeeRole } from '@/core/types/business.types'
 import { createBusinessPurchase } from './purchase-logic'
+
+import type {
+  Business,
+  BusinessType,
+  BusinessRoleTemplate,
+  BusinessInventory,
+} from '@/core/types'
 
 export function createPartnerBusiness(
   offer: {
@@ -15,8 +21,8 @@ export function createPartnerBusiness(
       monthlyExpenses?: number
       maxEmployees?: number
       minEmployees?: number
-      requiredRoles?: EmployeeRole[]
-      inventory?: import('@/core/types').BusinessInventory
+      employeeRoles: BusinessRoleTemplate[]
+      inventory?: BusinessInventory
     }
     fromPlayerId: string
     fromPlayerName: string
@@ -47,9 +53,9 @@ export function createPartnerBusiness(
       initialCost: offer.details.totalCost, // Use totalCost as initialCost for the purchase logic
       monthlyIncome: offer.details.monthlyIncome || 0,
       monthlyExpenses: offer.details.monthlyExpenses || 0,
-      maxEmployees: offer.details.maxEmployees || 5,
+      maxEmployees: offer.details.maxEmployees || 25,
       minEmployees: offer.details.minEmployees,
-      requiredRoles: offer.details.requiredRoles,
+      employeeRoles: offer.details.employeeRoles,
       inventory: offer.details.inventory,
     },
     offer.details.totalCost,

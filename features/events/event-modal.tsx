@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
 import { X } from 'lucide-react'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { GlobalEvent } from "@/core/types"
+import { useGameStore } from '@/core/model/store'
+import type { GlobalEvent } from '@/core/types'
 
 export function EventModal() {
   const { pendingEventNotification, dismissEventNotification } = useGameStore()
@@ -12,11 +12,11 @@ export function EventModal() {
   if (!pendingEventNotification) return null
 
   const getIcon = (event: GlobalEvent) => {
-    if (event.id === "pandemic") return "🦠"
-    if (event.id === "tech_boom") return "💻"
-    if (event.id === "financial_crisis") return "📉"
-    if (event.id === "climate_shift") return "🌍"
-    return "📢"
+    if (event.id === 'pandemic') return '🦠'
+    if (event.id === 'tech_boom') return '💻'
+    if (event.id === 'financial_crisis') return '📉'
+    if (event.id === 'climate_shift') return '🌍'
+    return '📢'
   }
 
   return (
@@ -39,7 +39,9 @@ export function EventModal() {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-xl font-semibold text-foreground mb-2">{pendingEventNotification.title}</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            {pendingEventNotification.title}
+          </h3>
           <p className="text-muted-foreground">{pendingEventNotification.description}</p>
         </div>
 
@@ -48,24 +50,39 @@ export function EventModal() {
           {pendingEventNotification.impact.gdp && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">ВВП:</span>
-              <span className={pendingEventNotification.impact.gdp > 0 ? "text-green-600" : "text-red-600"}>
-                {pendingEventNotification.impact.gdp > 0 ? "+" : ""}{pendingEventNotification.impact.gdp}%
+              <span
+                className={
+                  pendingEventNotification.impact.gdp > 0 ? 'text-green-600' : 'text-red-600'
+                }
+              >
+                {pendingEventNotification.impact.gdp > 0 ? '+' : ''}
+                {pendingEventNotification.impact.gdp}%
               </span>
             </div>
           )}
           {pendingEventNotification.impact.inflation && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Инфляция:</span>
-              <span className={pendingEventNotification.impact.inflation > 0 ? "text-red-600" : "text-green-600"}>
-                {pendingEventNotification.impact.inflation > 0 ? "+" : ""}{pendingEventNotification.impact.inflation}%
+              <span
+                className={
+                  pendingEventNotification.impact.inflation > 0 ? 'text-red-600' : 'text-green-600'
+                }
+              >
+                {pendingEventNotification.impact.inflation > 0 ? '+' : ''}
+                {pendingEventNotification.impact.inflation}%
               </span>
             </div>
           )}
           {pendingEventNotification.impact.market && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Рынок:</span>
-              <span className={pendingEventNotification.impact.market > 0 ? "text-green-600" : "text-red-600"}>
-                {pendingEventNotification.impact.market > 0 ? "+" : ""}{pendingEventNotification.impact.market}%
+              <span
+                className={
+                  pendingEventNotification.impact.market > 0 ? 'text-green-600' : 'text-red-600'
+                }
+              >
+                {pendingEventNotification.impact.market > 0 ? '+' : ''}
+                {pendingEventNotification.impact.market}%
               </span>
             </div>
           )}

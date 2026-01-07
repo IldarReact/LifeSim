@@ -211,7 +211,8 @@ describe('Inflation UI Tests - Simplified', () => {
       const salary = getInflatedSalary(5000, economyWithInflation)
       const display = `$${salary.toLocaleString()}/мес`
 
-      expect(display).toMatch(/\$[\d,]+\/мес/)
+      // Поддержка различных разделителей разрядов (запятая, пробел, неразрывный пробел)
+      expect(display).toMatch(/\$[\d\s\u00A0,]+\/мес/)
       expect(display).toContain('$')
       expect(display).toContain('/мес')
     })

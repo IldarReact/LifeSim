@@ -1,2 +1,3 @@
+export { BusinessManagement } from './business-management'
 export { BusinessManagementDialog } from './business-management-dialog'
-export type { BusinessManagementDialogProps } from './types'
+export * from './types'

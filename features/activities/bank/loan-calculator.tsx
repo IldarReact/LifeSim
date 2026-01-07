@@ -11,7 +11,7 @@ import {
   calculateOverpayment,
   getAvailableLoanTerms,
 } from '@/core/lib/calculations/loan-calculator'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Input } from '@/shared/ui/input'
@@ -79,7 +79,7 @@ export function LoanCalculator() {
       <div className="space-y-5">
         <div>
           <Label className="text-white/80">Тип кредита</Label>
-          <Select value={loanType} onValueChange={setLoanType as any}>
+          <Select value={loanType} onValueChange={(v) => setLoanType(v as keyof typeof LOAN_TYPES)}>
             <SelectTrigger className="bg-white/5 border-white/10 text-white">
               <SelectValue />
             </SelectTrigger>

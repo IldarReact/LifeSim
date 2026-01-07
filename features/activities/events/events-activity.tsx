@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import { useGameStore } from "@/core/model/game-store"
-import type { GlobalEvent } from '@/core/types';
+import { useGameStore } from '@/core/model/store'
+import type { GlobalEvent } from '@/core/types'
 
 export function EventsActivity(): React.JSX.Element | null {
   const { globalEvents, history } = useGameStore()
@@ -19,7 +19,10 @@ export function EventsActivity(): React.JSX.Element | null {
             ) : (
               <div className="flex flex-wrap gap-3">
                 {globalEvents.map((event: GlobalEvent, i) => (
-                  <div key={i} className="bg-indigo-500/20 text-indigo-200 px-4 py-2 rounded-full border border-indigo-500/30">
+                  <div
+                    key={i}
+                    className="bg-indigo-500/20 text-indigo-200 px-4 py-2 rounded-full border border-indigo-500/30"
+                  >
                     {event.title}
                   </div>
                 ))}
@@ -33,18 +36,26 @@ export function EventsActivity(): React.JSX.Element | null {
               {history.length === 0 ? (
                 <p className="text-white/40 italic">История пока пуста</p>
               ) : (
-                history.slice().reverse().map((snap, i) => (
-                  <div key={i} className="bg-white/5 p-4 rounded-xl flex justify-between items-center">
-                    <div>
-                      <p className="font-bold text-white">Год {snap.year}</p>
-                      <p className="text-sm text-white/60">Ход {snap.turn}</p>
+                history
+                  .slice()
+                  .reverse()
+                  .map((snap, indexInReversed) => (
+                    <div
+                      key={`${snap.year}-${snap.turn}-${indexInReversed}`}
+                      className="bg-white/5 p-4 rounded-xl flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="font-bold text-white">Год {snap.year}</p>
+                        <p className="text-sm text-white/60">Ход {snap.turn}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white">Капитал: {snap.netWorth.toLocaleString()}</p>
+                        <p className="text-sm text-white/60">
+                          Счастье: {Math.round(snap.happiness)}%
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white">Капитал: {snap.netWorth.toLocaleString()}</p>
-                      <p className="text-sm text-white/60">Счастье: {Math.round(snap.happiness)}%</p>
-                    </div>
-                  </div>
-                ))
+                  ))
               )}
             </div>
           </div>

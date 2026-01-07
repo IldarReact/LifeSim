@@ -13,6 +13,10 @@ describe('createPartnerBusiness', () => {
       totalCost: 100000,
       yourInvestment: 50000,
       yourShare: 50,
+      employeeRoles: [
+        { role: 'manager' as const, priority: 'required' as const, description: 'Manager' },
+        { role: 'accountant' as const, priority: 'required' as const, description: 'Accountant' },
+      ],
     },
     fromPlayerId: 'player1',
     fromPlayerName: 'Игрок 1',
@@ -39,13 +43,13 @@ describe('createPartnerBusiness', () => {
     expect(business.partners).toHaveLength(2)
 
     // Проверка текущего игрока в partners
-    const currentPlayerPartner = business.partners.find(p => p.id === 'player2')
+    const currentPlayerPartner = business.partners.find((p) => p.id === 'player2')
     expect(currentPlayerPartner).toBeDefined()
     expect(currentPlayerPartner?.share).toBe(50)
     expect(currentPlayerPartner?.investedAmount).toBe(50000)
 
     // Проверка партнёра в partners
-    const otherPartner = business.partners.find(p => p.id === 'player1')
+    const otherPartner = business.partners.find((p) => p.id === 'player1')
     expect(otherPartner).toBeDefined()
     expect(otherPartner?.name).toBe('Игрок 1')
     expect(otherPartner?.share).toBe(50)
@@ -74,7 +78,7 @@ describe('createPartnerBusiness', () => {
     expect(business.partners).toHaveLength(2)
 
     // Проверка что инициатор есть в partners
-    const initiator = business.partners.find(p => p.id === 'player1')
+    const initiator = business.partners.find((p) => p.id === 'player1')
     expect(initiator).toBeDefined()
     expect(initiator?.share).toBe(50)
   })
@@ -91,7 +95,7 @@ describe('createPartnerBusiness', () => {
 
     // Проверка настроек по умолчанию
     expect(business.state).toBe('active')
-    expect(business.taxRate).toBe(0.15)
+    expect(business.taxRate).toBe(15)
     expect(business.hasInsurance).toBe(true)
     expect(business.insuranceCost).toBe(1000) // 1% от totalCost
     expect(business.reputation).toBe(50)

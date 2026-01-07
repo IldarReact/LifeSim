@@ -3,8 +3,13 @@
  */
 
 import { createBusinessObject } from './create-business'
-import type { Business, BusinessType, EmployeeRole, BusinessInventory } from '@/core/types'
-import type { StatEffect } from '@/core/types/stats.types'
+
+import type {
+  Business,
+  BusinessType,
+  BusinessInventory,
+  BusinessRoleTemplate,
+} from '@/core/types'
 
 export interface BusinessTemplate {
   id: string
@@ -16,7 +21,7 @@ export interface BusinessTemplate {
   monthlyExpenses: number
   maxEmployees: number
   minEmployees?: number
-  requiredRoles?: EmployeeRole[]
+  employeeRoles: BusinessRoleTemplate[]
   inventory?: BusinessInventory
   upfrontPaymentPercentage?: number
 }
@@ -42,7 +47,7 @@ export function createBusinessPurchase(
   currentTurn: number,
   partnerConfig?: PartnerConfig & { partnerBusinessId?: string },
 ): PurchaseResult {
-  const upfrontPercentage = template.upfrontPaymentPercentage ?? 20 // Default to 20%
+  const upfrontPercentage = 100 // Всегда 100% при покупке, никаких "кредитов"
   const totalCost = inflatedCost
 
   // Calculate how much the player pays
@@ -65,14 +70,14 @@ export function createBusinessPurchase(
       type: businessType,
       description: template.description,
       totalCost: totalCost,
-      upfrontCost: totalCost * (upfrontPercentage / 100), // Internal tracking of upfront cost
+      upfrontCost: totalCost, // 100% оплачено
       creationCost: { energy: -20 }, // Standard energy cost for starting with partner
-      openingQuarters: partnerConfig.initialState === 'active' ? 0 : 1,
+      openingQuarters: 0, // При покупке с партнером обычно уже готовый бизнес или открывается сразу
       monthlyIncome: template.monthlyIncome,
       monthlyExpenses: template.monthlyExpenses,
       maxEmployees: template.maxEmployees,
       minEmployees: template.minEmployees ?? 1,
-      requiredRoles: template.requiredRoles ?? [],
+      employeeRoles: template.employeeRoles,
       inventory: template.inventory,
       currentTurn,
     })
@@ -107,8 +112,8 @@ export function createBusinessPurchase(
     business.partnerName = partnerConfig.partnerName
     business.partnerBusinessId = partnerConfig.partnerBusinessId
   } else {
-    // Solo purchase: player pays the upfront percentage
-    playerInvestment = Math.round(totalCost * (upfrontPercentage / 100))
+    // Solo purchase: player pays 100%
+    playerInvestment = totalCost
 
     business = createBusinessObject({
       name: template.name,
@@ -117,12 +122,12 @@ export function createBusinessPurchase(
       totalCost: totalCost,
       upfrontCost: playerInvestment,
       creationCost: { energy: -15 }, // Standard energy cost for solo start
-      openingQuarters: 1,
+      openingQuarters: 0, // Бизнес становится активным сразу после покупки
       monthlyIncome: template.monthlyIncome,
       monthlyExpenses: template.monthlyExpenses,
       maxEmployees: template.maxEmployees,
       minEmployees: template.minEmployees ?? 1,
-      requiredRoles: template.requiredRoles ?? [],
+      employeeRoles: template.employeeRoles,
       inventory: template.inventory,
       currentTurn,
     })

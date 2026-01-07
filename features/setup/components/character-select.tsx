@@ -1,17 +1,17 @@
-"use client"
+'use client'
 
-import { AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useState, useMemo } from "react"
+import { AnimatePresence } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useMemo } from 'react'
 
-import type { ModalView } from "../types"
-import { getCharacterImage } from "../utils"
+import type { ModalView } from '../types'
+import { getCharacterImage } from '../utils'
 
-import { CharacterCard } from "./character-card"
-import { CharacterModal } from "./character-modal"
+import { CharacterCard } from './character-card'
+import { CharacterModal } from './character-modal'
 
-import { getCharactersForCountry } from "@/core/lib/data-loaders/characters-loader"
-import { useGameStore } from "@/core/model/game-store"
+import { getCharactersForCountry } from '@/core/lib/data-loaders/characters-loader'
+import { useGameStore } from '@/core/model/store'
 
 export interface CharacterSelectUIProps {
   setupCountryId: string
@@ -19,15 +19,19 @@ export interface CharacterSelectUIProps {
   onBack?: () => void
 }
 
-export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: CharacterSelectUIProps): React.JSX.Element | null {
+export function CharacterSelectUI({
+  setupCountryId,
+  onSelect,
+  onBack,
+}: CharacterSelectUIProps): React.JSX.Element | null {
   const countryId = setupCountryId || 'us'
   const characters = useMemo(() => getCharactersForCountry(countryId), [countryId])
-  const archetypes = useMemo(() => characters.map(c => c.archetype), [characters])
+  const archetypes = useMemo(() => characters.map((c) => c.archetype), [characters])
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalView, setModalView] = useState<ModalView>("main")
-  
+  const [modalView, setModalView] = useState<ModalView>('main')
+
   const currentArchetype = archetypes[currentIndex]
   const currentCharacter = characters[currentIndex]
 
@@ -38,7 +42,6 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
   const handlePrev = (): void => {
     setCurrentIndex((prev) => (prev - 1 + archetypes.length) % archetypes.length)
   }
-
 
   const visibleIndices = useMemo(() => {
     const prev = (currentIndex - 1 + archetypes.length) % archetypes.length
@@ -108,9 +111,9 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
             characterName={currentCharacter.name}
             onClose={() => {
               setIsModalOpen(false)
-              setModalView("main")
+              setModalView('main')
             }}
-            onBack={() => setModalView("main")}
+            onBack={() => setModalView('main')}
             onSelect={() => {
               setIsModalOpen(false)
               handleSelect()
@@ -126,7 +129,7 @@ export function CharacterSelectUI({ setupCountryId, onSelect, onBack }: Characte
 export function CharacterSelect(): React.JSX.Element | null {
   const { gameStatus, initializeGame, setupCountryId } = useGameStore()
 
-  if (gameStatus !== "select_character") return null
+  if (gameStatus !== 'select_character') return null
 
   return (
     <CharacterSelectUI
@@ -139,5 +142,3 @@ export function CharacterSelect(): React.JSX.Element | null {
     />
   )
 }
-
-

@@ -17,14 +17,16 @@ core/model/
 ├── logic/               # Бизнес-логика
 │   ├── turn-logic.ts    # Обработка хода
 │   └── index.ts         # Экспорты
-├── store.ts             # Главный store (объединяет слайсы)
-└── game-store.ts        # Обратная совместимость
+├── multiplayer-sync.ts  # Синхронизация мультиплеера
+└── store.ts             # Главный store (FBA)
 ```
 
 ## Слайсы
 
 ### GameSlice (`slices/game-slice.ts`)
+
 Управляет основным состоянием игры:
+
 - `turn`, `year` - текущий ход и год
 - `gameStatus` - статус игры (setup, playing, ended)
 - `initializeGame()` - инициализация новой игры
@@ -32,24 +34,32 @@ core/model/
 - `resetGame()` - сброс игры
 
 ### PlayerSlice (`slices/player-slice.ts`)
+
 Управляет состоянием игрока:
+
 - `player` - объект игрока
 - `spendEnergy()` - трата энергии
 
 ### EducationSlice (`slices/education-slice.ts`)
+
 Управляет системой образования:
+
 - `studyCourse()` - запись на курс
 - `applyToUniversity()` - поступление в университет
 
 ### JobSlice (`slices/job-slice.ts`)
+
 Управляет работой и заявками:
+
 - `pendingApplications` - список заявок
 - `applyForJob()` - подача заявки
 - `acceptJobOffer()` - принятие оффера
 - `quitJob()` - увольнение
 
 ### NotificationSlice (`slices/notification-slice.ts`)
+
 Управляет уведомлениями:
+
 - `notifications` - список уведомлений
 - `dismissNotification()` - удаление уведомления
 - `markNotificationAsRead()` - пометка как прочитанное
@@ -57,7 +67,9 @@ core/model/
 ## Бизнес-логика
 
 ### Turn Logic (`logic/turn-logic.ts`)
+
 Содержит всю логику обработки хода:
+
 - Обработка активных курсов
 - Обработка университета
 - Прогресс навыков на работе
@@ -68,21 +80,21 @@ core/model/
 ## Использование
 
 ```typescript
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from "@/core/model/store"
 
 function MyComponent() {
   // Можно подписаться на весь store
   const store = useGameStore()
-  
+
   // Или на конкретные части (оптимизация)
   const player = useGameStore(state => state.player)
   const studyCourse = useGameStore(state => state.studyCourse)
-  
+
   // Использование
   const handleEnroll = () => {
     studyCourse('Python', 1000, 20, 'Python', 8)
   }
-  
+
   return <div>...</div>
 }
 ```
@@ -107,13 +119,16 @@ function MyComponent() {
 
 ```typescript
 // slices/inventory-slice.ts
-export const createInventorySlice: StateCreator<GameStore, [], [], InventorySlice> = 
-  (set, get) => ({
-    items: [],
-    addItem: (item) => set(state => ({ 
-      items: [...state.items, item] 
-    }))
-  })
+export const createInventorySlice: StateCreator<GameStore, [], [], InventorySlice> = (
+  set,
+  get,
+) => ({
+  items: [],
+  addItem: (item) =>
+    set((state) => ({
+      items: [...state.items, item],
+    })),
+})
 
 // store.ts
 import { createInventorySlice } from './slices/inventory-slice'
@@ -125,7 +140,7 @@ export const useGameStore = create<GameStore>()(
       ...createInventorySlice(...a), // Добавили новый слайс
       // ...
     }),
-    { name: 'life-sim-storage' }
-  )
+    { name: 'life-sim-storage' },
+  ),
 )
 ```

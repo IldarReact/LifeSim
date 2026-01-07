@@ -7,15 +7,21 @@ import { isQuarterEnd } from '@/core/lib/quarter'
 
 export function commitTurn(ctx: TurnContext, state: TurnState): Partial<GameStore> {
   const nextTurn = ctx.turn + 1
-  const nextYear = isQuarterEnd(ctx.turn) ? ctx.year + 1 : ctx.year
+  const isYearEnd = isQuarterEnd(ctx.turn)
+  const nextYear = isYearEnd ? ctx.year + 1 : ctx.year
+
+  let nextGameStatus = state.gameStatus
+  if (isYearEnd && nextGameStatus === 'playing') {
+    nextGameStatus = 'year_report'
+  }
 
   return {
     // meta
     turn: nextTurn,
     year: nextYear,
     isProcessingTurn: false,
-    gameStatus: state.gameStatus,
-    endReason: state.gameOverReason as any,
+    gameStatus: nextGameStatus,
+    endReason: state.gameOverReason,
     globalEvents: state.globalEvents,
     history: state.historyEntry ? [...ctx.prev.history, state.historyEntry] : ctx.prev.history,
 

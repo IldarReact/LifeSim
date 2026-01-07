@@ -16,7 +16,7 @@ describe('Salary Inflation Tests', () => {
     interestRate: 2.0,
     unemployment: 5.0,
     taxRate: 20,
-    corporateTaxRate: 0.2,
+    corporateTaxRate: 20,
     salaryModifier: 1.0,
     costOfLivingModifier: 1.0,
     baseSalaries: {
@@ -25,30 +25,30 @@ describe('Salary Inflation Tests', () => {
       accountant: 4000,
       marketer: 3500,
       technician: 3000,
-      worker: 2200
+      worker: 2200,
     },
     activeEvents: [],
-    inflationHistory: []
+    inflationHistory: [],
   }
 
   const mockEconomyWithInflation: CountryEconomy = {
     ...mockEconomyNoInflation,
     inflation: 2.5,
-    inflationHistory: [2.5, 2.3]
+    inflationHistory: [2.5, 2.3],
   }
 
   describe('getInflatedBaseSalary', () => {
     it('должна вернуть базовую зарплату без инфляции', () => {
       const baseSalary = 4500
       const result = getInflatedBaseSalary(baseSalary, mockEconomyNoInflation)
-      
+
       expect(result).toBe(baseSalary)
     })
 
     it('должна применить инфляцию к базовой зарплате', () => {
       const baseSalary = 4500
       const result = getInflatedBaseSalary(baseSalary, mockEconomyWithInflation)
-      
+
       expect(result).toBeGreaterThan(baseSalary)
       expect(result).toBeCloseTo(4706, -1)
     })
@@ -58,7 +58,7 @@ describe('Salary Inflation Tests', () => {
     it('должна применить инфляцию к зарплате', () => {
       const withoutInflation = calculateSalary('manager', 1, mockEconomyNoInflation)
       const withInflation = calculateSalary('manager', 1, mockEconomyWithInflation)
-      
+
       expect(withInflation).toBeGreaterThan(withoutInflation)
     })
   })
@@ -66,9 +66,15 @@ describe('Salary Inflation Tests', () => {
   describe('generateEmployeeCandidate', () => {
     it('должна генерировать кандидата с инфлированной зарплатой', () => {
       const candidateNoInflation = generateEmployeeCandidate('manager', 1, mockEconomyNoInflation)
-      const candidateWithInflation = generateEmployeeCandidate('manager', 1, mockEconomyWithInflation)
-      
-      expect(candidateWithInflation.requestedSalary).toBeGreaterThan(candidateNoInflation.requestedSalary)
+      const candidateWithInflation = generateEmployeeCandidate(
+        'manager',
+        1,
+        mockEconomyWithInflation,
+      )
+
+      expect(candidateWithInflation.requestedSalary).toBeGreaterThan(
+        candidateNoInflation.requestedSalary,
+      )
     })
   })
 
@@ -76,8 +82,8 @@ describe('Salary Inflation Tests', () => {
     it('зарплата в UI должна отражать инфляцию', () => {
       const candidate = generateEmployeeCandidate('manager', 3, mockEconomyWithInflation)
       const displaySalary = `$${candidate.requestedSalary.toLocaleString()}/мес`
-      
-      expect(displaySalary).toMatch(/\$[\d,]+\/мес/)
+
+      expect(displaySalary).toMatch(/\$[\d\s,]+\/мес/)
       expect(candidate.requestedSalary).toBeGreaterThan(4500)
     })
   })

@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Brain } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { TrendingUp, TrendingDown, Brain } from 'lucide-react'
+import { useState } from 'react'
 
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
-import { useGameStore } from "@/core/model/game-store"
-import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
+import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
+import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
+import { useGameStore } from '@/core/model/store'
 
 export function SanityIndicator() {
   const { player, countries } = useGameStore()
@@ -25,7 +25,9 @@ export function SanityIndicator() {
       >
         <div className="flex items-center gap-1">
           <Brain className="w-5 h-5 text-purple-400" />
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.sanity || 80)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">
+            {Math.round(player?.personal?.stats?.sanity || 80)}
+          </span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Рассудок</span>
       </button>
@@ -49,37 +51,63 @@ export function SanityIndicator() {
                   <div className="text-white/50 italic px-2">Нет активных факторов</div>
                 ) : (
                   statMods.sanity.map((mod, index) => (
-                    <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                      <span className={mod.sanity && mod.sanity > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                        {mod.sanity && mod.sanity > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors"
+                    >
+                      <span
+                        className={
+                          mod.sanity && mod.sanity > 0
+                            ? 'text-green-500 flex items-center gap-2'
+                            : 'text-red-500 flex items-center gap-2'
+                        }
+                      >
+                        {mod.sanity && mod.sanity > 0 ? (
+                          <TrendingUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <TrendingDown className="w-3.5 h-3.5" />
+                        )}
                         {mod.source}
                       </span>
                       <span className="text-white font-medium">
-                        {mod.sanity && mod.sanity > 0 ? "+" : ""}{mod.sanity}
+                        {mod.sanity && mod.sanity > 0 ? '+' : ''}
+                        {mod.sanity}
                       </span>
                     </div>
                   ))
                 )}
-                
+
                 {lifestyleSanityMod !== 0 && (
                   <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={lifestyleSanityMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
-                      {lifestyleSanityMod > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    <span
+                      className={
+                        lifestyleSanityMod > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
+                      {lifestyleSanityMod > 0 ? (
+                        <TrendingUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5" />
+                      )}
                       Образ жизни (еда, жильё, транспорт)
                     </span>
                     <span className="text-white font-medium">
-                      {lifestyleSanityMod > 0 ? "+" : ""}{lifestyleSanityMod}
+                      {lifestyleSanityMod > 0 ? '+' : ''}
+                      {lifestyleSanityMod}
                     </span>
                   </div>
                 )}
 
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
-                    <span className="text-white flex items-center gap-2">
-                      Итого изменение
-                    </span>
-                    <span className={`text-white text-sm ${(sanityMod + lifestyleSanityMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-                      {(sanityMod + lifestyleSanityMod) > 0 ? "+" : ""}{sanityMod + lifestyleSanityMod}
+                    <span className="text-white flex items-center gap-2">Итого изменение</span>
+                    <span
+                      className={`text-white text-sm ${sanityMod + lifestyleSanityMod >= 0 ? 'text-green-400' : 'text-rose-400'}`}
+                    >
+                      {sanityMod + lifestyleSanityMod > 0 ? '+' : ''}
+                      {sanityMod + lifestyleSanityMod}
                     </span>
                   </div>
                 </div>

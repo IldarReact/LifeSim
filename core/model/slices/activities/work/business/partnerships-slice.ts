@@ -1,9 +1,13 @@
-import type { GameStateCreator } from '../../../types'
+import type { GameStateCreator, BusinessSlice } from '../../../types'
 
-import type { BusinessProposal, ProposalType } from '@/core/types/business.types'
+import type { BusinessProposal, BusinessChangeType } from '@/core/types/business.types'
 
-export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> = (set, get) => ({
-  proposeAction: (businessId: string, type: ProposalType, payload: any) => {
+export const createPartnershipsSlice: GameStateCreator<Partial<BusinessSlice>> = (set, get) => ({
+  proposeAction: (
+    businessId: string,
+    changeType: BusinessChangeType,
+    data: BusinessProposal['data'],
+  ) => {
     const state = get()
     if (!state.player) return
 
@@ -16,12 +20,12 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
 
     // If player has controlling share, perform immediately
     if (playerShare > 50) {
-      switch (type) {
-        case 'change_price':
-          if (payload.newPrice !== undefined) get().changePrice(businessId, payload.newPrice)
+      switch (changeType) {
+        case 'price':
+          if (data.newPrice !== undefined) get().changePrice(businessId, data.newPrice)
           break
-        case 'change_quantity':
-          if (payload.newQuantity !== undefined) get().setQuantity(businessId, payload.newQuantity)
+        case 'quantity':
+          if (data.newQuantity !== undefined) get().setQuantity(businessId, data.newQuantity)
           break
       }
       return
@@ -29,12 +33,14 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
 
     const proposal: BusinessProposal = {
       id: `prop_${Date.now()}`,
-      type,
+      businessId,
+      changeType,
       initiatorId: playerPartner?.id || 'player',
-      payload,
+      initiatorName: state.player.name,
+      data,
       votes: { [playerPartner?.id || 'player']: true },
       status: 'pending',
-      createdTurn: state.turn,
+      createdAt: Date.now(),
     }
 
     // В онлайн-партнёрстве решение принимают только игроки.
@@ -68,7 +74,7 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
     const business = state.player.businesses[i]
 
     const ownerPartner = business.partners.find(
-      (p) => p.type === 'player' && p.id === state.player!.id,
+      (p) => p.type === 'player' && p.id === state.player?.id,
     )
 
     let updatedPartners = [...business.partners]
@@ -85,12 +91,12 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
     }
 
     updatedPartners = updatedPartners.map((p) =>
-      p.id === state.player!.id ? { ...p, share: Math.max(0, p.share - share) } : p,
+      p.id === state.player?.id ? { ...p, share: Math.max(0, p.share - share) } : p,
     )
 
     const currentSum = updatedPartners.reduce((sum, p) => sum + p.share, 0)
     const available = Math.max(0, 100 - currentSum)
-    let finalShare = Math.min(share, available)
+    const finalShare = Math.min(share, available)
     if (finalShare <= 0) {
       state.pushNotification?.({
         type: 'error',
@@ -123,8 +129,8 @@ export const createPartnershipsSlice: GameStateCreator<Record<string, unknown>> 
 
   // leaveBusinessJob remains delegated to employees slice; keep a thin wrapper
   leaveBusinessJob: (businessId: string) => {
-    const s = get() as any
-    if (typeof s.leaveBusinessJob === 'function') return (s.leaveBusinessJob as any)(businessId)
+    const s = get()
+    if (typeof s.leaveBusinessJob === 'function') return s.leaveBusinessJob(businessId)
     console.warn('[partnerships-slice] leaveBusinessJob delegated, but target not found')
   },
 })

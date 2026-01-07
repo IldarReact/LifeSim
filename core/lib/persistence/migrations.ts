@@ -1,7 +1,8 @@
 import type { GameState } from '@/core/schemas/game.schema'
 
 // Migration functions for each version upgrade
-type MigrationFn = (oldState: any) => any
+// Use unknown to force safe type checking during migration
+type MigrationFn = (oldState: unknown) => unknown
 
 const migrations: Record<number, MigrationFn> = {
   // Example: v1 -> v2
@@ -24,7 +25,6 @@ const migrations: Record<number, MigrationFn> = {
     }
   },
   */
-
   // Example: v2 -> v3
   /*
   3: (state) => {
@@ -38,8 +38,12 @@ const migrations: Record<number, MigrationFn> = {
   */
 }
 
-export function migrateState(state: any, fromVersion: number, toVersion: number): GameState {
-  let migratedState = state
+export function migrateState<T = unknown>(
+  state: T,
+  fromVersion: number,
+  toVersion: number,
+): GameState {
+  let migratedState: unknown = state
 
   for (let v = fromVersion + 1; v <= toVersion; v++) {
     const migrationFn = migrations[v]
@@ -50,6 +54,6 @@ export function migrateState(state: any, fromVersion: number, toVersion: number)
     }
   }
 
-  (`✅ Migration complete: v${fromVersion} → v${toVersion}`)
-  return migratedState
+  console.log(`✅ Migration complete: v${fromVersion} → v${toVersion}`)
+  return migratedState as GameState
 }

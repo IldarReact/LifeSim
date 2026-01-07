@@ -1,6 +1,6 @@
 import type { InflationNotification } from '@/core/lib/calculations/inflation-engine'
 import type {
-  PlayerState,
+  Player,
   Notification,
   JobApplication,
   MarketEvent,
@@ -8,6 +8,7 @@ import type {
   Stats,
   TimedBuff,
   GameStatus,
+  GameOverReason,
   HistoryEntry,
 } from '@/core/types'
 import type { CountryEconomy, GlobalEvent } from '@/core/types/economy.types'
@@ -18,10 +19,10 @@ export interface TurnState {
   year: number
   gameStatus: GameStatus
   isAborted: boolean
-  gameOverReason: string | null
+  gameOverReason: GameOverReason | null
 
   // snapshot
-  player: PlayerState
+  player: Player
   countries: Record<string, CountryEconomy>
   country: CountryEconomy
   globalEvents: GlobalEvent[]
@@ -45,6 +46,7 @@ export interface TurnState {
       credits: number
       mortgage: number
       other: number
+      total: number
     }
     modifiers: Partial<Stats>
   }
@@ -53,6 +55,7 @@ export interface TurnState {
   business: {
     totalIncome: number
     totalExpenses: number
+    totalTax: number
   }
 
   // working stats (before commit)

@@ -1,3 +1,10 @@
+/**
+ * ИСТОРИЧЕСКИЙ МУСОР / LEGACY CODE
+ * Этот файл содержит старую реализацию логики ходов, которая была заменена 
+ * модульными процессорами в папке core/model/logic/turns/
+ * Оставлено исключительно для справки.
+ */
+
 // import type { GameStore } from '../slices/types'
 // import type { Notification, Skill, SkillLevel, JobApplication } from '@/core/types'
 // import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'

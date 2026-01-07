@@ -4,29 +4,11 @@ import { TrendingUp, TrendingDown, Users, Info } from 'lucide-react'
 import React from 'react'
 
 import { BusinessManagementDialog } from './business-management-dialog'
+import type { BusinessManagementProps } from './types'
 
 import { calculateBusinessFinancials, getTotalEmployeesCount } from '@/core/lib/business'
-import type { Business, EmployeeCandidate } from '@/core/types'
 import { Button } from '@/shared/ui/button'
 import { InfoCard } from '@/shared/ui/info-card'
-
-interface BusinessManagementProps {
-  business: Business
-  playerCash: number
-  proposalsCount?: number
-  onHireEmployee: (businessId: string, candidate: EmployeeCandidate) => void
-  onFireEmployee: (businessId: string, employeeId: string) => void
-  onChangePrice: (businessId: string, newPrice: number) => void
-  onSetQuantity: (businessId: string, newQuantity: number) => void
-  onOpenBranch: (sourceBusinessId: string) => void
-  onJoinAsEmployee: (
-    businessId: string,
-    role: import('@/core/types').EmployeeRole,
-    salary: number,
-  ) => void
-  onLeaveJob: (businessId: string) => void
-  onUnassignRole: (businessId: string, role: import('@/core/types').EmployeeRole) => void
-}
 
 const BUSINESS_IMAGES: Record<string, string> = {
   retail: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&h=600&fit=crop',
@@ -50,6 +32,7 @@ export function BusinessManagement({
   onLeaveJob,
   onUnassignRole,
 }: BusinessManagementProps) {
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const { income, expenses, profit } = calculateBusinessFinancials(business, true)
   const image = BUSINESS_IMAGES[business.type] || BUSINESS_IMAGES['retail']
 
@@ -142,28 +125,22 @@ export function BusinessManagement({
             </div>
 
             <div className="flex gap-3 pt-4">
-              <BusinessManagementDialog
-                business={business}
-                playerCash={playerCash}
-                proposalsCount={proposalsCount}
-                onHireEmployee={onHireEmployee}
-                onFireEmployee={onFireEmployee}
-                onChangePrice={onChangePrice}
-                onSetQuantity={onSetQuantity}
-                onOpenBranch={onOpenBranch}
-                onJoinAsEmployee={onJoinAsEmployee}
-                onLeaveJob={onLeaveJob}
-                onUnassignRole={onUnassignRole}
-                trigger={
-                  <Button className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10">
-                    <Users className="w-4 h-4 mr-2" />
-                    Управление персоналом
-                  </Button>
-                }
-              />
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/10"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Управление персоналом
+              </Button>
             </div>
           </div>
         }
+      />
+
+      <BusinessManagementDialog
+        businessId={business.id}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
       />
     </div>
   )

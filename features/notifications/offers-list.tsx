@@ -2,7 +2,7 @@
 
 import { OfferCard } from "./offer-card"
 
-import { useGameStore } from "@/core/model/game-store"
+import { useGameStore } from "@/core/model/store"
 
 export function OffersList() {
   const { getIncomingOffers, acceptOffer, rejectOffer } = useGameStore()

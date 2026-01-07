@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Check, X, ExternalLink } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import type { Notification as Notification } from '@/core/types'
 import type { GameOffer } from '@/core/types/game-offers.types'
 import { OfferDetailsDialog } from '@/features/notifications/offer-details-dialog'
@@ -67,7 +67,7 @@ export function NotificationsMenu() {
       typeof data === 'object' &&
       data !== null &&
       'type' in data &&
-      (data as any).type === 'offer_received' &&
+      (data as { type?: string }).type === 'offer_received' &&
       'offerId' in data
     )
   }

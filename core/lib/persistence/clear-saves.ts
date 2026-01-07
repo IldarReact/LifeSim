@@ -24,7 +24,13 @@ export function clearAllSaves() {
 
 }
 
+declare global {
+  interface Window {
+    clearAllSaves: typeof clearAllSaves
+  }
+}
+
 // Экспортируем в window для удобства вызова из консоли браузера
 if (typeof window !== 'undefined') {
-  (window as any).clearAllSaves = clearAllSaves
+  window.clearAllSaves = clearAllSaves
 }

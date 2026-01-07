@@ -6,7 +6,7 @@ import { calculateQuarterlyTaxes } from './calculate-quarterly-taxes'
 import { createEmptyQuarterlyReport } from './financial-helpers'
 
 import type { CountryEconomy } from '@/core/types/economy.types'
-import type { PlayerState } from '@/core/types/game.types'
+import type { Player } from '@/core/types/game.types'
 import type { Stats } from '@/core/types/stats.types'
 
 describe('Quarterly Calculations', () => {
@@ -19,7 +19,7 @@ describe('Quarterly Calculations', () => {
     intelligence: 100,
   }
 
-  const mockPlayer: PlayerState = {
+  const mockPlayer: Player = {
     id: 'test',
     name: 'Test Player',
     countryId: 'us',
@@ -107,11 +107,10 @@ describe('Quarterly Calculations', () => {
         income,
         assets: mockPlayer.assets,
         country: mockCountry,
-        playerAge: mockPlayer.age,
       })
 
       // 15000 * 0.20 = 3000
-      expect(result).toBe(3000)
+      expect(result.total).toBe(3000)
     })
   })
 

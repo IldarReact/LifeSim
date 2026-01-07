@@ -14,7 +14,7 @@ import {
   setTurnReady,
   subscribeToTurnReadyStatus,
 } from '@/core/lib/multiplayer'
-import { useGameStore } from '@/core/model/game-store'
+import { useGameStore } from '@/core/model/store'
 import { TurnLockedModal } from '@/features/multiplayer/turn-locked-modal'
 import { TurnSyncModal } from '@/features/multiplayer/turn-sync-modal'
 import { useOffersSync } from '@/features/multiplayer/use-offers-sync'

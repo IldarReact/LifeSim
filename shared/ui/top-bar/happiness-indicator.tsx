@@ -1,10 +1,10 @@
-import { motion, AnimatePresence } from "framer-motion"
-import { Users } from "lucide-react"
-import { useState } from "react"
+import { motion, AnimatePresence } from 'framer-motion'
+import { Users } from 'lucide-react'
+import { useState } from 'react'
 
-import { calculateStatModifiers, getTotalModifier } from "@/core/lib/calculations/stat-modifiers"
-import { useGameStore } from "@/core/model/game-store"
-import { processLifestyle } from "@/core/model/logic/turns/lifestyle-processor"
+import { calculateStatModifiers, getTotalModifier } from '@/core/lib/calculations/stat-modifiers'
+import { processLifestyle } from '@/core/model/logic/turns/lifestyle-processor'
+import { useGameStore } from '@/core/model/store'
 
 export function HappinessIndicator() {
   const { player, countries } = useGameStore()
@@ -25,7 +25,9 @@ export function HappinessIndicator() {
       >
         <div className="flex items-center gap-1">
           <span className="text-lg">😊</span>
-          <span className="text-lg font-bold text-white tabular-nums">{Math.round(player?.personal?.stats?.happiness || 0)}</span>
+          <span className="text-lg font-bold text-white tabular-nums">
+            {Math.round(player?.personal?.stats?.happiness || 0)}
+          </span>
         </div>
         <span className="text-xs font-medium text-white/50 uppercase tracking-wider">Счастье</span>
       </button>
@@ -49,36 +51,54 @@ export function HappinessIndicator() {
                   <div className="text-white/50 italic px-2">Нет активных факторов</div>
                 ) : (
                   statMods.happiness.map((mod, index) => (
-                    <div key={index} className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                      <span className={mod.happiness && mod.happiness > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors"
+                    >
+                      <span
+                        className={
+                          mod.happiness && mod.happiness > 0
+                            ? 'text-green-500 flex items-center gap-2'
+                            : 'text-red-500 flex items-center gap-2'
+                        }
+                      >
                         <Users className="w-3.5 h-3.5" />
                         {mod.source}
                       </span>
                       <span className="text-white/70 font-medium">
-                        {mod.happiness && mod.happiness > 0 ? "+" : ""}{mod.happiness}
+                        {mod.happiness && mod.happiness > 0 ? '+' : ''}
+                        {mod.happiness}
                       </span>
                     </div>
                   ))
                 )}
-                
+
                 {lifestyleHappinessMod !== 0 && (
                   <div className="flex justify-between items-center py-1.5 px-2 rounded-lg bg-black/80 hover:bg-black/95 transition-colors">
-                    <span className={lifestyleHappinessMod > 0 ? "text-green-500 flex items-center gap-2" : "text-red-500 flex items-center gap-2"}>
+                    <span
+                      className={
+                        lifestyleHappinessMod > 0
+                          ? 'text-green-500 flex items-center gap-2'
+                          : 'text-red-500 flex items-center gap-2'
+                      }
+                    >
                       Образ жизни (еда, жильё, транспорт)
                     </span>
                     <span className="text-white font-medium">
-                      {lifestyleHappinessMod > 0 ? "+" : ""}{lifestyleHappinessMod}
+                      {lifestyleHappinessMod > 0 ? '+' : ''}
+                      {lifestyleHappinessMod}
                     </span>
                   </div>
                 )}
 
                 <div className="border-t border-white/20 pt-2 mt-2">
                   <div className="flex justify-between items-center font-semibold py-1.5 px-2 rounded-lg bg-black/80">
-                    <span className="text-white flex items-center gap-2">
-                      Итого изменение
-                    </span>
-                    <span className={`text-white text-sm ${(happinessMod + lifestyleHappinessMod) >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-                      {(happinessMod + lifestyleHappinessMod) > 0 ? "+" : ""}{happinessMod + lifestyleHappinessMod}
+                    <span className="text-white flex items-center gap-2">Итого изменение</span>
+                    <span
+                      className={`text-white text-sm ${happinessMod + lifestyleHappinessMod >= 0 ? 'text-green-400' : 'text-rose-400'}`}
+                    >
+                      {happinessMod + lifestyleHappinessMod > 0 ? '+' : ''}
+                      {happinessMod + lifestyleHappinessMod}
                     </span>
                   </div>
                 </div>

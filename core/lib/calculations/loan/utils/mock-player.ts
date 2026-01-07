@@ -1,10 +1,10 @@
 import { createEmptyQuarterlyReport } from '@/core/lib/calculations/financial-helpers'
-import type { PlayerState } from '@/core/types'
+import type { Player } from '@/core/types'
 import type { Stats } from '@/core/types/stats.types'
 
 export const createMockPlayer = (
-  overrides?: Partial<PlayerState>
-): PlayerState => {
+  overrides?: Partial<Player>
+): Player => {
   const baseStats: Stats = {
     money: 50000,
     happiness: 100,

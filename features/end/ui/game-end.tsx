@@ -1,26 +1,27 @@
-"use client"
+'use client'
 
-import { motion } from "framer-motion"
-import { Trophy, SkullIcon } from "lucide-react"
+import { motion } from 'framer-motion'
+import { Trophy, SkullIcon } from 'lucide-react'
 
-import { useGameStore } from "@/core/model/game-store"
-import { Button } from "@/shared/ui/button"
-import { Card } from "@/shared/ui/card"
+import { useGameStore } from '@/core/model/store'
+import { Button } from '@/shared/ui/button'
+import { Card } from '@/shared/ui/card'
 
 export function GameEnd(): React.JSX.Element | null {
   const { gameStatus, endReason, history, player, turn, globalEvents } = useGameStore()
 
-  if (gameStatus !== "ended") return null
+  if (gameStatus !== 'ended') return null
 
-  const avgHappiness = history.length > 0
-    ? history.reduce((acc, snap) => acc + snap.happiness, 0) / history.length
-    : (player?.personal.stats.happiness || 0)
+  const avgHappiness =
+    history.length > 0
+      ? history.reduce((acc, snap) => acc + snap.happiness, 0) / history.length
+      : player?.personal.stats.happiness || 0
 
   const finalScore = avgHappiness * (player?.happinessMultiplier || 1)
 
-  const isVictory = endReason === "Конец игры" || endReason === "Конец жизни"
-  const isBankrupt = endReason === "Банкротство"
-  const isDead = endReason === "Смерть"
+  const isVictory = endReason === 'Конец игры' || endReason === 'Конец жизни'
+  const isBankrupt = endReason === 'Банкротство'
+  const isDead = endReason === 'Смерть'
 
   return (
     <motion.div
@@ -41,7 +42,9 @@ export function GameEnd(): React.JSX.Element | null {
             <>
               <SkullIcon className="w-16 h-16 mx-auto text-destructive mb-4" />
               <h1 className="text-4xl font-bold mb-2">💸 Банкротство</h1>
-              <p className="text-xl text-muted-foreground">Вы потратили всё до копейки и ушли в минус</p>
+              <p className="text-xl text-muted-foreground">
+                Вы потратили всё до копейки и ушли в минус
+              </p>
             </>
           )}
           {isDead && (
